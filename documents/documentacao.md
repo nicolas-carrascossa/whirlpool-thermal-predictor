@@ -29,9 +29,9 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
 ## <a name="c1"></a>1. Introdução
 ```
-Apresente de forma sucinta o parceiro de negócio, seu porte, local, área de atuação e posicionamento no mercado. Maiores detalhes deverão ser descritos na seção 4. Descreva resumidamente o problema a ser resolvido (sem ainda mencionar a solução). 
+A Whirlpool Corporation é uma multinacional fundada nos EUA em 1911, inicialmente com o propósito de fabricar máquinas de lavar roupa manuais. Atualmente, ela é a empresa líder global na fabricação de eletrodomésticos para cozinha e lavanderia, com operações em cerca de 170 países e faturamento de R$ 12,9 bilhões no Brasil em 2024. Ela já está presente no Brasil há mais de 70 anos por meio de marcas amplamente reconhecidas no mercado brasileiro, como Brastemp, Consul, KitchenAid, B.blend etc., detendo cerca de 38% de participação no mercado de linha branca. A parceira direta no caso deste trabalho é a Divisão de Fogões da companhia, responsável pelo desenvolvimento de produtos para os mercados do Brasil e do México, com atuação voltada à engenharia e à pesquisa e desenvolvimento (P&D) de eletrodomésticos.
+Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diretamente da construção de protótipos físicos e da realização de testes destrutivos para validar o comportamento térmico dos equipamentos. Esse processo é necessário para validar se o fogão desenvolvido realmente se enquadra nos padrões de qualidade, segurança e desempenho exigidos. Porém, o desenvolvimento desses protótipos demanda grandes investimentos e é bem demorado, já que cada iteração de projeto exige novos protótipos e ciclos completos de testes físicos. Como consequência, o lead time de desenvolvimento se torna elevado e os custos operacionais associados aos protótipos aumentam significativamente, impactando a velocidade com que a empresa consegue lançar e validar novas soluções no mercado.
 
-Remova este bloco ao final
 ```
 
 ## <a name="c2"></a>2. Objetivos e Justificativa
