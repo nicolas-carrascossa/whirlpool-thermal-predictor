@@ -110,6 +110,9 @@ Posicione aqui suas Personas (indique se são personas que utilizam o modelo e/o
 Remova este bloco ao final
 ```
 
+<img src="../assets/persona-1.png" width="700"/>
+
+
 #### 4.1.7. Jornadas do Usuário
 ```
 Posicione aqui seus mapas de jornadas do usuário que utiliza o modelo.
