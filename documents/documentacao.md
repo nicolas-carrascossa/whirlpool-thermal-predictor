@@ -79,15 +79,13 @@ Remova este bloco ao final
 ```
 
 #### 4.1.3. Planejamento Geral da Solução
-```
-a) quais os dados disponíveis (fonte e conteúdo - exemplo: dados da área de Compras da empresa descrevendo seus fornecedores).
-b) qual a solução proposta (pode ser um resumo do texto da Seção 2.2).
-c) como a solução proposta deverá ser utilizada.
-d) quais os benefícios trazidos pela solução proposta.
-e) qual será o critério de sucesso.
+ 
+A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 39 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e formato do duct de ventilação, e acompanhada da leitura de temperatura de 78 sensores/termopares, distribuídos em seis áreas-chave do equipamento (Mainback, bobinas, sistemas de ventilação, componentes do IPC e região de HMI). Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
+ 
+A solução proposta é um modelo de machine learning supervisionado, treinado a partir desses dados históricos, capaz de aprender a relação entre a configuração de montagem do fogão e a temperatura resultante em cada sensor. Com isso, torna-se possível estimar a temperatura de uma nova configuração sem a necessidade de executar uma simulação CFD completa ou construir um protótipo físico para testá-la.
+ 
+Na prática, essa solução será disponibilizada por meio de um dashboard interativo, no qual o usuário poderá inserir uma configuração de fogão e visualizar, em poucos segundos, a temperatura prevista pelo modelo nos sensores relevantes. O uso está previsto para múltiplas áreas da Whirlpool identificadas junto ao parceiro no kickoff do projeto: o time de Produtos e o time de Design, ao avaliarem alternativas de posicionamento de componentes ainda na fase conceitual; o time de Qualidade, ao priorizar quais configurações merecem passar por testes físicos e destrutivos mais aprofundados; e o time de Marketing, ao consultar de forma antecipada características térmicas que possam embasar posicionamento e comunicação de produto. Em todos os casos, o dashboard atua como uma etapa preliminar e exploratória, anterior à simulação CFD completa ou à construção de um protótipo físico, permitindo que decisões de engenharia e de negócio sejam informadas por uma estimativa rápida antes de comprometer tempo e recursos nas etapas mais custosas do processo.
 
-Remova este bloco ao final
-```
 
 #### 4.1.4. Value Proposition Canvas
 ```
