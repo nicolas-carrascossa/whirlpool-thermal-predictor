@@ -112,6 +112,18 @@ Remova este bloco ao final
 
 <img src="../assets/persona-1.png" width="700"/>
 
+Esta persona foi escolhida porque o dashboard é um dos principais entregáveis do
+Thermal Predictor, e a designer de interface é a responsável por mantê-lo e
+atualizá-lo, garantindo que as previsões do modelo sejam apresentadas em telas
+claras e confiáveis para os usuários. Embora a construção inicial do dashboard seja
+feita pela equipe de desenvolvimento e ela não utilize as previsões para tomar
+decisões, é uma persona importante porque assegura que os resultados do modelo
+continuem sendo apresentados de forma compreensível e que gerem confiança em quem
+consome a informação. É, portanto, a persona que garante a usabilidade e a adoção
+contínua da solução.
+
+
+
 
 #### 4.1.7. Jornadas do Usuário
 ```
