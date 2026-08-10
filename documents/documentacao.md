@@ -77,11 +77,11 @@ Remova este bloco ao final
  
 A análise a seguir tem como unidade de análise a **Whirlpool Latin America**, que corresponde essencialmente às operações de **Brasil e México**. Forças e fraquezas descrevem fatores **internos**, sobre os quais a empresa exerce governança direta (ativos, processos, competências e decisões próprias); oportunidades e ameaças descrevem fatores **externos**, originados em mercado, regulação, concorrência e conjuntura macroeconômica.
  
-O recorte adotado é o do **desenvolvimento de produtos de cocção**, com foco na etapa de avaliação térmica por simulação computacional (CFD) — ponto do negócio em que a solução deste projeto se insere. Esse recorte é intencional: uma SWOT corporativa genérica produziria fatores válidos, porém pouco acionáveis para as decisões de escopo, dados e modelagem que o grupo precisa tomar.
+O recorte adotado é o do **desenvolvimento de produtos de cocção**, com foco na etapa de avaliação térmica por simulação computacional (CFD), ponto do negócio em que a solução deste projeto se insere. Esse recorte é intencional: uma SWOT corporativa genérica produziria fatores válidos, porém pouco acionáveis para as decisões de escopo, dados e modelagem que o grupo precisa tomar.
  
 <div align="center">
-  <sub>Figura X — Matriz SWOT da Whirlpool Brasil e México</sub><br>
-  <img src="../assets/swot-whirlpool.png" alt="Matriz SWOT da Whirlpool Brasil e México" width="100%"><br>
+  <sub>Figura 1 — Matriz SWOT da Solução para Whirlpool Brasil/México </sub><br>
+  <img src="../assets/analise-swot.png" alt="Matriz SWOT da Solução para Whirlpool Brasil/México" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026)</sup>
 </div>
 ---
@@ -155,7 +155,7 @@ A solução proposta neste projeto — um modelo de aprendizado de máquina que 
  
 #### Limitações da análise
  
-Três ressalvas devem acompanhar a leitura desta seção. Primeiro, os fatores internos relativos a dados e à concentração de conhecimento foram **inferidos a partir do material disponibilizado ao grupo** e da interação com o parceiro, não de auditoria formal — carecem de validação com o time de engenharia. Segundo, a seleção dos fatores reflete o recorte declarado no início da seção: elementos de alto impacto corporativo mas sem conexão com a etapa de simulação térmica foram deliberadamente deixados de fora. Terceiro, os dados externos referem-se ao período até meados de 2026 e o setor é sensível a juros, câmbio e política comercial, de modo que a análise deve ser revisitada ao longo do projeto.
+Três ressalvas devem acompanhar a leitura desta seção. Primeiro, os fatores internos relativos a dados e à concentração de conhecimento foram **inferidos a partir do material disponibilizado ao grupo** e da interação com o parceiro, não de auditoria formal, carecem de validação com o time de engenharia. Segundo, a seleção dos fatores reflete o recorte declarado no início da seção: elementos de alto impacto corporativo mas sem conexão com a etapa de simulação térmica foram deliberadamente deixados de fora. Terceiro, os dados externos referem-se ao período até meados de 2026 e o setor é sensível a juros, câmbio e política comercial, de modo que a análise deve ser revisitada ao longo do projeto.
 
 
 #### 4.1.3. Planejamento Geral da Solução
