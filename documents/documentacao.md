@@ -214,8 +214,6 @@ Remova este bloco ao final
 
 ## <a name="c6"></a>6. Referências
 
-
-
 ## <a name="attachments"></a>Anexos
 ```
 Utilize esta seção para anexar materiais como manuais de usuário, documentos complementares que ficaram grandes e não couberam no corpo do texto etc.
