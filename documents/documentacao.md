@@ -104,11 +104,30 @@ Remova este bloco ao final
 ```
 
 #### 4.1.6. Personas
-```
-Posicione aqui suas Personas (indique se são personas que utilizam o modelo e/ou se são afetadas pelo modelo).
 
-Remova este bloco ao final
-```
+As personas são representações fictícias dos diferentes perfis de usuários e pessoas
+impactadas por uma solução. Elas funcionam como um guia para lembrar para quem o
+produto está sendo desenvolvido e quem pode ser afetado por ele, orientando as
+decisões de projeto a partir das necessidades, dores e objetivos reais desses perfis.
+
+Para o Thermal Predictor, estamos usando proto-personas (suposições embasadas),
+definidas com base no entendimento atual do problema e nos diferentes papéis que se
+relacionam com a solução: o Engenheiro de Materiais, a Qualidade, o Design e o Marketing.
+
+
+<img src="../assets/persona-1.png"/>
+
+Esta persona foi escolhida porque o dashboard é um dos principais entregáveis do
+Thermal Predictor, e a designer de interface é a responsável por mantê-lo e
+atualizá-lo, garantindo que as previsões do modelo sejam apresentadas em telas
+claras e confiáveis para os usuários. Embora a construção inicial do dashboard seja
+feita pela equipe de desenvolvimento e ela não utilize as previsões para tomar
+decisões, é uma persona importante porque assegura que os resultados do modelo
+continuem sendo apresentados de forma compreensível e que gerem confiança em quem
+consome a informação. É, portanto, a persona que garante a usabilidade e a adoção
+contínua da solução.
+
+
 
 #### 4.1.7. Jornadas do Usuário
 ```
