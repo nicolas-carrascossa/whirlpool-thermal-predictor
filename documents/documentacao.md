@@ -131,11 +131,30 @@ Remova este bloco ao final
 ```
 
 #### 4.1.4. Value Proposition Canvas
-```
-Posicione aqui seu canvas.
 
-Remova este bloco ao final
-```
+<div align="center">
+  <sub>Figura 1 - Canvas de Proposta de Valor da Whirlpool</sub><br>
+  <img src="../assets/canvasSolucao.png" width="800" alt="Canvas"><br>
+  <sup>Fonte: Autores, 2026.</sup>
+</div>
+
+**Produtos e Serviços**
+O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo.
+
+**Criadores de Ganho**
+Os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento foram priorizados por representarem metas quantificadas, conferindo à proposta de valor um caráter mensurável e verificável. Os dois criadores adicionais, referentes à eliminação de retrabalho entre as arquiteturas de mercado (Brasil e México) e à democratização de decisões técnicas, derivam logicamente do desenho da solução: como um único modelo preditivo atende a duas arquiteturas distintas, o reaproveitamento da lógica preditiva representa um ganho de eficiência inerente à arquitetura da solução, ainda que não tenha sido formalmente quantificado no escopo original.
+
+**Aliviadores de Dor**
+Este bloco apresenta a maior aderência ao problema central do projeto, uma vez que endereça diretamente os dois fatores que motivam a iniciativa: o alto custo operacional e o extenso time associados à dependência de protótipos físicos e testes destrutivos. Cada aliviador foi redigido como resposta objetiva a esses fatores: redução de custo, eliminação da dependência física, compressão do tempo de validação e reorganização de dados históricos, esta última voltada a mitigar o risco de inconsistência de dados identificado na fase de planejamento do projeto.
+
+**Ganhos do Cliente**
+A construção deste bloco exigiu maior grau de inferência. A tradução do objetivo técnico em ganho estratégico segue a lógica de que uma previsão térmica confiável viabiliza o lançamento de produtos em menor tempo sem comprometer a qualidade. O ganho relacionado à ausência de custo recorrente de licenciamento obriga a tecnologia ser open source, em benefício percebido pelo cliente, alinhando a exigência técnica a uma vantagem competitiva de negócio.
+
+**Dores do Cliente**
+O bloco distingue-se dos aliviadores por descrever a dor sob a perspectiva do cliente, e não da solução proposta. Duas dores refletem diretamente o problema central do projeto (lead time elevado e custo de prototipagem física); as demais decorrem de riscos operacionais específicos identificados na fase de planejamento. A opção por ancorar essas dores em riscos reais do projeto, em vez de dores genéricas de mercado, confere maior credibilidade e rastreabilidade ao canvas.
+
+**Tarefas do Cliente**
+A tarefa relacionada à precisão térmica dentro da margem de 10% é o item de maior relevância em todo o canvas, pois corresponde ao critério que determinará, de forma mensurável, o sucesso ou insucesso da solução desenvolvida.
 
 #### 4.1.5. Matriz de Riscos
 ```
