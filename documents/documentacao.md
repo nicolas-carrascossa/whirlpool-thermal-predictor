@@ -118,11 +118,48 @@ Remova este bloco ao final
 ```
 
 #### 4.1.8 Política de Privacidade
-```
-Posicione aqui sua política de privacidade em acordo com a LGPD
 
-Remova este bloco ao final
-```
+A Política de Privacidade é o documento responsável por garantir a transparência
+e a segurança no tratamento de dados. Por meio dela, informamos como os dados são
+coletados, utilizados, armazenados e protegidos durante o uso da solução, assegurando
+que sejam tratados de forma responsável e em conformidade com a Lei nº 13.709/2018 (LGPD).
+
+**Projeto:** Thermal Predictor
+
+**Informações Gerais**
+
+Esta política de privacidade informa como o projeto Thermal Predictor, desenvolvido pelo grupo FOG, trata os dados pessoais coletados durante o uso da solução. Está em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados (LGPD).
+
+**Dados Coletados**
+
+- Dados fornecidos diretamente: dados dos componentes e temperaturas do dataset inserido pelo usuário.
+- Dados coletados automaticamente: nome e e-mail do usuário, e dados de acesso (data e hora de uso).
+
+**Finalidade do Tratamento**
+
+Autenticar usuários e controlar o acesso à solução (dashboard preditivo).
+
+**Armazenamento e Retenção**
+
+- Local: ambiente local onde o sistema é executado. 
+- Prazo: durante a vigência do projeto acadêmico.
+
+**Compartilhamento de Dados**
+
+Os dados são compartilhados apenas com a equipe do projeto, supervisores acadêmicos e a Whirlpool. Não há venda a terceiros.
+
+**Segurança dos Dados**
+
+Controle de acesso por autenticação individual e senha criptografada.
+
+**Direitos dos Titulares**
+
+Os titulares dos dados têm direito a acesso, correção, exclusão e revogação do consentimento. Solicitações podem ser feitas pelo e-mail: felipe.pessoa@sou.inteli.edu.br.
+
+**Encarregado de Dados (DPO)**
+
+- Nome: Felipe Sodré Pessôa
+- E-mail: felipe.pessoa@sou.inteli.edu.br
 
 ### 4.2. Compreensão dos Dados
 
