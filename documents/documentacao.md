@@ -132,8 +132,8 @@ Esta política de privacidade informa como o projeto Thermal Predictor, desenvol
 
 **Dados Coletados**
 
-- Dados fornecidos diretamente: nome e e-mail do usuário.
-- Dados coletados automaticamente: dados de acesso (data e hora de uso).
+- Dados fornecidos diretamente: dados dos componentes e temperaturas do dataset inserido pelo usuário.
+- Dados coletados automaticamente: nome e e-mail do usuário, e dados de acesso (data e hora de uso).
 
 **Finalidade do Tratamento**
 
