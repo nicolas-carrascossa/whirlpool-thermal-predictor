@@ -115,7 +115,7 @@ definidas com base no entendimento atual do problema e nos diferentes papéis qu
 relacionam com a solução: o Engenheiro de Materiais, a Qualidade, o Design e o Marketing.
 
 
-<img src="../assets/persona-1.png" width="700"/>
+<img src="../assets/persona-1.png"/>
 
 Esta persona foi escolhida porque o dashboard é um dos principais entregáveis do
 Thermal Predictor, e a designer de interface é a responsável por mantê-lo e
