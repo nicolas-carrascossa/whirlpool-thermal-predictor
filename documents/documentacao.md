@@ -128,6 +128,7 @@ consome a informação. É, portanto, a persona que garante a usabilidade e a ad
 contínua da solução.
 
 
+<img src="../assets/persona-2.png"/>
 
 #### 4.1.7. Jornadas do Usuário
 ```
