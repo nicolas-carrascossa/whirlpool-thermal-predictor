@@ -255,6 +255,17 @@ definidas com base no entendimento atual do problema e nos diferentes papéis qu
 relacionam com a solução: o Engenheiro de Materiais, a Qualidade, o Design e o Marketing.
 
 
+<div align="center">
+  <sub>Figura 1 - Persona: Engenheira de Materiais</sub><br>
+  <img src="../assets/personaEstela.png" width="800" alt="Estela"><br>
+  <sup>Fonte: Autores, 2026.</sup>
+</div>
+
+A persona de Estela foi escolhida, pois representa um dos cargos principais pelas decisões que o Thermal Predictor visa otimizar, levando em consideração que a validação de materiais depende diretamente da temperatura que cada componente vai atingir em uso. 
+A escolha do material para os fogões está diretamente ligado com o projeto. Ela será quem utilizará as previsões do modelo para decidir se um material resiste termicamente ao ponto de ser aprovado, sem precisar esperar por um protótipo físico ou um teste destrutivo para confirmar essa informação. 
+Diferente de outras personas que se relacionam com a solução de forma indireta, o Engenheiro de Materiais toma decisões técnicas a partir do resultado da previsão, sendo diretamente impactado pela margem de erro do modelo. Portanto, se trata da persona que representa o ganho central do projeto, cuja é substituir a dependência de testes físicos demorados e caros por uma validação rápida e confiável.
+
+
 <img src="../assets/persona-1.png"/>
 
 Esta persona foi escolhida porque o dashboard é um dos principais entregáveis do
