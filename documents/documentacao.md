@@ -130,6 +130,18 @@ contínua da solução.
 
 <img src="../assets/persona-2.png"/>
 
+
+Esta persona foi escolhida por representar um dos usuários diretos e mais críticos do
+Projeto: o Engenheiro de Qualidade é responsável por validar a segurança
+térmica dos produtos e decidir se um design pode ou não ser liberado. Ele utiliza as
+previsões do modelo para verificar se cada componente se mantém dentro do seu limite
+térmico, substituindo parte dos testes físicos destrutivos, que hoje são lentos e
+caros. É uma persona importante porque tanto usa a solução no dia a dia quanto é
+diretamente impactada por ela,  a confiabilidade da previsão (margem de erro ≤ 10%)
+afeta diretamente sua decisão de aprovar ou reprovar um produto. Por atuar em um
+ponto crítico do processo (a liberação do produto), garante que a solução contribua
+para decisões mais rápidas e seguras.
+
 #### 4.1.7. Jornadas do Usuário
 ```
 Posicione aqui seus mapas de jornadas do usuário que utiliza o modelo.
