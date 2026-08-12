@@ -252,7 +252,7 @@ decisões de projeto a partir das necessidades, dores e objetivos reais desses p
 
 Para o Thermal Predictor, estamos usando proto-personas (suposições embasadas),
 definidas com base no entendimento atual do problema e nos diferentes papéis que se
-relacionam com a solução: o Engenheiro de Materiais, a Qualidade, o Design e o Marketing.
+relacionam com a solução: o Engenheiro de Materiais, o Marketing, a Qualidade e o Design.
 
 
 <div align="center">
@@ -265,6 +265,15 @@ A persona de Estela foi escolhida, pois representa um dos cargos principais pela
 A escolha do material para os fogões está diretamente ligado com o projeto. Ela será quem utilizará as previsões do modelo para decidir se um material resiste termicamente ao ponto de ser aprovado, sem precisar esperar por um protótipo físico ou um teste destrutivo para confirmar essa informação. 
 Diferente de outras personas que se relacionam com a solução de forma indireta, o Engenheiro de Materiais toma decisões técnicas a partir do resultado da previsão, sendo diretamente impactado pela margem de erro do modelo. Portanto, se trata da persona que representa o ganho central do projeto, cuja é substituir a dependência de testes físicos demorados e caros por uma validação rápida e confiável.
 
+<div align="center">
+  <sub>Figura 1 - Persona: Marketing</sub><br>
+  <img src="../assets/personaGeraldo.png" width="800" alt="Geraldo"><br>
+  <sup>Fonte: Autores, 2026.</sup>
+</div>
+
+Esta persona foi escolhida porque toda solução técnica só gera valor real para a empresa se esse ganho puder ser traduzido e comunicado ao mercado, e é justamente essa ponte entre resultado técnico e resultado de negócio que a persona de Marketing representa no projeto. 
+Diferente das personas técnicas, que se relacionam diretamente com a previsão e a acurácia do modelo, essa persona importa porque garante que a redução de lead time e de custo conquistada pelo Thermal Predictor não fique restrita à engenharia, mas se converta em velocidade de lançamento e em argumentos concretos de diferenciação frente à concorrência. 
+Sua inclusão evita que o projeto seja avaliado apenas por métricas internas e assegura que ele também seja medido pelo impacto que gera na capacidade da empresa de chegar ao mercado mais rápido e de forma mais competitiva. 
 
 <img src="../assets/persona-1.png"/>
 
