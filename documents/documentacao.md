@@ -229,33 +229,29 @@ Como critério de sucesso, o modelo deverá prever a temperatura com margem de e
 
 <div align="center">
   <sub>Figura 1 - Canvas de Proposta de Valor da Whirlpool</sub><br>
-  <img src="../assets/canvasSolucao.png" width="800" alt="Canvas"><br>
+  <img src="../assets/caanvasSolucao.png" width="800" alt="Canvas"><br>
   <sup>Fonte: Autores, 2026.</sup>
 </div>
 
-**Produtos e Serviços**
-
-O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo.
+**Produtos e Serviços** 
+O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. Esse último é o ponto de contato direto com a persona Beatriz (Designer UX/UI), responsável por manter e atualizar a interface que traduz as previsões do modelo para os demais usuários. 
 
 **Criadores de Ganho**
-
-Os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento foram priorizados por representarem metas quantificadas, conferindo à proposta de valor um caráter mensurável e verificável. Os dois criadores adicionais, referentes à eliminação de retrabalho entre as arquiteturas de mercado (Brasil e México) e à democratização de decisões técnicas, derivam logicamente do desenho da solução: como um único modelo preditivo atende a duas arquiteturas distintas, o reaproveitamento da lógica preditiva representa um ganho de eficiência inerente à arquitetura da solução, ainda que não tenha sido formalmente quantificado no escopo original.
+Os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento sustentam diretamente as necessidades da persona Geraldo (Especialista de Marketing), cuja dor central é depender do cronograma de testes físicos para saber quando o produto estará pronto para divulgação. A pesquisa de gestão de produto melhora a competitividade de várias formas, reduz diretamente os custos de desenvolvimento, permite acesso antecipado ao potencial de mercado e garante vantagens de pioneirismo ¹. Os dois criadores adicionais (eliminação de retrabalho entre arquiteturas BR/MX e democratização de decisões técnicas) sustentam a necessidade de Estela (Engenheira de Materiais) de comparar diferentes materiais e espessuras sem depender de um novo protótipo para cada opção.
 
 **Aliviadores de Dor**
-
-Este bloco apresenta a maior aderência ao problema central do projeto, uma vez que endereça diretamente os dois fatores que motivam a iniciativa: o alto custo operacional e o extenso time associados à dependência de protótipos físicos e testes destrutivos. Cada aliviador foi redigido como resposta objetiva a esses fatores: redução de custo, eliminação da dependência física, compressão do tempo de validação e reorganização de dados históricos, esta última voltada a mitigar o risco de inconsistência de dados identificado na fase de planejamento do projeto.
+Este bloco tem aderência direta às dores das personas técnicas do projeto. A eliminação da dependência de protótipos físicos e testes destrutivos responde precisamente à dor relatada por João (Engenheiro de Qualidade), que depende de testes físicos destrutivos, lentos e caros, para validar a segurança térmica, e por Estela, que enfrenta o mesmo gargalo ao validar resistência de materiais. Estudos sobre simulação digital no desenvolvimento de produto sustentam esse ganho no qual  uma pesquisa da McKinsey mostra em conversas com líderes de P&D que gêmeos digitais já reduziram os prazos de desenvolvimento em até 50% para alguns usuários, com redução de custo associada, validando a lógica de que substituir ciclos físicos por simulação preditiva é uma estratégia de negócio consolidada, não apenas uma escolha técnica pontual do projeto ².
 
 **Ganhos do Cliente**
-
-A construção deste bloco exigiu maior grau de inferência. A tradução do objetivo técnico em ganho estratégico segue a lógica de que uma previsão térmica confiável viabiliza o lançamento de produtos em menor tempo sem comprometer a qualidade. O ganho relacionado à ausência de custo recorrente de licenciamento obriga a tecnologia ser open source, em benefício percebido pelo cliente, alinhando a exigência técnica a uma vantagem competitiva de negócio.
+O ganho de lançar produtos mais rapidamente sem perder qualidade térmica conecta-se novamente à persona Geraldo, cuja necessidade central é alinhar o cronograma de campanha à data real de validação do produto. Pesquisa publicada no IEEE Transactions on Engineering Management reforça essa relação: em estudo com 692 projetos de desenvolvimento de novos produtos, a velocidade de lançamento mostrou-se geralmente associada de forma positiva ao sucesso do novo produto, sustentando por que a previsibilidade de cronograma é um ganho estratégico, e não apenas operacional ³. O ganho de custo zero de licenciamento, por sua vez, sustenta a viabilidade orçamentária da solução como um todo.
 
 **Dores do Cliente**
 
 O bloco distingue-se dos aliviadores por descrever a dor sob a perspectiva do cliente, e não da solução proposta. Duas dores refletem diretamente o problema central do projeto (lead time elevado e custo de prototipagem física); as demais decorrem de riscos operacionais específicos identificados na fase de planejamento. A opção por ancorar essas dores em riscos reais do projeto, em vez de dores genéricas de mercado, confere maior credibilidade e rastreabilidade ao canvas.
 
 **Tarefas do Cliente**
+A tarefa relacionada à precisão térmica dentro da margem de 10% é o item de maior relevância em todo o canvas, pois corresponde ao critério que determinará, de forma mensurável, o sucesso ou insucesso da solução desenvolvida. Da mesma forma, é imprescindível olhar que diversas simulações são feitas em aplicativos licenciados e fisicamente, mas que ainda não são reaproveitadas para previsões de futuras combinações.
 
-A tarefa relacionada à precisão térmica dentro da margem de 10% é o item de maior relevância em todo o canvas, pois corresponde ao critério que determinará, de forma mensurável, o sucesso ou insucesso da solução desenvolvida.
 
 #### 4.1.5. Matriz de Riscos
 
