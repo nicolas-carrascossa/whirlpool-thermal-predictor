@@ -214,7 +214,7 @@ Remova este bloco ao final
 
 <div align="center">
   <sub>Figura 1 - Canvas de Proposta de Valor da Whirlpool</sub><br>
-  <img src="../assets/canvasSolucao.png" width="800" alt="Canvas"><br>
+  <img src="../assets/caanvasSolucao.png" width="800" alt="Canvas"><br>
   <sup>Fonte: Autores, 2026.</sup>
 </div>
 
