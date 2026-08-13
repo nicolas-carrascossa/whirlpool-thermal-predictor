@@ -309,8 +309,9 @@ decisões de projeto a partir das necessidades, dores e objetivos reais desses p
 
 Para o Thermal Predictor, estamos usando proto-personas (suposições embasadas),
 definidas com base no entendimento atual do problema e nos diferentes papéis que se
-relacionam com a solução: o Engenheiro de Materiais, o Marketing, a Qualidade e o Design.
+relacionam com a solução: o Engenheiro de Materiais, o Especialista de Marketing, o Designer UX/UI e o Engenheiro de Qualidade.
 
+##### Engenheira de Materiais
 
 <div align="center">
   <sub>Figura 1 - Persona: Engenheira de Materiais</sub><br>
@@ -322,6 +323,8 @@ A persona de Estela foi escolhida, pois representa um dos cargos principais pela
 A escolha do material para os fogões está diretamente ligado com o projeto. Ela será quem utilizará as previsões do modelo para decidir se um material resiste termicamente ao ponto de ser aprovado, sem precisar esperar por um protótipo físico ou um teste destrutivo para confirmar essa informação. 
 Diferente de outras personas que se relacionam com a solução de forma indireta, o Engenheiro de Materiais toma decisões técnicas a partir do resultado da previsão, sendo diretamente impactado pela margem de erro do modelo. Portanto, se trata da persona que representa o ganho central do projeto, cuja é substituir a dependência de testes físicos demorados e caros por uma validação rápida e confiável.
 
+##### Especialista de Marketing
+
 <div align="center">
   <sub>Figura 1 - Persona: Marketing</sub><br>
   <img src="../assets/personaGeraldo.png" width="800" alt="Geraldo"><br>
@@ -332,7 +335,13 @@ Esta persona foi escolhida porque toda solução técnica só gera valor real pa
 Diferente das personas técnicas, que se relacionam diretamente com a previsão e a acurácia do modelo, essa persona importa porque garante que a redução de lead time e de custo conquistada pelo Thermal Predictor não fique restrita à engenharia, mas se converta em velocidade de lançamento e em argumentos concretos de diferenciação frente à concorrência. 
 Sua inclusão evita que o projeto seja avaliado apenas por métricas internas e assegura que ele também seja medido pelo impacto que gera na capacidade da empresa de chegar ao mercado mais rápido e de forma mais competitiva. 
 
-<img src="../assets/persona-1.png"/>
+##### Designer UX/UI
+
+<div align="center">
+  <sub>Figura 1 - Persona: Designer UX/UI</sub><br>
+  <img src="../assets/persona-1.png" width="800" alt="Beatriz"><br>
+  <sup>Fonte: Autores, 2026.</sup>
+</div>
 
 Esta persona foi escolhida porque o dashboard é um dos principais entregáveis do
 Thermal Predictor, e a designer de interface é a responsável por mantê-lo e
@@ -344,8 +353,13 @@ continuem sendo apresentados de forma compreensível e que gerem confiança em q
 consome a informação. É, portanto, a persona que garante a usabilidade e a adoção
 contínua da solução.
 
+##### Engenheiro de Qualidade
 
-<img src="../assets/persona-2.png"/>
+<div align="center">
+  <sub>Figura 1 - Persona: Engenheiro de Qualidade</sub><br>
+  <img src="../assets/persona-2.png" width="800" alt="João"><br>
+  <sup>Fonte: Autores, 2026.</sup>
+</div>
 
 
 Esta persona foi escolhida por representar um dos usuários diretos e mais críticos do
