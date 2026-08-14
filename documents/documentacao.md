@@ -9,9 +9,9 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
 ## Whirlpool Thermal Predictor
 
-### FOG
+### FOG - A predição que nasce da névoa dos dados do Dataset
 
-#### Felipe, Gabriel, Lucas Andrade, Nicolas, Samuel Chen, Vitor Medrado, Wiliam
+#### Felipe Sodré Pessôa, Gabriel Lorenzo Baglioli de Loyola, Lucas Andrade Silva, Nícolas Rigolin Carrascossa, Samuel Yenyu Chen, Vitor Medrado Lisbôa, William Martins Moraes
 
 
 ## Sumário
