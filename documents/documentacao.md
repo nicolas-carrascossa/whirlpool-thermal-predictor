@@ -481,6 +481,18 @@ para decisões mais rápidas e seguras.
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
 
+**Jornada da Usuária — Beatriz (Designer UX/UI)**
+
+##### Etapa 1 — Coleta de Sinais: Feedback e Telemetria
+
+**Ações**: Reúne feedback qualitativo de Engenharia, Qualidade e Marketing (reclamações, dúvidas recorrentes, sugestões) e cruza com dados quantitativos de telemetria do dashboard — telas mais acessadas, pontos de abandono, tempo gasto em cada Key Area.
+
+**Pensamentos**: "Esse comentário é um problema isolado ou um padrão que aparece em várias equipes?"; "A telemetria mostra queda de acesso nessa tela — isso é falta de necessidade ou sinal de que ela confunde?"
+
+**Sentimentos**: Investigativa e atenta, mas ainda num momento de coleta bruta — sem clareza ainda sobre causas, apenas sintomas.
+
+**Oportunidades**: Consolidar feedback e telemetria num painel único, com filtros por Key Area e por perfil de usuário, para reduzir o trabalho manual de cruzamento de dados.
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
