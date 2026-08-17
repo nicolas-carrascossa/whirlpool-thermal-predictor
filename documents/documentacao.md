@@ -493,6 +493,16 @@ para decisões mais rápidas e seguras.
 
 **Oportunidades**: Consolidar feedback e telemetria num painel único, com filtros por Key Area e por perfil de usuário, para reduzir o trabalho manual de cruzamento de dados.
 
+
+##### Etapa 2 — Diagnóstico e Priorização dos Problemas
+
+**Ações**: Analisa os sinais coletados para identificar a causa raiz — se é hierarquia de informação confusa, ambiguidade nos estados (interpolação/extrapolação moderada/fora de domínio — R04) ou simplesmente sobrecarga visual — e prioriza o que será redesenhado, considerando esforço de desenvolvimento e impacto na confiança do usuário.
+
+**Pensamentos**: "Isso é um problema de layout ou um problema de conteúdo — a informação certa não está sendo mostrada?"; "Se eu não priorizar bem, corro o risco de mexer em telas pouco usadas enquanto o problema real fica sem solução."
+
+**Sentimentos**: Levemente pressionada — sabe que decisões erradas aqui custam ciclos inteiros de desenvolvimento, e o tempo da equipe de dev é limitado.
+
+**Oportunidades**: Ter acesso a uma matriz de impacto x esforço pré-formatada, e conseguir taguear queixas de usuários diretamente aos estados do modelo (R04) para facilitar o diagnóstico.
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
