@@ -432,11 +432,23 @@ ponto crítico do processo — a liberação do produto —, João garante que a
 para decisões mais rápidas e seguras.
 
 #### 4.1.7. Jornadas do Usuário
-```
-Posicione aqui seus mapas de jornadas do usuário que utiliza o modelo.
 
-Remova este bloco ao final
-```
+**Jornada da Usuária — Estela (Engenheira de Materiais)**
+
+*Etapa 1 — Definição do Projeto*
+Estela recebe a especificação de um novo fogão (ou revisão de modelo existente) e precisa escolher materiais e espessuras para os componentes que ficam expostos a altas temperaturas.
+
+Estado emocional: Neutra, mas já antecipando o desafio de decidir sem dados térmicos reais disponíveis.
+
+*Etapa 2 — Levantamento de Alternativas*
+Ela lista as combinações possíveis de material e espessura candidatas para cada componente crítico (Mainback, Housing, componentes próximos ao IPC, etc.), baseando-se em custo, disponibilidade e experiência prévia.
+
+Estado emocional: Concentrada, mas incerta — sem saber ainda quais opções realmente vão performar termicamente.
+
+*Etapa 3 — Consulta ao Thermal Predictor*
+Antes de solicitar qualquer protótipo físico, Estela acessa o dashboard e insere as configurações candidatas (material, espessura, posição do componente) para obter a temperatura prevista em cada ponto crítico.
+
+Estado emocional: Expectativa — é o momento em que a ferramenta substitui a espera pelo CFD ou protótipo.
 
 #### 4.1.8 Política de Privacidade
 
