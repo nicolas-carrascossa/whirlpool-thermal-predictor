@@ -513,6 +513,16 @@ para decisões mais rápidas e seguras.
 **Sentimentos**: Um pouco insegura por depender de validação técnica de terceiros para avançar, mas também mais confiante à medida que alinha a interpretação com a engenharia.
 
 **Oportunidades**: Ter um glossário técnico curto e já validado (o que cada estado do R04 significa, em linguagem simples) como referência fixa, evitando reabrir essa discussão a cada novo ciclo de design.
+
+##### Etapa 4 — Design e Prototipagem da Interface
+
+**Ações**: Redesenha a hierarquia de informação das telas priorizadas — agrupando previsão, margem de erro (≤10%) e estado de confiabilidade por Key Area — e monta protótipos de alta fidelidade seguindo o Guia de Estilo Corporativo Whirlpool.
+
+**Pensamentos**: "Como eu comunico 'fora de domínio' sem parecer um erro do sistema?"; "Estou priorizando estética ou clareza? As duas precisam coexistir, mas se tiver que escolher, é clareza."
+
+**Sentimentos**: Etapa de maior tensão criativa — equilibrar rigor técnico com simplicidade visual, sabendo que qualquer ambiguidade pode custar a confiança do engenheiro no dashboard como um todo.
+
+**Oportunidades**: Padronizar um sistema de componentes reutilizáveis (cores, ícones, badges de confiabilidade) para acelerar futuras iterações e manter consistência entre telas.
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
