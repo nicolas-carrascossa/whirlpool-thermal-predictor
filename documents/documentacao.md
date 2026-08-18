@@ -503,6 +503,16 @@ para decisões mais rápidas e seguras.
 **Sentimentos**: Levemente pressionada — sabe que decisões erradas aqui custam ciclos inteiros de desenvolvimento, e o tempo da equipe de dev é limitado.
 
 **Oportunidades**: Ter acesso a uma matriz de impacto x esforço pré-formatada, e conseguir taguear queixas de usuários diretamente aos estados do modelo (R04) para facilitar o diagnóstico.
+
+##### Etapa 3 — Pesquisa Visual e Alinhamento com Engenharia
+
+**Ações**: Pesquisa referências de visualização de incerteza e confiabilidade (badges, cores, gradientes de risco) e valida preliminarmente com a equipe de engenharia se a leitura pretendida de cada estado (interpolação/extrapolação/fora de domínio) está tecnicamente correta antes de desenhar.
+
+**Pensamentos**: "Eu não sou engenheira — preciso confirmar que o que estou prestes a desenhar não vai comunicar algo tecnicamente errado."; "Existe um padrão de mercado para isso, ou vou ter que criar do zero?"
+
+**Sentimentos**: Um pouco insegura por depender de validação técnica de terceiros para avançar, mas também mais confiante à medida que alinha a interpretação com a engenharia.
+
+**Oportunidades**: Ter um glossário técnico curto e já validado (o que cada estado do R04 significa, em linguagem simples) como referência fixa, evitando reabrir essa discussão a cada novo ciclo de design.
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
