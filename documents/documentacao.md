@@ -432,11 +432,60 @@ ponto crítico do processo — a liberação do produto —, João garante que a
 para decisões mais rápidas e seguras.
 
 #### 4.1.7. Jornadas do Usuário
-```
-Posicione aqui seus mapas de jornadas do usuário que utiliza o modelo.
 
-Remova este bloco ao final
-```
+Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pensamentos e emoções de uma persona ao buscar um objetivo, evidenciando onde surgem dúvida, confiança e decisão ao longo da experiência, e não apenas o funcionamento técnico do sistema. Essa ferramenta é especialmente relevante para o Thermal Predictor porque a solução não devolve uma resposta definitiva, e sim uma previsão de aprendizado de máquina com margem de erro e indicador de confiabilidade (Seção 4.1.5, R04). O valor do produto depende de como cada persona interpreta essa previsão e a converte em uma decisão real de engenharia, e o mapa torna esse processo de interpretação e decisão explícito, permitindo identificar onde a solução pode reduzir incerteza e apoiar decisões mais rápidas e seguras, sem tratar a previsão do modelo como verdade absoluta.
+
+##### Engenheiro de Qualidade (João)
+
+O template visual de mapa de jornada será disponibilizado posteriormente pelo professor da disciplina de UX. Por isso, esta seção reúne, desde já, o conteúdo textual organizado por campo — ator, objetivo, cenário, expectativas, fases (ações, pensamentos, emoções, pontos de dor), decisão crítica e oportunidades — pronto para ser transposto ao template quando recebido, além do texto explicativo que deve acompanhar a imagem do mapa na versão final desta seção.
+
+**Ator.** João, 42 anos, Engenheiro de Qualidade formado em Engenharia Mecânica, com 15 anos de experiência em qualidade e testes de eletrodomésticos (Seção 4.1.6, Figura 8). É responsável por validar a segurança térmica dos produtos e decidir se um design pode ou não ser liberado, garantindo que nenhum componente ultrapasse seu limite térmico normativo antes da aprovação.
+
+**Objetivo de João nesta jornada.** Emitir o parecer de qualidade sobre uma configuração candidata dentro do prazo do ciclo de desenvolvimento, decidindo — com uma margem de erro auditável — quais componentes podem ser liberados com base na previsão do Thermal Predictor e quais ainda exigem teste físico destrutivo antes da aprovação final.
+
+**Cenário e expectativas.** A equipe de Design finalizou uma nova configuração candidata de fogão de piso — com posição de placa e tipo de mesh duct diferentes das versões já validadas — e precisa do parecer de qualidade antes de avançar para a fase de liberação. João não tem tempo nem orçamento para submeter todas as áreas-chave dessa configuração a teste físico destrutivo apenas para descobrir quais realmente correm risco térmico; sua expectativa é usar o Thermal Predictor para triar rapidamente os componentes críticos e decidir, com uma margem de erro auditável (≤ 10%), quais pontos exigem confirmação física antes de assinar a liberação.
+
+**Fase 1 — Avaliar**
+- *Ações:*
+  1. Recebe da equipe de Design a configuração candidata e separa, dentre as áreas-chave (Mainback, bobinas, ventilação, IPC, HMI), quais componentes têm histórico de operar perto do limite térmico normativo.
+  2. Insere no dashboard os parâmetros da configuração candidata (direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor, Run Case) e seleciona as áreas-chave relevantes para o parecer.
+- *Pensamento de João:* "Essa configuração muda a posição da placa e o duct de ventilação — quais dessas áreas-chave têm histórico de ficar perto do limite térmico nesse tipo de alteração? Se eu fosse testar tudo fisicamente, levaria dias e um protótipo."
+- *Emoção:* Preocupação moderada, por sentir o peso da decisão de liberação e o prazo apertado do ciclo de desenvolvimento, com cautela quanto à confiabilidade do que vai receber como resposta.
+- *Ponto de dor:* Sem uma triagem rápida, dependeria da disponibilidade da equipe de CFD ou de um protótipo físico só para saber se a investigação completa vale a pena, e sem o domínio de validade da previsão deixado claro, não teria como saber de antemão o quanto pode confiar no número que vai receber.
+
+**Fase 2 — Analisar**
+- *Ações:*
+  3. Recebe do Thermal Predictor a temperatura estimada para os sensores selecionados, a margem de erro esperada e o indicador de confiabilidade (interpolação, extrapolação moderada ou fora de domínio). A maioria dos sensores aparece dentro do limite normativo, marcados como interpolação; um sensor da área do IPC aparece próximo do limite, marcado como extrapolação moderada.
+  4. Compara a previsão do sensor do IPC com o histórico de simulações e testes físicos de configurações semelhantes, avaliando o que "extrapolação moderada" significa para aquele ponto específico frente à margem de erro de 10%.
+- *Pensamento de João:* "A maior parte está tranquila, dentro do que eu já esperava para esse tipo de configuração. Mas esse ponto do IPC está perto do limite e sinalizado como extrapolação — isso pode ser um comportamento térmico real ou uma região onde eu simplesmente não tenho dado suficiente para confiar cegamente."
+- *Emoção:* Alívio parcial diante da maioria dos resultados, seguido de dúvida e cautela ao notar o ponto crítico — não aceita o número isolado como suficiente para decidir.
+- *Ponto de dor:* Um valor numérico isolado, sem o selo de confiabilidade em destaque, poderia ser lido como uma certeza que não é; falta também uma forma rápida de visualizar, lado a lado com a previsão, os casos históricos mais próximos daquela configuração para embasar a comparação sem sair do fluxo de análise.
+
+**Fase 3 — Decidir (decisão crítica)**
+- *Ações:*
+  5. Avalia o risco combinando "extrapolação moderada + proximidade do limite normativo" e conclui que a previsão para o sensor do IPC não sustenta sozinha uma liberação.
+  6. Decide por uma aprovação parcial: libera os demais componentes (interpolação, dentro do limite, histórico consistente) e isola o ponto crítico para investigação complementar.
+- *Cadeia da decisão:* Resultado apresentado pelo modelo (sensor do IPC próximo do limite normativo, sinalizado como extrapolação moderada) → interpretação de João (configuração fora do envelope já testado fisicamente, incerteza real e não apenas ruído) → avaliação de risco/qualidade (proximidade do limite normativo combinada a confiabilidade reduzida não pode ser tratada como aprovação) → decisão (aprovação parcial: demais áreas-chave liberadas pela previsão, componente do IPC pendente) → consequência (solicitação de teste físico focado apenas nesse ponto, sem travar o restante do parecer de qualidade).
+- *Pensamento de João:* "Não posso liberar esse ponto só porque o resto passou. Mas também não preciso travar a configuração inteira — só esse componente precisa de confirmação física antes de eu assinar."
+- *Emoção:* Segurança quanto à decisão tomada, por ser uma decisão fundamentada e não arbitrária, ainda com o peso da responsabilidade pelo ponto em aberto.
+- *Ponto de dor:* Sem o indicador de confiabilidade, João teria apenas duas más alternativas: confiar cegamente no número ou exigir teste físico completo para toda a configuração, perdendo o ganho de tempo que motiva o uso da ferramenta.
+- *Extremos do espectro de decisão (contraponto):* se todos os sensores tivessem sido sinalizados como interpolação dentro do limite normativo, João teria liberado a configuração integralmente, sem solicitar nenhum teste adicional; se o sensor do IPC tivesse ultrapassado o limite normativo mesmo considerando a margem de erro, a reprovação teria sido direta, sem necessidade de teste físico para confirmar algo já fora de qualquer margem aceitável. O caso do IPC descrito aqui ocupa o meio desse espectro — nem aprovação plena, nem reprovação direta —, e é justamente essa faixa intermediária que exige o julgamento de um Engenheiro de Qualidade.
+
+**Fase 4 — Encaminhar**
+- *Ações:*
+  7. Documenta o parecer de qualidade, registrando os componentes aprovados por previsão e o status de cada um.
+  8. Solicita à equipe responsável um teste físico focado no sensor do IPC antes da liberação final e comunica o resultado para que o cronograma seja ajustado apenas para esse componente.
+- *Pensamento de João:* "Consegui reduzir de uma bateria completa de testes para um único ponto crítico. Isso não atrasa a liberação inteira, só o que realmente precisa de confirmação física."
+- *Emoção:* Senso de controle e de dever cumprido, equilibrado pela ciência de que a decisão final ainda depende da confirmação física daquele ponto.
+- *Ponto de dor:* Se o status "aprovado por previsão, pendente de teste físico" não for registrado com clareza, essa distinção pode se perder na comunicação com quem recebe o parecer.
+- *Consequência para o projeto:* ao isolar apenas o sensor do IPC em vez de exigir uma bateria completa de testes físicos para toda a configuração, João evita construir e testar destrutivamente um protótipo só para confirmar componentes que a previsão já sustenta com confiança — contribuição direta à meta de redução de até 25% nos protótipos físicos e de até 30% no tempo de desenvolvimento definida no Project Charter (Seção 4.1.3).
+
+**Oportunidades identificadas** (com time responsável, conforme mapeamento de áreas impactadas da Seção 4.1.3)
+1. Permitir que, ao registrar as áreas-chave críticas do parecer, João veja de imediato se alguma delas já tem histórico de operar perto do limite térmico em configurações semelhantes, reduzindo o tempo gasto decidindo por onde começar a análise. — *Responsável: Time de Qualidade, com apoio do Time de Engenharia (CFD) para validar o histórico exibido.*
+2. Tornar o indicador de confiabilidade (interpolação / extrapolação moderada / fora de domínio) imediatamente visível junto a cada valor de temperatura — e não como informação secundária — para que João nunca interprete um número sem saber o quanto pode confiar nele. — *Responsável: Designer UX/UI (Beatriz), por ser quem define a hierarquia de informação do dashboard.*
+3. Disponibilizar, ao lado da previsão, os casos históricos (CFD ou teste físico) mais próximos daquela configuração, para que João compare a previsão com referências reais sem sair do fluxo de análise. — *Responsável: Time de Dados/ML, por depender diretamente da base histórica tratada (Seção 4.1.5, R02).*
+4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
+5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
 
 #### 4.1.8 Política de Privacidade
 
