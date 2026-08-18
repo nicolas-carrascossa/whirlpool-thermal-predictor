@@ -435,20 +435,51 @@ para decisões mais rápidas e seguras.
 
 **Jornada da Usuária — Estela (Engenheira de Materiais)**
 
-*Etapa 1 — Definição do Projeto*
-Estela recebe a especificação de um novo fogão (ou revisão de modelo existente) e precisa escolher materiais e espessuras para os componentes que ficam expostos a altas temperaturas.
+##### Etapa 1 — Preparação do Projeto
 
-Estado emocional: Neutra, mas já antecipando o desafio de decidir sem dados térmicos reais disponíveis.
+**Ações:** Estela recebe a especificação de um novo fogão ou revisão de modelo existente, identifica quais componentes exigem seleção ou validação de material térmico e lista as combinações candidatas de material e espessura com base em custo, disponibilidade e experiência prévia.
 
-*Etapa 2 — Levantamento de Alternativas*
-Ela lista as combinações possíveis de material e espessura candidatas para cada componente crítico (Mainback, Housing, componentes próximos ao IPC, etc.), baseando-se em custo, disponibilidade e experiência prévia.
+**Pensamentos:** "Quais componentes desse projeto vão exigir mais atenção térmica?"; "Vou levar essas opções para o dashboard e ver o que ele me devolve."
 
-Estado emocional: Concentrada, mas incerta — sem saber ainda quais opções realmente vão performar termicamente.
+**Sentimentos:** Concentrada, mas ainda insegura — está formulando hipóteses que só serão testadas na etapa seguinte, sem ainda ter usado a ferramenta.
 
-*Etapa 3 — Consulta ao Thermal Predictor*
-Antes de solicitar qualquer protótipo físico, Estela acessa o dashboard e insere as configurações candidatas (material, espessura, posição do componente) para obter a temperatura prevista em cada ponto crítico.
+**Oportunidades:** Comunicar claramente o escopo de aplicabilidade do modelo (quais configurações ele cobre) e permitir que o dashboard aceite múltiplas combinações em lote, reduzindo o esforço de repetição manual.
 
-Estado emocional: Expectativa — é o momento em que a ferramenta substitui a espera pelo CFD ou protótipo.
+---
+
+##### Etapa 2 — Consulta e Interpretação do Modelo
+
+**Ações:** Acessa o dashboard, insere as configurações candidatas e solicita a previsão de temperatura para cada ponto crítico; em seguida, compara os resultados entre si e verifica quais estão dentro da margem de erro aceitável (≤10%).
+
+**Pensamentos:** "Espero estar preenchendo os parâmetros certos"; "Essa combinação mais barata performou melhor do que eu esperava — será que o modelo errou, ou minha experiência prévia que estava desatualizada?"
+
+**Sentimentos:** Esta é a etapa de maior oscilação emocional da jornada. Começa esperançosa, porém cautelosa, no primeiro contato com o resultado — e passa por um momento de tensão e dúvida real quando um resultado contraintuitivo diverge da experiência empírica de Estela, gerando desconfiança momentânea em relação ao modelo.
+
+**Oportunidades:** Validar os parâmetros antes do envio (alertas para combinações fora da faixa de treinamento), indicar visualmente o nível de confiança da previsão e oferecer explicabilidade (quais variáveis mais influenciaram o resultado) ou comparação com casos históricos semelhantes do dataset, para ancorar previsões contraintuitivas em precedentes reais.
+
+---
+
+##### Etapa 3 — Priorização e Validação Física
+
+**Ações:** Após checar o resultado contra casos históricos semelhantes e recuperar a confiança, seleciona as combinações mais promissoras e as encaminha para teste físico e, quando necessário, teste destrutivo.
+
+**Pensamentos:** "Agora faz sentido — o modelo está considerando um efeito que eu não tinha levado em conta."; "Se o teste físico divergir muito da previsão, vou pensar duas vezes antes de confiar no modelo no próximo projeto."
+
+**Sentimentos:** Confiança recuperada, ainda que com certa apreensão — a dúvida da etapa anterior foi resolvida com dados de suporte, mas o teste físico carrega agora o peso adicional de validar não só o material, mas a própria confiabilidade da ferramenta.
+
+**Oportunidades:** Sugerir, com base na confiança estatística de cada previsão, um número mínimo recomendado de combinações a validar fisicamente, e implementar um mecanismo de retroalimentação (feedback loop) que registre a divergência entre previsão e resultado físico.
+
+---
+
+##### Etapa 4 — Aprovação e Documentação da Decisão
+
+**Ações:** Documenta a escolha do material, usando os dados do Thermal Predictor como justificativa técnica, e apresenta a decisão à equipe de qualidade e engenharia.
+
+**Pensamentos:** "Tenho dados objetivos para defender essa escolha — mas será que a equipe de qualidade vai aceitar um resultado de IA sem teste físico completo?"
+
+**Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
+
+**Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
 
 #### 4.1.8 Política de Privacidade
 
