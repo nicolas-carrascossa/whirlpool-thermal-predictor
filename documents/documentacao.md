@@ -619,9 +619,9 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 20. CHEN, Jiyao; REILLY, Richard R.; LYNN, Gary S. *The impacts of speed-to-market on new product success: the moderating effects of uncertainty.* IEEE Transactions on Engineering Management, v. 52, n. 2, p. 199-212, 2005.
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
 
-## <a name="attachments"></a>Anexos
-```
-Utilize esta seção para anexar materiais como manuais de usuário, documentos complementares que ficaram grandes e não couberam no corpo do texto etc.
+## <a name="attachments"></a>Anexo
 
-Remova este bloco ao final
-```
+#### 5.1. Análise e teste de normalidade das variáveis quantitativas
+
+
+#### 5.2. Escalonamento (Padronização ou normalização) nas variáveis quantitativas
