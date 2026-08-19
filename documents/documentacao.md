@@ -523,6 +523,16 @@ para decisões mais rápidas e seguras.
 **Sentimentos**: Etapa de maior tensão criativa — equilibrar rigor técnico com simplicidade visual, sabendo que qualquer ambiguidade pode custar a confiança do engenheiro no dashboard como um todo.
 
 **Oportunidades**: Padronizar um sistema de componentes reutilizáveis (cores, ícones, badges de confiabilidade) para acelerar futuras iterações e manter consistência entre telas.
+
+##### Etapa 5 — Testes de Usabilidade e Ajustes Finais
+
+**Ações**: Conduz testes de usabilidade com usuários reais de Engenharia, Qualidade e Marketing, observando se conseguem interpretar previsão, margem de erro e estado do resultado sem explicação adicional, e ajusta o protótipo com base nos resultados.
+
+**Pensamentos**: "Será que o engenheiro entende a diferença entre margem de erro e nível de confiabilidade sem eu precisar explicar do lado?"; "Marketing enxerga a informação de forma muito mais simplificada que Engenharia — a mesma tela serve para os dois?"
+
+**Sentimentos**: Ansiosa durante os testes, mas aliviada quando os usuários interpretam corretamente sem apoio — é o momento em que o trabalho ganha validação externa real.
+
+**Oportunidades**: Rodar testes A/B diretamente no dashboard em produção para comparar variações de layout com dados reais de uso, não apenas com o grupo de teste.
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
