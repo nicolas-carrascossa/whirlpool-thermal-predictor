@@ -533,6 +533,17 @@ para decisões mais rápidas e seguras.
 **Sentimentos**: Ansiosa durante os testes, mas aliviada quando os usuários interpretam corretamente sem apoio — é o momento em que o trabalho ganha validação externa real.
 
 **Oportunidades**: Rodar testes A/B diretamente no dashboard em produção para comparar variações de layout com dados reais de uso, não apenas com o grupo de teste.
+
+##### Etapa 6 — Publicação, Documentação e Monitoramento Contínuo
+
+**Ações**: Publica as atualizações junto à equipe de desenvolvimento, documenta as mudanças no WAD e no Guia de Estilo Visual, comunica as alterações às equipes usuárias, e monitora a telemetria pós-lançamento para verificar adoção e queda (ou não) de dúvidas recorrentes.
+
+**Pensamentos**: "As métricas confirmam que a mudança resolveu o problema, ou volto para a etapa de diagnóstico?"; "Se o engenheiro parar de usar o dashboard por confusão, a solução perde valor mesmo com um modelo preciso."
+
+**Sentimentos**: Satisfeita quando a telemetria confirma engajamento contínuo, mas em estado de vigilância permanente — sabe que a interface precisa evoluir junto com o modelo e os dados, sem quebrar a clareza já conquistada.
+
+**Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
