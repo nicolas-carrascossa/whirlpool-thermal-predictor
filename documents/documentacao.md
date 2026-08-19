@@ -485,8 +485,41 @@ Os titulares dos dados têm direito a acesso, correção, exclusão e revogaçã
 ### 4.2. Compreensão dos Dados
 
 #### 4.2.1. Exploração de dados
+
+##### Classificação das colunas
+
+A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: flags numéricas 0/1 que representam categorias, e não valores contínuos). O script utilizado está em [`notebooks/classify_columns.py`](../notebooks/classify_columns.py).
+
+| Coluna | Tipo |
+|---|---|
+| run_id | Categórica |
+| tc_name | Categórica |
+| key_area | Categórica |
+| active_limit_c | Numérica |
+| is_monitor | Categórica (flag 0/1) |
+| temp_c | Numérica |
+| reason | Categórica (texto livre - excluir do modelo) |
+| blower_direction | Categórica |
+| housing | Categórica |
+| housing_updated | Categórica (flag 0/1) |
+| board_position | Categórica |
+| run_case | Categórica |
+| mesh_duct | Categórica |
+| loss_profile | Categórica |
+| deflector_hole | Categórica |
+| margin_c | Numérica |
+| exceeds_limit | Categórica (flag 0/1) |
+
+**Observações da revisão manual:**
+
+- `board_position` e `mesh_duct` são constantes nesta amostra (1 valor único cada) — não agregam variância para a estatística descritiva, mas foram mantidas na classificação por completude.
+- `mainback_components` (última linha de metadado da planilha bruta) não entrou como coluna: é 100% vazia em todas as runs e funciona como marcador de início do bloco de sensores/TCs, não como um parâmetro de configuração real.
+- O dataset original de referência inclui a variável `Material Coil Support` (material do suporte da bobina: alumínio vs. plástico), usada em uma das hipóteses de negócio do projeto de referência. **O dataset coletado por este grupo não rastreia esse parâmetro** — não aparece em nenhuma célula da planilha (verificado por busca textual em todas as colunas). Em seu lugar, há um campo de configuração distinto, `mesh_duct` (valor constante `'Correct Level'` nesta amostra). Essa é uma diferença de escopo entre o dataset deste grupo e o dataset de referência, não uma omissão acidental — a hipótese associada ao material do suporte da bobina não pode ser testada com estes dados (relevante para a Seção 4.2.3).
+
 ```
-Apresentar a estatística descritiva básica de cada coluna, identificar se a coluna é numérica ou categórica e pelo menos 3 gráficos para visualizar a relação entre colunas escolhidas pelo grupo.
+PENDENTE: ainda faltam a estatística descritiva básica de cada coluna e
+pelo menos 3 gráficos visualizando a relação entre colunas escolhidas pelo
+grupo (exigidos pela Seção 4.2.1).
 
 Remova este bloco ao final
 ```
