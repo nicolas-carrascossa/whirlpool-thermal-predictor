@@ -481,6 +481,66 @@ para decisões mais rápidas e seguras.
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
 
+#### **Jornada do Usuário — Geraldo (Especialista de Materiais)**
+
+
+#### Cenário
+ 
+Geraldo precisa planejar e executar a campanha de lançamento de um novo modelo de fogão de piso. Para isso, depende de dados técnicos de desempenho térmico do produto e de uma data confiável de validação para definir o cronograma de campanha. Com o Thermal Predictor em operação, ele passa a acessar essas informações ainda na fase inicial de modelagem, antes da conclusão dos testes físicos.
+ 
+#### Expectativas
+ 
+- Receber dados de desempenho térmico com antecedência suficiente para construir os materiais de divulgação.
+- Ter uma data de validação previsível, que não mude ao longo do desenvolvimento.
+- Obter argumentos técnicos confiáveis e traduzíveis em linguagem de mercado.
+
+#### Fase 1 — Alinhamento inicial do lançamento
+ 
+**Ações:** Geraldo participa da reunião de kickoff do novo produto com Engenharia e Produto. Solicita a estimativa de quando o modelo estará validado tecnicamente e quais serão seus diferenciais de desempenho.
+ 
+**Pensamentos:** *"Preciso saber logo se essa data é firme ou se vai mudar como das outras vezes."*
+ 
+**Emoção:** Neutra, com cautela.
+ 
+#### Fase 2 — Consulta aos dados preditivos
+ 
+**Ações:** Acessa o dashboard do Thermal Predictor e consulta as previsões de temperatura por região do produto (console, manípulos, cooktop), verificando margem em relação aos limites normativos.
+ 
+**Pensamentos:** *"Consigo enxergar o desempenho antes do protótipo ficar pronto — isso muda meu cronograma."*
+ 
+**Emoção:** Positiva, em alta.
+ 
+#### Fase 3 — Construção da narrativa de campanha
+ 
+**Ações:** Traduz os indicadores térmicos em argumentos de comunicação (segurança ao toque, eficiência) e valida com a Engenharia se a leitura técnica está correta. Define o posicionamento frente aos concorrentes.
+ 
+**Pensamentos:** *"Preciso ter certeza de que posso afirmar isso publicamente — qual a confiança dessa previsão?"*
+ 
+**Emoção:** Positiva, com ponto de atenção sobre a incerteza do modelo.
+ 
+#### Fase 4 — Planejamento e aprovação do cronograma
+ 
+**Ações:** Define datas de campanha, mídia e materiais com base na previsão de validação antecipada. Submete o plano à aprovação da liderança.
+ 
+**Pensamentos:** *"Com previsibilidade maior, consigo comprar mídia com antecedência e melhor custo."*
+ 
+**Emoção:** Positiva, estável.
+ 
+#### Fase 5 — Execução do lançamento e acompanhamento
+ 
+**Ações:** Executa a campanha. Acompanha a validação física final para confirmar que os dados divulgados se sustentam e ajusta a comunicação, se necessário.
+ 
+**Pensamentos:** *"Se a validação final divergir do previsto, o risco de retratação é meu."*
+ 
+**Emoção:** Positiva, com tensão residual até a confirmação final.
+
+#### Oportunidades
+ 
+- **Exibir intervalo de confiança das previsões no dashboard** — Geraldo precisa saber o grau de incerteza antes de transformar um dado em afirmação pública de campanha. Responsável: time de desenvolvimento do modelo.
+- **Criar uma visão simplificada para perfis não técnicos** — traduzir saídas de engenharia em indicadores compreensíveis reduz a dependência de intermediação da Engenharia. Responsável: time de dashboard/UX.
+- **Notificar automaticamente mudanças relevantes na previsão** — evita que Geraldo descubra tarde uma alteração que impacta o cronograma de campanha. Responsável: time de desenvolvimento.
+- **Definir claramente o status do dado (preditivo x validado)** — reduz o risco de comunicação baseada em estimativa ainda não confirmada. Responsável: Engenharia + Marketing.
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
