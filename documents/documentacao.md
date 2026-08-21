@@ -544,6 +544,11 @@ para decisões mais rápidas e seguras.
 
 **Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
 
+
+<img src="../assets/digrama_jornada_beatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
+<p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
+
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
