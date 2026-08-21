@@ -623,5 +623,16 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 #### 5.1. Análise e teste de normalidade das variáveis quantitativas
 
+Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
+
+**b) Nível de significância**
+
+Nível de significância (α): 0,05 (5%).
+
+Regra de decisão:
+
+Se p ≥ 0,05 → não rejeita H₀ (evidências de normalidade).
+
+Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
 
 #### 5.2. Escalonamento (Padronização ou normalização) nas variáveis quantitativas
