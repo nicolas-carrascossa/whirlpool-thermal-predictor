@@ -528,8 +528,39 @@ Os titulares dos dados têm direito a acesso, correção, exclusão e revogaçã
 ### 4.2. Compreensão dos Dados
 
 #### 4.2.1. Exploração de dados
+
+##### Classificação das colunas
+
+A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: identificadores numéricos que não são quantidades, colunas com sujeira de formatação). Fonte: `data/dataset_long.csv` (formato tidy, uma linha por combinação Run x TC), gerado por [`notebooks/00_reestruturacao_planilha.ipynb`](../notebooks/00_reestruturacao_planilha.ipynb). Script de classificação: [`notebooks/classify_columns.ipynb`](../notebooks/classify_columns.ipynb).
+
+| Coluna | Tipo |
+|---|---|
+| run_id | Categórica |
+| tc_number | Categórica |
+| tc_name | Categórica |
+| key_area | Categórica |
+| active_limit | Numérica |
+| temp | Numérica |
+| reason | Categórica |
+| blower_direction | Categórica |
+| housing | Categórica |
+| board_position | Categórica |
+| run_case | Categórica |
+| losses | Categórica |
+| deflector_hole | Categórica |
+| material_coil_support | Categórica |
+
+**Observações da revisão manual:**
+
+- `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
+- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
+- `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
+- `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
+
 ```
-Apresentar a estatística descritiva básica de cada coluna, identificar se a coluna é numérica ou categórica e pelo menos 3 gráficos para visualizar a relação entre colunas escolhidas pelo grupo.
+PENDENTE: ainda faltam a estatística descritiva básica de cada coluna e
+pelo menos 3 gráficos visualizando a relação entre colunas escolhidas pelo
+grupo (exigidos pela Seção 4.2.1).
 
 Remova este bloco ao final
 ```
