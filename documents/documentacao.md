@@ -557,11 +557,77 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 - `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
 - `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
 
-```
-PENDENTE: ainda faltam a estatística descritiva básica de cada coluna e
-pelo menos 3 gráficos visualizando a relação entre colunas escolhidas pelo
-grupo (exigidos pela Seção 4.2.1).
 
+## Estatística descritiva das colunas
+
+Para cada coluna já classificada, foram calculadas as métricas descritivas correspondentes: média, desvio-padrão e quartis para as numéricas; moda, valores únicos e frequência para as categóricas. Cálculo em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb), a partir de `data/dataset_long.csv`.
+
+## Colunas numéricas
+
+| Estatística | temp | active_limit |
+|---|---|---|
+| Contagem | 4065 | 4009 |
+| Média | 81,77 | 184,43 |
+| Desvio-padrão | 33,28 | 235,17 |
+| Mínimo | 27,69 | 60,00 |
+| Q1 (25%) | 59,11 | 100,00 |
+| Mediana (50%) | 76,50 | 110,00 |
+| Q3 (75%) | 96,02 | 150,00 |
+| Máximo | 273,60 | 1000,00 |
+
+## Colunas categóricas  resumo
+
+| Coluna | Moda | Nulos | Valores únicos |
+|---|---|---|---|
+| `run_id` | Run 20 | 0 | 56 |
+| `tc_number` | 1 | 0 | 77 |
+| `tc_name` | AC Blower HES Connector | 0 | 77 |
+| `key_area` | IPC Comp | 0 | 7 |
+| `reason` | Baseline new Duct | 134 | 34 |
+| `blower_direction` | To Front | 0 | 4 |
+| `housing` | Closed | 0 | 3 |
+| `board_position` | Center | 0 | 3 |
+| `run_case` | Broil Qualitative | 0 | 7 |
+| `losses` | Simone Losses | 418 | 14 |
+| `deflector_hole` | Closed | 0 | 2 |
+| `material_coil_support` | Aluminium | 0 | 3 |
+
+## Distribuição das principais categóricas
+
+**`key_area`** (região do fogão onde o sensor está):
+
+| Valor | Frequência |
+|---|---|
+| IPC Comp | 1979 |
+| Mainback | 610 |
+| Coil Temps | 420 |
+| CT Knobs | 330 |
+| Main Vent Sys | 288 |
+| Oven HMI | 220 |
+| IPC Cooling | 218 |
+
+**`housing`** (configuração da carcaça):
+
+| Valor | Frequência |
+|---|---|
+| Closed | 2063 |
+| Open | 1328 |
+| Open - Updated | 674 |
+
+**`run_case`** (tipo de caso de teste):
+
+| Valor | Frequência |
+|---|---|
+| Broil Qualitative | 1444 |
+| Broil C2 | 1176 |
+| Pyro | 569 |
+| Broil Case 2 | 355 |
+| Qualitative | 225 |
+| Broil C1 | 148 |
+| Broil Qual | 148 |
+
+
+```
 Remova este bloco ao final
 ```
 
