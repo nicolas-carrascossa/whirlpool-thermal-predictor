@@ -618,19 +618,97 @@ Testa diretamente a hipótese apontada acima para `material_coil_support`: a tem
 
 Complementa a Figura 6: `Broil Qualitative` excede o limite em 13,8% das leituras, quase o dobro do segundo colocado (`Qualitative`, 6,4%) e bem acima dos modos `Broil C1`/`Pyro` (4,4%) e `Broil Qual` (1,5%, o mais seguro da amostra).
 
-```
-PENDENTE: ainda falta a estatística descritiva básica de cada coluna
-(exigida pela Seção 4.2.1).
+## Estatística descritiva das colunas
 
+Para cada coluna já classificada, foram calculadas as métricas descritivas correspondentes: média, desvio-padrão e quartis para as numéricas; moda, valores únicos e frequência para as categóricas. Cálculo em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb), a partir de `data/dataset_long.csv`.
+
+## Colunas numéricas
+
+| Estatística | temp | active_limit |
+|---|---|---|
+| Contagem | 4065 | 4009 |
+| Média | 81,77 | 184,43 |
+| Desvio-padrão | 33,28 | 235,17 |
+| Mínimo | 27,69 | 60,00 |
+| Q1 (25%) | 59,11 | 100,00 |
+| Mediana (50%) | 76,50 | 110,00 |
+| Q3 (75%) | 96,02 | 150,00 |
+| Máximo | 273,60 | 1000,00 |
+
+## Colunas categóricas  resumo
+
+| Coluna | Moda | Nulos | Valores únicos |
+|---|---|---|---|
+| `run_id` | Run 20 | 0 | 56 |
+| `tc_number` | 1 | 0 | 77 |
+| `tc_name` | AC Blower HES Connector | 0 | 77 |
+| `key_area` | IPC Comp | 0 | 7 |
+| `reason` | Baseline new Duct | 134 | 34 |
+| `blower_direction` | To Front | 0 | 4 |
+| `housing` | Closed | 0 | 3 |
+| `board_position` | Center | 0 | 3 |
+| `run_case` | Broil Qualitative | 0 | 7 |
+| `losses` | Simone Losses | 418 | 14 |
+| `deflector_hole` | Closed | 0 | 2 |
+| `material_coil_support` | Aluminium | 0 | 3 |
+
+## Distribuição das principais categóricas
+
+**`key_area`** (região do fogão onde o sensor está):
+
+| Valor | Frequência |
+|---|---|
+| IPC Comp | 1979 |
+| Mainback | 610 |
+| Coil Temps | 420 |
+| CT Knobs | 330 |
+| Main Vent Sys | 288 |
+| Oven HMI | 220 |
+| IPC Cooling | 218 |
+
+**`housing`** (configuração da carcaça):
+
+| Valor | Frequência |
+|---|---|
+| Closed | 2063 |
+| Open | 1328 |
+| Open - Updated | 674 |
+
+**`run_case`** (tipo de caso de teste):
+
+| Valor | Frequência |
+|---|---|
+| Broil Qualitative | 1444 |
+| Broil C2 | 1176 |
+| Pyro | 569 |
+| Broil Case 2 | 355 |
+| Qualitative | 225 |
+| Broil C1 | 148 |
+| Broil Qual | 148 |
+
+
+```
 Remova este bloco ao final
 ```
 
 #### 4.2.2. Pré-processamento dos dados
-```
-Apresentar quais foram as ações realizadas de limpeza (tratamento de missing values e remoção de outliers) e transformação (normalização e codificação) das colunas. Se houverem outliers, cite quais são e qual(is) correção(ões) será(ão) aplicada(s).
 
-Remova este bloco ao final
-```
+O pré-processamento dos dados foi realizado para organizar a base, tratar valores ausentes e registrar inconsistências sem alterar informações que podem representar comportamentos reais dos testes. As etapas foram conduzidas sobre o arquivo `dataset_long.csv`, gerado na reestruturação da planilha original, mantendo uma linha por combinação entre Run e TC.
+
+Primeiramente foi feito o **tratamento de valores ausentes** nas colunas categóricas `reason`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole` e `material_coil_support`. Os valores `NaN` dessas colunas foram substituídos por **"Não informado"**, preservando os registros na base sem criar uma informação que não foi registrada. Os valores nulos de temperatura já haviam sido retirados durante a reestruturação da planilha. Essa decisão foi considerada a mais adequada pelo grupo, pois o tipo de teste pode alterar significativamente as temperaturas do fogão; preencher esses valores com média, mediana ou moda poderia distorcer a análise, especialmente na preparação dos dados.
+
+Em seguida, foi realizada a **identificação de outliers** nas temperaturas por `tc_name` utilizando o método do **Intervalo Interquartil (IQR)**. Para cada termopar, foram calculados o primeiro quartil (Q1), o terceiro quartil (Q3) e o intervalo interquartil, com os limites definidos por `[Q1 - 1,5 × IQR, Q3 + 1,5 × IQR]`. Os valores abaixo do limite inferior ou acima do limite superior foram contabilizados por `tc_name`, mas não foram removidos. A remoção comprometeria o aprendizado do modelo, pois cada tipo de teste pode apresentar um comportamento térmico diferente para cada peça. Por exemplo, testes com `run_case` **Pyro** apresentam temperaturas de Coil temperatures próximas de 50 °C, enquanto testes **Broil C2** podem atingir aproximadamente 220 °C. Portanto, valores classificados como outliers quando analisados em conjunto podem representar condições reais de um teste específico.
+
+Também foram documentados **dados confusos ou insuficientes**:
+
+ - O `active_limit` do componente Turbo Duct / AC Blower Outlet aparece como `Monitor (150 C)`, sem deixar claro se o componente não possui limite de temperatura ou se o limite é 150 °C. 
+ 
+-  O componente Dedicated IPC/CKTP Outlet, por sua vez, estava completamente sem informações e foi retirado durante a reestruturação. 
+
+- Para o Oven RTD Connector Body, foi observada uma divergência entre o `active_limit` de 150 °C e temperaturas próximas de 200 °C. A anotação disponível sugere que o componente provavelmente não atingirá 150 °C e poderia ser removido em uma simulação inicial, mas essa orientação é subjetiva. Por isso, o grupo optou por manter os dados do componente sem alterações até obter uma validação técnica.
+
+
+Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
 #### 4.2.3. Hipóteses
 ```
