@@ -553,10 +553,70 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 **Observações da revisão manual:**
 
 - `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
-- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
+- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas tem sujeira de dois tipos: 1 valor residual de texto (`"Monitor (150 C)"`, sensor sem limite de segurança definido) e, achado da exploração gráfica abaixo, 302 linhas (8 sensores) com `active_limit = 1000` — valor fisicamente implausível para os componentes em questão (blowers, ducts), já que os demais limites reais da coluna vão de 60 a 220°C. Tudo indica ser outro placeholder de "sem limite definido", só que numérico em vez de texto. Ambos precisam virar `NaN` (ou um flag `is_monitor`/`sem_limite` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
 - `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
 - `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
+- `board_position` está quase constante nesta versão do dataset (3.843 "Center" vs. 222 "Right", 5,5% da amostra) — por isso não foi usada como eixo dos gráficos abaixo, apesar de tecnicamente ter variância.
 
+##### Gráficos exploratórios
+
+Os gráficos abaixo usam apenas colunas com variância confirmada na tabela acima. Gerados em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb); imagens em [`assets/graficos/`](../assets/graficos/).
+
+<div align="center">
+  <sub>Figura 3 — Distribuição de temperatura por área-chave</sub><br>
+  <img src="../assets/graficos/temp_por_area.png" alt="Boxplot de temp por key_area" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+Cada área-chave (`key_area`) opera em uma faixa térmica bem distinta — `Coil Temps` e `Mainback` concentram as temperaturas mais altas e os outliers mais extremos (>250°C), enquanto `CT Knobs` e `Oven HMI` ficam consistentemente abaixo de 75°C. Isso confirma a localização física do sensor como variável relevante para qualquer hipótese ou modelo.
+
+<div align="center">
+  <sub>Figura 4 — Temperatura média por housing e direção do blower</sub><br>
+  <img src="../assets/graficos/temp_housing_blower.png" alt="Barras de temp média por housing x blower_direction" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+O efeito da direção do fluxo de ar (`blower_direction`) sobre a temperatura média muda de sinal conforme o `housing`, mas não na mesma direção entre os dois housings abertos: com `Closed` e `Open - Updated`, soprar "To Back" aquece um pouco mais que "To Front" (81,5°C vs. 79,8°C; 84,7°C vs. 82,2°C); já com `Open`, o padrão se inverte e "To Front" passa a aquecer mais (86,2°C vs. 83,4°C). O efeito é pequeno em magnitude (poucos °C), mas o fato de não seguir um padrão simples "aberto vs. fechado" sugere uma interação real entre as duas variáveis, não apenas efeitos independentes.
+
+<div align="center">
+  <sub>Figura 5 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
+  <img src="../assets/graficos/temp_vs_limite.png" alt="Scatter de temp vs active_limit, destacando pontos que excedem o limite" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+Este é o gráfico mais diretamente ligado ao problema de negócio: 309 das 3.707 leituras válidas (8,3%, já excluindo os placeholders de "sem limite definido" descritos acima) ultrapassam o limite de engenharia do próprio sensor — os pontos vermelhos acima da diagonal `temp = limite`. Não existe uma coluna de excedência pronta no dataset; ela foi calculada a partir de `temp` e `active_limit`.
+
+<div align="center">
+  <sub>Figura 6 — Temperatura média por modo de operação e área-chave</sub><br>
+  <img src="../assets/graficos/temp_heatmap_runcase_area.png" alt="Heatmap de temp média por run_case x key_area" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+O modo de operação (`run_case`) redefine o mapa térmico do produto: nos modos "Broil", `Coil Temps` dispara para 124–156°C em média, muito acima de qualquer outra área; já no modo `Pyro`, `Coil Temps` cai para a faixa mais baixa do gráfico (52°C) e são `Main Vent Sys`/`Mainback` que assumem as temperaturas mais altas (90°C). Ou seja, a área-chave "mais quente" do fogão depende de qual caso está sendo simulado.
+
+<div align="center">
+  <sub>Figura 7 — % de leituras que excedem o limite de engenharia, por área-chave</sub><br>
+  <img src="../assets/graficos/exceeds_por_area.png" alt="Barras de % de leituras que excedem o limite por key_area" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+Traduz o Gráfico 3 (Figura 5) em uma métrica de risco direta por área: 100% dos estouros de limite do dataset se concentram em apenas 3 das 7 áreas-chave — `Mainback` (14,1%), `IPC Comp` (10,0%) e `Coil Temps` (7,9%). As outras quatro áreas (`CT Knobs`, `IPC Cooling`, `Main Vent Sys`, `Oven HMI`) nunca excedem o limite de engenharia na amostra. Do ponto de vista de priorização de testes físicos, isso indica onde concentrar esforço de validação.
+
+<div align="center">
+  <sub>Figura 8 — % de leituras que excedem o limite de engenharia, por material do suporte da bobina</sub><br>
+  <img src="../assets/graficos/exceeds_por_material.png" alt="Barras de % de leituras que excedem o limite por material_coil_support" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+Testa diretamente a hipótese apontada acima para `material_coil_support`: a temperatura média bruta por material é quase idêntica entre as 3 categorias (~80–83°C), mas a % de leituras que excedem o limite do próprio sensor separa bem os grupos — suporte de **Aluminium excede em 9,1%** dos casos, contra **4,4% em Plastic e Aluminium Plate**, quase o dobro de risco. Um boxplot de temperatura crua por material não capturaria esse efeito, porque o limite de engenharia (`active_limit`) também varia por sensor; a métrica de excedência é a que carrega o sinal.
+
+<div align="center">
+  <sub>Figura 9 — % de leituras que excedem o limite de engenharia, por modo de operação</sub><br>
+  <img src="../assets/graficos/exceeds_por_runcase.png" alt="Barras de % de leituras que excedem o limite por run_case" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+Complementa a Figura 6: `Broil Qualitative` excede o limite em 13,8% das leituras, quase o dobro do segundo colocado (`Qualitative`, 6,4%) e bem acima dos modos `Broil C1`/`Pyro` (4,4%) e `Broil Qual` (1,5%, o mais seguro da amostra).
 
 ## Estatística descritiva das colunas
 
