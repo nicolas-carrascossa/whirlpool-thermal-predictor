@@ -582,7 +582,32 @@ Também foram documentados **dados confusos ou insuficientes**:
 - Para o Oven RTD Connector Body, foi observada uma divergência entre o `active_limit` de 150 °C e temperaturas próximas de 200 °C. A anotação disponível sugere que o componente provavelmente não atingirá 150 °C e poderia ser removido em uma simulação inicial, mas essa orientação é subjetiva. Por isso, o grupo optou por manter os dados do componente sem alterações até obter uma validação técnica.
 
 
-Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
+Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. A substituição foi implementada com uma expressão regular (e não a comparação de uma string exata), pois os dados reais têm espaçamento inconsistente entre os registros — ex.: `"Monitor (150 C)"` vs. `"Monitor( 150 C)"` — e uma comparação exata deixaria alguns valores sem converter.
+
+##### Codificação de variáveis categóricas e normalização de variáveis quantitativas
+
+**Variável-alvo e correções de dados antes de qualquer transformação.** `temp` é a variável-alvo do projeto (Seção 4.1.3: o modelo deve prever a temperatura com margem de erro máxima de 10%) e foi tratada separadamente das features. Antes de codificar ou normalizar, duas inconsistências foram corrigidas: `material_coil_support` — variável central de uma das hipóteses de negócio do projeto (alumínio vs. plástico) — tinha uma terceira categoria espúria, `"Aluminium Plate"` (linhas do Run 48), que foi unificada com `"Aluminium"` para não fragmentar essa variável exatamente onde ela é mais importante; e `blower_direction` teve sua capitalização normalizada (`"To back"`/`"To front"`/`"To Back"`/`"To Front"` → duas categorias consistentes), com uma verificação prévia que impede qualquer valor fora do esperado de ser convertido silenciosamente em ausente.
+
+**Identificadores e texto livre excluídos.** As colunas `run_id`, `tc_number`, `tc_name`, `reason` e `losses` foram excluídas da codificação por serem identificadores ou texto quase livre de alta cardinalidade (`losses` inclui valores como `"Simone Modified - Back Order"` e `"C1 Simone - 240/145/180/180"`), não características do componente ou da configuração do teste.
+
+**Codificação categórica.** As colunas `key_area`, `blower_direction`, `housing`, `board_position`, `run_case`, `material_coil_support` e `deflector_hole` foram codificadas com **One-Hot Encoding** (`OneHotEncoder`), pois nenhuma delas tem ordem natural entre categorias — Label Encoding introduziria uma relação de magnitude inexistente (ex.: `run_case = "Pyro"` não é "maior" ou "menor" que `"Broil C2"`). `deflector_hole`, a única variável binária, usa `drop='if_binary'` e vira uma única coluna 0/1; as demais mantêm todas as categorias, decisão consciente: remover uma categoria de cada variável (`drop='first'`) só é estritamente necessário para evitar multicolinearidade perfeita em modelos lineares, e o algoritmo de modelagem ainda não foi definido na Seção 4.3 — para modelos baseados em árvore essa remoção é desnecessária. Duas grafias parecidas em `run_case` (`"Broil C2"`/`"Broil Case 2"` e `"Broil Qualitative"`/`"Broil Qual"`/`"Qualitative"`) foram investigadas e confirmadas pelo grupo como configurações de teste realmente diferentes, por isso não foram unificadas.
+
+**Normalização das quantitativas.** `active_limit` foi normalizada com **MinMaxScaler** (intervalo `[0, 1]`), por representar um conjunto fechado de limites de projeto definidos por engenharia — a ausência de outliers relevantes foi verificada por IQR sobre os valores únicos por componente, não apenas suposta. `temp` (o alvo) foi normalizada com **RobustScaler** apenas como opção para modelos sensíveis à escala: a Seção 3 já identificou outliers legítimos nessa variável (diferenças de temperatura entre tipos de `run_case`, como Pyro e Broil C2), que o MinMaxScaler comprimiria de forma indesejada por depender de mínimo/máximo. Interpretação do RobustScaler: por centralizar na mediana e escalonar pelo intervalo interquartil, o resultado não fica limitado a `[0, 1]` — um valor escalonado de `2,0`, por exemplo, significa "2 IQRs acima da mediana do treino". Modelos baseados em árvore dispensam esse escalonamento inteiramente.
+
+**Prevenção de vazamento de dados (data leakage).** A divisão treino/teste foi feita agrupando por `run_id` (todas as leituras de uma mesma rodada ficam inteiramente em treino ou em teste, nunca divididas), e tanto o `OneHotEncoder` quanto os `scaler`s foram ajustados (`fit`) exclusivamente no conjunto de treino, sendo apenas aplicados (`transform`) ao teste — essa disciplina evita que informação do teste influencie os parâmetros aprendidos, mesmo nesta etapa de preparação, antes da modelagem formal da Seção 4.3.
+
+**Resultado final.** O dataset produzido (`X_train_final`/`X_test_final`) contém apenas as features prontas para uso — identificadores e texto livre não fazem parte dele, evitando que a próxima etapa precise filtrá-los de novo. A implementação completa, incluindo a validação com evidências (linhas preservadas, ausência de nulos e infinitos por coluna, contagem de colunas do One-Hot conferida contra o esperado, faixa do MinMaxScaler) e histogramas antes×depois de `active_limit` e `temp`, está na Seção 6 de [`notebooks/02_pre_processamento.ipynb`](../notebooks/02_pre_processamento.ipynb).
+
+```
+PENDENTE: executar a Seção 6 do notebook no Colab com o dataset completo. Este
+bloco existe porque, no ambiente usado para preparar esta seção, não havia acesso
+ao data/dataset_long.csv (protegido por política de dados, fora do controle de
+versão). Depois de rodar, conferir se todos os asserts passam e colar aqui os
+números reais (contagem de outliers em active_limit, shape final de
+X_train_final/X_test_final).
+
+Remova este bloco ao final
+```
 
 #### 4.2.3. Hipóteses
 ```
