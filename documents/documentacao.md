@@ -487,6 +487,54 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
 5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
 
+##### Engenheira de Materiais (Estela)
+
+##### Etapa 1 — Preparação do Projeto
+
+**Ações:** Estela recebe a especificação de um novo fogão ou revisão de modelo existente, identifica quais componentes exigem seleção ou validação de material térmico e lista as combinações candidatas de material e espessura com base em custo, disponibilidade e experiência prévia.
+
+**Pensamentos:** "Quais componentes desse projeto vão exigir mais atenção térmica?"; "Vou levar essas opções para o dashboard e ver o que ele me devolve."
+
+**Sentimentos:** Concentrada, mas ainda insegura — está formulando hipóteses que só serão testadas na etapa seguinte, sem ainda ter usado a ferramenta.
+
+**Oportunidades:** Comunicar claramente o escopo de aplicabilidade do modelo (quais configurações ele cobre) e permitir que o dashboard aceite múltiplas combinações em lote, reduzindo o esforço de repetição manual.
+
+---
+
+##### Etapa 2 — Consulta e Interpretação do Modelo
+
+**Ações:** Acessa o dashboard, insere as configurações candidatas e solicita a previsão de temperatura para cada ponto crítico; em seguida, compara os resultados entre si e verifica quais estão dentro da margem de erro aceitável (≤10%).
+
+**Pensamentos:** "Espero estar preenchendo os parâmetros certos"; "Essa combinação mais barata performou melhor do que eu esperava — será que o modelo errou, ou minha experiência prévia que estava desatualizada?"
+
+**Sentimentos:** Esta é a etapa de maior oscilação emocional da jornada. Começa esperançosa, porém cautelosa, no primeiro contato com o resultado — e passa por um momento de tensão e dúvida real quando um resultado contraintuitivo diverge da experiência empírica de Estela, gerando desconfiança momentânea em relação ao modelo.
+
+**Oportunidades:** Validar os parâmetros antes do envio (alertas para combinações fora da faixa de treinamento), indicar visualmente o nível de confiança da previsão e oferecer explicabilidade (quais variáveis mais influenciaram o resultado) ou comparação com casos históricos semelhantes do dataset, para ancorar previsões contraintuitivas em precedentes reais.
+
+---
+
+##### Etapa 3 — Priorização e Validação Física
+
+**Ações:** Após checar o resultado contra casos históricos semelhantes e recuperar a confiança, seleciona as combinações mais promissoras e as encaminha para teste físico e, quando necessário, teste destrutivo.
+
+**Pensamentos:** "Agora faz sentido — o modelo está considerando um efeito que eu não tinha levado em conta."; "Se o teste físico divergir muito da previsão, vou pensar duas vezes antes de confiar no modelo no próximo projeto."
+
+**Sentimentos:** Confiança recuperada, ainda que com certa apreensão — a dúvida da etapa anterior foi resolvida com dados de suporte, mas o teste físico carrega agora o peso adicional de validar não só o material, mas a própria confiabilidade da ferramenta.
+
+**Oportunidades:** Sugerir, com base na confiança estatística de cada previsão, um número mínimo recomendado de combinações a validar fisicamente, e implementar um mecanismo de retroalimentação (feedback loop) que registre a divergência entre previsão e resultado físico.
+
+---
+
+##### Etapa 4 — Aprovação e Documentação da Decisão
+
+**Ações:** Documenta a escolha do material, usando os dados do Thermal Predictor como justificativa técnica, e apresenta a decisão à equipe de qualidade e engenharia.
+
+**Pensamentos:** "Tenho dados objetivos para defender essa escolha — mas será que a equipe de qualidade vai aceitar um resultado de IA sem teste físico completo?"
+
+**Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
+
+**Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
@@ -534,9 +582,106 @@ Os titulares dos dados têm direito a acesso, correção, exclusão e revogaçã
 ### 4.2. Compreensão dos Dados
 
 #### 4.2.1. Exploração de dados
-```
-Apresentar a estatística descritiva básica de cada coluna, identificar se a coluna é numérica ou categórica e pelo menos 3 gráficos para visualizar a relação entre colunas escolhidas pelo grupo.
 
+##### Classificação das colunas
+
+A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: identificadores numéricos que não são quantidades, colunas com sujeira de formatação). Fonte: `data/dataset_long.csv` (formato tidy, uma linha por combinação Run x TC), gerado por [`notebooks/00_reestruturacao_planilha.ipynb`](../notebooks/00_reestruturacao_planilha.ipynb). Script de classificação: [`notebooks/classify_columns.ipynb`](../notebooks/classify_columns.ipynb).
+
+| Coluna | Tipo |
+|---|---|
+| run_id | Categórica |
+| tc_number | Categórica |
+| tc_name | Categórica |
+| key_area | Categórica |
+| active_limit | Numérica |
+| temp | Numérica |
+| reason | Categórica |
+| blower_direction | Categórica |
+| housing | Categórica |
+| board_position | Categórica |
+| run_case | Categórica |
+| losses | Categórica |
+| deflector_hole | Categórica |
+| material_coil_support | Categórica |
+
+**Observações da revisão manual:**
+
+- `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
+- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
+- `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
+- `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
+
+
+## Estatística descritiva das colunas
+
+Para cada coluna já classificada, foram calculadas as métricas descritivas correspondentes: média, desvio-padrão e quartis para as numéricas; moda, valores únicos e frequência para as categóricas. Cálculo em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb), a partir de `data/dataset_long.csv`.
+
+## Colunas numéricas
+
+| Estatística | temp | active_limit |
+|---|---|---|
+| Contagem | 4065 | 4009 |
+| Média | 81,77 | 184,43 |
+| Desvio-padrão | 33,28 | 235,17 |
+| Mínimo | 27,69 | 60,00 |
+| Q1 (25%) | 59,11 | 100,00 |
+| Mediana (50%) | 76,50 | 110,00 |
+| Q3 (75%) | 96,02 | 150,00 |
+| Máximo | 273,60 | 1000,00 |
+
+## Colunas categóricas  resumo
+
+| Coluna | Moda | Nulos | Valores únicos |
+|---|---|---|---|
+| `run_id` | Run 20 | 0 | 56 |
+| `tc_number` | 1 | 0 | 77 |
+| `tc_name` | AC Blower HES Connector | 0 | 77 |
+| `key_area` | IPC Comp | 0 | 7 |
+| `reason` | Baseline new Duct | 134 | 34 |
+| `blower_direction` | To Front | 0 | 4 |
+| `housing` | Closed | 0 | 3 |
+| `board_position` | Center | 0 | 3 |
+| `run_case` | Broil Qualitative | 0 | 7 |
+| `losses` | Simone Losses | 418 | 14 |
+| `deflector_hole` | Closed | 0 | 2 |
+| `material_coil_support` | Aluminium | 0 | 3 |
+
+## Distribuição das principais categóricas
+
+**`key_area`** (região do fogão onde o sensor está):
+
+| Valor | Frequência |
+|---|---|
+| IPC Comp | 1979 |
+| Mainback | 610 |
+| Coil Temps | 420 |
+| CT Knobs | 330 |
+| Main Vent Sys | 288 |
+| Oven HMI | 220 |
+| IPC Cooling | 218 |
+
+**`housing`** (configuração da carcaça):
+
+| Valor | Frequência |
+|---|---|
+| Closed | 2063 |
+| Open | 1328 |
+| Open - Updated | 674 |
+
+**`run_case`** (tipo de caso de teste):
+
+| Valor | Frequência |
+|---|---|
+| Broil Qualitative | 1444 |
+| Broil C2 | 1176 |
+| Pyro | 569 |
+| Broil Case 2 | 355 |
+| Qualitative | 225 |
+| Broil C1 | 148 |
+| Broil Qual | 148 |
+
+
+```
 Remova este bloco ao final
 ```
 
@@ -625,9 +770,55 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 20. CHEN, Jiyao; REILLY, Richard R.; LYNN, Gary S. *The impacts of speed-to-market on new product success: the moderating effects of uncertainty.* IEEE Transactions on Engineering Management, v. 52, n. 2, p. 199-212, 2005.
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
 
-## <a name="attachments"></a>Anexos
-```
-Utilize esta seção para anexar materiais como manuais de usuário, documentos complementares que ficaram grandes e não couberam no corpo do texto etc.
+## <a name="attachments"></a>Anexo
 
-Remova este bloco ao final
-```
+#### Análise e teste de normalidade das variáveis quantitativas
+
+Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
+
+**a) Hipóteses**
+
+
+
+**b) Nível de significância**
+
+Nível de significância (α): 0,05 (5%).
+
+Regra de decisão:
+
+Se p ≥ 0,05 → não rejeita H₀ (evidências de normalidade).
+
+Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
+
+**c) Teste de Normalidade**
+
+
+
+**d) Histogramas e resultados dos testes estatísticos de normalidade**
+
+
+
+**e) Comparação entre a média com a mediana de cada variável e resultados dos testes estatísticos de normalidade**
+
+
+
+#### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
+
+**a) Tipo de Escalonamento e Justificativa**
+
+
+
+**b) Estatísticas Descritivas Utilizadas**
+
+
+
+**c) Equações do Escalonamento**
+
+
+
+**d) Histogramas das três variáveis**
+
+
+
+**e) Tabelas Comparativas dos Dados**
+
