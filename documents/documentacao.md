@@ -576,7 +576,7 @@ Cada área-chave (`key_area`) opera em uma faixa térmica bem distinta — `Coil
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
 </div>
 
-O efeito da direção do fluxo de ar (`blower_direction`) sobre a temperatura média muda de sinal conforme o `housing`: com o housing `Open` ou `Open - Updated`, soprar "To Front" aquece um pouco mais que "To Back"; com o housing `Closed`, o padrão se inverte. O efeito é pequeno em magnitude (poucos °C), mas sugere uma interação entre as duas variáveis, não apenas efeitos independentes.
+O efeito da direção do fluxo de ar (`blower_direction`) sobre a temperatura média muda de sinal conforme o `housing`, mas não na mesma direção entre os dois housings abertos: com `Closed` e `Open - Updated`, soprar "To Back" aquece um pouco mais que "To Front" (81,5°C vs. 79,8°C; 84,7°C vs. 82,2°C); já com `Open`, o padrão se inverte e "To Front" passa a aquecer mais (86,2°C vs. 83,4°C). O efeito é pequeno em magnitude (poucos °C), mas o fato de não seguir um padrão simples "aberto vs. fechado" sugere uma interação real entre as duas variáveis, não apenas efeitos independentes.
 
 <div align="center">
   <sub>Figura 5 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
