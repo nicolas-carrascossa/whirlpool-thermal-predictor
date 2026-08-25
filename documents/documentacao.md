@@ -535,6 +535,74 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
 
+**Jornada da Usuária — Beatriz (Designer UX/UI)**
+
+##### Etapa 1 — Coleta de Sinais: Feedback e Telemetria
+
+**Ações**: Reúne feedback qualitativo de Engenharia, Qualidade e Marketing (reclamações, dúvidas recorrentes, sugestões) e cruza com dados quantitativos de telemetria do dashboard — telas mais acessadas, pontos de abandono, tempo gasto em cada Key Area.
+
+**Pensamentos**: "Esse comentário é um problema isolado ou um padrão que aparece em várias equipes?"; "A telemetria mostra queda de acesso nessa tela — isso é falta de necessidade ou sinal de que ela confunde?"
+
+**Sentimentos**: Investigativa e atenta, mas ainda num momento de coleta bruta — sem clareza ainda sobre causas, apenas sintomas.
+
+**Oportunidades**: Consolidar feedback e telemetria num painel único, com filtros por Key Area e por perfil de usuário, para reduzir o trabalho manual de cruzamento de dados.
+
+
+##### Etapa 2 — Diagnóstico e Priorização dos Problemas
+
+**Ações**: Analisa os sinais coletados para identificar a causa raiz — se é hierarquia de informação confusa, ambiguidade nos estados (interpolação/extrapolação moderada/fora de domínio — R04) ou simplesmente sobrecarga visual — e prioriza o que será redesenhado, considerando esforço de desenvolvimento e impacto na confiança do usuário.
+
+**Pensamentos**: "Isso é um problema de layout ou um problema de conteúdo — a informação certa não está sendo mostrada?"; "Se eu não priorizar bem, corro o risco de mexer em telas pouco usadas enquanto o problema real fica sem solução."
+
+**Sentimentos**: Levemente pressionada — sabe que decisões erradas aqui custam ciclos inteiros de desenvolvimento, e o tempo da equipe de dev é limitado.
+
+**Oportunidades**: Ter acesso a uma matriz de impacto x esforço pré-formatada, e conseguir taguear queixas de usuários diretamente aos estados do modelo (R04) para facilitar o diagnóstico.
+
+##### Etapa 3 — Pesquisa Visual e Alinhamento com Engenharia
+
+**Ações**: Pesquisa referências de visualização de incerteza e confiabilidade (badges, cores, gradientes de risco) e valida preliminarmente com a equipe de engenharia se a leitura pretendida de cada estado (interpolação/extrapolação/fora de domínio) está tecnicamente correta antes de desenhar.
+
+**Pensamentos**: "Eu não sou engenheira — preciso confirmar que o que estou prestes a desenhar não vai comunicar algo tecnicamente errado."; "Existe um padrão de mercado para isso, ou vou ter que criar do zero?"
+
+**Sentimentos**: Um pouco insegura por depender de validação técnica de terceiros para avançar, mas também mais confiante à medida que alinha a interpretação com a engenharia.
+
+**Oportunidades**: Ter um glossário técnico curto e já validado (o que cada estado do R04 significa, em linguagem simples) como referência fixa, evitando reabrir essa discussão a cada novo ciclo de design.
+
+##### Etapa 4 — Design e Prototipagem da Interface
+
+**Ações**: Redesenha a hierarquia de informação das telas priorizadas — agrupando previsão, margem de erro (≤10%) e estado de confiabilidade por Key Area — e monta protótipos de alta fidelidade seguindo o Guia de Estilo Corporativo Whirlpool.
+
+**Pensamentos**: "Como eu comunico 'fora de domínio' sem parecer um erro do sistema?"; "Estou priorizando estética ou clareza? As duas precisam coexistir, mas se tiver que escolher, é clareza."
+
+**Sentimentos**: Etapa de maior tensão criativa — equilibrar rigor técnico com simplicidade visual, sabendo que qualquer ambiguidade pode custar a confiança do engenheiro no dashboard como um todo.
+
+**Oportunidades**: Padronizar um sistema de componentes reutilizáveis (cores, ícones, badges de confiabilidade) para acelerar futuras iterações e manter consistência entre telas.
+
+##### Etapa 5 — Testes de Usabilidade e Ajustes Finais
+
+**Ações**: Conduz testes de usabilidade com usuários reais de Engenharia, Qualidade e Marketing, observando se conseguem interpretar previsão, margem de erro e estado do resultado sem explicação adicional, e ajusta o protótipo com base nos resultados.
+
+**Pensamentos**: "Será que o engenheiro entende a diferença entre margem de erro e nível de confiabilidade sem eu precisar explicar do lado?"; "Marketing enxerga a informação de forma muito mais simplificada que Engenharia — a mesma tela serve para os dois?"
+
+**Sentimentos**: Ansiosa durante os testes, mas aliviada quando os usuários interpretam corretamente sem apoio — é o momento em que o trabalho ganha validação externa real.
+
+**Oportunidades**: Rodar testes A/B diretamente no dashboard em produção para comparar variações de layout com dados reais de uso, não apenas com o grupo de teste.
+
+##### Etapa 6 — Publicação, Documentação e Monitoramento Contínuo
+
+**Ações**: Publica as atualizações junto à equipe de desenvolvimento, documenta as mudanças no WAD e no Guia de Estilo Visual, comunica as alterações às equipes usuárias, e monitora a telemetria pós-lançamento para verificar adoção e queda (ou não) de dúvidas recorrentes.
+
+**Pensamentos**: "As métricas confirmam que a mudança resolveu o problema, ou volto para a etapa de diagnóstico?"; "Se o engenheiro parar de usar o dashboard por confusão, a solução perde valor mesmo com um modelo preciso."
+
+**Sentimentos**: Satisfeita quando a telemetria confirma engajamento contínuo, mas em estado de vigilância permanente — sabe que a interface precisa evoluir junto com o modelo e os dados, sem quebrar a clareza já conquistada.
+
+**Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
+
+
+<img src="../assets/digrama_jornada_beatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
+<p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
+
+
 #### 4.1.8 Política de Privacidade
 
 A Política de Privacidade é o documento responsável por garantir a transparência
