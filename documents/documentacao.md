@@ -675,70 +675,10 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 **Observações da revisão manual:**
 
 - `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
-- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas tem sujeira de dois tipos: 1 valor residual de texto (`"Monitor (150 C)"`, sensor sem limite de segurança definido) e, achado da exploração gráfica abaixo, 302 linhas (8 sensores) com `active_limit = 1000` — valor fisicamente implausível para os componentes em questão (blowers, ducts), já que os demais limites reais da coluna vão de 60 a 220°C. Tudo indica ser outro placeholder de "sem limite definido", só que numérico em vez de texto. Ambos precisam virar `NaN` (ou um flag `is_monitor`/`sem_limite` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
+- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
 - `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
 - `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
-- `board_position` está quase constante nesta versão do dataset (3.843 "Center" vs. 222 "Right", 5,5% da amostra) — por isso não foi usada como eixo dos gráficos abaixo, apesar de tecnicamente ter variância.
 
-##### Gráficos exploratórios
-
-Os gráficos abaixo usam apenas colunas com variância confirmada na tabela acima. Gerados em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb); imagens em [`assets/graficos/`](../assets/graficos/).
-
-<div align="center">
-  <sub>Figura 3 — Distribuição de temperatura por área-chave</sub><br>
-  <img src="../assets/graficos/temp_por_area.png" alt="Boxplot de temp por key_area" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-Cada área-chave (`key_area`) opera em uma faixa térmica bem distinta — `Coil Temps` e `Mainback` concentram as temperaturas mais altas e os outliers mais extremos (>250°C), enquanto `CT Knobs` e `Oven HMI` ficam consistentemente abaixo de 75°C. Isso confirma a localização física do sensor como variável relevante para qualquer hipótese ou modelo.
-
-<div align="center">
-  <sub>Figura 4 — Temperatura média por housing e direção do blower</sub><br>
-  <img src="../assets/graficos/temp_housing_blower.png" alt="Barras de temp média por housing x blower_direction" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-O efeito da direção do fluxo de ar (`blower_direction`) sobre a temperatura média muda de sinal conforme o `housing`, mas não na mesma direção entre os dois housings abertos: com `Closed` e `Open - Updated`, soprar "To Back" aquece um pouco mais que "To Front" (81,5°C vs. 79,8°C; 84,7°C vs. 82,2°C); já com `Open`, o padrão se inverte e "To Front" passa a aquecer mais (86,2°C vs. 83,4°C). O efeito é pequeno em magnitude (poucos °C), mas o fato de não seguir um padrão simples "aberto vs. fechado" sugere uma interação real entre as duas variáveis, não apenas efeitos independentes.
-
-<div align="center">
-  <sub>Figura 5 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
-  <img src="../assets/graficos/temp_vs_limite.png" alt="Scatter de temp vs active_limit, destacando pontos que excedem o limite" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-Este é o gráfico mais diretamente ligado ao problema de negócio: 309 das 3.707 leituras válidas (8,3%, já excluindo os placeholders de "sem limite definido" descritos acima) ultrapassam o limite de engenharia do próprio sensor — os pontos vermelhos acima da diagonal `temp = limite`. Não existe uma coluna de excedência pronta no dataset; ela foi calculada a partir de `temp` e `active_limit`.
-
-<div align="center">
-  <sub>Figura 6 — Temperatura média por modo de operação e área-chave</sub><br>
-  <img src="../assets/graficos/temp_heatmap_runcase_area.png" alt="Heatmap de temp média por run_case x key_area" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-O modo de operação (`run_case`) redefine o mapa térmico do produto: nos modos "Broil", `Coil Temps` dispara para 124–156°C em média, muito acima de qualquer outra área; já no modo `Pyro`, `Coil Temps` cai para a faixa mais baixa do gráfico (52°C) e são `Main Vent Sys`/`Mainback` que assumem as temperaturas mais altas (90°C). Ou seja, a área-chave "mais quente" do fogão depende de qual caso está sendo simulado.
-
-<div align="center">
-  <sub>Figura 7 — % de leituras que excedem o limite de engenharia, por área-chave</sub><br>
-  <img src="../assets/graficos/exceeds_por_area.png" alt="Barras de % de leituras que excedem o limite por key_area" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-Traduz o Gráfico 3 (Figura 5) em uma métrica de risco direta por área: 100% dos estouros de limite do dataset se concentram em apenas 3 das 7 áreas-chave — `Mainback` (14,1%), `IPC Comp` (10,0%) e `Coil Temps` (7,9%). As outras quatro áreas (`CT Knobs`, `IPC Cooling`, `Main Vent Sys`, `Oven HMI`) nunca excedem o limite de engenharia na amostra. Do ponto de vista de priorização de testes físicos, isso indica onde concentrar esforço de validação.
-
-<div align="center">
-  <sub>Figura 8 — % de leituras que excedem o limite de engenharia, por material do suporte da bobina</sub><br>
-  <img src="../assets/graficos/exceeds_por_material.png" alt="Barras de % de leituras que excedem o limite por material_coil_support" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-Testa diretamente a hipótese apontada acima para `material_coil_support`: a temperatura média bruta por material é quase idêntica entre as 3 categorias (~80–83°C), mas a % de leituras que excedem o limite do próprio sensor separa bem os grupos — suporte de **Aluminium excede em 9,1%** dos casos, contra **4,4% em Plastic e Aluminium Plate**, quase o dobro de risco. Um boxplot de temperatura crua por material não capturaria esse efeito, porque o limite de engenharia (`active_limit`) também varia por sensor; a métrica de excedência é a que carrega o sinal.
-
-<div align="center">
-  <sub>Figura 9 — % de leituras que excedem o limite de engenharia, por modo de operação</sub><br>
-  <img src="../assets/graficos/exceeds_por_runcase.png" alt="Barras de % de leituras que excedem o limite por run_case" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
-</div>
-
-Complementa a Figura 6: `Broil Qualitative` excede o limite em 13,8% das leituras, quase o dobro do segundo colocado (`Qualitative`, 6,4%) e bem acima dos modos `Broil C1`/`Pyro` (4,4%) e `Broil Qual` (1,5%, o mais seguro da amostra).
 
 ## Estatística descritiva das colunas
 
@@ -833,11 +773,54 @@ Também foram documentados **dados confusos ou insuficientes**:
 Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
 #### 4.2.3. Hipóteses
-```
-Descreva três hipóteses sobre a relação dos dados e o problema. Justifique cada uma delas. 
 
-Remova este bloco ao final
-```
+Hipóteses em um projeto de análise de dados preditiva é extremamente importante, porque define as premissas e expectativas que vão guiar tudo do processo do pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1
+
+Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um conjunto de variáveis de configuração e de operação que atuam em conjunto sobre o comportamento térmico do produto. Fatores como a localização física do componente (key_area), a configuração da carcaça (housing), a direção do fluxo de ar do blower (blower_direction), o material do suporte da bobina (material_coil_support) e o modo de operação simulado (run_case) influenciam diretamente o quanto cada região do fogão aquece e o quão perto ela fica do limite de engenharia do próprio sensor. Diante disso, as hipóteses a seguir buscam explorar como cada uma dessas variáveis se relaciona com a temperatura medida e com o risco de superaquecimento, permitindo identificar padrões de comportamento térmico e fornecer subsídios tanto para a etapa de modelagem preditiva quanto para a priorização de testes físicos junto ao parceiro.
+
+O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os testes, gráficos e valores completos estão em [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb).
+
+| # | Hipótese | Resultado |
+|---|---|---|
+| **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
+| **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
+| **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
+
+##### H1 — Configurações redistribuem calor, não o eliminam
+
+A hipótese é de que nenhuma configuração deixa o fogão inteiro mais quente ou mais frio: cada mudança move calor de uma região para outra. Escolher uma configuração seria, portanto, escolher qual área proteger, e não reduzir o aquecimento como um todo.
+
+A hipótese se confirmou. Em todas as configurações testadas o efeito aparece com sinais opostos entre áreas: abrir o `deflector_hole`, por exemplo, aquece a área do IPC e resfria o sistema de ventilação principal, com diferença estatisticamente significativa entre as duas. O mesmo padrão se repete em `blower_direction`, `housing` e `material_coil_support`, e vale também em risco, não só em temperatura — a mesma mudança aumenta a excedência do limite em uma área enquanto a reduz em outra. A área de ventilação principal aparece de forma recorrente como aquela que recebe o calor retirado das demais, comportamento coerente com conservação de energia.
+
+Nem toda configuração, porém, é uma troca: `blower_direction = To Back` piora simultaneamente as duas áreas eletrônicas sem melhorar nenhuma outra, ou seja, é uma condição pior em termos absolutos.
+
+A consequência direta para a modelagem (Seção 4.3) é que a predição precisa ser condicionada à área. Um modelo que ignore a interação entre área e configuração estimaria um efeito médio que não descreve nenhuma das áreas e erra o sinal em pelo menos uma delas.
+
+##### H2 — As configurações não são independentes entre si
+
+A hipótese é de que as configurações estão confundidas no desenho experimental, porque os 56 ensaios não vêm de um experimento fatorial planejado: são um histórico de testes, em que cada run respondia a uma pergunta específica e mudanças em uma peça vinham acompanhadas de mudanças em outras.
+
+A hipótese se confirmou, no caso mais extremo possível. Cada categoria de `losses` corresponde a um único valor de `deflector_hole`, sem nenhum ensaio que separe as duas variáveis — não é apenas associação forte, é identidade. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 36 combinações possíveis entre as três variáveis principais, apenas 11 foram ensaiadas, e metade dos runs se concentra em duas delas.
+
+Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e reproduzíveis, porém pertencem a blocos de configuração inteiros, não a peças isoladas. A base permite identificar configurações de risco, não atribuir a causa a um componente específico.
+
+As decisões que isso gera para a modelagem são: retirar `losses` e `board_position` do modelo, por não trazerem informação além de outras variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
+
+##### H3 — O modo de operação eleva a temperatura, mas é um fator secundário
+
+A hipótese é de que o modo de operação afeta a temperatura medida nos componentes: os modos Broil (grelhar), que acionam o elemento superior em alta potência, operariam mais quentes que o Pyro (autolimpeza) e os casos Qualitative.
+
+A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5 °C nos demais, uma diferença de 9,1 °C, e a amplitude entre o modo mais quente (Broil C2, 84,7 °C) e o mais frio (Pyro, 71,4 °C) chega a 13,3 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
+
+<div align="center">
+  <sub>Figura 10 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
+  <img src="../assets/graficos/g_h3.png" alt="Boxplot de temperatura por run_case e barras comparando Broil vs. demais modos" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+A ressalva é sobre a magnitude: o modo explica apenas cerca de 2% da variância da temperatura (η² ≈ 0,02; Cohen's d ≈ 0,28). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
+
+Para a modelagem (Seção 4.3), isso significa manter run_case como preditor, é um fator real e consistente, porém com peso secundário frente à área do sensor. Como nas demais hipóteses, os fatores estão confundidos entre si, de modo que o resultado identifica um padrão associado ao modo, não uma causa isolada.
 
 ### 4.3. Preparação dos Dados e Modelagem
 ```
@@ -918,7 +901,6 @@ Esta subseção descreve os procedimentos de análise estatística aplicados ao 
 
 **a) Hipóteses**
 
-#### 7.1.1 Afirmação e Hipóteses acerca do teste estatístico de normalidade
 
 **Afirmação:**
 
@@ -940,27 +922,89 @@ Nível de significância (α): 0,05 (5%).
 
 Regra de decisão:
 
-Se p ≥ 0,05 → não rejeita H₀ (evidências de normalidade).
+Se $p \geq 0{,}05$: não rejeita $H_0$ (evidências de normalidade).
 
-Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
+Se $p < 0{,}05$: rejeita $H_0$ (não segue distribuição normal).
 
 **c) Teste de Normalidade**
 
+Foram aplicados três testes formais, todos com $H_0$ = "a amostra vem de uma distribuição normal": Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do valor crítico de 0,752 a 5%). Os três convergem na mesma decisão: rejeita-se $H_0$, ou seja, temp não segue distribuição normal.
 
+**Observação:** o Shapiro-Wilk é o mais indicado para bases desse tamanho e é o mais sensível para perceber quando os dados fogem da normalidade; o D'Agostino-Pearson olha para o formato da distribuição, unindo assimetria (se os dados pendem mais para um lado) e curtose (se há muitos valores extremos) em um único resultado; e o Anderson-Darling é parecido com os outros dois, mas dá atenção especial às pontas da distribuição, ou seja, aos valores mais altos e mais baixos.
 
-**d) Histogramas e resultados dos testes estatísticos de normalidade**
+Variáveis analisadas (conforme o dataset):
 
+- `temp` (temperatura dos sensores/termopares)
 
+Resultados do teste (valores fornecidos):
 
-**e) Comparação entre a média com a mediana de cada variável e resultados dos testes estatísticos de normalidade**
+| Variável | p-valor (científico) | Conclusão (α = 0,05) |
+|:---|:---|:---|
+| `temp` | 2,72 × 10⁻⁵⁰ | Rejeita $H_0$ — não normal |
 
+Interpretação: o p-valor encontrado é astronomicamente pequeno (um número com dezenas de zeros após a vírgula antes de chegar ao primeiro dígito). Ele é muito, mas muito menor que o nosso nível de significância de 0,05. Portanto, com base no teste de Shapiro-Wilk, temos evidências estatísticas avassaladoras para rejeitar a hipótese de normalidade da variável `temp`.
 
+Código utilizado para execução (Python):
+
+```python
+from scipy import stats
+
+alpha = 0.05
+temp = df['temp'].dropna()
+
+# Shapiro-Wilk
+w_stat, p_shapiro = stats.shapiro(temp)
+
+# D'Agostino-Pearson
+k2_stat, p_dagostino = stats.normaltest(temp)
+
+# Anderson-Darling
+resultado_ad = stats.anderson(temp, dist='norm')
+
+print(f"Shapiro-Wilk: W = {w_stat:.4f}, p = {p_shapiro:.3e}")
+print(f"D'Agostino-Pearson: K² = {k2_stat:.2f}, p = {p_dagostino:.3e}")
+print(f"Anderson-Darling: A² = {resultado_ad.statistic:.2f}, "
+      f"valor crítico (5%) = {resultado_ad.critical_values[2]:.3f}")
+
+conclusao = "Rejeita H₀ — não normal" if p_shapiro < alpha else "Não rejeita H₀ — normal"
+print(f"Conclusão (α = {alpha}): {conclusao}")
+```
 
 #### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
 
 **a) Tipo de Escalonamento e Justificativa**
 
+**Método escolhido: Min-Max Scaling (normalização para o intervalo [0, 1]), aplicado
+por `key_area`, e não sobre o conjunto global.**
 
+A escolha se apoia em quatro argumentos:
+
+**1. `temp` é uma variável fisicamente limitada.** A temperatura medida nos termopares
+possui limite inferior natural (temperatura ambiente do ensaio) e limite superior
+determinado pelas propriedades dos materiais e pelos limites normativos (`active_limit`).
+Variáveis com fronteiras físicas conhecidas são adequadamente representadas por uma
+normalização que preserva esse caráter delimitado, mapeando os valores para um
+intervalo fechado [0, 1].
+
+**2. A distribuição não é normal.** O conjunto completo apresenta assimetria
+(skewness) de **+1,76**, com cauda longa à direita. A padronização Z-score
+(`StandardScaler`) pressupõe distribuição aproximadamente simétrica para que os
+valores resultantes tenham interpretação estatística clara (desvios em torno da média).
+Com assimetria dessa magnitude, o Z-score produziria valores cuja leitura em "número
+de desvios-padrão" é enganosa.
+
+**3. As escalas variam drasticamente entre regiões do produto.** A amplitude de
+`temp` vai de **28,37 °C** em `Oven HMI` a **238,19 °C** em `Mainback` — diferença de
+~8,4×. O coeficiente de variação vai de 0,068 (`Oven HMI`) a 0,590 (`Mainback`) —
+diferença de ~8,7×. Um escalonamento global comprimiria as regiões de baixa variância
+(`Oven HMI`, `CT Knobs`) para uma faixa quase constante, eliminando a capacidade do
+modelo de discriminar variações relevantes nessas áreas. O escalonamento por
+`key_area` preserva o poder discriminativo dentro de cada região.
+
+**4. Coerência com a arquitetura de modelagem adotada.** Como a decisão do projeto é, até a sprint atual,
+construir um modelo por `key_area` (regimes de transferência de calor distintos entre
+mainback, coils, sistemas de ventilação, IPC e HMI), escalonar por região mantém
+consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
 **b) Estatísticas Descritivas Utilizadas**
 

@@ -3,5 +3,3 @@ openpyxl
 numpy
 ipykernel
 jupyter
-matplotlib
-seaborn
