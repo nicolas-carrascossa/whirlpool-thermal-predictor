@@ -1,4 +1,4 @@
-# Documentação Modelo Preditivo - Inteli
+﻿# Documentação Modelo Preditivo - Inteli
 
 ```
 INSTRUÇÕES GERAIS (remova este trecho ao final)
@@ -845,6 +845,7 @@ O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os 
 | **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
 | **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
 | **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
+
 ##### H1 — Configurações redistribuem calor, não o eliminam
 
 A hipótese é de que nenhuma configuração deixa o fogão inteiro mais quente ou mais frio: cada mudança move calor de uma região para outra. Escolher uma configuração seria, portanto, escolher qual área proteger, e não reduzir o aquecimento como um todo.
@@ -865,18 +866,21 @@ Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e re
 
 As decisões que isso gera para a modelagem são: retirar `losses` e `board_position` do modelo, por não trazerem informação além de outras variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
 
-##### H3 — A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil)
+##### H3 — O modo de operação eleva a temperatura, mas é um fator secundário
 
-**Variável qualitativa analisada:** `run_case` (caso de teste / modo de operação do fogão), relacionada à variável quantitativa `temp`.
+A hipótese é de que o modo de operação afeta a temperatura medida nos componentes: os modos Broil (grelhar), que acionam o elemento superior em alta potência, operariam mais quentes que o Pyro (autolimpeza) e os casos Qualitative.
 
-**Hipóteses estatísticas:**
+A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5 °C nos demais, uma diferença de 9,1 °C, e a amplitude entre o modo mais quente (Broil C2, 84,7 °C) e o mais frio (Pyro, 71,4 °C) chega a 13,3 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
 
-- **H₀ (nula):** a temperatura média é igual entre todos os modos de operação.
-- **H₁ (alternativa):** pelo menos um modo de operação apresenta temperatura média diferente dos demais.
+<div align="center">
+  <sub>Figura 10 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
+  <img src="../assets/graficos/g_h3.png" alt="Boxplot de temperatura por run_case e barras comparando Broil vs. demais modos" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
 
-**Justificativa:** ao agrupar as leituras por `run_case`, os modos de operação se separam de forma clara em temperatura. Os modos do tipo *Broil* (grelhar) concentram as maiores temperaturas médias, `Broil C2` lidera com 84,7 °C, enquanto o modo `Pyro` (autolimpeza) é o mais frio, com 71,4 °C. A amplitude entre o modo mais quente e o mais frio chega a **13,3 °C**, a maior diferença observada entre as configurações qualitativas do dataset. Agrupando os casos, as leituras em modos *Broil* têm média de 83,5 °C contra 74,5 °C nos demais casos (`Pyro`/`Qualitative`), reforçando que o regime de operação é um fator relevante para a temperatura  e, portanto, para o problema de previsão térmica do projeto.
+A ressalva é sobre a magnitude: o modo explica apenas cerca de 2% da variância da temperatura (η² ≈ 0,02; Cohen's d ≈ 0,28). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
 
-> O detalhamento completo (código, tabela por modo e agrupamento *Broil* vs. demais) está no notebook [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb), seção "Hipótese 3". A frequência de cada caso de teste está na tabela de `run_case` da Seção 4.2.1.
+Para a modelagem (Seção 4.3), isso significa manter run_case como preditor, é um fator real e consistente, porém com peso secundário frente à área do sensor. Como nas demais hipóteses, os fatores estão confundidos entre si, de modo que o resultado identifica um padrão associado ao modo, não uma causa isolada.
 
 ### 4.3. Preparação dos Dados e Modelagem
 ```
