@@ -433,7 +433,61 @@ para decisões mais rápidas e seguras.
 
 #### 4.1.7. Jornadas do Usuário
 
-**Jornada da Usuária — Estela (Engenheira de Materiais)**
+Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pensamentos e emoções de uma persona ao buscar um objetivo, evidenciando onde surgem dúvida, confiança e decisão ao longo da experiência, e não apenas o funcionamento técnico do sistema. Essa ferramenta é especialmente relevante para o Thermal Predictor porque a solução não devolve uma resposta definitiva, e sim uma previsão de aprendizado de máquina com margem de erro e indicador de confiabilidade (Seção 4.1.5, R04). O valor do produto depende de como cada persona interpreta essa previsão e a converte em uma decisão real de engenharia, e o mapa torna esse processo de interpretação e decisão explícito, permitindo identificar onde a solução pode reduzir incerteza e apoiar decisões mais rápidas e seguras, sem tratar a previsão do modelo como verdade absoluta.
+
+##### Engenheiro de Qualidade (João)
+
+O template visual de mapa de jornada será disponibilizado posteriormente pelo professor da disciplina de UX. Por isso, esta seção reúne, desde já, o conteúdo textual organizado por campo — ator, objetivo, cenário, expectativas, fases (ações, pensamentos, emoções, pontos de dor), decisão crítica e oportunidades — pronto para ser transposto ao template quando recebido, além do texto explicativo que deve acompanhar a imagem do mapa na versão final desta seção.
+
+**Ator.** João, 42 anos, Engenheiro de Qualidade formado em Engenharia Mecânica, com 15 anos de experiência em qualidade e testes de eletrodomésticos (Seção 4.1.6, Figura 8). É responsável por validar a segurança térmica dos produtos e decidir se um design pode ou não ser liberado, garantindo que nenhum componente ultrapasse seu limite térmico normativo antes da aprovação.
+
+**Objetivo de João nesta jornada.** Emitir o parecer de qualidade sobre uma configuração candidata dentro do prazo do ciclo de desenvolvimento, decidindo — com uma margem de erro auditável — quais componentes podem ser liberados com base na previsão do Thermal Predictor e quais ainda exigem teste físico destrutivo antes da aprovação final.
+
+**Cenário e expectativas.** A equipe de Design finalizou uma nova configuração candidata de fogão de piso — com posição de placa e tipo de mesh duct diferentes das versões já validadas — e precisa do parecer de qualidade antes de avançar para a fase de liberação. João não tem tempo nem orçamento para submeter todas as áreas-chave dessa configuração a teste físico destrutivo apenas para descobrir quais realmente correm risco térmico; sua expectativa é usar o Thermal Predictor para triar rapidamente os componentes críticos e decidir, com uma margem de erro auditável (≤ 10%), quais pontos exigem confirmação física antes de assinar a liberação.
+
+**Fase 1 — Avaliar**
+- *Ações:*
+  1. Recebe da equipe de Design a configuração candidata e separa, dentre as áreas-chave (Mainback, bobinas, ventilação, IPC, HMI), quais componentes têm histórico de operar perto do limite térmico normativo.
+  2. Insere no dashboard os parâmetros da configuração candidata (direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor, Run Case) e seleciona as áreas-chave relevantes para o parecer.
+- *Pensamento de João:* "Essa configuração muda a posição da placa e o duct de ventilação — quais dessas áreas-chave têm histórico de ficar perto do limite térmico nesse tipo de alteração? Se eu fosse testar tudo fisicamente, levaria dias e um protótipo."
+- *Emoção:* Preocupação moderada, por sentir o peso da decisão de liberação e o prazo apertado do ciclo de desenvolvimento, com cautela quanto à confiabilidade do que vai receber como resposta.
+- *Ponto de dor:* Sem uma triagem rápida, dependeria da disponibilidade da equipe de CFD ou de um protótipo físico só para saber se a investigação completa vale a pena, e sem o domínio de validade da previsão deixado claro, não teria como saber de antemão o quanto pode confiar no número que vai receber.
+
+**Fase 2 — Analisar**
+- *Ações:*
+  3. Recebe do Thermal Predictor a temperatura estimada para os sensores selecionados, a margem de erro esperada e o indicador de confiabilidade (interpolação, extrapolação moderada ou fora de domínio). A maioria dos sensores aparece dentro do limite normativo, marcados como interpolação; um sensor da área do IPC aparece próximo do limite, marcado como extrapolação moderada.
+  4. Compara a previsão do sensor do IPC com o histórico de simulações e testes físicos de configurações semelhantes, avaliando o que "extrapolação moderada" significa para aquele ponto específico frente à margem de erro de 10%.
+- *Pensamento de João:* "A maior parte está tranquila, dentro do que eu já esperava para esse tipo de configuração. Mas esse ponto do IPC está perto do limite e sinalizado como extrapolação — isso pode ser um comportamento térmico real ou uma região onde eu simplesmente não tenho dado suficiente para confiar cegamente."
+- *Emoção:* Alívio parcial diante da maioria dos resultados, seguido de dúvida e cautela ao notar o ponto crítico — não aceita o número isolado como suficiente para decidir.
+- *Ponto de dor:* Um valor numérico isolado, sem o selo de confiabilidade em destaque, poderia ser lido como uma certeza que não é; falta também uma forma rápida de visualizar, lado a lado com a previsão, os casos históricos mais próximos daquela configuração para embasar a comparação sem sair do fluxo de análise.
+
+**Fase 3 — Decidir (decisão crítica)**
+- *Ações:*
+  5. Avalia o risco combinando "extrapolação moderada + proximidade do limite normativo" e conclui que a previsão para o sensor do IPC não sustenta sozinha uma liberação.
+  6. Decide por uma aprovação parcial: libera os demais componentes (interpolação, dentro do limite, histórico consistente) e isola o ponto crítico para investigação complementar.
+- *Cadeia da decisão:* Resultado apresentado pelo modelo (sensor do IPC próximo do limite normativo, sinalizado como extrapolação moderada) → interpretação de João (configuração fora do envelope já testado fisicamente, incerteza real e não apenas ruído) → avaliação de risco/qualidade (proximidade do limite normativo combinada a confiabilidade reduzida não pode ser tratada como aprovação) → decisão (aprovação parcial: demais áreas-chave liberadas pela previsão, componente do IPC pendente) → consequência (solicitação de teste físico focado apenas nesse ponto, sem travar o restante do parecer de qualidade).
+- *Pensamento de João:* "Não posso liberar esse ponto só porque o resto passou. Mas também não preciso travar a configuração inteira — só esse componente precisa de confirmação física antes de eu assinar."
+- *Emoção:* Segurança quanto à decisão tomada, por ser uma decisão fundamentada e não arbitrária, ainda com o peso da responsabilidade pelo ponto em aberto.
+- *Ponto de dor:* Sem o indicador de confiabilidade, João teria apenas duas más alternativas: confiar cegamente no número ou exigir teste físico completo para toda a configuração, perdendo o ganho de tempo que motiva o uso da ferramenta.
+- *Extremos do espectro de decisão (contraponto):* se todos os sensores tivessem sido sinalizados como interpolação dentro do limite normativo, João teria liberado a configuração integralmente, sem solicitar nenhum teste adicional; se o sensor do IPC tivesse ultrapassado o limite normativo mesmo considerando a margem de erro, a reprovação teria sido direta, sem necessidade de teste físico para confirmar algo já fora de qualquer margem aceitável. O caso do IPC descrito aqui ocupa o meio desse espectro — nem aprovação plena, nem reprovação direta —, e é justamente essa faixa intermediária que exige o julgamento de um Engenheiro de Qualidade.
+
+**Fase 4 — Encaminhar**
+- *Ações:*
+  7. Documenta o parecer de qualidade, registrando os componentes aprovados por previsão e o status de cada um.
+  8. Solicita à equipe responsável um teste físico focado no sensor do IPC antes da liberação final e comunica o resultado para que o cronograma seja ajustado apenas para esse componente.
+- *Pensamento de João:* "Consegui reduzir de uma bateria completa de testes para um único ponto crítico. Isso não atrasa a liberação inteira, só o que realmente precisa de confirmação física."
+- *Emoção:* Senso de controle e de dever cumprido, equilibrado pela ciência de que a decisão final ainda depende da confirmação física daquele ponto.
+- *Ponto de dor:* Se o status "aprovado por previsão, pendente de teste físico" não for registrado com clareza, essa distinção pode se perder na comunicação com quem recebe o parecer.
+- *Consequência para o projeto:* ao isolar apenas o sensor do IPC em vez de exigir uma bateria completa de testes físicos para toda a configuração, João evita construir e testar destrutivamente um protótipo só para confirmar componentes que a previsão já sustenta com confiança — contribuição direta à meta de redução de até 25% nos protótipos físicos e de até 30% no tempo de desenvolvimento definida no Project Charter (Seção 4.1.3).
+
+**Oportunidades identificadas** (com time responsável, conforme mapeamento de áreas impactadas da Seção 4.1.3)
+1. Permitir que, ao registrar as áreas-chave críticas do parecer, João veja de imediato se alguma delas já tem histórico de operar perto do limite térmico em configurações semelhantes, reduzindo o tempo gasto decidindo por onde começar a análise. — *Responsável: Time de Qualidade, com apoio do Time de Engenharia (CFD) para validar o histórico exibido.*
+2. Tornar o indicador de confiabilidade (interpolação / extrapolação moderada / fora de domínio) imediatamente visível junto a cada valor de temperatura — e não como informação secundária — para que João nunca interprete um número sem saber o quanto pode confiar nele. — *Responsável: Designer UX/UI (Beatriz), por ser quem define a hierarquia de informação do dashboard.*
+3. Disponibilizar, ao lado da previsão, os casos históricos (CFD ou teste físico) mais próximos daquela configuração, para que João compare a previsão com referências reais sem sair do fluxo de análise. — *Responsável: Time de Dados/ML, por depender diretamente da base histórica tratada (Seção 4.1.5, R02).*
+4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
+5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
+
+##### Engenheira de Materiais (Estela)
 
 ##### Etapa 1 — Preparação do Projeto
 
@@ -480,6 +534,74 @@ para decisões mais rápidas e seguras.
 **Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
+
+**Jornada da Usuária — Beatriz (Designer UX/UI)**
+
+##### Etapa 1 — Coleta de Sinais: Feedback e Telemetria
+
+**Ações**: Reúne feedback qualitativo de Engenharia, Qualidade e Marketing (reclamações, dúvidas recorrentes, sugestões) e cruza com dados quantitativos de telemetria do dashboard — telas mais acessadas, pontos de abandono, tempo gasto em cada Key Area.
+
+**Pensamentos**: "Esse comentário é um problema isolado ou um padrão que aparece em várias equipes?"; "A telemetria mostra queda de acesso nessa tela — isso é falta de necessidade ou sinal de que ela confunde?"
+
+**Sentimentos**: Investigativa e atenta, mas ainda num momento de coleta bruta — sem clareza ainda sobre causas, apenas sintomas.
+
+**Oportunidades**: Consolidar feedback e telemetria num painel único, com filtros por Key Area e por perfil de usuário, para reduzir o trabalho manual de cruzamento de dados.
+
+
+##### Etapa 2 — Diagnóstico e Priorização dos Problemas
+
+**Ações**: Analisa os sinais coletados para identificar a causa raiz — se é hierarquia de informação confusa, ambiguidade nos estados (interpolação/extrapolação moderada/fora de domínio — R04) ou simplesmente sobrecarga visual — e prioriza o que será redesenhado, considerando esforço de desenvolvimento e impacto na confiança do usuário.
+
+**Pensamentos**: "Isso é um problema de layout ou um problema de conteúdo — a informação certa não está sendo mostrada?"; "Se eu não priorizar bem, corro o risco de mexer em telas pouco usadas enquanto o problema real fica sem solução."
+
+**Sentimentos**: Levemente pressionada — sabe que decisões erradas aqui custam ciclos inteiros de desenvolvimento, e o tempo da equipe de dev é limitado.
+
+**Oportunidades**: Ter acesso a uma matriz de impacto x esforço pré-formatada, e conseguir taguear queixas de usuários diretamente aos estados do modelo (R04) para facilitar o diagnóstico.
+
+##### Etapa 3 — Pesquisa Visual e Alinhamento com Engenharia
+
+**Ações**: Pesquisa referências de visualização de incerteza e confiabilidade (badges, cores, gradientes de risco) e valida preliminarmente com a equipe de engenharia se a leitura pretendida de cada estado (interpolação/extrapolação/fora de domínio) está tecnicamente correta antes de desenhar.
+
+**Pensamentos**: "Eu não sou engenheira — preciso confirmar que o que estou prestes a desenhar não vai comunicar algo tecnicamente errado."; "Existe um padrão de mercado para isso, ou vou ter que criar do zero?"
+
+**Sentimentos**: Um pouco insegura por depender de validação técnica de terceiros para avançar, mas também mais confiante à medida que alinha a interpretação com a engenharia.
+
+**Oportunidades**: Ter um glossário técnico curto e já validado (o que cada estado do R04 significa, em linguagem simples) como referência fixa, evitando reabrir essa discussão a cada novo ciclo de design.
+
+##### Etapa 4 — Design e Prototipagem da Interface
+
+**Ações**: Redesenha a hierarquia de informação das telas priorizadas — agrupando previsão, margem de erro (≤10%) e estado de confiabilidade por Key Area — e monta protótipos de alta fidelidade seguindo o Guia de Estilo Corporativo Whirlpool.
+
+**Pensamentos**: "Como eu comunico 'fora de domínio' sem parecer um erro do sistema?"; "Estou priorizando estética ou clareza? As duas precisam coexistir, mas se tiver que escolher, é clareza."
+
+**Sentimentos**: Etapa de maior tensão criativa — equilibrar rigor técnico com simplicidade visual, sabendo que qualquer ambiguidade pode custar a confiança do engenheiro no dashboard como um todo.
+
+**Oportunidades**: Padronizar um sistema de componentes reutilizáveis (cores, ícones, badges de confiabilidade) para acelerar futuras iterações e manter consistência entre telas.
+
+##### Etapa 5 — Testes de Usabilidade e Ajustes Finais
+
+**Ações**: Conduz testes de usabilidade com usuários reais de Engenharia, Qualidade e Marketing, observando se conseguem interpretar previsão, margem de erro e estado do resultado sem explicação adicional, e ajusta o protótipo com base nos resultados.
+
+**Pensamentos**: "Será que o engenheiro entende a diferença entre margem de erro e nível de confiabilidade sem eu precisar explicar do lado?"; "Marketing enxerga a informação de forma muito mais simplificada que Engenharia — a mesma tela serve para os dois?"
+
+**Sentimentos**: Ansiosa durante os testes, mas aliviada quando os usuários interpretam corretamente sem apoio — é o momento em que o trabalho ganha validação externa real.
+
+**Oportunidades**: Rodar testes A/B diretamente no dashboard em produção para comparar variações de layout com dados reais de uso, não apenas com o grupo de teste.
+
+##### Etapa 6 — Publicação, Documentação e Monitoramento Contínuo
+
+**Ações**: Publica as atualizações junto à equipe de desenvolvimento, documenta as mudanças no WAD e no Guia de Estilo Visual, comunica as alterações às equipes usuárias, e monitora a telemetria pós-lançamento para verificar adoção e queda (ou não) de dúvidas recorrentes.
+
+**Pensamentos**: "As métricas confirmam que a mudança resolveu o problema, ou volto para a etapa de diagnóstico?"; "Se o engenheiro parar de usar o dashboard por confusão, a solução perde valor mesmo com um modelo preciso."
+
+**Sentimentos**: Satisfeita quando a telemetria confirma engajamento contínuo, mas em estado de vigilância permanente — sabe que a interface precisa evoluir junto com o modelo e os dados, sem quebrar a clareza já conquistada.
+
+**Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
+
+
+<img src="../assets/digrama_jornada_beatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
+<p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
+
 
 #### 4.1.8 Política de Privacidade
 
@@ -716,39 +838,34 @@ Hipóteses em um projeto de análise de dados preditiva é extremamente importan
 
 Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um conjunto de variáveis de configuração e de operação que atuam em conjunto sobre o comportamento térmico do produto. Fatores como a localização física do componente (key_area), a configuração da carcaça (housing), a direção do fluxo de ar do blower (blower_direction), o material do suporte da bobina (material_coil_support) e o modo de operação simulado (run_case) influenciam diretamente o quanto cada região do fogão aquece e o quão perto ela fica do limite de engenharia do próprio sensor. Diante disso, as hipóteses a seguir buscam explorar como cada uma dessas variáveis se relaciona com a temperatura medida e com o risco de superaquecimento, permitindo identificar padrões de comportamento térmico e fornecer subsídios tanto para a etapa de modelagem preditiva quanto para a priorização de testes físicos junto ao parceiro.
 
+O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os testes, gráficos e valores completos estão em [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb).
 
+| # | Hipótese | Resultado |
+|---|---|---|
+| **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
+| **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
+| **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
+##### H1 — Configurações redistribuem calor, não o eliminam
 
+A hipótese é de que nenhuma configuração deixa o fogão inteiro mais quente ou mais frio: cada mudança move calor de uma região para outra. Escolher uma configuração seria, portanto, escolher qual área proteger, e não reduzir o aquecimento como um todo.
 
+A hipótese se confirmou. Em todas as configurações testadas o efeito aparece com sinais opostos entre áreas: abrir o `deflector_hole`, por exemplo, aquece a área do IPC e resfria o sistema de ventilação principal, com diferença estatisticamente significativa entre as duas. O mesmo padrão se repete em `blower_direction`, `housing` e `material_coil_support`, e vale também em risco, não só em temperatura — a mesma mudança aumenta a excedência do limite em uma área enquanto a reduz em outra. A área de ventilação principal aparece de forma recorrente como aquela que recebe o calor retirado das demais, comportamento coerente com conservação de energia.
 
+Nem toda configuração, porém, é uma troca: `blower_direction = To Back` piora simultaneamente as duas áreas eletrônicas sem melhorar nenhuma outra, ou seja, é uma condição pior em termos absolutos.
 
+A consequência direta para a modelagem (Seção 4.3) é que a predição precisa ser condicionada à área. Um modelo que ignore a interação entre área e configuração estimaria um efeito médio que não descreve nenhuma das áreas e erra o sinal em pelo menos uma delas.
 
+##### H2 — As configurações não são independentes entre si
 
+A hipótese é de que as configurações estão confundidas no desenho experimental, porque os 56 ensaios não vêm de um experimento fatorial planejado: são um histórico de testes, em que cada run respondia a uma pergunta específica e mudanças em uma peça vinham acompanhadas de mudanças em outras.
 
+A hipótese se confirmou, no caso mais extremo possível. Cada categoria de `losses` corresponde a um único valor de `deflector_hole`, sem nenhum ensaio que separe as duas variáveis — não é apenas associação forte, é identidade. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 36 combinações possíveis entre as três variáveis principais, apenas 11 foram ensaiadas, e metade dos runs se concentra em duas delas.
 
+Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e reproduzíveis, porém pertencem a blocos de configuração inteiros, não a peças isoladas. A base permite identificar configurações de risco, não atribuir a causa a um componente específico.
 
+As decisões que isso gera para a modelagem são: retirar `losses` e `board_position` do modelo, por não trazerem informação além de outras variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#### H3 — A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil)
+##### H3 — A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil)
 
 **Variável qualitativa analisada:** `run_case` (caso de teste / modo de operação do fogão), relacionada à variável quantitativa `temp`.
 
@@ -760,13 +877,6 @@ Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um 
 **Justificativa:** ao agrupar as leituras por `run_case`, os modos de operação se separam de forma clara em temperatura. Os modos do tipo *Broil* (grelhar) concentram as maiores temperaturas médias, `Broil C2` lidera com 84,7 °C, enquanto o modo `Pyro` (autolimpeza) é o mais frio, com 71,4 °C. A amplitude entre o modo mais quente e o mais frio chega a **13,3 °C**, a maior diferença observada entre as configurações qualitativas do dataset. Agrupando os casos, as leituras em modos *Broil* têm média de 83,5 °C contra 74,5 °C nos demais casos (`Pyro`/`Qualitative`), reforçando que o regime de operação é um fator relevante para a temperatura  e, portanto, para o problema de previsão térmica do projeto.
 
 > O detalhamento completo (código, tabela por modo e agrupamento *Broil* vs. demais) está no notebook [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb), seção "Hipótese 3". A frequência de cada caso de teste está na tabela de `run_case` da Seção 4.2.1.
-
-
-```
-Descreva três hipóteses sobre a relação dos dados e o problema. Justifique cada uma delas. 
-
-Remova este bloco ao final
-```
 
 ### 4.3. Preparação dos Dados e Modelagem
 ```
