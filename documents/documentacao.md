@@ -711,6 +711,57 @@ Também foram documentados **dados confusos ou insuficientes**:
 Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
 #### 4.2.3. Hipóteses
+
+Hipóteses em um projeto de análise de dados preditiva é extremamente importante, porque define as premissas e expectativas que vão guiar tudo do processo do pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1
+
+Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um conjunto de variáveis de configuração e de operação que atuam em conjunto sobre o comportamento térmico do produto. Fatores como a localização física do componente (key_area), a configuração da carcaça (housing), a direção do fluxo de ar do blower (blower_direction), o material do suporte da bobina (material_coil_support) e o modo de operação simulado (run_case) influenciam diretamente o quanto cada região do fogão aquece e o quão perto ela fica do limite de engenharia do próprio sensor. Diante disso, as hipóteses a seguir buscam explorar como cada uma dessas variáveis se relaciona com a temperatura medida e com o risco de superaquecimento, permitindo identificar padrões de comportamento térmico e fornecer subsídios tanto para a etapa de modelagem preditiva quanto para a priorização de testes físicos junto ao parceiro.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### H3 — A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil)
+
+**Variável qualitativa analisada:** `run_case` (caso de teste / modo de operação do fogão), relacionada à variável quantitativa `temp`.
+
+**Hipóteses estatísticas:**
+
+- **H₀ (nula):** a temperatura média é igual entre todos os modos de operação.
+- **H₁ (alternativa):** pelo menos um modo de operação apresenta temperatura média diferente dos demais.
+
+**Justificativa:** ao agrupar as leituras por `run_case`, os modos de operação se separam de forma clara em temperatura. Os modos do tipo *Broil* (grelhar) concentram as maiores temperaturas médias, `Broil C2` lidera com 84,7 °C, enquanto o modo `Pyro` (autolimpeza) é o mais frio, com 71,4 °C. A amplitude entre o modo mais quente e o mais frio chega a **13,3 °C**, a maior diferença observada entre as configurações qualitativas do dataset. Agrupando os casos, as leituras em modos *Broil* têm média de 83,5 °C contra 74,5 °C nos demais casos (`Pyro`/`Qualitative`), reforçando que o regime de operação é um fator relevante para a temperatura  e, portanto, para o problema de previsão térmica do projeto.
+
+> O detalhamento completo (código, tabela por modo e agrupamento *Broil* vs. demais) está no notebook [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb), seção "Hipótese 3". A frequência de cada caso de teste está na tabela de `run_case` da Seção 4.2.1.
+
+
 ```
 Descreva três hipóteses sobre a relação dos dados e o problema. Justifique cada uma delas. 
 
