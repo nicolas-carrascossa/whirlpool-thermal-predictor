@@ -764,6 +764,10 @@ Também foram documentados **dados confusos ou insuficientes**:
 
 Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
+Por fim, foram aplicados **tratamentos específicos de padronização** em categorias que representavam a mesma condição de teste, mas estavam registradas com grafias diferentes. Na coluna `blower_direction`, `To Back` e `To Front` foram unificados, respectivamente, como `To back` e `To front`. Em `run_case`, `Broil Case 2` foi padronizado para `Broil C2`, enquanto `Broil Qual ` e `Qualitative` foram reunidos em `Broil Qualitative`. Na coluna `losses`, `No Losses` passou a ser `No losses`.
+
+
+
 #### 4.2.3. Hipóteses
 ```
 Descreva três hipóteses sobre a relação dos dados e o problema. Justifique cada uma delas. 
