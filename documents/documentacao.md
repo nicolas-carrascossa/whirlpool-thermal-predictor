@@ -913,6 +913,44 @@ Foram aplicados três testes formais, todos com H₀ = "a amostra vem de uma dis
 
 **Observação:** o Shapiro-Wilk é o mais indicado para bases desse tamanho e é o mais sensível para perceber quando os dados fogem da normalidade; o D'Agostino-Pearson olha para o formato da distribuição, unindo assimetria (se os dados pendem mais para um lado) e curtose (se há muitos valores extremos) em um único resultado; e o Anderson-Darling é parecido com os outros dois, mas dá atenção especial às pontas da distribuição, ou seja, aos valores mais altos e mais baixos.
 
+Variáveis analisadas (conforme o dataset):
+
+- `temp` (temperatura dos sensores/termopares)
+
+Resultados do teste (valores fornecidos):
+
+| Variável | p-valor (científico) | Conclusão (α = 0,05) |
+|:---|:---|:---|
+| `temp` | 2,72 × 10⁻⁵⁰ | Rejeita H₀ — não normal |
+
+Interpretação: o p-valor encontrado é astronomicamente pequeno (um número com dezenas de zeros após a vírgula antes de chegar ao primeiro dígito). Ele é muito, mas muito menor que o nosso nível de significância de 0,05. Portanto, com base no teste de Shapiro-Wilk, temos evidências estatísticas avassaladoras para rejeitar a hipótese de normalidade da variável `temp`.
+
+Código utilizado para execução (Python):
+
+```python
+from scipy import stats
+
+alpha = 0.05
+temp = df['temp'].dropna()
+
+# Shapiro-Wilk
+w_stat, p_shapiro = stats.shapiro(temp)
+
+# D'Agostino-Pearson
+k2_stat, p_dagostino = stats.normaltest(temp)
+
+# Anderson-Darling
+resultado_ad = stats.anderson(temp, dist='norm')
+
+print(f"Shapiro-Wilk: W = {w_stat:.4f}, p = {p_shapiro:.3e}")
+print(f"D'Agostino-Pearson: K² = {k2_stat:.2f}, p = {p_dagostino:.3e}")
+print(f"Anderson-Darling: A² = {resultado_ad.statistic:.2f}, "
+      f"valor crítico (5%) = {resultado_ad.critical_values[2]:.3f}")
+
+conclusao = "Rejeita H₀ — não normal" if p_shapiro < alpha else "Não rejeita H₀ — normal"
+print(f"Conclusão (α = {alpha}): {conclusao}")
+```
+
 #### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
 
 **a) Tipo de Escalonamento e Justificativa**
