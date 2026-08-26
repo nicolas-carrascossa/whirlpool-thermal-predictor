@@ -961,4 +961,20 @@ Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
 
 
 **e) Tabelas Comparativas dos Dados**
+O objetivo desta questão foi **apresentar as variáveis quantitativas escolhidas** do conjunto de dados e exibir os **10 primeiros registros** tanto dos **dados originais** quanto dos **dados após escalonamento Min-Max**.
+ 
+As variáveis quantitativas selecionadas foram:
+ 
+- `temp` — temperatura registrada pelo termopar durante o ensaio, em °C.
+- `active_limit` — limite térmico admissível para aquele ponto de medição, em °C.
+- `margem_termica` — variável derivada (`active_limit - temp`), que representa a folga em relação ao limite. Valores negativos indicam violação do limite naquele ponto.
+As demais colunas do conjunto (`run_id`, `tc_name`, `key_area`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole` e `material_coil_support`) são qualitativas nominais e, portanto, não entram no escalonamento. A coluna `tc_number`, embora numérica, é apenas um **identificador do termopar** — não representa uma grandeza mensurável e não faz sentido normalizá-la, sendo descartada da análise quantitativa.
+ 
+Para garantir consistência nos dados, foi necessário:
+ 
+1. **Padronizar os nomes das colunas** (remover espaços no início e no fim).
+2. **Converter as variáveis para valores numéricos**, substituindo vírgula decimal por ponto. Esse passo foi indispensável porque a coluna `active_limit` estava tipada como `object`: além dos valores numéricos, ela continha entradas textuais no formato `Monitor (150 C)`, usadas para pontos monitorados sem limite formal de reprovação.
+3. **Remover registros inválidos (`NaN`)** para não impactar no escalonamento. Foram descartados 56 registros dos 4.065 originais, restando **4.009 linhas válidas** (98,6% do conjunto).
+4. **Aplicar o escalonamento Min-Max** com `MinMaxScaler`, que transforma linearmente cada variável para o intervalo `[0,1]` segundo a fórmula `x' = (x - min) / (max - min)`.
+---
 
