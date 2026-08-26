@@ -981,7 +981,30 @@ A implementação do código necessário para obtenção desses dados está em: 
 
 **c) Equações do Escalonamento**
 
+O método adotado é o **Min-Max Scaling**, aplicado independentemente dentro de cada `key_area`.
 
+**Equação de normalização**
+
+Para cada observação $i$ pertencente à região $k$:
+
+$$
+temp\_scaled_{i} = \frac{temp_{i} - \min(temp_{k})}{\max(temp_{k}) - \min(temp_{k})}
+$$
+
+onde:
+
+- $temp_{i}$ — temperatura medida na observação $i$, em °C;
+- $\min(temp_{k})$ — menor temperatura observada na `key_area` $k$;
+- $\max(temp_{k})$ — maior temperatura observada na `key_area` $k$;
+- $temp\_scaled_{i} \in [0, 1]$ — valor normalizado.
+
+**Equação de transformação inversa**
+
+Como `temp` é a variável-alvo, caso as previsões do modelo retornem em escala normalizada e precisem ser convertidas de volta a graus Celsius para avaliação do KPI de erro do projeto:
+
+$$
+temp_{i} = temp\_scaled_{i} \times \left[\max(temp_{k}) - \min(temp_{k})\right] + \min(temp_{k})
+$$
 
 **d) Histogramas das três variáveis**
 
