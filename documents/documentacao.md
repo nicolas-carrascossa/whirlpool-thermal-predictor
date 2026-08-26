@@ -1,4 +1,4 @@
-﻿# Documentação Modelo Preditivo - Inteli
+# Documentação Modelo Preditivo - Inteli
 
 ```
 INSTRUÇÕES GERAIS (remova este trecho ao final)
