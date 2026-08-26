@@ -897,12 +897,6 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 #### Análise e teste de normalidade das variáveis quantitativas
 
-Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
-
-**a) Hipóteses**
-
-
-
 **b) Nível de significância**
 
 Nível de significância (α): 0,05 (5%).
@@ -915,15 +909,9 @@ Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
 
 **c) Teste de Normalidade**
 
+Foram aplicados três testes formais, todos com H₀ = "a amostra vem de uma distribuição normal": Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do valor crítico de 0,752 a 5%). Os três convergem na mesma decisão: rejeita-se H₀, ou seja, temp não segue distribuição normal.
 
-
-**d) Histogramas e resultados dos testes estatísticos de normalidade**
-
-
-
-**e) Comparação entre a média com a mediana de cada variável e resultados dos testes estatísticos de normalidade**
-
-
+**Observação:** o Shapiro-Wilk é o mais indicado para bases desse tamanho e é o mais sensível para perceber quando os dados fogem da normalidade; o D'Agostino-Pearson olha para o formato da distribuição, unindo assimetria (se os dados pendem mais para um lado) e curtose (se há muitos valores extremos) em um único resultado; e o Anderson-Darling é parecido com os outros dois, mas dá atenção especial às pontas da distribuição, ou seja, aos valores mais altos e mais baixos.
 
 #### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
 
