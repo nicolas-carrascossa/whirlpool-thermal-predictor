@@ -978,3 +978,45 @@ Para garantir consistência nos dados, foi necessário:
 4. **Aplicar o escalonamento Min-Max** com `MinMaxScaler`, que transforma linearmente cada variável para o intervalo `[0,1]` segundo a fórmula `x' = (x - min) / (max - min)`.
 ---
 
+#### Código utilizado
+ 
+```python
+from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
+ 
+# padronizar nomes das colunas (remover espaços no início/fim)
+df.columns = df.columns.str.strip()
+ 
+# garantir que as colunas sejam numéricas (corrigindo vírgula decimal
+# e descartando entradas textuais como "Monitor (150 C)")
+for c in ['temp', 'active_limit']:
+    df[c] = df[c].astype(str).str.replace(',', '.')
+    df[c] = pd.to_numeric(df[c], errors='coerce')
+ 
+# variável derivada: folga em relação ao limite térmico
+df['margem_termica'] = df['active_limit'] - df['temp']
+ 
+# variáveis quantitativas escolhidas
+variaveis = ['temp', 'active_limit', 'margem_termica']
+ 
+# cópia limpa para não alterar o df original
+df_limpo = df.dropna(subset=variaveis).copy()
+df_limpo.reset_index(drop=True, inplace=True)
+ 
+# Tabela original
+print("Tabela 1: Dados Originais")
+print(df_limpo[variaveis].head(10))
+ 
+# Escalonamento Min-Max
+scaler = MinMaxScaler()
+dados_escalonados_array = scaler.fit_transform(df_limpo[variaveis])
+ 
+# novo dataframe com dados escalonados
+df_scaled = pd.DataFrame(dados_escalonados_array, columns=variaveis)
+ 
+# Tabela escalonada
+print("\nTabela 2: Dados Normalizados")
+print(df_scaled.head(10))
+```
+ 
+---
