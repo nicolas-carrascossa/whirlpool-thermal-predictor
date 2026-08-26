@@ -1020,3 +1020,53 @@ print(df_scaled.head(10))
 ```
  
 ---
+
+### Tabela 1: Dados Originais
+ 
+| # | temp | active_limit | margem_termica |
+|---|------|--------------|----------------|
+| 0 | 99.35 | 155.0 | 55.65 |
+| 1 | 114.72 | 136.0 | 21.28 |
+| 2 | 89.93 | 165.0 | 75.07 |
+| 3 | 167.87 | 150.0 | -17.87 |
+| 4 | 53.65 | 60.0 | 6.35 |
+| 5 | 48.94 | 60.0 | 11.06 |
+| 6 | 60.00 | 85.0 | 25.00 |
+| 7 | 55.44 | 140.0 | 84.56 |
+| 8 | 55.69 | 220.0 | 164.31 |
+| 9 | 49.33 | 220.0 | 170.67 |
+ 
+---
+ 
+### Tabela 2: Dados Normalizados (Min-Max)
+ 
+| # | temp | active_limit | margem_termica |
+|---|------|--------------|----------------|
+| 0 | 0.291407 | 0.101064 | 0.163563 |
+| 1 | 0.353910 | 0.080851 | 0.132201 |
+| 2 | 0.253101 | 0.111702 | 0.181283 |
+| 3 | 0.570046 | 0.095745 | 0.096477 |
+| 4 | 0.105567 | 0.000000 | 0.118577 |
+| 5 | 0.086414 | 0.000000 | 0.122875 |
+| 6 | 0.131390 | 0.026596 | 0.135595 |
+| 7 | 0.112846 | 0.085106 | 0.189943 |
+| 8 | 0.113863 | 0.170213 | 0.262713 |
+| 9 | 0.088000 | 0.170213 | 0.268517 |
+ 
+---
+ 
+#### Interpretação dos resultados
+ 
+Os limites (`min` e `max`) usados pelo `MinMaxScaler`, calculados sobre as 4.009 linhas válidas, foram:
+ 
+| Variável | Mínimo | Máximo | Amplitude |
+|----------|--------|--------|-----------|
+| `temp` | 27.69 | 273.60 | 245.91 |
+| `active_limit` | 60.00 | 1000.00 | 940.00 |
+| `margem_termica` | -123.60 | 972.31 | 1095.91 |
+ 
+**Por que o escalonamento era necessário.** As três variáveis operam em escalas muito desiguais. A amplitude de `active_limit` é quase quatro vezes maior que a de `temp`, porque alguns pontos do sistema de exaustão têm limite de 1000 °C enquanto a maioria dos componentes elétricos fica entre 60 e 220 °C. Em algoritmos sensíveis à magnitude — KNN, K-Means, SVM, PCA e redes neurais — essa diferença faria `active_limit` dominar o cálculo de distância pela sua amplitude bruta, e não pela sua relevância para o problema. Após o Min-Max, as três variáveis passam a contribuir na mesma faixa `[0,1]`.
+ 
+**A ordem relativa é preservada.** O escalonamento Min-Max é uma transformação linear e monotônica: ele muda a escala, mas não a posição relativa dos registros. Isso fica evidente no registro 3, o único caso de violação de limite entre os 10 primeiros (`temp` = 167.87 °C contra um limite de 150 °C, gerando margem de -17.87 °C). Mesmo normalizado, ele continua sendo o maior valor de `temp` (0.570) e o menor de `margem_termica` (0.096) da amostra exibida. Vale notar que a margem negativa não vira um valor negativo após a normalização — o mínimo global de -123.60 °C é mapeado para 0, então todas as violações se concentram na faixa inferior do intervalo, próximas de zero.
+ 
+**Limitação observada.** A coluna `active_limit` fica comprimida na faixa 0.00–0.17 nos dez primeiros registros, apesar de conter valores originais entre 60 e 220 °C. Isso ocorre porque o máximo de 1000 °C é um **outlier estrutural**: poucos pontos de medição do sistema de ventilação puxam o denominador da normalização para cima e achatam toda a distribuição restante. É uma fragilidade conhecida do Min-Max, que usa apenas os extremos para definir a escala. Para etapas futuras de modelagem, o `StandardScaler` (baseado em média e desvio-padrão) ou o `RobustScaler` (baseado em mediana e IQR) tendem a distribuir melhor essa variável, já que são menos sensíveis a valores extremos.
