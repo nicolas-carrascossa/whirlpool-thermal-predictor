@@ -961,9 +961,23 @@ construir um modelo por `key_area` (regimes de transferência de calor distintos
 mainback, coils, sistemas de ventilação, IPC e HMI), escalonar por região mantém
 consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
-**b) Estatísticas Descritivas Utilizadas**
+**b) Dados Estatísticos Utilizados para análise da variável**
 
+Para a análise da variável-alvo 'temp', a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela, key_area, faz que a distinção de dados estatísticos seja alocado para sua respectiva região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
 
+**Parâmetros por `key_area` — base efetiva do escalonamento**
+
+| key_area | n | Mínimo (°C) | Máximo (°C) | Média (°C) | Desvio pop. (°C) | Amplitude (°C) | CV |
+|---|---|---|---|---|---|---|---|
+| Mainback | 610 | 35,41 | 273,60 | 80,6997 | 47,6323 | 238,19 | 0,590 |
+| Coil Temps | 420 | 40,80 | 234,60 | 126,9350 | 44,9730 | 193,80 | 0,354 |
+| Main Vent Sys | 288 | 41,56 | 135,00 | 80,5051 | 21,4384 | 93,44 | 0,266 |
+| IPC Cooling | 218 | 27,69 | 114,94 | 57,3842 | 18,6344 | 87,25 | 0,325 |
+| IPC Comp | 1.979 | 45,58 | 129,63 | 83,4398 | 17,0215 | 84,05 | 0,204 |
+| CT Knobs | 330 | 34,34 | 73,42 | 49,3033 | 7,6785 | 39,08 | 0,156 |
+| Oven HMI | 220 | 43,64 | 72,01 | 58,0965 | 3,9472 | 28,37 | 0,068 |
+
+A implementação do código necessário para obtenção desses dados está em: 'notebooks\expl_preprocessamenro_hipote.ipynb'
 
 **c) Equações do Escalonamento**
 
