@@ -929,7 +929,37 @@ Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
 
 **a) Tipo de Escalonamento e Justificativa**
 
+**Método escolhido: Min-Max Scaling (normalização para o intervalo [0, 1]), aplicado
+por `key_area`, e não sobre o conjunto global.**
 
+A escolha se apoia em quatro argumentos:
+
+**1. `temp` é uma variável fisicamente limitada.** A temperatura medida nos termopares
+possui limite inferior natural (temperatura ambiente do ensaio) e limite superior
+determinado pelas propriedades dos materiais e pelos limites normativos (`active_limit`).
+Variáveis com fronteiras físicas conhecidas são adequadamente representadas por uma
+normalização que preserva esse caráter delimitado, mapeando os valores para um
+intervalo fechado [0, 1].
+
+**2. A distribuição não é normal.** O conjunto completo apresenta assimetria
+(skewness) de **+1,76**, com cauda longa à direita. A padronização Z-score
+(`StandardScaler`) pressupõe distribuição aproximadamente simétrica para que os
+valores resultantes tenham interpretação estatística clara (desvios em torno da média).
+Com assimetria dessa magnitude, o Z-score produziria valores cuja leitura em "número
+de desvios-padrão" é enganosa.
+
+**3. As escalas variam drasticamente entre regiões do produto.** A amplitude de
+`temp` vai de **28,37 °C** em `Oven HMI` a **238,19 °C** em `Mainback` — diferença de
+~8,4×. O coeficiente de variação vai de 0,068 (`Oven HMI`) a 0,590 (`Mainback`) —
+diferença de ~8,7×. Um escalonamento global comprimiria as regiões de baixa variância
+(`Oven HMI`, `CT Knobs`) para uma faixa quase constante, eliminando a capacidade do
+modelo de discriminar variações relevantes nessas áreas. O escalonamento por
+`key_area` preserva o poder discriminativo dentro de cada região.
+
+**4. Coerência com a arquitetura de modelagem adotada.** Como a decisão do projeto é, até a sprint atual,
+construir um modelo por `key_area` (regimes de transferência de calor distintos entre
+mainback, coils, sistemas de ventilação, IPC e HMI), escalonar por região mantém
+consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
 **b) Estatísticas Descritivas Utilizadas**
 
