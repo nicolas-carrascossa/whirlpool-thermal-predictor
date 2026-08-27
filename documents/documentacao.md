@@ -435,6 +435,50 @@ para decisões mais rápidas e seguras.
 
 Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pensamentos e emoções de uma persona ao buscar um objetivo, evidenciando onde surgem dúvida, confiança e decisão ao longo da experiência, e não apenas o funcionamento técnico do sistema. Essa ferramenta é especialmente relevante para o Thermal Predictor porque a solução não devolve uma resposta definitiva, e sim uma previsão de aprendizado de máquina com margem de erro e indicador de confiabilidade (Seção 4.1.5, R04). O valor do produto depende de como cada persona interpreta essa previsão e a converte em uma decisão real de engenharia, e o mapa torna esse processo de interpretação e decisão explícito, permitindo identificar onde a solução pode reduzir incerteza e apoiar decisões mais rápidas e seguras, sem tratar a previsão do modelo como verdade absoluta.
 
+##### Jornada do Usuário — Engenheiro de Qualidade (João)
+
+**Fase 1 — Acessar e Triar**
+
+- *Ações:* Acessa a plataforma e faz login com suas credenciais, abre a configuração recebida da equipe da Beatriz do Design no dashboard e verifica na tela de "casos similares" se já existe parecer para configurações parecidas.
+- *Pensamento:* "Já vi algo parecido com isso antes?"
+- *Emoção:* Neutra, modo organização.
+- *Ponto de dor:* Sem esse filtro, revisaria pareceres antigos manualmente.
+
+**Fase 2 — Configurar Parâmetros**
+
+- *Ações:* Seleciona as áreas-chave a avaliar (Mainback, bobinas, ventilação, área do cooktop, painel de comandos), preenche os parâmetros da configuração e clica em "Gerar previsão".
+- *Pensamento:* "Um campo errado invalida a previsão inteira."
+- *Emoção:* Atenção concentrada.
+- *Ponto de dor:* Sem validação prévia, o erro só apareceria depois de gerada a previsão.
+
+**Fase 3 — Explorar Resultados**
+
+- *Ações:* Na tela de resultados, ordena os sensores por proximidade do limite normativo e identifica o da área do cooktop (IPC) destacado em "extrapolação moderada".
+- *Pensamento:* "A maioria está tranquila, mas esse ponto está no limite."
+- *Emoção:* Alívio parcial; atenção no ponto crítico.
+- *Ponto de dor:* Sem ordenação por criticidade, o sensor de risco passaria despercebido.
+
+**Fase 4 — Conferir o Ponto Crítico**
+
+- *Ações:* Abre o detalhe do sensor da área do cooktop (IPC) e confere o valor previsto e sua margem de erro (10%) contra o limite térmico normativo daquele componente.
+- *Pensamento:* "Com essa margem de erro, esse valor ainda está dentro do que a norma permite?"
+- *Emoção:* Atenção redobrada antes de decidir.
+- *Ponto de dor:* Sem o limite normativo exibido junto ao valor previsto, teria que consultar a norma em outro documento para confirmar a folga real.
+
+**Fase 5 — Decidir (decisão crítica)**
+
+- *Ações:* Marca o sensor da área do cooktop (IPC) como "pendente de teste físico", os demais como "aprovado por previsão", justifica a pendência e clica em "Salvar decisão parcial".
+- *Pensamento:* "Só esse ponto precisa de confirmação física."
+- *Emoção:* Segurança na decisão, com peso do ponto em aberto.
+- *Ponto de dor:* Sem status por componente, seria forçado a aprovar ou reprovar tudo.
+
+**Fase 6 — Encaminhar e Encerrar**
+
+- *Ações:* Gera e envia o parecer à equipe de engenharia da produção; ao receber o resultado do teste, atualiza o status do componente pendente e clica em "Encerrar parecer".
+- *Pensamento:* "Reduzi de uma bateria completa de testes para um único ponto crítico."
+- *Emoção:* Dever cumprido e fechamento do ciclo.
+- *Ponto de dor:* Sem notificação de retorno e trava de encerramento, o parecer ficaria "aberto" indefinidamente.
+
 ##### Engenheiro de Qualidade (João)
 
 O template visual de mapa de jornada será disponibilizado posteriormente pelo professor da disciplina de UX. Por isso, esta seção reúne, desde já, o conteúdo textual organizado por campo — ator, objetivo, cenário, expectativas, fases (ações, pensamentos, emoções, pontos de dor), decisão crítica e oportunidades — pronto para ser transposto ao template quando recebido, além do texto explicativo que deve acompanhar a imagem do mapa na versão final desta seção.
