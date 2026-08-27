@@ -963,6 +963,19 @@ consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
 **b) Dados Estatísticos Utilizados para análise da variável**
 
+A princípio, foram analisados os dados via DataFrame em Pandas para o dataset fornecido pelo parceiro de forma global, a análise estatística registrou as seguintes observações a partir de uma exploração global na base de dados.
+
+**Conjunto de dados completo (`temp`, n = 4.065)**
+ 
+| Estatística | Valor |
+|---|---|
+| Valor mínimo | 27,69 °C |
+| Valor máximo | 273,60 °C |
+| Média | 81,7745 °C |
+| Desvio padrão populacional (ddof = 0) | 33,2792 °C |
+| Amplitude | 245,91 °C |
+| Assimetria (skewness) | +1,763 |
+
 Para a análise da variável-alvo 'temp', a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela, key_area, faz que a distinção de dados estatísticos seja alocado para sua respectiva região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
 
 **Parâmetros por `key_area` — base efetiva do escalonamento**
