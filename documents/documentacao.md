@@ -1183,6 +1183,86 @@ Como `temp` é a variável-alvo, caso as previsões do modelo retornem em escala
 $$
 temp_{i} = temp\_scaled_{i} \times \left[\max(temp_{k}) - \min(temp_{k})\right] + \min(temp_{k})
 $$
+**d) Equações para Estatística Descritiva das 'key_area'**
+
+As estatísticas descritivas não foram calculadas apenas para caracterizar o conjunto: elas são os parâmetros operacionais do escalonamento. Cada `key_area` recebe seu próprio conjunto de valores, e é essa separação que sustenta a decisão de normalizar por região. As três equações a seguir são aplicadas independentemente a cada um dos sete subconjuntos de `temp`.
+
+
+**Média aritmética**
+
+Estabelece o centro da distribuição térmica de cada região e serve de referência para o cálculo da dispersão.
+
+$$
+\bar{x}_{k} = \frac{1}{n_{k}} \sum_{i=1}^{n_{k}} x_{i}
+$$
+
+onde $k$ identifica a `key_area` e $n_{k}$ o número de observações naquela região.
+
+**Desvio padrão populacional (ddof = 0)**
+
+Adotou-se o denominador $n$, e não $n-1$, porque o conjunto analisado corresponde à totalidade das simulações disponibilizadas pela Whirlpool — não a uma amostra extraída de uma população maior. A correção de Bessel seria inadequada nesse contexto.
+
+$$
+\sigma_{k} = \sqrt{\frac{1}{n_{k}} \sum_{i=1}^{n_{k}} \left(x_{i} - \bar{x}_{k}\right)^{2}}
+$$
+
+**Coeficiente de variação**
+
+Como as regiões operam em patamares térmicos distintos, o desvio absoluto em °C não é comparável entre elas. O CV normaliza a dispersão pela média, permitindo comparação direta.
+
+$$
+CV_{k} = \frac{\sigma_{k}}{\bar{x}_{k}}
+$$
+
+
+**Aplicação por segmento**
+
+A tabela consolida os termos de cada equação para as sete regiões, incluindo a soma dos valores ($\sum x_i$) e a soma dos quadrados dos desvios ($\sum (x_i - \bar{x})^2$), que são os agregados intermediários efetivamente calculados.
+
+| `key_area` | $n_k$ | $\sum x_i$ | $\bar{x}_k$ (°C) | $\sum (x_i - \bar{x}_k)^2$ | $\sigma_k$ (°C) | $CV_k$ |
+|---|---|---|---|---|---|---|
+| Mainback | 610 | 49.226,79 | 80,6997 | 1.383.990,55 | 47,6323 | 0,5902 |
+| Coil Temps | 420 | 53.312,68 | 126,9350 | 849.478,95 | 44,9730 | 0,3543 |
+| Main Vent Sys | 288 | 23.185,47 | 80,5051 | 132.366,31 | 21,4384 | 0,2663 |
+| IPC Cooling | 218 | 12.509,75 | 57,3842 | 75.698,65 | 18,6344 | 0,3247 |
+| IPC Comp | 1.979 | 165.127,41 | 83,4398 | 573.381,78 | 17,0215 | 0,2040 |
+| CT Knobs | 330 | 16.270,10 | 49,3033 | 19.456,37 | 7,6785 | 0,1557 |
+| Oven HMI | 220 | 12.781,23 | 58,0965 | 3.427,62 | 3,9472 | 0,0679 |
+
+
+**Verificação numérica — dois casos de contraste**
+
+Para tornar explícito o cálculo, aplicam-se as equações às duas regiões que delimitam os extremos de dispersão do conjunto.
+
+*Região de maior dispersão — `Mainback`*
+
+$$
+\bar{x} = \frac{49.226{,}79}{610} = 80{,}6997 \ ^\circ\text{C}
+$$
+
+$$
+\sigma = \sqrt{\frac{1.383.990{,}55}{610}} = \sqrt{2.268{,}84} = 47{,}6323 \ ^\circ\text{C}
+$$
+
+$$
+CV = \frac{47{,}6323}{80{,}6997} = 0{,}5902
+$$
+
+*Região de menor dispersão — `Oven HMI`*
+
+$$
+\bar{x} = \frac{12.781{,}23}{220} = 58{,}0965 \ ^\circ\text{C}
+$$
+
+$$
+\sigma = \sqrt{\frac{3.427{,}62}{220}} = \sqrt{15{,}58} = 3{,}9472 \ ^\circ\text{C}
+$$
+
+$$
+CV = \frac{3{,}9472}{58{,}0965} = 0{,}0679
+$$
+
+O contraste é o argumento central da segmentação: `Mainback` apresenta dispersão relativa **8,7 vezes maior** que `Oven HMI`. Sob um escalonamento global, essa diferença desapareceria — variações de poucos décimos de grau em `Oven HMI`, estatisticamente relevantes naquele contexto, seriam indistinguíveis de ruído.
 
 **d) Histogramas das três variáveis**
 
