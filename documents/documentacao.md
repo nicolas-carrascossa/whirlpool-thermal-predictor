@@ -1126,13 +1126,63 @@ construir um modelo por `key_area` (regimes de transferência de calor distintos
 mainback, coils, sistemas de ventilação, IPC e HMI), escalonar por região mantém
 consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
-**b) Estatísticas Descritivas Utilizadas**
+**b) Dados Estatísticos Utilizados para análise da variável**
 
+A princípio, foram analisados os dados via DataFrame em Pandas para o dataset fornecido pelo parceiro de forma global, a análise estatística registrou as seguintes observações a partir de uma exploração global na base de dados.
 
+**Conjunto de dados completo (`temp`, n = 4.065)**
+ 
+| Estatística | Valor |
+|---|---|
+| Valor mínimo | 27,69 °C |
+| Valor máximo | 273,60 °C |
+| Média | 81,7745 °C |
+| Desvio padrão populacional (ddof = 0) | 33,2792 °C |
+| Amplitude | 245,91 °C |
+| Assimetria (skewness) | +1,763 |
+
+Para a análise da variável-alvo 'temp', a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela, key_area, faz que a distinção de dados estatísticos seja alocado para sua respectiva região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
+
+**Parâmetros por `key_area` — base efetiva do escalonamento**
+
+| key_area | n | Mínimo (°C) | Máximo (°C) | Média (°C) | Desvio pop. (°C) | Amplitude (°C) | CV |
+|---|---|---|---|---|---|---|---|
+| Mainback | 610 | 35,41 | 273,60 | 80,6997 | 47,6323 | 238,19 | 0,590 |
+| Coil Temps | 420 | 40,80 | 234,60 | 126,9350 | 44,9730 | 193,80 | 0,354 |
+| Main Vent Sys | 288 | 41,56 | 135,00 | 80,5051 | 21,4384 | 93,44 | 0,266 |
+| IPC Cooling | 218 | 27,69 | 114,94 | 57,3842 | 18,6344 | 87,25 | 0,325 |
+| IPC Comp | 1.979 | 45,58 | 129,63 | 83,4398 | 17,0215 | 84,05 | 0,204 |
+| CT Knobs | 330 | 34,34 | 73,42 | 49,3033 | 7,6785 | 39,08 | 0,156 |
+| Oven HMI | 220 | 43,64 | 72,01 | 58,0965 | 3,9472 | 28,37 | 0,068 |
+
+A implementação do código necessário para obtenção desses dados está em: 'notebooks\expl_preprocessamenro_hipote.ipynb'
 
 **c) Equações do Escalonamento**
 
+O método adotado é o **Min-Max Scaling**, aplicado independentemente dentro de cada `key_area`.
 
+**Equação de normalização**
+
+Para cada observação $i$ pertencente à região $k$:
+
+$$
+temp\_scaled_{i} = \frac{temp_{i} - \min(temp_{k})}{\max(temp_{k}) - \min(temp_{k})}
+$$
+
+onde:
+
+- $temp_{i}$ — temperatura medida na observação $i$, em °C;
+- $\min(temp_{k})$ — menor temperatura observada na `key_area` $k$;
+- $\max(temp_{k})$ — maior temperatura observada na `key_area` $k$;
+- $temp\_scaled_{i} \in [0, 1]$ — valor normalizado.
+
+**Equação de transformação inversa**
+
+Como `temp` é a variável-alvo, caso as previsões do modelo retornem em escala normalizada e precisem ser convertidas de volta a graus Celsius para avaliação do KPI de erro do projeto:
+
+$$
+temp_{i} = temp\_scaled_{i} \times \left[\max(temp_{k}) - \min(temp_{k})\right] + \min(temp_{k})
+$$
 
 **d) Histogramas das três variáveis**
 
