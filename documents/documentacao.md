@@ -487,6 +487,100 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
 5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
 
+<img src="../assets/jornadaJoao.png" alt="Jornada do Usuário - João" width="900"/>
+<p><em>Figura X — Jornada do Usuário João (Engenheiro de Qualidade), mapeando as fases de avaliação, análise, decisão e encaminhamento do parecer de qualidade.</em></p>
+
+#### **Jornada do Usuário — Geraldo (Especialista de Marketing)**
+
+#### Cenário
+ 
+De forma geral, Geraldo precisa planejar e executar a campanha de lançamento de um novo modelo de fogão de piso. Para isso, depende de dados técnicos de desempenho térmico do produto e de uma data confiável de validação para definir o cronograma de campanha. Com o Thermal Predictor em operação, ele passa a acessar essas informações ainda na fase inicial de modelagem, antes da conclusão dos testes físicos.
+ 
+#### Expectativas
+ 
+- Receber dados de desempenho térmico com antecedência suficiente para construir estratégias de divulgação para não perder uma janela de lançamento.
+- Ter uma data de validação previsível, que não mude ao longo do desenvolvimento.
+- Obter argumentos técnicos confiáveis e traduzíveis em linguagem de mercado.
+ 
+#### Fases da Jornada
+ 
+#### Fase 1 : Alinhamento inicial do lançamento
+ 
+**Ações:** Geraldo participa da reunião de kickoff do novo produto com o time de  engenharia. Solicita a estimativa de quando o modelo estará validado tecnicamente e quais serão seus diferenciais de desempenho.
+ 
+**Pensamentos:** *"Preciso saber logo se essa data é firme ou se vai mudar como das outras vezes."*
+ 
+**Dor desta fase:** a data de validação informada no kickoff é apenas uma estimativa amarrada ao cronograma de testes físicos, historicamente sujeita a atraso. Assim, Geraldo sai da reunião sem base sólida para começar a planejar mídia e produção de materiais de divulgação.
+ 
+**Emoção:** Neutra, com cautela — ele já passou por lançamentos em que a data prometida no kickoff mudou duas ou três vezes, e aprendeu a não se comprometer cedo demais.
+ 
+#### Fase 2 : Consulta aos dados preditivos
+ 
+**Ações:** Acessa o dashboard do Thermal Predictor e consulta as previsões de temperatura por região do produto (console, manípulos, cooktop), verificando margem em relação aos limites normativos.
+ 
+**Pensamentos:** *"Consigo enxergar o desempenho antes do protótipo ficar pronto — isso muda meu cronograma."*
+ 
+**Dor desta fase:** os dados são apresentados em linguagem de engenharia (temperatura por componente, condição aberto/fechado), sem tradução direta para atributos de comunicação. Geraldo consegue ver os números, mas ainda não sabe o que pode ser transformado em argumento de venda.
+ 
+**Emoção:** Positiva, em alta — pela primeira vez ele tem visibilidade de desempenho sem depender do calendário de laboratório, o que reduz sua sensação de estar sempre no fim da fila da informação.
+ 
+#### Fase 3 : Decisão crítica: definir o que pode ser afirmado publicamente
+ 
+Esta é a fase de risco da jornada, porque é o ponto em que uma estimativa técnica se converte em compromisso público de marca.
+ 
+**O que viu:** o dashboard indica que a região de manípulos e console opera com folga em relação ao limite normativo de temperatura, sugerindo um diferencial real de segurança ao toque frente aos concorrentes.
+ 
+**O que pensou:** *"Isso é um diferencial forte de campanha. Mas qual a confiança dessa previsão? Se eu anunciar e a validação física divergir, o problema é meu e da marca."*
+ 
+**O que decidiu:** levar o dado à Engenharia para confirmação da leitura técnica e optar por uma formulação de campanha ancorada no atributo (segurança ao toque), sem citar número absoluto de temperatura, mantendo margem para eventual ajuste após a validação final.
+ 
+**O que aconteceu depois:** a campanha foi construída com antecedência de semanas em relação ao ciclo tradicional, e a validação física posterior confirmou a leitura — sem necessidade de retratação ou reformulação de material.
+ 
+**Cenário alternativo — e se a confiança do modelo fosse diferente?**
+ 
+- *Confiança alta (previsão com folga clara em relação ao limite e baixa incerteza):* Geraldo pode assumir o diferencial como pilar central da campanha, inclusive com afirmação quantitativa, acelerando a produção de material e a compra de mídia.
+- *Confiança baixa (previsão próxima ao limite normativo ou com margem de erro sobreposta a ele):* Geraldo deve tratar o dado como indicativo, não como argumento de campanha, e postergar a definição do pilar de comunicação até a validação física — o que reduz o ganho de antecipação, mas evita risco reputacional e de conformidade.
+ 
+**Dor desta fase:** o dashboard entrega valor pontual de previsão, mas não comunica o grau de confiança associado — o que obriga Geraldo a arbitrar sozinho o nível de risco aceitável para uma afirmação pública.
+ 
+**Emoção:** Positiva, mas tensionada — ele reconhece o ganho de antecipação, porém sente que está assumindo um risco de comunicação com base em informação que ainda não consegue qualificar sozinho.
+ 
+#### Fase 4 : Planejamento e aprovação do cronograma
+ 
+**Ações:** Define datas de campanha, mídia e materiais com base na previsão de validação antecipada. Submete o plano à aprovação da liderança.
+ 
+**Pensamentos:** *"Com previsibilidade maior, consigo comprar mídia com antecedência e melhor custo."*
+ 
+**Dor desta fase:** qualquer alteração posterior na previsão do modelo não chega a Geraldo de forma ativa — ele precisa consultar o dashboard por iniciativa própria para descobrir mudanças que impactam um cronograma já aprovado.
+ 
+**Emoção:** Positiva, estável — a antecipação lhe dá poder de negociação com fornecedores de mídia, algo que ele raramente teve nos ciclos anteriores.
+ 
+#### Fase 5 — Execução do lançamento e acompanhamento
+ 
+**Ações:** Executa a campanha. Acompanha a validação física final para confirmar que os dados divulgados se sustentam e ajusta a comunicação, se necessário.
+ 
+**Pensamentos:** *"Se a validação final divergir do previsto, o risco de retratação é meu."*
+ 
+**Dor desta fase:** não há distinção formal e visível entre dado preditivo e dado validado nos materiais internos, o que dificulta rastrear qual afirmação de campanha se apoia em estimativa e qual já está confirmada.
+ 
+**Emoção:** Positiva, com tensão residual — ele opera com confiança maior que nos ciclos anteriores, mas só relaxa de fato quando a validação física confirma o que já foi comunicado ao mercado.
+ 
+ 
+#### Conexão com a meta do projeto
+ 
+Ao permitir que Geraldo tome a decisão da Fase 3 semanas antes do resultado do teste físico, o Thermal Predictor converte a meta técnica do projeto — redução de até 30% no lead time de desenvolvimento — em ganho direto de negócio: campanhas planejadas com antecedência, mídia comprada a melhor custo e menor incidência de remarcação de data de lançamento.
+ 
+ 
+#### Oportunidades
+ 
+- **Exibir intervalo de confiança das previsões no dashboard** — porque é o dado que separa uma decisão de campanha segura de uma aposta reputacional na Fase 3. *Responsável: time de desenvolvimento do modelo.*
+- **Criar uma visão simplificada para perfis não técnicos** — porque a saída atual está em linguagem de engenharia, o que gera dependência de intermediação e atrasa a construção da narrativa (Fase 2). *Responsável: time de dashboard/UX.*
+- **Notificar automaticamente mudanças relevantes na previsão** — porque hoje Geraldo só descobre alterações se consultar o dashboard, o que expõe cronogramas já aprovados a mudanças silenciosas (Fase 4). *Responsável: time de desenvolvimento.*
+- **Sinalizar claramente o status do dado (preditivo x validado)** — porque a ausência dessa distinção impede rastrear quais afirmações públicas ainda dependem de confirmação física (Fase 5). *Responsável: Engenharia + Marketing.*
+
+<img src="../assets/jornadaGeraldo.png" alt="Jornada do Usuário - Geraldo" width="900"/>
+<p><em>Figura X — Jornada do Usuário Geraldo (Especialista de Marketing), mapeando as fases de alinhamento inicial, consulta aos dados preditivos, decisão crítica de comunicação e planejamento/execução do lançamento.</em></p>
+
 ##### Engenheira de Materiais (Estela)
 
 ##### Etapa 1 — Preparação do Projeto
@@ -534,6 +628,9 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 **Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
+
+<img src="../assets/jornadaEstela.png" alt="Jornada do Usuário - Estela" width="900"/>
+<p><em>Figura X — Jornada do Usuário Estela (Engenheira de Materiais), mapeando as etapas de preparação, consulta ao modelo, priorização/validação física e aprovação da decisão de material.</em></p>
 
 **Jornada da Usuária — Beatriz (Designer UX/UI)**
 
@@ -599,7 +696,7 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 **Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
 
 
-<img src="../assets/digrama_jornada_beatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
+<img src="../assets/jornadaBeatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
 <p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
 
 
@@ -783,8 +880,12 @@ O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os 
 | # | Hipótese | Resultado |
 |---|---|---|
 | **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
+
 | **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
+
 | **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
+
+| **H4** | A carcaça aberta eleva a temperatura do IGBT 1: com o housing aberto, o componente opera ~9,6 °C mais quente que fechado, o contrário do esperado. | Confirmada |
 
 ##### H1 — Configurações redistribuem calor, não o eliminam
 
@@ -821,6 +922,22 @@ A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5
 A ressalva é sobre a magnitude: o modo explica apenas cerca de 2% da variância da temperatura (η² ≈ 0,02; Cohen's d ≈ 0,28). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
 
 Para a modelagem (Seção 4.3), isso significa manter run_case como preditor, é um fator real e consistente, porém com peso secundário frente à área do sensor. Como nas demais hipóteses, os fatores estão confundidos entre si, de modo que o resultado identifica um padrão associado ao modo, não uma causa isolada.
+
+##### H4 — A carcaça aberta aquece o IGBT 1, contra a intuição
+
+A hipótese é de que a configuração da carcaça (housing) influencia a temperatura do IGBT 1, o sensor de maior presença na base, na área IPC Comp (~49% dos registros). A intuição inicial seria de que a carcaça fechada, ao prender o calor, deixaria o componente mais quente; a hipótese testa se ocorre o oposto, com a carcaça aberta redirecionando o fluxo de ar de forma a aquecer o IGBT 1 em vez de resfriá-lo. O recorte fixa o sensor (uma leitura por run, n = 56, limite constante de 110 °C), evitando pseudo-replicação.
+
+A hipótese se confirmou, na direção contra-intuitiva. Com a carcaça aberta o IGBT 1 opera a 91,7 °C em média, contra 82,1 °C com ela fechada, uma diferença de +9,6 °C, ou seja, aberto é mais quente, não o contrário. O efeito é estatisticamente significativo no teste de médias (Welch, p ≈ 0,03) e de magnitude média (Cohen's d ≈ 0,59), maior que o observado na H3.
+
+<div align="center">
+  <sub>Figura 11 — Temperatura do IGBT 1 por configuração da carcaça (housing)</sub><br>
+  <img src="../assets/graficos/g_h4.png" alt="Boxplot e barras comparando a temperatura do IGBT 1 entre housing fechado e aberto" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
+
+A ressalva é o tamanho da amostra: com apenas 56 leituras (28 por grupo), os testes mais conservadores ficam no limite, o Mann-Whitney não alcança significância (p ≈ 0,08) e o Fisher exato na taxa de excedência do limite (110 °C) também não (p ≈ 0,67, com poucos pontos acima do limite em ambos os grupos). A leitura honesta se apoia no efeito absoluto em °C e no Welch/Cohen's d, não numa convergência de todos os testes. Vale registrar ainda que, apesar de o IGBT 1 dominar a base em volume, ele é o mais frio dos 16 IGBTs, sua relevância vem da quantidade de dados, não da severidade térmica.
+
+Para a modelagem (Seção 4.3), isso indica que a interação entre housing e a posição do componente deve ser considerada: o efeito da carcaça sobre a temperatura não é uniforme nem segue a intuição de "fechado aquece". Como nas demais hipóteses, housing está confundido com outras configurações no desenho dos ensaios, de modo que o resultado identifica uma associação, não uma causa isolada.
 
 ### 4.3. Preparação dos Dados e Modelagem
 ```
@@ -897,12 +1014,6 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 #### Análise e teste de normalidade das variáveis quantitativas
 
-Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
-
-**a) Hipóteses**
-
-
-
 **b) Nível de significância**
 
 Nível de significância (α): 0,05 (5%).
@@ -915,15 +1026,69 @@ Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
 
 **c) Teste de Normalidade**
 
+Foram aplicados três testes formais, todos com H₀ = "a amostra vem de uma distribuição normal": Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do valor crítico de 0,752 a 5%). Os três convergem na mesma decisão: rejeita-se H₀, ou seja, temp não segue distribuição normal.
 
+**Observação:** o Shapiro-Wilk é o mais indicado para bases desse tamanho e é o mais sensível para perceber quando os dados fogem da normalidade; o D'Agostino-Pearson olha para o formato da distribuição, unindo assimetria (se os dados pendem mais para um lado) e curtose (se há muitos valores extremos) em um único resultado; e o Anderson-Darling é parecido com os outros dois, mas dá atenção especial às pontas da distribuição, ou seja, aos valores mais altos e mais baixos.
+
+Variáveis analisadas (conforme o dataset):
+
+- `temp` (temperatura dos sensores/termopares)
+
+Resultados do teste (valores fornecidos):
+
+| Variável | p-valor (científico) | Conclusão (α = 0,05) |
+|:---|:---|:---|
+| `temp` | 2,72 × 10⁻⁵⁰ | Rejeita H₀ — não normal |
+
+Interpretação: o p-valor encontrado é astronomicamente pequeno (um número com dezenas de zeros após a vírgula antes de chegar ao primeiro dígito). Ele é muito, mas muito menor que o nosso nível de significância de 0,05. Portanto, com base no teste de Shapiro-Wilk, temos evidências estatísticas avassaladoras para rejeitar a hipótese de normalidade da variável `temp`.
+
+Código utilizado para execução (Python):
+
+```python
+from scipy import stats
+
+alpha = 0.05
+temp = df['temp'].dropna()
+
+# Shapiro-Wilk
+w_stat, p_shapiro = stats.shapiro(temp)
+
+# D'Agostino-Pearson
+k2_stat, p_dagostino = stats.normaltest(temp)
+
+# Anderson-Darling
+resultado_ad = stats.anderson(temp, dist='norm')
+
+print(f"Shapiro-Wilk: W = {w_stat:.4f}, p = {p_shapiro:.3e}")
+print(f"D'Agostino-Pearson: K² = {k2_stat:.2f}, p = {p_dagostino:.3e}")
+print(f"Anderson-Darling: A² = {resultado_ad.statistic:.2f}, "
+      f"valor crítico (5%) = {resultado_ad.critical_values[2]:.3f}")
+
+conclusao = "Rejeita H₀ — não normal" if p_shapiro < alpha else "Não rejeita H₀ — normal"
+print(f"Conclusão (α = {alpha}): {conclusao}")
+```
 
 **d) Histogramas e resultados dos testes estatísticos de normalidade**
 
+O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
+<div align="center">
+  <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+</div>
 
-**e) Comparação entre a média com a mediana de cada variável e resultados dos testes estatísticos de normalidade**
+**`temp` — o formato visual reforça o resultado do teste.**
 
+O Shapiro-Wilk rejeitou H₀ (W = 0,8669; p = 2,72 × 10⁻⁵⁰), e o histograma mostra, por evidência independente, as quatro características que explicam essa rejeição:
 
+- **Não há formato de sino.** Uma normal é simétrica em torno da média; aqui o corpo da distribuição se concentra entre 40 °C e 132 °C, com pico na faixa de 70,7 °C a 76,9 °C (434 leituras), e os dois lados do pico se comportam de maneira diferente.
+- **Assimetria à direita.** O coeficiente de assimetria é +1,76 e a média (81,77 °C) fica 5,27 °C acima da mediana (76,50 °C) — numa distribuição simétrica as duas coincidiriam. Três quartos das leituras estão até 96,02 °C, mas o máximo chega a 273,60 °C.
+- **Cauda longa à direita.** 95% das leituras estão até 132,24 °C, e ainda assim a distribuição se estende por mais 141 °C acima desse ponto. A curtose em excesso é de 4,90, bem acima do zero esperado para uma normal, o que confirma o peso dos valores extremos.
+- **Corte abrupto à esquerda.** A primeira barra começa em 27,69 °C e não há nada abaixo disso, porque a temperatura ambiente do ensaio funciona como piso físico. Uma normal não tem limite inferior, e essa barreira sozinha já inviabiliza o ajuste.
+
+Há ainda um quinto elemento que os testes formais não separam, mas que o histograma revela: um **modo secundário** entre 206,0 °C e 212,1 °C (45 leituras), destacado de uma faixa esparsa entre 138 °C e 200 °C. A distribuição não é unimodal, o que é coerente com o fato de `temp` agregar sete `key_area` com regimes térmicos distintos — conforme o item a) da subseção seguinte, a amplitude por região vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`. O que o gráfico mostra é uma mistura de distribuições, não uma distribuição única deformada.
+
+**Ressalva metodológica.** Com n = 4.065, o Shapiro-Wilk rejeita H₀ mesmo diante de desvios pequenos, de modo que um p-valor baixo, isoladamente, não prova que o afastamento seja grande. É justamente o histograma que resolve essa dúvida: o desvio aqui é estrutural e visível a olho nu (assimetria, cauda longa, piso físico e bimodalidade), não um artefato do tamanho da amostra. Visual e teste apontam na mesma direção — **`temp` não segue distribuição normal** —, e métodos que pressupõem normalidade ficam desaconselhados para essa variável em escala global.
 
 #### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
 
