@@ -490,6 +490,97 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 <img src="../assets/jornadaJoao.png" alt="Jornada do Usuário - João" width="900"/>
 <p><em>Figura X — Jornada do Usuário João (Engenheiro de Qualidade), mapeando as fases de avaliação, análise, decisão e encaminhamento do parecer de qualidade.</em></p>
 
+#### **Jornada do Usuário — Geraldo (Especialista de Marketing)**
+
+#### Cenário
+ 
+De forma geral, Geraldo precisa planejar e executar a campanha de lançamento de um novo modelo de fogão de piso. Para isso, depende de dados técnicos de desempenho térmico do produto e de uma data confiável de validação para definir o cronograma de campanha. Com o Thermal Predictor em operação, ele passa a acessar essas informações ainda na fase inicial de modelagem, antes da conclusão dos testes físicos.
+ 
+#### Expectativas
+ 
+- Receber dados de desempenho térmico com antecedência suficiente para construir estratégias de divulgação para não perder uma janela de lançamento.
+- Ter uma data de validação previsível, que não mude ao longo do desenvolvimento.
+- Obter argumentos técnicos confiáveis e traduzíveis em linguagem de mercado.
+ 
+#### Fases da Jornada
+ 
+#### Fase 1 : Alinhamento inicial do lançamento
+ 
+**Ações:** Geraldo participa da reunião de kickoff do novo produto com o time de  engenharia. Solicita a estimativa de quando o modelo estará validado tecnicamente e quais serão seus diferenciais de desempenho.
+ 
+**Pensamentos:** *"Preciso saber logo se essa data é firme ou se vai mudar como das outras vezes."*
+ 
+**Dor desta fase:** a data de validação informada no kickoff é apenas uma estimativa amarrada ao cronograma de testes físicos, historicamente sujeita a atraso. Assim, Geraldo sai da reunião sem base sólida para começar a planejar mídia e produção de materiais de divulgação.
+ 
+**Emoção:** Neutra, com cautela — ele já passou por lançamentos em que a data prometida no kickoff mudou duas ou três vezes, e aprendeu a não se comprometer cedo demais.
+ 
+#### Fase 2 : Consulta aos dados preditivos
+ 
+**Ações:** Acessa o dashboard do Thermal Predictor e consulta as previsões de temperatura por região do produto (console, manípulos, cooktop), verificando margem em relação aos limites normativos.
+ 
+**Pensamentos:** *"Consigo enxergar o desempenho antes do protótipo ficar pronto — isso muda meu cronograma."*
+ 
+**Dor desta fase:** os dados são apresentados em linguagem de engenharia (temperatura por componente, condição aberto/fechado), sem tradução direta para atributos de comunicação. Geraldo consegue ver os números, mas ainda não sabe o que pode ser transformado em argumento de venda.
+ 
+**Emoção:** Positiva, em alta — pela primeira vez ele tem visibilidade de desempenho sem depender do calendário de laboratório, o que reduz sua sensação de estar sempre no fim da fila da informação.
+ 
+#### Fase 3 : Decisão crítica: definir o que pode ser afirmado publicamente
+ 
+Esta é a fase de risco da jornada, porque é o ponto em que uma estimativa técnica se converte em compromisso público de marca.
+ 
+**O que viu:** o dashboard indica que a região de manípulos e console opera com folga em relação ao limite normativo de temperatura, sugerindo um diferencial real de segurança ao toque frente aos concorrentes.
+ 
+**O que pensou:** *"Isso é um diferencial forte de campanha. Mas qual a confiança dessa previsão? Se eu anunciar e a validação física divergir, o problema é meu e da marca."*
+ 
+**O que decidiu:** levar o dado à Engenharia para confirmação da leitura técnica e optar por uma formulação de campanha ancorada no atributo (segurança ao toque), sem citar número absoluto de temperatura, mantendo margem para eventual ajuste após a validação final.
+ 
+**O que aconteceu depois:** a campanha foi construída com antecedência de semanas em relação ao ciclo tradicional, e a validação física posterior confirmou a leitura — sem necessidade de retratação ou reformulação de material.
+ 
+**Cenário alternativo — e se a confiança do modelo fosse diferente?**
+ 
+- *Confiança alta (previsão com folga clara em relação ao limite e baixa incerteza):* Geraldo pode assumir o diferencial como pilar central da campanha, inclusive com afirmação quantitativa, acelerando a produção de material e a compra de mídia.
+- *Confiança baixa (previsão próxima ao limite normativo ou com margem de erro sobreposta a ele):* Geraldo deve tratar o dado como indicativo, não como argumento de campanha, e postergar a definição do pilar de comunicação até a validação física — o que reduz o ganho de antecipação, mas evita risco reputacional e de conformidade.
+ 
+**Dor desta fase:** o dashboard entrega valor pontual de previsão, mas não comunica o grau de confiança associado — o que obriga Geraldo a arbitrar sozinho o nível de risco aceitável para uma afirmação pública.
+ 
+**Emoção:** Positiva, mas tensionada — ele reconhece o ganho de antecipação, porém sente que está assumindo um risco de comunicação com base em informação que ainda não consegue qualificar sozinho.
+ 
+#### Fase 4 : Planejamento e aprovação do cronograma
+ 
+**Ações:** Define datas de campanha, mídia e materiais com base na previsão de validação antecipada. Submete o plano à aprovação da liderança.
+ 
+**Pensamentos:** *"Com previsibilidade maior, consigo comprar mídia com antecedência e melhor custo."*
+ 
+**Dor desta fase:** qualquer alteração posterior na previsão do modelo não chega a Geraldo de forma ativa — ele precisa consultar o dashboard por iniciativa própria para descobrir mudanças que impactam um cronograma já aprovado.
+ 
+**Emoção:** Positiva, estável — a antecipação lhe dá poder de negociação com fornecedores de mídia, algo que ele raramente teve nos ciclos anteriores.
+ 
+#### Fase 5 — Execução do lançamento e acompanhamento
+ 
+**Ações:** Executa a campanha. Acompanha a validação física final para confirmar que os dados divulgados se sustentam e ajusta a comunicação, se necessário.
+ 
+**Pensamentos:** *"Se a validação final divergir do previsto, o risco de retratação é meu."*
+ 
+**Dor desta fase:** não há distinção formal e visível entre dado preditivo e dado validado nos materiais internos, o que dificulta rastrear qual afirmação de campanha se apoia em estimativa e qual já está confirmada.
+ 
+**Emoção:** Positiva, com tensão residual — ele opera com confiança maior que nos ciclos anteriores, mas só relaxa de fato quando a validação física confirma o que já foi comunicado ao mercado.
+ 
+ 
+#### Conexão com a meta do projeto
+ 
+Ao permitir que Geraldo tome a decisão da Fase 3 semanas antes do resultado do teste físico, o Thermal Predictor converte a meta técnica do projeto — redução de até 30% no lead time de desenvolvimento — em ganho direto de negócio: campanhas planejadas com antecedência, mídia comprada a melhor custo e menor incidência de remarcação de data de lançamento.
+ 
+ 
+#### Oportunidades
+ 
+- **Exibir intervalo de confiança das previsões no dashboard** — porque é o dado que separa uma decisão de campanha segura de uma aposta reputacional na Fase 3. *Responsável: time de desenvolvimento do modelo.*
+- **Criar uma visão simplificada para perfis não técnicos** — porque a saída atual está em linguagem de engenharia, o que gera dependência de intermediação e atrasa a construção da narrativa (Fase 2). *Responsável: time de dashboard/UX.*
+- **Notificar automaticamente mudanças relevantes na previsão** — porque hoje Geraldo só descobre alterações se consultar o dashboard, o que expõe cronogramas já aprovados a mudanças silenciosas (Fase 4). *Responsável: time de desenvolvimento.*
+- **Sinalizar claramente o status do dado (preditivo x validado)** — porque a ausência dessa distinção impede rastrear quais afirmações públicas ainda dependem de confirmação física (Fase 5). *Responsável: Engenharia + Marketing.*
+
+<img src="../assets/jornadaGeraldo.png" alt="Jornada do Usuário - Geraldo" width="900"/>
+<p><em>Figura X — Jornada do Usuário Geraldo (Especialista de Marketing), mapeando as fases de alinhamento inicial, consulta aos dados preditivos, decisão crítica de comunicação e planejamento/execução do lançamento.</em></p>
+
 ##### Engenheira de Materiais (Estela)
 
 ##### Etapa 1 — Preparação do Projeto
@@ -537,6 +628,9 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 **Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
 
 **Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
+
+<img src="../assets/jornadaEstela.png" alt="Jornada do Usuário - Estela" width="900"/>
+<p><em>Figura X — Jornada do Usuário Estela (Engenheira de Materiais), mapeando as etapas de preparação, consulta ao modelo, priorização/validação física e aprovação da decisão de material.</em></p>
 
 **Jornada da Usuária — Beatriz (Designer UX/UI)**
 
@@ -602,7 +696,7 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 **Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
 
 
-<img src="../assets/digrama_jornada_beatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
+<img src="../assets/jornadaBeatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
 <p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
 
 
