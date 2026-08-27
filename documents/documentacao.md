@@ -487,6 +487,9 @@ O template visual de mapa de jornada será disponibilizado posteriormente pelo p
 4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
 5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
 
+<img src="../assets/jornadaJoao.png" alt="Jornada do Usuário - João" width="900"/>
+<p><em>Figura X — Jornada do Usuário João (Engenheiro de Qualidade), mapeando as fases de avaliação, análise, decisão e encaminhamento do parecer de qualidade.</em></p>
+
 ##### Engenheira de Materiais (Estela)
 
 ##### Etapa 1 — Preparação do Projeto
