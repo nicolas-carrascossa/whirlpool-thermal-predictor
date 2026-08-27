@@ -922,19 +922,17 @@ Esta subseção descreve os procedimentos de análise estatística aplicados ao 
 
 **Afirmação:**
 
-O objetivo deste estudo é verificar se a variável quantitativa "Temperatura" (`temp`), medida em graus Celsius nos termopares posicionados nos componentes térmicos do forno, segue uma distribuição normal. Essa variável é a única variável quantitativa contínua do conjunto de dados fornecido pela Whirlpool Latin America, sendo também a variável-alvo (*target*) do modelo preditivo desenvolvido pelo grupo. Todas as demais colunas do dataset (`run_id`, `tc_name`, `key_area`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole` e `material_coil_support`) são de natureza categórica, e a coluna `tc_number` corresponde a um identificador nominal do termopar, não a uma grandeza mensurável.
-
-A verificação da normalidade é relevante para o projeto porque determina quais ferramentas estatísticas são adequadas para a análise: caso a distribuição seja normal, testes paramétricos (como teste t e ANOVA) e métricas baseadas em média e desvio padrão são aplicáveis; caso contrário, deve-se recorrer a testes não paramétricos (como Kruskal-Wallis e Mann-Whitney) e a medidas robustas de tendência central, além de eventuais transformações da variável antes da modelagem.
+O objetivo deste estudo é verificar se a variável quantitativa "Temperatura" (`temp`), medida em graus Celsius nos termopares posicionados nos componentes térmicos do forno, segue uma distribuição normal. Essa variável é a única variável quantitativa contínua do conjunto de dados fornecido pela Whirlpool Latin America, sendo também a variável-alvo (*target*) do modelo preditivo desenvolvido pelo grupo.
 
 **Hipóteses Estatísticas do Teste de Normalidade:**
 
-Para testar isso de forma rigorosa, foram formuladas duas hipóteses mutuamente excludentes para a variável. De um lado, temos a hipótese nula ($H₀$), que assume que a variável segue uma distribuição normal. Do outro, a hipótese alternativa ($Hₐ$), que defende que ela não segue.
+Para testar isso de forma rigorosa, foram formuladas duas hipóteses mutuamente excludentes para a variável. De um lado, temos a hipótese nula ($H_0$), que assume que a variável segue uma distribuição normal. Do outro, a hipótese alternativa ($H_a$), que defende que ela não segue.
 
 - Para a variável "Temperatura" (`temp`):
-    - $H₀$ (Hipótese Nula): A variável "Temperatura" segue uma distribuição normal.
-    - $Hₐ$ (Hipótese Alternativa): A variável "Temperatura" não segue uma distribuição normal.
+    - $H_0$ (Hipótese Nula): A variável "Temperatura" segue uma distribuição normal.
+    - $H_a$ (Hipótese Alternativa): A variável "Temperatura" não segue uma distribuição normal.
 
-O nível de significância adotado é $α = 0{,}05$. Dessa forma, se o *p-valor* obtido no teste for menor que $0{,}05$, rejeita-se $H₀$, concluindo-se que há evidência estatística de que a variável não segue uma distribuição normal. Caso contrário, não há evidências suficientes para rejeitar $H₀$.
+O nível de significância adotado é $\alpha = 0{,}05$. Dessa forma, se o *p-valor* obtido no teste for menor que $0{,}05$, rejeita-se $H_0$, concluindo-se que há evidência estatística de que a variável não segue uma distribuição normal. Caso contrário, não há evidências suficientes para rejeitar $H_0$.
 
 **b) Nível de significância**
 
