@@ -888,7 +888,7 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 ## <a name="attachments"></a>Anexo
 
-#### Análise e teste de normalidade das variáveis quantitativas
+#### Análise e teste de normalidade da variável quantitativa
 
 Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
 
@@ -915,7 +915,7 @@ Nível de significância (α): 0,05 (5%).
 
 Regra de decisão:
 
-Se $p \geq 0{,}05$: não rejeita $H_0$ (evidências de normalidade).
+Se $p \geq 0{,}05$: não rejeita $H_0$ (ausência de evidência contra a normalidade).
 
 Se $p < 0{,}05$: rejeita $H_0$ (não segue distribuição normal).
 
@@ -928,6 +928,8 @@ Foram aplicados três testes formais, todos com $H_0$ = "a amostra vem de uma di
 Variáveis analisadas (conforme o dataset):
 
 - `temp` (temperatura dos sensores/termopares)
+
+A classificação da Seção 1.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
 
 Resultados do teste (valores fornecidos):
 
@@ -959,7 +961,8 @@ print(f"D'Agostino-Pearson: K² = {k2_stat:.2f}, p = {p_dagostino:.3e}")
 print(f"Anderson-Darling: A² = {resultado_ad.statistic:.2f}, "
       f"valor crítico (5%) = {resultado_ad.critical_values[2]:.3f}")
 
-conclusao = "Rejeita H₀ — não normal" if p_shapiro < alpha else "Não rejeita H₀ — normal"
+conclusao = ("Rejeita H₀ — evidência de não normalidade" if p_shapiro < alpha
+             else "Não rejeita H₀ — sem evidência suficiente para afastar a normalidade")
 print(f"Conclusão (α = {alpha}): {conclusao}")
 ```
 
@@ -968,7 +971,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 13 — Distribuição de temp (dados originais, n = 4.065)</sub><br>
+  <sub>Figura 13 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
 </div>
@@ -1002,7 +1005,7 @@ Os valores, portanto, **reforçam os resultados dos testes estatísticos de norm
 
 Embora a média ≈ mediana seja condição necessária para simetria, ela não bastaria sozinha para provar normalidade; no caso da temp, porém, a diferença é clara (+5,27 °C) e aponta na mesma direção dos testes formais.
 
-#### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
+#### Escalonamento (Padronização ou normalização) da variável quantitativa
 
 **a) Tipo de Escalonamento e Justificativa**
 
@@ -1197,7 +1200,9 @@ A tabela abaixo demonstra a transformação com uma observação real de cada `k
 | Mainback | Run 5 · TC 9 — *Ambient Below Terminal Block* | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
 | Oven HMI | Run 4 · TC 69 — *A33/Bellatrix Thermistor* | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
 
-Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
+Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83, valor pontual — ver nota abaixo) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
+
+*Nota sobre rastreabilidade:* o valor de +1,83 citado acima é pontual e não aparece nas tabelas de parâmetros por `key_area` (que trazem apenas mínimo, máximo, média, desvio padrão, amplitude e CV). O cálculo de assimetria e curtose para as sete regiões já foi implementado no notebook (célula logo após a Seção 6 "Preparação dos dados estatísticos para escalonamento", que estende a tabela `estat_area` com as colunas `skewness` e `curtose_excesso`); falta apenas executá-lo no Colab, já que `data/dataset_long.csv` é um dado do parceiro, protegido por `.gitignore`, e não está disponível para recomputação neste ambiente.
 
 ---
 
@@ -1217,7 +1222,7 @@ $$
 
 Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo — sem eles, as predições não são interpretáveis em unidade física.
 
-**d) Histogramas das três variáveis**
+**d) Histograma da variável após o escalonamento**
 
 O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 13.
 
@@ -1239,13 +1244,154 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-**O que muda.** Além da escala do eixo X, que deixa de ser graus Celsius e passa ao intervalo adimensional [0, 1], **a forma da distribuição também muda**. A assimetria cai de +1,76 para +0,28 e a curtose em excesso passa de +4,90 para −0,45: a cauda longa à direita e o modo secundário próximo de 209 °C, ambos visíveis na Figura 13, desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688.
+Antes do escalonamento, o histograma de `temp` (Figura 13, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-**Por que muda.** O escalonamento adotado não é uma transformação linear única, e sim **sete** transformações lineares independentes, uma por `key_area`, cada qual com seus próprios mínimo e máximo (item b). Cada região é esticada para ocupar todo o intervalo [0, 1] separadamente, de modo que a diferença de patamar térmico entre regiões — exatamente o que produzia a cauda longa à direita — é eliminada por construção. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0 respectivamente.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 14 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 13: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
 
-Vale o contraste: um Min-Max **global**, aplicado sobre o conjunto inteiro, preservaria a forma de maneira exata — assimetria e curtose permaneceriam em +1,7630 e +4,8996, com correlação de 1,000000 em relação à série original, alterando apenas a escala do eixo. A mudança de forma observada na Figura 14 é, portanto, consequência direta e esperada da decisão de segmentar por região tomada no item a), e não um erro de execução.
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 13) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
-**O que permanece.** A ordenação **dentro de cada** `key_area` é preservada, pois a transformação é monotônica crescente dentro de cada região: o sensor mais quente de uma área continua sendo o mais quente depois do escalonamento. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto — a verificação por região confirma mínimo 0,0 e máximo 1,0 nas sete `key_area`. A ausência de normalidade também se mantém: a distribuição continua não sendo uma normal, apenas deixa de sê-lo por outros motivos.
+**Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
+
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 14 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 13 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+
+**O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
 **e) Tabelas Comparativas dos Dados**
 
+O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
+
+Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_long.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
+
+- `tc_number` tem `dtype` inteiro, mas é um identificador do sensor, não uma quantidade. Média, desvio-padrão e normalização não têm significado sobre um rótulo, por isso foi classificada como categórica.
+- `active_limit` é expressa em °C, mas é um parâmetro de especificação de engenharia atribuído a cada termopar, não uma grandeza medida no experimento: seu valor é constante para um mesmo sensor em todas as execuções, funcionando como atributo do ponto de medição, não como observação. Além disso, a coluna carrega sujeira documentada na Seção 4.2.1 (o valor textual `Monitor (150 C)` e as 302 linhas com `active_limit = 1000`, placeholder numérico de "sem limite definido"), o que tornaria qualquer escalonamento dependente de um valor sem significado físico.
+- Todas as demais colunas (`run_id`, `tc_name`, `key_area`, `reason`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole`, `material_coil_support`) são categóricas nominais.
+
+Portanto, o escalonamento foi aplicado exclusivamente a `temp`.
+
+Procedimento de preparação:
+
+1. Padronizar os nomes das colunas (remover espaços no início e no fim).
+2. Converter a variável para valor numérico, substituindo vírgula decimal por ponto, para garantir tipagem consistente independentemente da origem do arquivo.
+3. Verificar registros inválidos (`NaN`). A coluna `temp` não apresentou valores ausentes: as 4.065 linhas do conjunto foram mantidas, sem descarte.
+4. Aplicar o escalonamento Min-Max com o `MinMaxScaler`, que transforma linearmente a variável para o intervalo `[0,1]` segundo a fórmula `x' = (x - min) / (max - min)`.
+
+---
+
+#### Código utilizado
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
+
+# padronizar nomes das colunas (remover espaços no início/fim)
+df.columns = df.columns.str.strip()
+
+# variável quantitativa analisada
+variaveis = ['temp']
+
+# garantir tipagem numérica (corrigindo eventual vírgula decimal)
+for v in variaveis:
+    df[v] = df[v].astype(str).str.replace(',', '.')
+    df[v] = pd.to_numeric(df[v], errors='coerce')
+
+# cópia limpa para não alterar o df original
+df_limpo = df.dropna(subset=variaveis).copy()
+df_limpo.reset_index(drop=True, inplace=True)
+
+# Tabela 1 — dados originais
+print("Tabela 1: Dados Originais")
+print(df_limpo[['run_id', 'tc_name', 'key_area'] + variaveis].head(10))
+
+# Escalonamento Min-Max
+scaler = MinMaxScaler()
+dados_escalonados_array = scaler.fit_transform(df_limpo[variaveis])
+
+# novo dataframe com dados escalonados
+df_scaled = pd.DataFrame(dados_escalonados_array, columns=variaveis)
+
+# Tabela 2 — dados normalizados
+print("\nTabela 2: Dados Normalizados")
+print(df_scaled.head(10))
+
+# limites usados pelo scaler
+print("\nmin:", scaler.data_min_, "| max:", scaler.data_max_)
+```
+
+---
+
+### Tabela 1: Dados Originais — 10 primeiros registros
+
+As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto de identificação do registro; a variável submetida ao escalonamento é `temp`.
+
+| # | run_id | tc_name | key_area | temp (°C) |
+|---|--------|---------|----------|-----------|
+| 0 | Run 1 | Door Lock Motor Ambient 1/2" Below | Mainback | 99.35 |
+| 1 | Run 1 | Door Lock Microswitch Body | Mainback | 114.72 |
+| 2 | Run 1 | Convect Motor Winding | Mainback | 89.93 |
+| 3 | Run 1 | Storage Drawer (Metal Above) | Mainback | 167.87 |
+| 4 | Run 1 | L2, Wire, Power Cord | Mainback | 53.65 |
+| 5 | Run 1 | Ambient Below Terminal Block | Mainback | 48.94 |
+| 6 | Run 1 | ACU Ambient (Hill Only) Top | Mainback | 60.00 |
+| 7 | Run 1 | ACU K8 Housing / Double Line Break | Mainback | 55.44 |
+| 8 | Run 1 | Coil FR | Coil Temps | 55.69 |
+| 9 | Run 1 | Coil FL | Coil Temps | 49.33 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+
+---
+
+### Tabela 2: Dados Escalonados (Min-Max) — 10 primeiros registros
+
+| # | temp (original, °C) | temp (escalonada) |
+|---|---------------------|-------------------|
+| 0 | 99.35 | 0.291407 |
+| 1 | 114.72 | 0.353910 |
+| 2 | 89.93 | 0.253101 |
+| 3 | 167.87 | 0.570046 |
+| 4 | 53.65 | 0.105567 |
+| 5 | 48.94 | 0.086414 |
+| 6 | 60.00 | 0.131390 |
+| 7 | 55.44 | 0.112846 |
+| 8 | 55.69 | 0.113863 |
+| 9 | 49.33 | 0.088000 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+
+---
+
+#### Interpretação dos resultados
+
+Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observações de `temp`:
+
+| Estatística | Valor (°C) |
+|-------------|------------|
+| Mínimo | 27.69 |
+| Máximo | 273.60 |
+| Amplitude | 245.91 |
+| Média | 81.77 |
+| Mediana | 76.50 |
+| Desvio-padrão | 33.28 |
+
+**Verificação do cálculo:** aplicando a fórmula ao primeiro registro, `(99.35 - 27.69) / 245.91 = 0.291407`, valor idêntico ao da Tabela 2. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: `Storage Drawer` (167.87 °C) segue o mais quente da amostra nas duas tabelas (0.570), e `Ambient Below Terminal Block` (48.94 °C) o mais frio nas duas (0.086).
+
+**Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
+
+Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação (*one-hot*), gerando colunas binárias no intervalo `[0,1]`. Sem normalizar `temp`, ela entraria no modelo em uma escala duas ordens de grandeza maior que as *dummies*, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
+
+A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item d) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
+
+**Verificação do intervalo de `temp_scaled` por `key_area`**
+
+| `key_area` | n | mín(`temp_scaled`) | máx(`temp_scaled`) |
+|---|---:|---:|---:|
+| Mainback | 610 | 0,0000 | 1,0000 |
+| Coil Temps | 420 | 0,0000 | 1,0000 |
+| Main Vent Sys | 288 | 0,0000 | 1,0000 |
+| IPC Cooling | 218 | 0,0000 | 1,0000 |
+| IPC Comp | 1.979 | 0,0000 | 1,0000 |
+| CT Knobs | 330 | 0,0000 | 1,0000 |
+| Oven HMI | 220 | 0,0000 | 1,0000 |
+
+Por construção da equação de normalização (item c), o mínimo e o máximo de cada `key_area` são necessariamente mapeados para 0 e 1 — a tabela acima, portanto, não é uma medição sujeita a variação amostral, mas uma verificação de que a implementação (Seção 5 do notebook) respeitou a fórmula em todas as sete regiões, sem observações fora do intervalo [0, 1] previsto.
