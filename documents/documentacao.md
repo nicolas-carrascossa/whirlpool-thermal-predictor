@@ -1219,7 +1219,7 @@ Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo —
 
 **d) Histogramas das três variáveis**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 11.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 13.
 
 <div align="center">
   <sub>Figura 14 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
@@ -1227,7 +1227,7 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 11)**
+**Comparação com o histograma antes do escalonamento (Figura 13)**
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -1239,11 +1239,11 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-**O que muda.** Além da escala do eixo X, que deixa de ser graus Celsius e passa ao intervalo adimensional [0, 1], **a forma da distribuição também muda**. A assimetria cai de +1,76 para +0,28 e a curtose em excesso passa de +4,90 para −0,45: a cauda longa à direita e o modo secundário próximo de 209 °C, ambos visíveis na Figura 11, desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688.
+**O que muda.** Além da escala do eixo X, que deixa de ser graus Celsius e passa ao intervalo adimensional [0, 1], **a forma da distribuição também muda**. A assimetria cai de +1,76 para +0,28 e a curtose em excesso passa de +4,90 para −0,45: a cauda longa à direita e o modo secundário próximo de 209 °C, ambos visíveis na Figura 13, desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688.
 
 **Por que muda.** O escalonamento adotado não é uma transformação linear única, e sim **sete** transformações lineares independentes, uma por `key_area`, cada qual com seus próprios mínimo e máximo (item b). Cada região é esticada para ocupar todo o intervalo [0, 1] separadamente, de modo que a diferença de patamar térmico entre regiões — exatamente o que produzia a cauda longa à direita — é eliminada por construção. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0 respectivamente.
 
-Vale o contraste: um Min-Max **global**, aplicado sobre o conjunto inteiro, preservaria a forma de maneira exata — assimetria e curtose permaneceriam em +1,7630 e +4,8996, com correlação de 1,000000 em relação à série original, alterando apenas a escala do eixo. A mudança de forma observada na Figura 12 é, portanto, consequência direta e esperada da decisão de segmentar por região tomada no item a), e não um erro de execução.
+Vale o contraste: um Min-Max **global**, aplicado sobre o conjunto inteiro, preservaria a forma de maneira exata — assimetria e curtose permaneceriam em +1,7630 e +4,8996, com correlação de 1,000000 em relação à série original, alterando apenas a escala do eixo. A mudança de forma observada na Figura 14 é, portanto, consequência direta e esperada da decisão de segmentar por região tomada no item a), e não um erro de execução.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada, pois a transformação é monotônica crescente dentro de cada região: o sensor mais quente de uma área continua sendo o mais quente depois do escalonamento. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto — a verificação por região confirma mínimo 0,0 e máximo 1,0 nas sete `key_area`. A ausência de normalidade também se mantém: a distribuição continua não sendo uma normal, apenas deixa de sê-lo por outros motivos.
 
