@@ -437,312 +437,64 @@ Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pe
 
 ##### Jornada do Usuário — Engenheiro de Qualidade (João)
 
+**Cenário:** João recebe da equipe de Design uma nova configuração de fogão para avaliar antes da liberação do produto. Em vez de aguardar uma bateria completa de testes físicos destrutivos, ele usa o Thermal Predictor para gerar uma previsão térmica por sensor, com margem de erro e indicador de confiabilidade, e a partir dela decide quais componentes podem ser aprovados diretamente e quais ainda exigem confirmação por teste físico antes do encerramento do parecer.
+
+<div align="center">
+  <sub>Figura 9 — Mapa de Jornada do Usuário: Engenheiro de Qualidade (João)</sub><br>
+  <img src="../assets/designJoaoQUalidade.png" width="800" alt="Mapa de jornada de João"><br>
+  <sup>Fonte: Elaborado pelos autores (2026).</sup>
+</div>
+
 **Fase 1 — Acessar e Triar**
 
-- *Ações:* Acessa a plataforma e faz login com suas credenciais, abre a configuração recebida da equipe da Beatriz do Design no dashboard e verifica na tela de "casos similares" se já existe parecer para configurações parecidas.
-- *Pensamento:* "Já vi algo parecido com isso antes?"
+- *Ações:* Acessa a plataforma e faz login com suas credenciais, abre a configuração recebida da equipe da Beatriz do Design no dashboard, confere o identificador e a revisão da configuração recebida, e verifica na tela de "casos similares" se já existe parecer emitido para configurações parecidas.
+- *Pensamento:* "Já vi algo parecido com isso antes? Existe parecer anterior que eu deva consultar antes de começar do zero?"
 - *Emoção:* Neutra, modo organização.
-- *Ponto de dor:* Sem esse filtro, revisaria pareceres antigos manualmente.
+- *Ponto de dor:* Sem esse filtro, revisaria pareceres antigos manualmente e correria o risco de duplicar uma análise já feita.
 
 **Fase 2 — Configurar Parâmetros**
 
-- *Ações:* Seleciona as áreas-chave a avaliar (Mainback, bobinas, ventilação, área do cooktop, painel de comandos), preenche os parâmetros da configuração e clica em "Gerar previsão".
-- *Pensamento:* "Um campo errado invalida a previsão inteira."
+- *Ações:* Seleciona as áreas-chave a avaliar (Mainback, bobinas, ventilação, área do cooktop, painel de comandos), preenche os parâmetros da configuração (direção do fluxo de ar, estado do housing, posição da placa, tipo de duto, Run Case), confere no resumo da tela se todos os campos obrigatórios foram preenchidos e clica em "Gerar previsão".
+- *Pensamento:* "Um campo errado invalida a previsão inteira — preciso conferir antes de enviar."
 - *Emoção:* Atenção concentrada.
-- *Ponto de dor:* Sem validação prévia, o erro só apareceria depois de gerada a previsão.
+- *Ponto de dor:* Sem validação prévia, o erro só apareceria depois de gerada a previsão, obrigando a repetir o ciclo.
 
 **Fase 3 — Explorar Resultados**
 
-- *Ações:* Na tela de resultados, ordena os sensores por proximidade do limite normativo e identifica o da área do cooktop (IPC) destacado em "extrapolação moderada".
-- *Pensamento:* "A maioria está tranquila, mas esse ponto está no limite."
+- *Ações:* Na tela de resultados, visualiza a lista de sensores com temperatura estimada e selo de confiabilidade, ordena por proximidade do limite normativo e identifica o da área do cooktop (IPC) destacado em "extrapolação moderada".
+- *Pensamento:* "A maioria está tranquila, mas esse ponto está no limite — preciso olhar com mais cuidado."
 - *Emoção:* Alívio parcial; atenção no ponto crítico.
-- *Ponto de dor:* Sem ordenação por criticidade, o sensor de risco passaria despercebido.
+- *Ponto de dor:* Sem ordenação por criticidade, o sensor de risco passaria despercebido em meio aos demais.
 
 **Fase 4 — Conferir o Ponto Crítico**
 
-- *Ações:* Abre o detalhe do sensor da área do cooktop (IPC) e confere o valor previsto e sua margem de erro (10%) contra o limite térmico normativo daquele componente.
+- *Ações:* Abre o detalhe do sensor da área do cooktop (IPC), confere o valor previsto e sua margem de erro (10%) contra o limite térmico normativo cadastrado para aquele componente, e registra no campo de anotações o motivo da dúvida.
 - *Pensamento:* "Com essa margem de erro, esse valor ainda está dentro do que a norma permite?"
 - *Emoção:* Atenção redobrada antes de decidir.
 - *Ponto de dor:* Sem o limite normativo exibido junto ao valor previsto, teria que consultar a norma em outro documento para confirmar a folga real.
 
 **Fase 5 — Decidir (decisão crítica)**
 
-- *Ações:* Marca o sensor da área do cooktop (IPC) como "pendente de teste físico", os demais como "aprovado por previsão", justifica a pendência e clica em "Salvar decisão parcial".
-- *Pensamento:* "Só esse ponto precisa de confirmação física."
+- *Ações:* Marca o sensor da área do cooktop (IPC) como "pendente de teste físico", os demais como "aprovado por previsão", preenche o campo obrigatório de justificativa da pendência e clica em "Salvar decisão parcial".
+- *Pensamento:* "Só esse ponto precisa de confirmação física — o resto já pode seguir."
 - *Emoção:* Segurança na decisão, com peso do ponto em aberto.
-- *Ponto de dor:* Sem status por componente, seria forçado a aprovar ou reprovar tudo.
+- *Ponto de dor:* Sem status por componente, seria forçado a aprovar ou reprovar tudo de uma vez.
 
 **Fase 6 — Encaminhar e Encerrar**
 
-- *Ações:* Gera e envia o parecer à equipe de engenharia da produção; ao receber o resultado do teste, atualiza o status do componente pendente e clica em "Encerrar parecer".
-- *Pensamento:* "Reduzi de uma bateria completa de testes para um único ponto crítico."
+- *Ações:* Clica em "Gerar parecer", confere o documento consolidado, envia à equipe de engenharia da produção pelo próprio dashboard e acompanha o status "pendente" na tela de acompanhamento até a equipe registrar o resultado do teste físico; então atualiza o status do componente pendente e clica em "Encerrar parecer".
+- *Pensamento:* "Reduzi de uma bateria completa de testes para um único ponto crítico — agora só falta confirmar."
 - *Emoção:* Dever cumprido e fechamento do ciclo.
-- *Ponto de dor:* Sem notificação de retorno e trava de encerramento, o parecer ficaria "aberto" indefinidamente.
-
-##### Engenheiro de Qualidade (João)
-
-O template visual de mapa de jornada será disponibilizado posteriormente pelo professor da disciplina de UX. Por isso, esta seção reúne, desde já, o conteúdo textual organizado por campo — ator, objetivo, cenário, expectativas, fases (ações, pensamentos, emoções, pontos de dor), decisão crítica e oportunidades — pronto para ser transposto ao template quando recebido, além do texto explicativo que deve acompanhar a imagem do mapa na versão final desta seção.
-
-**Ator.** João, 42 anos, Engenheiro de Qualidade formado em Engenharia Mecânica, com 15 anos de experiência em qualidade e testes de eletrodomésticos (Seção 4.1.6, Figura 8). É responsável por validar a segurança térmica dos produtos e decidir se um design pode ou não ser liberado, garantindo que nenhum componente ultrapasse seu limite térmico normativo antes da aprovação.
-
-**Objetivo de João nesta jornada.** Emitir o parecer de qualidade sobre uma configuração candidata dentro do prazo do ciclo de desenvolvimento, decidindo — com uma margem de erro auditável — quais componentes podem ser liberados com base na previsão do Thermal Predictor e quais ainda exigem teste físico destrutivo antes da aprovação final.
-
-**Cenário e expectativas.** A equipe de Design finalizou uma nova configuração candidata de fogão de piso — com posição de placa e tipo de mesh duct diferentes das versões já validadas — e precisa do parecer de qualidade antes de avançar para a fase de liberação. João não tem tempo nem orçamento para submeter todas as áreas-chave dessa configuração a teste físico destrutivo apenas para descobrir quais realmente correm risco térmico; sua expectativa é usar o Thermal Predictor para triar rapidamente os componentes críticos e decidir, com uma margem de erro auditável (≤ 10%), quais pontos exigem confirmação física antes de assinar a liberação.
-
-**Fase 1 — Avaliar**
-- *Ações:*
-  1. Recebe da equipe de Design a configuração candidata e separa, dentre as áreas-chave (Mainback, bobinas, ventilação, IPC, HMI), quais componentes têm histórico de operar perto do limite térmico normativo.
-  2. Insere no dashboard os parâmetros da configuração candidata (direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor, Run Case) e seleciona as áreas-chave relevantes para o parecer.
-- *Pensamento de João:* "Essa configuração muda a posição da placa e o duct de ventilação — quais dessas áreas-chave têm histórico de ficar perto do limite térmico nesse tipo de alteração? Se eu fosse testar tudo fisicamente, levaria dias e um protótipo."
-- *Emoção:* Preocupação moderada, por sentir o peso da decisão de liberação e o prazo apertado do ciclo de desenvolvimento, com cautela quanto à confiabilidade do que vai receber como resposta.
-- *Ponto de dor:* Sem uma triagem rápida, dependeria da disponibilidade da equipe de CFD ou de um protótipo físico só para saber se a investigação completa vale a pena, e sem o domínio de validade da previsão deixado claro, não teria como saber de antemão o quanto pode confiar no número que vai receber.
-
-**Fase 2 — Analisar**
-- *Ações:*
-  3. Recebe do Thermal Predictor a temperatura estimada para os sensores selecionados, a margem de erro esperada e o indicador de confiabilidade (interpolação, extrapolação moderada ou fora de domínio). A maioria dos sensores aparece dentro do limite normativo, marcados como interpolação; um sensor da área do IPC aparece próximo do limite, marcado como extrapolação moderada.
-  4. Compara a previsão do sensor do IPC com o histórico de simulações e testes físicos de configurações semelhantes, avaliando o que "extrapolação moderada" significa para aquele ponto específico frente à margem de erro de 10%.
-- *Pensamento de João:* "A maior parte está tranquila, dentro do que eu já esperava para esse tipo de configuração. Mas esse ponto do IPC está perto do limite e sinalizado como extrapolação — isso pode ser um comportamento térmico real ou uma região onde eu simplesmente não tenho dado suficiente para confiar cegamente."
-- *Emoção:* Alívio parcial diante da maioria dos resultados, seguido de dúvida e cautela ao notar o ponto crítico — não aceita o número isolado como suficiente para decidir.
-- *Ponto de dor:* Um valor numérico isolado, sem o selo de confiabilidade em destaque, poderia ser lido como uma certeza que não é; falta também uma forma rápida de visualizar, lado a lado com a previsão, os casos históricos mais próximos daquela configuração para embasar a comparação sem sair do fluxo de análise.
-
-**Fase 3 — Decidir (decisão crítica)**
-- *Ações:*
-  5. Avalia o risco combinando "extrapolação moderada + proximidade do limite normativo" e conclui que a previsão para o sensor do IPC não sustenta sozinha uma liberação.
-  6. Decide por uma aprovação parcial: libera os demais componentes (interpolação, dentro do limite, histórico consistente) e isola o ponto crítico para investigação complementar.
-- *Cadeia da decisão:* Resultado apresentado pelo modelo (sensor do IPC próximo do limite normativo, sinalizado como extrapolação moderada) → interpretação de João (configuração fora do envelope já testado fisicamente, incerteza real e não apenas ruído) → avaliação de risco/qualidade (proximidade do limite normativo combinada a confiabilidade reduzida não pode ser tratada como aprovação) → decisão (aprovação parcial: demais áreas-chave liberadas pela previsão, componente do IPC pendente) → consequência (solicitação de teste físico focado apenas nesse ponto, sem travar o restante do parecer de qualidade).
-- *Pensamento de João:* "Não posso liberar esse ponto só porque o resto passou. Mas também não preciso travar a configuração inteira — só esse componente precisa de confirmação física antes de eu assinar."
-- *Emoção:* Segurança quanto à decisão tomada, por ser uma decisão fundamentada e não arbitrária, ainda com o peso da responsabilidade pelo ponto em aberto.
-- *Ponto de dor:* Sem o indicador de confiabilidade, João teria apenas duas más alternativas: confiar cegamente no número ou exigir teste físico completo para toda a configuração, perdendo o ganho de tempo que motiva o uso da ferramenta.
-- *Extremos do espectro de decisão (contraponto):* se todos os sensores tivessem sido sinalizados como interpolação dentro do limite normativo, João teria liberado a configuração integralmente, sem solicitar nenhum teste adicional; se o sensor do IPC tivesse ultrapassado o limite normativo mesmo considerando a margem de erro, a reprovação teria sido direta, sem necessidade de teste físico para confirmar algo já fora de qualquer margem aceitável. O caso do IPC descrito aqui ocupa o meio desse espectro — nem aprovação plena, nem reprovação direta —, e é justamente essa faixa intermediária que exige o julgamento de um Engenheiro de Qualidade.
-
-**Fase 4 — Encaminhar**
-- *Ações:*
-  7. Documenta o parecer de qualidade, registrando os componentes aprovados por previsão e o status de cada um.
-  8. Solicita à equipe responsável um teste físico focado no sensor do IPC antes da liberação final e comunica o resultado para que o cronograma seja ajustado apenas para esse componente.
-- *Pensamento de João:* "Consegui reduzir de uma bateria completa de testes para um único ponto crítico. Isso não atrasa a liberação inteira, só o que realmente precisa de confirmação física."
-- *Emoção:* Senso de controle e de dever cumprido, equilibrado pela ciência de que a decisão final ainda depende da confirmação física daquele ponto.
-- *Ponto de dor:* Se o status "aprovado por previsão, pendente de teste físico" não for registrado com clareza, essa distinção pode se perder na comunicação com quem recebe o parecer.
-- *Consequência para o projeto:* ao isolar apenas o sensor do IPC em vez de exigir uma bateria completa de testes físicos para toda a configuração, João evita construir e testar destrutivamente um protótipo só para confirmar componentes que a previsão já sustenta com confiança — contribuição direta à meta de redução de até 25% nos protótipos físicos e de até 30% no tempo de desenvolvimento definida no Project Charter (Seção 4.1.3).
-
-**Oportunidades identificadas** (com time responsável, conforme mapeamento de áreas impactadas da Seção 4.1.3)
-1. Permitir que, ao registrar as áreas-chave críticas do parecer, João veja de imediato se alguma delas já tem histórico de operar perto do limite térmico em configurações semelhantes, reduzindo o tempo gasto decidindo por onde começar a análise. — *Responsável: Time de Qualidade, com apoio do Time de Engenharia (CFD) para validar o histórico exibido.*
-2. Tornar o indicador de confiabilidade (interpolação / extrapolação moderada / fora de domínio) imediatamente visível junto a cada valor de temperatura — e não como informação secundária — para que João nunca interprete um número sem saber o quanto pode confiar nele. — *Responsável: Designer UX/UI (Beatriz), por ser quem define a hierarquia de informação do dashboard.*
-3. Disponibilizar, ao lado da previsão, os casos históricos (CFD ou teste físico) mais próximos daquela configuração, para que João compare a previsão com referências reais sem sair do fluxo de análise. — *Responsável: Time de Dados/ML, por depender diretamente da base histórica tratada (Seção 4.1.5, R02).*
-4. Permitir que João registre uma decisão de qualidade parcial diretamente no dashboard — aprovando alguns componentes e isolando outros como pendentes — em vez de tratar o parecer como um veredito único para toda a configuração. — *Responsável: Time de Dados/ML (desenvolvimento da funcionalidade), com validação do Time de Qualidade sobre o fluxo de aprovação.*
-5. Estruturar o encaminhamento do parecer de forma que o status "aprovado por previsão, pendente de confirmação física" fique registrado e rastreável para as equipes seguintes, evitando perda dessa informação na comunicação entre times. — *Responsável: Time de Qualidade, em conjunto com Design/Produtos como interlocutores do parecer.*
-
-<img src="../assets/jornadaJoao.png" alt="Jornada do Usuário - João" width="900"/>
-<p><em>Figura X — Jornada do Usuário João (Engenheiro de Qualidade), mapeando as fases de avaliação, análise, decisão e encaminhamento do parecer de qualidade.</em></p>
-
-#### **Jornada do Usuário — Geraldo (Especialista de Marketing)**
-
-#### Cenário
- 
-De forma geral, Geraldo precisa planejar e executar a campanha de lançamento de um novo modelo de fogão de piso. Para isso, depende de dados técnicos de desempenho térmico do produto e de uma data confiável de validação para definir o cronograma de campanha. Com o Thermal Predictor em operação, ele passa a acessar essas informações ainda na fase inicial de modelagem, antes da conclusão dos testes físicos.
- 
-#### Expectativas
- 
-- Receber dados de desempenho térmico com antecedência suficiente para construir estratégias de divulgação para não perder uma janela de lançamento.
-- Ter uma data de validação previsível, que não mude ao longo do desenvolvimento.
-- Obter argumentos técnicos confiáveis e traduzíveis em linguagem de mercado.
- 
-#### Fases da Jornada
- 
-#### Fase 1 : Alinhamento inicial do lançamento
- 
-**Ações:** Geraldo participa da reunião de kickoff do novo produto com o time de  engenharia. Solicita a estimativa de quando o modelo estará validado tecnicamente e quais serão seus diferenciais de desempenho.
- 
-**Pensamentos:** *"Preciso saber logo se essa data é firme ou se vai mudar como das outras vezes."*
- 
-**Dor desta fase:** a data de validação informada no kickoff é apenas uma estimativa amarrada ao cronograma de testes físicos, historicamente sujeita a atraso. Assim, Geraldo sai da reunião sem base sólida para começar a planejar mídia e produção de materiais de divulgação.
- 
-**Emoção:** Neutra, com cautela — ele já passou por lançamentos em que a data prometida no kickoff mudou duas ou três vezes, e aprendeu a não se comprometer cedo demais.
- 
-#### Fase 2 : Consulta aos dados preditivos
- 
-**Ações:** Acessa o dashboard do Thermal Predictor e consulta as previsões de temperatura por região do produto (console, manípulos, cooktop), verificando margem em relação aos limites normativos.
- 
-**Pensamentos:** *"Consigo enxergar o desempenho antes do protótipo ficar pronto — isso muda meu cronograma."*
- 
-**Dor desta fase:** os dados são apresentados em linguagem de engenharia (temperatura por componente, condição aberto/fechado), sem tradução direta para atributos de comunicação. Geraldo consegue ver os números, mas ainda não sabe o que pode ser transformado em argumento de venda.
- 
-**Emoção:** Positiva, em alta — pela primeira vez ele tem visibilidade de desempenho sem depender do calendário de laboratório, o que reduz sua sensação de estar sempre no fim da fila da informação.
- 
-#### Fase 3 : Decisão crítica: definir o que pode ser afirmado publicamente
- 
-Esta é a fase de risco da jornada, porque é o ponto em que uma estimativa técnica se converte em compromisso público de marca.
- 
-**O que viu:** o dashboard indica que a região de manípulos e console opera com folga em relação ao limite normativo de temperatura, sugerindo um diferencial real de segurança ao toque frente aos concorrentes.
- 
-**O que pensou:** *"Isso é um diferencial forte de campanha. Mas qual a confiança dessa previsão? Se eu anunciar e a validação física divergir, o problema é meu e da marca."*
- 
-**O que decidiu:** levar o dado à Engenharia para confirmação da leitura técnica e optar por uma formulação de campanha ancorada no atributo (segurança ao toque), sem citar número absoluto de temperatura, mantendo margem para eventual ajuste após a validação final.
- 
-**O que aconteceu depois:** a campanha foi construída com antecedência de semanas em relação ao ciclo tradicional, e a validação física posterior confirmou a leitura — sem necessidade de retratação ou reformulação de material.
- 
-**Cenário alternativo — e se a confiança do modelo fosse diferente?**
- 
-- *Confiança alta (previsão com folga clara em relação ao limite e baixa incerteza):* Geraldo pode assumir o diferencial como pilar central da campanha, inclusive com afirmação quantitativa, acelerando a produção de material e a compra de mídia.
-- *Confiança baixa (previsão próxima ao limite normativo ou com margem de erro sobreposta a ele):* Geraldo deve tratar o dado como indicativo, não como argumento de campanha, e postergar a definição do pilar de comunicação até a validação física — o que reduz o ganho de antecipação, mas evita risco reputacional e de conformidade.
- 
-**Dor desta fase:** o dashboard entrega valor pontual de previsão, mas não comunica o grau de confiança associado — o que obriga Geraldo a arbitrar sozinho o nível de risco aceitável para uma afirmação pública.
- 
-**Emoção:** Positiva, mas tensionada — ele reconhece o ganho de antecipação, porém sente que está assumindo um risco de comunicação com base em informação que ainda não consegue qualificar sozinho.
- 
-#### Fase 4 : Planejamento e aprovação do cronograma
- 
-**Ações:** Define datas de campanha, mídia e materiais com base na previsão de validação antecipada. Submete o plano à aprovação da liderança.
- 
-**Pensamentos:** *"Com previsibilidade maior, consigo comprar mídia com antecedência e melhor custo."*
- 
-**Dor desta fase:** qualquer alteração posterior na previsão do modelo não chega a Geraldo de forma ativa — ele precisa consultar o dashboard por iniciativa própria para descobrir mudanças que impactam um cronograma já aprovado.
- 
-**Emoção:** Positiva, estável — a antecipação lhe dá poder de negociação com fornecedores de mídia, algo que ele raramente teve nos ciclos anteriores.
- 
-#### Fase 5 — Execução do lançamento e acompanhamento
- 
-**Ações:** Executa a campanha. Acompanha a validação física final para confirmar que os dados divulgados se sustentam e ajusta a comunicação, se necessário.
- 
-**Pensamentos:** *"Se a validação final divergir do previsto, o risco de retratação é meu."*
- 
-**Dor desta fase:** não há distinção formal e visível entre dado preditivo e dado validado nos materiais internos, o que dificulta rastrear qual afirmação de campanha se apoia em estimativa e qual já está confirmada.
- 
-**Emoção:** Positiva, com tensão residual — ele opera com confiança maior que nos ciclos anteriores, mas só relaxa de fato quando a validação física confirma o que já foi comunicado ao mercado.
- 
- 
-#### Conexão com a meta do projeto
- 
-Ao permitir que Geraldo tome a decisão da Fase 3 semanas antes do resultado do teste físico, o Thermal Predictor converte a meta técnica do projeto — redução de até 30% no lead time de desenvolvimento — em ganho direto de negócio: campanhas planejadas com antecedência, mídia comprada a melhor custo e menor incidência de remarcação de data de lançamento.
- 
- 
-#### Oportunidades
- 
-- **Exibir intervalo de confiança das previsões no dashboard** — porque é o dado que separa uma decisão de campanha segura de uma aposta reputacional na Fase 3. *Responsável: time de desenvolvimento do modelo.*
-- **Criar uma visão simplificada para perfis não técnicos** — porque a saída atual está em linguagem de engenharia, o que gera dependência de intermediação e atrasa a construção da narrativa (Fase 2). *Responsável: time de dashboard/UX.*
-- **Notificar automaticamente mudanças relevantes na previsão** — porque hoje Geraldo só descobre alterações se consultar o dashboard, o que expõe cronogramas já aprovados a mudanças silenciosas (Fase 4). *Responsável: time de desenvolvimento.*
-- **Sinalizar claramente o status do dado (preditivo x validado)** — porque a ausência dessa distinção impede rastrear quais afirmações públicas ainda dependem de confirmação física (Fase 5). *Responsável: Engenharia + Marketing.*
-
-<img src="../assets/jornadaGeraldo.png" alt="Jornada do Usuário - Geraldo" width="900"/>
-<p><em>Figura X — Jornada do Usuário Geraldo (Especialista de Marketing), mapeando as fases de alinhamento inicial, consulta aos dados preditivos, decisão crítica de comunicação e planejamento/execução do lançamento.</em></p>
-
-##### Engenheira de Materiais (Estela)
-
-##### Etapa 1 — Preparação do Projeto
-
-**Ações:** Estela recebe a especificação de um novo fogão ou revisão de modelo existente, identifica quais componentes exigem seleção ou validação de material térmico e lista as combinações candidatas de material e espessura com base em custo, disponibilidade e experiência prévia.
-
-**Pensamentos:** "Quais componentes desse projeto vão exigir mais atenção térmica?"; "Vou levar essas opções para o dashboard e ver o que ele me devolve."
-
-**Sentimentos:** Concentrada, mas ainda insegura — está formulando hipóteses que só serão testadas na etapa seguinte, sem ainda ter usado a ferramenta.
-
-**Oportunidades:** Comunicar claramente o escopo de aplicabilidade do modelo (quais configurações ele cobre) e permitir que o dashboard aceite múltiplas combinações em lote, reduzindo o esforço de repetição manual.
-
----
-
-##### Etapa 2 — Consulta e Interpretação do Modelo
-
-**Ações:** Acessa o dashboard, insere as configurações candidatas e solicita a previsão de temperatura para cada ponto crítico; em seguida, compara os resultados entre si e verifica quais estão dentro da margem de erro aceitável (≤10%).
-
-**Pensamentos:** "Espero estar preenchendo os parâmetros certos"; "Essa combinação mais barata performou melhor do que eu esperava — será que o modelo errou, ou minha experiência prévia que estava desatualizada?"
-
-**Sentimentos:** Esta é a etapa de maior oscilação emocional da jornada. Começa esperançosa, porém cautelosa, no primeiro contato com o resultado — e passa por um momento de tensão e dúvida real quando um resultado contraintuitivo diverge da experiência empírica de Estela, gerando desconfiança momentânea em relação ao modelo.
-
-**Oportunidades:** Validar os parâmetros antes do envio (alertas para combinações fora da faixa de treinamento), indicar visualmente o nível de confiança da previsão e oferecer explicabilidade (quais variáveis mais influenciaram o resultado) ou comparação com casos históricos semelhantes do dataset, para ancorar previsões contraintuitivas em precedentes reais.
-
----
-
-##### Etapa 3 — Priorização e Validação Física
-
-**Ações:** Após checar o resultado contra casos históricos semelhantes e recuperar a confiança, seleciona as combinações mais promissoras e as encaminha para teste físico e, quando necessário, teste destrutivo.
-
-**Pensamentos:** "Agora faz sentido — o modelo está considerando um efeito que eu não tinha levado em conta."; "Se o teste físico divergir muito da previsão, vou pensar duas vezes antes de confiar no modelo no próximo projeto."
-
-**Sentimentos:** Confiança recuperada, ainda que com certa apreensão — a dúvida da etapa anterior foi resolvida com dados de suporte, mas o teste físico carrega agora o peso adicional de validar não só o material, mas a própria confiabilidade da ferramenta.
-
-**Oportunidades:** Sugerir, com base na confiança estatística de cada previsão, um número mínimo recomendado de combinações a validar fisicamente, e implementar um mecanismo de retroalimentação (feedback loop) que registre a divergência entre previsão e resultado físico.
-
----
-
-##### Etapa 4 — Aprovação e Documentação da Decisão
-
-**Ações:** Documenta a escolha do material, usando os dados do Thermal Predictor como justificativa técnica, e apresenta a decisão à equipe de qualidade e engenharia.
-
-**Pensamentos:** "Tenho dados objetivos para defender essa escolha — mas será que a equipe de qualidade vai aceitar um resultado de IA sem teste físico completo?"
-
-**Sentimentos:** Satisfeita quanto à própria decisão, mas ainda consciente de que a aceitação organizacional da ferramenta é um processo em construção, não um ganho automático.
-
-**Oportunidades:** Gerar relatório automático no dashboard com a previsão, margem de erro e histórico de casos validados anteriormente, funcionando como evidência acumulada para facilitar a aceitação da ferramenta ao longo do tempo.
-
-<img src="../assets/jornadaEstela.png" alt="Jornada do Usuário - Estela" width="900"/>
-<p><em>Figura X — Jornada do Usuário Estela (Engenheira de Materiais), mapeando as etapas de preparação, consulta ao modelo, priorização/validação física e aprovação da decisão de material.</em></p>
-
-**Jornada da Usuária — Beatriz (Designer UX/UI)**
-
-##### Etapa 1 — Coleta de Sinais: Feedback e Telemetria
-
-**Ações**: Reúne feedback qualitativo de Engenharia, Qualidade e Marketing (reclamações, dúvidas recorrentes, sugestões) e cruza com dados quantitativos de telemetria do dashboard — telas mais acessadas, pontos de abandono, tempo gasto em cada Key Area.
-
-**Pensamentos**: "Esse comentário é um problema isolado ou um padrão que aparece em várias equipes?"; "A telemetria mostra queda de acesso nessa tela — isso é falta de necessidade ou sinal de que ela confunde?"
-
-**Sentimentos**: Investigativa e atenta, mas ainda num momento de coleta bruta — sem clareza ainda sobre causas, apenas sintomas.
-
-**Oportunidades**: Consolidar feedback e telemetria num painel único, com filtros por Key Area e por perfil de usuário, para reduzir o trabalho manual de cruzamento de dados.
-
-
-##### Etapa 2 — Diagnóstico e Priorização dos Problemas
-
-**Ações**: Analisa os sinais coletados para identificar a causa raiz — se é hierarquia de informação confusa, ambiguidade nos estados (interpolação/extrapolação moderada/fora de domínio — R04) ou simplesmente sobrecarga visual — e prioriza o que será redesenhado, considerando esforço de desenvolvimento e impacto na confiança do usuário.
-
-**Pensamentos**: "Isso é um problema de layout ou um problema de conteúdo — a informação certa não está sendo mostrada?"; "Se eu não priorizar bem, corro o risco de mexer em telas pouco usadas enquanto o problema real fica sem solução."
-
-**Sentimentos**: Levemente pressionada — sabe que decisões erradas aqui custam ciclos inteiros de desenvolvimento, e o tempo da equipe de dev é limitado.
-
-**Oportunidades**: Ter acesso a uma matriz de impacto x esforço pré-formatada, e conseguir taguear queixas de usuários diretamente aos estados do modelo (R04) para facilitar o diagnóstico.
-
-##### Etapa 3 — Pesquisa Visual e Alinhamento com Engenharia
-
-**Ações**: Pesquisa referências de visualização de incerteza e confiabilidade (badges, cores, gradientes de risco) e valida preliminarmente com a equipe de engenharia se a leitura pretendida de cada estado (interpolação/extrapolação/fora de domínio) está tecnicamente correta antes de desenhar.
-
-**Pensamentos**: "Eu não sou engenheira — preciso confirmar que o que estou prestes a desenhar não vai comunicar algo tecnicamente errado."; "Existe um padrão de mercado para isso, ou vou ter que criar do zero?"
-
-**Sentimentos**: Um pouco insegura por depender de validação técnica de terceiros para avançar, mas também mais confiante à medida que alinha a interpretação com a engenharia.
-
-**Oportunidades**: Ter um glossário técnico curto e já validado (o que cada estado do R04 significa, em linguagem simples) como referência fixa, evitando reabrir essa discussão a cada novo ciclo de design.
-
-##### Etapa 4 — Design e Prototipagem da Interface
-
-**Ações**: Redesenha a hierarquia de informação das telas priorizadas — agrupando previsão, margem de erro (≤10%) e estado de confiabilidade por Key Area — e monta protótipos de alta fidelidade seguindo o Guia de Estilo Corporativo Whirlpool.
-
-**Pensamentos**: "Como eu comunico 'fora de domínio' sem parecer um erro do sistema?"; "Estou priorizando estética ou clareza? As duas precisam coexistir, mas se tiver que escolher, é clareza."
-
-**Sentimentos**: Etapa de maior tensão criativa — equilibrar rigor técnico com simplicidade visual, sabendo que qualquer ambiguidade pode custar a confiança do engenheiro no dashboard como um todo.
-
-**Oportunidades**: Padronizar um sistema de componentes reutilizáveis (cores, ícones, badges de confiabilidade) para acelerar futuras iterações e manter consistência entre telas.
-
-##### Etapa 5 — Testes de Usabilidade e Ajustes Finais
-
-**Ações**: Conduz testes de usabilidade com usuários reais de Engenharia, Qualidade e Marketing, observando se conseguem interpretar previsão, margem de erro e estado do resultado sem explicação adicional, e ajusta o protótipo com base nos resultados.
-
-**Pensamentos**: "Será que o engenheiro entende a diferença entre margem de erro e nível de confiabilidade sem eu precisar explicar do lado?"; "Marketing enxerga a informação de forma muito mais simplificada que Engenharia — a mesma tela serve para os dois?"
-
-**Sentimentos**: Ansiosa durante os testes, mas aliviada quando os usuários interpretam corretamente sem apoio — é o momento em que o trabalho ganha validação externa real.
-
-**Oportunidades**: Rodar testes A/B diretamente no dashboard em produção para comparar variações de layout com dados reais de uso, não apenas com o grupo de teste.
-
-##### Etapa 6 — Publicação, Documentação e Monitoramento Contínuo
-
-**Ações**: Publica as atualizações junto à equipe de desenvolvimento, documenta as mudanças no WAD e no Guia de Estilo Visual, comunica as alterações às equipes usuárias, e monitora a telemetria pós-lançamento para verificar adoção e queda (ou não) de dúvidas recorrentes.
-
-**Pensamentos**: "As métricas confirmam que a mudança resolveu o problema, ou volto para a etapa de diagnóstico?"; "Se o engenheiro parar de usar o dashboard por confusão, a solução perde valor mesmo com um modelo preciso."
-
-**Sentimentos**: Satisfeita quando a telemetria confirma engajamento contínuo, mas em estado de vigilância permanente — sabe que a interface precisa evoluir junto com o modelo e os dados, sem quebrar a clareza já conquistada.
-
-**Oportunidades**: Criar um painel interno de métricas de adoção (frequência de acesso por Key Area, tempo de permanência, taxa de retorno, volume de dúvidas por tela) para embasar decisões futuras com dados, fechando o ciclo de volta para a Etapa 1.
-
-
-<img src="../assets/jornadaBeatriz.png" alt="Jornada da Usuária - Beatriz" width="900"/>
-<p><em>Figura X — Jornada da Usuária Beatriz (Designer UX/UI), mapeando as seis etapas de coleta de feedback, diagnóstico, alinhamento técnico, design, testes de usabilidade e publicação/monitoramento do dashboard.</em></p>
-
+- *Ponto de dor:* Sem notificação de retorno e trava de encerramento, o parecer ficaria "aberto" indefinidamente, sem sinalizar quando a decisão final está de fato concluída.
+
+**Oportunidades identificadas**
+
+- Tela de "casos similares" com busca por parecer anterior, evitando retrabalho de análise (Fase 1).
+- Validação de campos obrigatórios antes da geração da previsão, evitando ciclos de repetição (Fase 2).
+- Ordenação da lista de sensores por proximidade do limite normativo, destacando o ponto mais crítico (Fase 3).
+- Exibição do limite térmico normativo junto ao valor previsto e sua margem de erro, dispensando consulta a documento externo (Fase 4).
+- Status de decisão por componente (aprovado por previsão / pendente de teste físico), permitindo decisões parciais em vez de tudo-ou-nada (Fase 5).
+- Notificação de retorno do teste físico e trava de encerramento do parecer, garantindo rastreabilidade até a decisão final (Fase 6).
 
 #### 4.1.8 Política de Privacidade
 
