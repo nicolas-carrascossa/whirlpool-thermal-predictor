@@ -818,7 +818,7 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 ## <a name="attachments"></a>Anexo
 
-#### Análise e teste de normalidade das variáveis quantitativas
+#### Análise e teste de normalidade da variável quantitativa
 
 Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
 
@@ -845,7 +845,7 @@ Nível de significância (α): 0,05 (5%).
 
 Regra de decisão:
 
-Se $p \geq 0{,}05$: não rejeita $H_0$ (evidências de normalidade).
+Se $p \geq 0{,}05$: não rejeita $H_0$ (ausência de evidência contra a normalidade).
 
 Se $p < 0{,}05$: rejeita $H_0$ (não segue distribuição normal).
 
@@ -858,6 +858,8 @@ Foram aplicados três testes formais, todos com $H_0$ = "a amostra vem de uma di
 Variáveis analisadas (conforme o dataset):
 
 - `temp` (temperatura dos sensores/termopares)
+
+A classificação da Seção 1.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
 
 Resultados do teste (valores fornecidos):
 
@@ -889,7 +891,8 @@ print(f"D'Agostino-Pearson: K² = {k2_stat:.2f}, p = {p_dagostino:.3e}")
 print(f"Anderson-Darling: A² = {resultado_ad.statistic:.2f}, "
       f"valor crítico (5%) = {resultado_ad.critical_values[2]:.3f}")
 
-conclusao = "Rejeita H₀ — não normal" if p_shapiro < alpha else "Não rejeita H₀ — normal"
+conclusao = ("Rejeita H₀ — evidência de não normalidade" if p_shapiro < alpha
+             else "Não rejeita H₀ — sem evidência suficiente para afastar a normalidade")
 print(f"Conclusão (α = {alpha}): {conclusao}")
 ```
 
@@ -898,6 +901,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
+  <sub>Figura 11 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
 </div>
@@ -931,7 +935,7 @@ Os valores, portanto, **reforçam os resultados dos testes estatísticos de norm
 
 Embora a média ≈ mediana seja condição necessária para simetria, ela não bastaria sozinha para provar normalidade; no caso da temp, porém, a diferença é clara (+5,27 °C) e aponta na mesma direção dos testes formais.
 
-#### Escalonamento (Padronização ou normalização) nas variáveis quantitativas
+#### Escalonamento (Padronização ou normalização) da variável quantitativa
 
 **a) Tipo de Escalonamento e Justificativa**
 
@@ -1126,7 +1130,9 @@ A tabela abaixo demonstra a transformação com uma observação real de cada `k
 | Mainback | Run 5 · TC 9 — *Ambient Below Terminal Block* | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
 | Oven HMI | Run 4 · TC 69 — *A33/Bellatrix Thermistor* | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
 
-Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
+Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83, valor pontual — ver nota abaixo) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
+
+*Nota sobre rastreabilidade:* o valor de +1,83 citado acima é pontual e não aparece nas tabelas de parâmetros por `key_area` (que trazem apenas mínimo, máximo, média, desvio padrão, amplitude e CV). O cálculo de assimetria e curtose para as sete regiões já foi implementado no notebook (célula logo após a Seção 6 "Preparação dos dados estatísticos para escalonamento", que estende a tabela `estat_area` com as colunas `skewness` e `curtose_excesso`); falta apenas executá-lo no Colab, já que `data/dataset_long.csv` é um dado do parceiro, protegido por `.gitignore`, e não está disponível para recomputação neste ambiente.
 
 ---
 
@@ -1183,4 +1189,20 @@ Vale o contraste: um Min-Max **global**, aplicado sobre o conjunto inteiro, pres
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada, pois a transformação é monotônica crescente dentro de cada região: o sensor mais quente de uma área continua sendo o mais quente depois do escalonamento. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto — a verificação por região confirma mínimo 0,0 e máximo 1,0 nas sete `key_area`. A ausência de normalidade também se mantém: a distribuição continua não sendo uma normal, apenas deixa de sê-lo por outros motivos.
 
 **e) Tabelas Comparativas dos Dados**
+
+A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item d) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
+
+**Verificação do intervalo de `temp_scaled` por `key_area`**
+
+| `key_area` | n | mín(`temp_scaled`) | máx(`temp_scaled`) |
+|---|---:|---:|---:|
+| Mainback | 610 | 0,0000 | 1,0000 |
+| Coil Temps | 420 | 0,0000 | 1,0000 |
+| Main Vent Sys | 288 | 0,0000 | 1,0000 |
+| IPC Cooling | 218 | 0,0000 | 1,0000 |
+| IPC Comp | 1.979 | 0,0000 | 1,0000 |
+| CT Knobs | 330 | 0,0000 | 1,0000 |
+| Oven HMI | 220 | 0,0000 | 1,0000 |
+
+Por construção da equação de normalização (item c), o mínimo e o máximo de cada `key_area` são necessariamente mapeados para 0 e 1 — a tabela acima, portanto, não é uma medição sujeita a variação amostral, mas uma verificação de que a implementação (Seção 5 do notebook) respeitou a fórmula em todas as sete regiões, sem observações fora do intervalo [0, 1] previsto.
 
