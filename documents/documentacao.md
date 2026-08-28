@@ -1248,3 +1248,122 @@ Vale o contraste: um Min-Max **global**, aplicado sobre o conjunto inteiro, pres
 
 **e) Tabelas Comparativas dos Dados**
 
+O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
+
+Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_long.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
+
+- `tc_number` tem `dtype` inteiro, mas é um identificador do sensor, não uma quantidade. Média, desvio-padrão e normalização não têm significado sobre um rótulo, por isso foi classificada como categórica.
+- `active_limit` é expressa em °C, mas é um parâmetro de especificação de engenharia atribuído a cada termopar, não uma grandeza medida no experimento: seu valor é constante para um mesmo sensor em todas as execuções, funcionando como atributo do ponto de medição, não como observação. Além disso, a coluna carrega sujeira documentada na Seção 4.2.1 (o valor textual `Monitor (150 C)` e as 302 linhas com `active_limit = 1000`, placeholder numérico de "sem limite definido"), o que tornaria qualquer escalonamento dependente de um valor sem significado físico.
+- Todas as demais colunas (`run_id`, `tc_name`, `key_area`, `reason`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole`, `material_coil_support`) são categóricas nominais.
+
+Portanto, o escalonamento foi aplicado exclusivamente a `temp`.
+
+Procedimento de preparação:
+
+1. Padronizar os nomes das colunas (remover espaços no início e no fim).
+2. Converter a variável para valor numérico, substituindo vírgula decimal por ponto, para garantir tipagem consistente independentemente da origem do arquivo.
+3. Verificar registros inválidos (`NaN`). A coluna `temp` não apresentou valores ausentes: as 4.065 linhas do conjunto foram mantidas, sem descarte.
+4. Aplicar o escalonamento Min-Max com o `MinMaxScaler`, que transforma linearmente a variável para o intervalo `[0,1]` segundo a fórmula `x' = (x - min) / (max - min)`.
+
+---
+
+#### Código utilizado
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+import pandas as pd
+
+# padronizar nomes das colunas (remover espaços no início/fim)
+df.columns = df.columns.str.strip()
+
+# variável quantitativa analisada
+variaveis = ['temp']
+
+# garantir tipagem numérica (corrigindo eventual vírgula decimal)
+for v in variaveis:
+    df[v] = df[v].astype(str).str.replace(',', '.')
+    df[v] = pd.to_numeric(df[v], errors='coerce')
+
+# cópia limpa para não alterar o df original
+df_limpo = df.dropna(subset=variaveis).copy()
+df_limpo.reset_index(drop=True, inplace=True)
+
+# Tabela 1 — dados originais
+print("Tabela 1: Dados Originais")
+print(df_limpo[['run_id', 'tc_name', 'key_area'] + variaveis].head(10))
+
+# Escalonamento Min-Max
+scaler = MinMaxScaler()
+dados_escalonados_array = scaler.fit_transform(df_limpo[variaveis])
+
+# novo dataframe com dados escalonados
+df_scaled = pd.DataFrame(dados_escalonados_array, columns=variaveis)
+
+# Tabela 2 — dados normalizados
+print("\nTabela 2: Dados Normalizados")
+print(df_scaled.head(10))
+
+# limites usados pelo scaler
+print("\nmin:", scaler.data_min_, "| max:", scaler.data_max_)
+```
+
+---
+
+### Tabela 1: Dados Originais — 10 primeiros registros
+
+As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto de identificação do registro; a variável submetida ao escalonamento é `temp`.
+
+| # | run_id | tc_name | key_area | temp (°C) |
+|---|--------|---------|----------|-----------|
+| 0 | Run 1 | Door Lock Motor Ambient 1/2" Below | Mainback | 99.35 |
+| 1 | Run 1 | Door Lock Microswitch Body | Mainback | 114.72 |
+| 2 | Run 1 | Convect Motor Winding | Mainback | 89.93 |
+| 3 | Run 1 | Storage Drawer (Metal Above) | Mainback | 167.87 |
+| 4 | Run 1 | L2, Wire, Power Cord | Mainback | 53.65 |
+| 5 | Run 1 | Ambient Below Terminal Block | Mainback | 48.94 |
+| 6 | Run 1 | ACU Ambient (Hill Only) Top | Mainback | 60.00 |
+| 7 | Run 1 | ACU K8 Housing / Double Line Break | Mainback | 55.44 |
+| 8 | Run 1 | Coil FR | Coil Temps | 55.69 |
+| 9 | Run 1 | Coil FL | Coil Temps | 49.33 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+
+---
+
+### Tabela 2: Dados Escalonados (Min-Max) — 10 primeiros registros
+
+| # | temp (original, °C) | temp (escalonada) |
+|---|---------------------|-------------------|
+| 0 | 99.35 | 0.291407 |
+| 1 | 114.72 | 0.353910 |
+| 2 | 89.93 | 0.253101 |
+| 3 | 167.87 | 0.570046 |
+| 4 | 53.65 | 0.105567 |
+| 5 | 48.94 | 0.086414 |
+| 6 | 60.00 | 0.131390 |
+| 7 | 55.44 | 0.112846 |
+| 8 | 55.69 | 0.113863 |
+| 9 | 49.33 | 0.088000 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+
+---
+
+#### Interpretação dos resultados
+
+Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observações de `temp`:
+
+| Estatística | Valor (°C) |
+|-------------|------------|
+| Mínimo | 27.69 |
+| Máximo | 273.60 |
+| Amplitude | 245.91 |
+| Média | 81.77 |
+| Mediana | 76.50 |
+| Desvio-padrão | 33.28 |
+
+**Verificação do cálculo:** aplicando a fórmula ao primeiro registro, `(99.35 - 27.69) / 245.91 = 0.291407`, valor idêntico ao da Tabela 2. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: `Storage Drawer` (167.87 °C) segue o mais quente da amostra nas duas tabelas (0.570), e `Ambient Below Terminal Block` (48.94 °C) o mais frio nas duas (0.086).
+
+**Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
+
+Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação (*one-hot*), gerando colunas binárias no intervalo `[0,1]`. Sem normalizar `temp`, ela entraria no modelo em uma escala duas ordens de grandeza maior que as *dummies*, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
