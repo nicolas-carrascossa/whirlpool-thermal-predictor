@@ -1014,19 +1014,38 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 #### Análise e teste de normalidade das variáveis quantitativas
 
+Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
+
+**a) Hipóteses**
+
+
+**Afirmação:**
+
+O objetivo deste estudo é verificar se a variável quantitativa "Temperatura" (`temp`), medida em graus Celsius nos termopares posicionados nos componentes térmicos do forno, segue uma distribuição normal. Essa variável é a única variável quantitativa contínua do conjunto de dados fornecido pela Whirlpool Latin America, sendo também a variável-alvo (*target*) do modelo preditivo desenvolvido pelo grupo.
+
+**Hipóteses Estatísticas do Teste de Normalidade:**
+
+Para testar isso de forma rigorosa, foram formuladas duas hipóteses mutuamente excludentes para a variável. De um lado, temos a hipótese nula ($H_0$), que assume que a variável segue uma distribuição normal. Do outro, a hipótese alternativa ($H_a$), que defende que ela não segue.
+
+- Para a variável "Temperatura" (`temp`):
+    - $H_0$ (Hipótese Nula): A variável "Temperatura" segue uma distribuição normal.
+    - $H_a$ (Hipótese Alternativa): A variável "Temperatura" não segue uma distribuição normal.
+
+O nível de significância adotado é $\alpha = 0{,}05$. Dessa forma, se o *p-valor* obtido no teste for menor que $0{,}05$, rejeita-se $H_0$, concluindo-se que há evidência estatística de que a variável não segue uma distribuição normal. Caso contrário, não há evidências suficientes para rejeitar $H_0$.
+
 **b) Nível de significância**
 
 Nível de significância (α): 0,05 (5%).
 
 Regra de decisão:
 
-Se p ≥ 0,05 → não rejeita H₀ (evidências de normalidade).
+Se $p \geq 0{,}05$: não rejeita $H_0$ (evidências de normalidade).
 
-Se p < 0,05 → rejeita H₀ (não segue distribuição normal).
+Se $p < 0{,}05$: rejeita $H_0$ (não segue distribuição normal).
 
 **c) Teste de Normalidade**
 
-Foram aplicados três testes formais, todos com H₀ = "a amostra vem de uma distribuição normal": Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do valor crítico de 0,752 a 5%). Os três convergem na mesma decisão: rejeita-se H₀, ou seja, temp não segue distribuição normal.
+Foram aplicados três testes formais, todos com $H_0$ = "a amostra vem de uma distribuição normal": Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do valor crítico de 0,752 a 5%). Os três convergem na mesma decisão: rejeita-se $H_0$, ou seja, temp não segue distribuição normal.
 
 **Observação:** o Shapiro-Wilk é o mais indicado para bases desse tamanho e é o mais sensível para perceber quando os dados fogem da normalidade; o D'Agostino-Pearson olha para o formato da distribuição, unindo assimetria (se os dados pendem mais para um lado) e curtose (se há muitos valores extremos) em um único resultado; e o Anderson-Darling é parecido com os outros dois, mas dá atenção especial às pontas da distribuição, ou seja, aos valores mais altos e mais baixos.
 
@@ -1038,7 +1057,7 @@ Resultados do teste (valores fornecidos):
 
 | Variável | p-valor (científico) | Conclusão (α = 0,05) |
 |:---|:---|:---|
-| `temp` | 2,72 × 10⁻⁵⁰ | Rejeita H₀ — não normal |
+| `temp` | 2,72 × 10⁻⁵⁰ | Rejeita $H_0$ — não normal |
 
 Interpretação: o p-valor encontrado é astronomicamente pequeno (um número com dezenas de zeros após a vírgula antes de chegar ao primeiro dígito). Ele é muito, mas muito menor que o nosso nível de significância de 0,05. Portanto, com base no teste de Shapiro-Wilk, temos evidências estatísticas avassaladoras para rejeitar a hipótese de normalidade da variável `temp`.
 
