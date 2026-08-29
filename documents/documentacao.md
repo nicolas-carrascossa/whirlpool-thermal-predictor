@@ -626,7 +626,7 @@ Os titulares dos dados têm direito a acesso, correção, exclusão e revogaçã
 
 ##### Classificação das colunas
 
-A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: identificadores numéricos que não são quantidades, colunas com sujeira de formatação). Fonte: `data/dataset_long.csv` (formato tidy, uma linha por combinação Run x TC), gerado por [`notebooks/00_reestruturacao_planilha.ipynb`](../notebooks/00_reestruturacao_planilha.ipynb). Script de classificação: [`notebooks/classify_columns.ipynb`](../notebooks/classify_columns.ipynb).
+A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: identificadores numéricos que não são quantidades, colunas com sujeira de formatação). Fonte: `data/dataset_pre_processado.csv` (formato tidy, uma linha por combinação Run x TC), gerado na Seção 0 e classificado na Seção 1.1 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
 | Coluna | Tipo |
 |---|---|
@@ -653,11 +653,11 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 - `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
 
 
-## Estatística descritiva das colunas
+##### Estatística descritiva das colunas
 
-Para cada coluna já classificada, foram calculadas as métricas descritivas correspondentes: média, desvio-padrão e quartis para as numéricas; moda, valores únicos e frequência para as categóricas. Cálculo em [`notebooks/01_exploracao_dados.ipynb`](../notebooks/01_exploracao_dados.ipynb), a partir de `data/dataset_long.csv`.
+Para cada coluna já classificada, foram calculadas as métricas descritivas correspondentes: média, desvio-padrão e quartis para as numéricas; moda, valores únicos e frequência para as categóricas. Cálculo na Seção 1.2 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), a partir de `data/dataset_pre_processado.csv`.
 
-## Colunas numéricas
+###### Colunas numéricas
 
 | Estatística | temp | active_limit |
 |---|---|---|
@@ -670,7 +670,7 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Q3 (75%) | 96,02 | 150,00 |
 | Máximo | 273,60 | 1000,00 |
 
-## Colunas categóricas  resumo
+###### Colunas categóricas — resumo
 
 | Coluna | Moda | Nulos | Valores únicos |
 |---|---|---|---|
@@ -687,7 +687,7 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | `deflector_hole` | Closed | 0 | 2 |
 | `material_coil_support` | Aluminium | 0 | 3 |
 
-## Distribuição das principais categóricas
+###### Distribuição das principais categóricas
 
 **`key_area`** (região do fogão onde o sensor está):
 
@@ -721,16 +721,47 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Broil C1 | 148 |
 | Broil Qual | 148 |
 
+###### Gráficos exploratórios — relação entre variáveis
 
-```
-Remova este bloco ao final
-```
+Além das tabelas de estatística descritiva, foram produzidos gráficos para investigar como a temperatura (`temp`) se relaciona com variáveis de configuração e localização do ensaio. Código completo na Seção 1.3 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
+
+<div align="center">
+  <sub>Figura 11 — Temperatura por área do produto (key_area)</sub><br>
+  <img src="../assets/graficos/temp_por_area.png" alt="Boxplot de temperatura por key_area, com Coil Temps apresentando a maior mediana e maior dispersão" width="90%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+</div>
+
+`key_area` é a variável que mais separa os patamares de temperatura: a mediana varia de 47,1 °C em `CT Knobs` a 123,8 °C em `Coil Temps`, e `Mainback` concentra a maior parte dos valores extremos acima de 200 °C — coerente com o papel dessa região como destino do calor redistribuído, discutido na H1 (Seção 4.2.3).
+
+<div align="center">
+  <sub>Figura 12 — Temperatura média por housing e direção do blower</sub><br>
+  <img src="../assets/graficos/temp_housing_blower.png" alt="Gráfico de barras da temperatura média cruzando housing (Closed, Open, Open - Updated) com blower_direction (To Back, To Front)" width="80%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+</div>
+
+As duas configurações interagem: com o housing `Closed`, o blower para trás (`To back`, 81,5 °C) aquece um pouco mais que para frente (`To front`, 79,8 °C); com o housing `Open`, essa ordem se inverte (86,2 °C para frente contra 83,4 °C para trás). Nenhuma combinação isolada é a mais fria em todas as áreas, o que antecipa o resultado da H2 (Seção 4.2.3): as configurações não têm efeito independente entre si.
+
+<div align="center">
+  <sub>Figura 13 — Taxa de excedência do limite por material do suporte da bobina</sub><br>
+  <img src="../assets/graficos/exceeds_por_material.png" alt="Gráfico de barras da porcentagem de leituras que excedem o active_limit, por material_coil_support: Aluminium 8,4%, Aluminium Plate 4,1%, Plastic 4,1%" width="70%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+</div>
+
+Sensores com suporte de bobina em `Aluminium` excedem o `active_limit` em 8,4% das leituras, cerca do dobro da taxa observada em `Aluminium Plate` (4,1%) e `Plastic` (4,1%). O gráfico não isola causalidade — `material_coil_support` está confundido com outras configurações do ensaio, como discutido na H2 —, mas evidencia que o material é uma variável relevante para priorizar testes físicos.
+
+<div align="center">
+  <sub>Figura 14 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
+  <img src="../assets/graficos/temp_vs_limite.png" alt="Dispersão de temp contra active_limit por sensor, com pontos acima da diagonal identidade destacados em vermelho como excedências" width="75%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+</div>
+
+Cada ponto é uma leitura de sensor; a linha tracejada marca `temp = active_limit`. Excluídas as leituras sem `active_limit` registrado e o placeholder `active_limit = 1000` (sensores sem limite definido, Seção 4.2.1), restam 3.707 leituras com limite físico válido; dessas, 309 (8,3%) ficam acima da diagonal, ou seja, excedem o limite de engenharia do próprio sensor — a maior concentração de excedências ocorre nos sensores com limite de 150 °C, componente central da ressalva metodológica tratada na Seção 4.2.2.
 
 #### 4.2.2. Pré-processamento dos dados
 
-O pré-processamento dos dados foi realizado para organizar a base, tratar valores ausentes e registrar inconsistências sem alterar informações que podem representar comportamentos reais dos testes. As etapas foram conduzidas sobre o arquivo `dataset_long.csv`, gerado na reestruturação da planilha original, mantendo uma linha por combinação entre Run e TC.
+O pré-processamento dos dados foi realizado para organizar a base, tratar valores ausentes e registrar inconsistências sem alterar informações que podem representar comportamentos reais dos testes. As etapas foram conduzidas sobre o arquivo `dataset_pre_processado.csv`, gerado na reestruturação da planilha original, mantendo uma linha por combinação entre Run e TC. Implementação completa na Seção 2 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
-Primeiramente foi feito o **tratamento de valores ausentes** nas colunas categóricas `reason`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole` e `material_coil_support`. Os valores `NaN` dessas colunas foram substituídos por **"Não informado"**, preservando os registros na base sem criar uma informação que não foi registrada. Os valores nulos de temperatura já haviam sido retirados durante a reestruturação da planilha. Essa decisão foi considerada a mais adequada pelo grupo, pois o tipo de teste pode alterar significativamente as temperaturas do fogão; preencher esses valores com média, mediana ou moda poderia distorcer a análise, especialmente na preparação dos dados.
+Primeiramente foi feito o **tratamento de valores ausentes** nas colunas categóricas `reason`, `blower_direction`, `housing`, `board_position`, `run_case`, `losses`, `deflector_hole` e `material_coil_support`. Os valores `NaN` dessas colunas foram substituídos por **"Não informado"**, preservando os registros na base sem atribuir a eles uma categoria (como a moda) que não corresponde ao que foi de fato registrado no ensaio. Os valores nulos de `temp` já haviam sido retirados durante a reestruturação da planilha, pois, por ser a variável-alvo do modelo, preenchê-la com média, mediana ou outra estimativa introduziria um valor artificial exatamente na grandeza que o Thermal Predictor deve prever, o que poderia distorcer tanto a análise exploratória quanto o treinamento do modelo.
 
 Em seguida, foi realizada a **identificação de outliers** nas temperaturas por `tc_name` utilizando o método do **Intervalo Interquartil (IQR)**. Para cada termopar, foram calculados o primeiro quartil (Q1), o terceiro quartil (Q3) e o intervalo interquartil, com os limites definidos por `[Q1 - 1,5 × IQR, Q3 + 1,5 × IQR]`. Os valores abaixo do limite inferior ou acima do limite superior foram contabilizados por `tc_name`, mas não foram removidos. A remoção comprometeria o aprendizado do modelo, pois cada tipo de teste pode apresentar um comportamento térmico diferente para cada peça. Por exemplo, testes com `run_case` **Pyro** apresentam temperaturas de Coil temperatures próximas de 50 °C, enquanto testes **Broil C2** podem atingir aproximadamente 220 °C. Portanto, valores classificados como outliers quando analisados em conjunto podem representar condições reais de um teste específico.
 
@@ -747,11 +778,11 @@ Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_lim
 
 #### 4.2.3. Hipóteses
 
-Hipóteses em um projeto de análise de dados preditiva é extremamente importante, porque define as premissas e expectativas que vão guiar tudo do processo do pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1
+Hipóteses em um projeto de análise preditiva de dados são extremamente importantes, porque definem as premissas e expectativas que vão guiar todo o processo de pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1.
 
 Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um conjunto de variáveis de configuração e de operação que atuam em conjunto sobre o comportamento térmico do produto. Fatores como a localização física do componente (key_area), a configuração da carcaça (housing), a direção do fluxo de ar do blower (blower_direction), o material do suporte da bobina (material_coil_support) e o modo de operação simulado (run_case) influenciam diretamente o quanto cada região do fogão aquece e o quão perto ela fica do limite de engenharia do próprio sensor. Diante disso, as hipóteses a seguir buscam explorar como cada uma dessas variáveis se relaciona com a temperatura medida e com o risco de superaquecimento, permitindo identificar padrões de comportamento térmico e fornecer subsídios tanto para a etapa de modelagem preditiva quanto para a priorização de testes físicos junto ao parceiro.
 
-O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os testes, gráficos e valores completos estão em [`notebooks/03_hipoteses.ipynb`](../notebooks/03_hipoteses.ipynb).
+O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os testes, gráficos e valores completos estão na Seção 3 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
 | # | Hipótese | Resultado |
 |---|---|---|
@@ -790,9 +821,9 @@ A hipótese é de que o modo de operação afeta a temperatura medida nos compon
 A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5 °C nos demais, uma diferença de 9,1 °C, e a amplitude entre o modo mais quente (Broil C2, 84,7 °C) e o mais frio (Pyro, 71,4 °C) chega a 13,3 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
 
 <div align="center">
-  <sub>Figura 11 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
+  <sub>Figura 15 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
   <img src="../assets/graficos/g_h3.png" alt="Boxplot de temperatura por run_case e barras comparando Broil vs. demais modos" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
 A ressalva é sobre a magnitude: o modo explica apenas cerca de 2% da variância da temperatura (η² ≈ 0,02; Cohen's d ≈ 0,28). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
@@ -806,9 +837,9 @@ A hipótese é de que a configuração da carcaça (housing) influencia a temper
 A hipótese se confirmou, na direção contra-intuitiva. Com a carcaça aberta o IGBT 1 opera a 91,7 °C em média, contra 82,1 °C com ela fechada, uma diferença de +9,6 °C, ou seja, aberto é mais quente, não o contrário. O efeito é estatisticamente significativo no teste de médias (Welch, p ≈ 0,03) e de magnitude média (Cohen's d ≈ 0,59), maior que o observado na H3.
 
 <div align="center">
-  <sub>Figura 12 — Temperatura do IGBT 1 por configuração da carcaça (housing)</sub><br>
+  <sub>Figura 16 — Temperatura do IGBT 1 por configuração da carcaça (housing)</sub><br>
   <img src="../assets/graficos/g_h4.png" alt="Boxplot e barras comparando a temperatura do IGBT 1 entre housing fechado e aberto" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
 A ressalva é o tamanho da amostra: com apenas 56 leituras (28 por grupo), os testes mais conservadores ficam no limite, o Mann-Whitney não alcança significância (p ≈ 0,08) e o Fisher exato na taxa de excedência do limite (110 °C) também não (p ≈ 0,67, com poucos pontos acima do limite em ambos os grupos). A leitura honesta se apoia no efeito absoluto em °C e no Welch/Cohen's d, não numa convergência de todos os testes. Vale registrar ainda que, apesar de o IGBT 1 dominar a base em volume, ele é o mais frio dos 16 IGBTs, sua relevância vem da quantidade de dados, não da severidade térmica.
@@ -886,11 +917,18 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 20. CHEN, Jiyao; REILLY, Richard R.; LYNN, Gary S. *The impacts of speed-to-market on new product success: the moderating effects of uncertainty.* IEEE Transactions on Engineering Management, v. 52, n. 2, p. 199-212, 2005.
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
 
-## <a name="attachments"></a>Anexo
+## <a name="attachments"></a>Anexos
 
 #### Análise e teste de normalidade da variável quantitativa
 
 Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
+
+**Nota sobre o número de variáveis analisadas.** O roteiro deste anexo pede a análise de três variáveis quantitativas. O dataset fornecido pela Whirlpool Latin America, porém, possui apenas **uma** variável quantitativa contínua de fato: `temp`. As outras duas colunas numéricas do `dtype` bruto foram descartadas dessa categoria já na classificação da Seção 4.2.1, por motivos estruturais do dado, não por escolha do grupo:
+
+- `tc_number` é um identificador de sensor (rótulo), não uma quantidade — média, desvio-padrão e normalização não têm significado sobre ele.
+- `active_limit` é um parâmetro de especificação de engenharia atribuído a cada termopar (constante para o mesmo sensor em todas as execuções), não uma grandeza medida no experimento; além disso, carrega placeholders sem significado físico (`"Monitor (150 C)"` e `active_limit = 1000` para "sem limite definido"), o que tornaria qualquer teste de normalidade ou escalonamento sobre essa coluna pouco interpretável.
+
+Diante disso, o grupo optou por aprofundar a análise em `temp` — a única variável quantitativa contínua e também a variável-alvo do modelo — em vez de forçar testes estatísticos sobre colunas que não representam grandezas contínuas. O grupo tomou essa decisão ciente de que ela diverge do número de variáveis pedido no roteiro, e a registra aqui para validação explícita com o professor.
 
 **a) Hipóteses**
 
@@ -971,9 +1009,9 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 13 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
+  <sub>Figura 17 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
 **`temp` — o formato visual reforça o resultado do teste.**
@@ -1006,6 +1044,8 @@ Os valores, portanto, **reforçam os resultados dos testes estatísticos de norm
 Embora a média ≈ mediana seja condição necessária para simetria, ela não bastaria sozinha para provar normalidade; no caso da temp, porém, a diferença é clara (+5,27 °C) e aponta na mesma direção dos testes formais.
 
 #### Escalonamento (Padronização ou normalização) da variável quantitativa
+
+Assim como no teste de normalidade, esta subseção aplica o escalonamento apenas a `temp`, pela mesma razão registrada na nota da subseção anterior: é a única variável quantitativa contínua do dataset (`tc_number` é identificador, `active_limit` é parâmetro de engenharia com placeholders sem significado físico).
 
 **a) Tipo de Escalonamento e Justificativa**
 
@@ -1043,7 +1083,7 @@ consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 
 **b) Dados Estatísticos Utilizados para análise da variável**
 
-A princípio, foram analisados os dados via DataFrame em Pandas para o dataset fornecido pelo parceiro de forma global, a análise estatística registrou as seguintes observações a partir de uma exploração global na base de dados.
+Os dados foram analisados via DataFrame em Pandas, a partir do dataset fornecido pelo parceiro. A análise estatística global (sem segmentação por `key_area`) registrou as observações a seguir.
 
 **Conjunto de dados completo (`temp`, n = 4.065)**
  
@@ -1056,7 +1096,7 @@ A princípio, foram analisados os dados via DataFrame em Pandas para o dataset f
 | Amplitude | 245,91 °C |
 | Assimetria (skewness) | +1,763 |
 
-Para a análise da variável-alvo 'temp', a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela, key_area, faz que a distinção de dados estatísticos seja alocado para sua respectiva região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
+Para a análise da variável-alvo `temp`, a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela (`key_area`), faz com que os dados estatísticos sejam calculados separadamente para cada região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
 
 **Parâmetros por `key_area` — base efetiva do escalonamento**
 
@@ -1202,7 +1242,17 @@ A tabela abaixo demonstra a transformação com uma observação real de cada `k
 
 Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83, valor pontual — ver nota abaixo) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
 
-*Nota sobre rastreabilidade:* o valor de +1,83 citado acima é pontual e não aparece nas tabelas de parâmetros por `key_area` (que trazem apenas mínimo, máximo, média, desvio padrão, amplitude e CV). O cálculo de assimetria e curtose para as sete regiões já foi implementado no notebook (célula logo após a Seção 6 "Preparação dos dados estatísticos para escalonamento", que estende a tabela `estat_area` com as colunas `skewness` e `curtose_excesso`); falta apenas executá-lo no Colab, já que `data/dataset_long.csv` é um dado do parceiro, protegido por `.gitignore`, e não está disponível para recomputação neste ambiente.
+*Nota sobre rastreabilidade:* o valor de +1,83 citado acima é pontual e não aparece nas tabelas de parâmetros por `key_area` (que trazem apenas mínimo, máximo, média, desvio padrão, amplitude e CV). O cálculo de assimetria e curtose para as sete regiões está implementado e executado no notebook (célula logo após a Seção 6 "Preparação dos dados estatísticos para escalonamento", que estende a tabela `estat_area` com as colunas `skewness` e `curtose_excesso`):
+
+| `key_area` | Assimetria (skewness) | Curtose (excesso) |
+|---|---:|---:|
+| Mainback | +1,8333 | +3,0001 |
+| Coil Temps | +0,3458 | −0,0645 |
+| Main Vent Sys | −0,1533 | −0,7811 |
+| IPC Cooling | +0,0099 | −0,7811 |
+| IPC Comp | +0,4105 | −0,2982 |
+| CT Knobs | +0,8095 | +0,0824 |
+| Oven HMI | −0,4242 | +2,3256 |
 
 ---
 
@@ -1224,15 +1274,15 @@ Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo —
 
 **d) Histograma da variável após o escalonamento**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 13.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 17.
 
 <div align="center">
-  <sub>Figura 14 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
+  <sub>Figura 18 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp_scaled.png" alt="Histograma da temperatura normalizada por key_area, distribuída ao longo de todo o intervalo de 0 a 1, sem cauda longa" width="80%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 13)**
+**Comparação com o histograma antes do escalonamento (Figura 17)**
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -1244,17 +1294,17 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-Antes do escalonamento, o histograma de `temp` (Figura 13, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
+Antes do escalonamento, o histograma de `temp` (Figura 17, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 14 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 13: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 18 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 17: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
 
-**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 13) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 17) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
 **Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
 
-Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 14 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 18 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
 
-**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 13 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 17 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
@@ -1262,7 +1312,7 @@ Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e
 
 O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
 
-Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_long.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
+Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_pre_processado.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
 
 - `tc_number` tem `dtype` inteiro, mas é um identificador do sensor, não uma quantidade. Média, desvio-padrão e normalização não têm significado sobre um rótulo, por isso foi classificada como categórica.
 - `active_limit` é expressa em °C, mas é um parâmetro de especificação de engenharia atribuído a cada termopar, não uma grandeza medida no experimento: seu valor é constante para um mesmo sensor em todas as execuções, funcionando como atributo do ponto de medição, não como observação. Além disso, a coluna carrega sujeira documentada na Seção 4.2.1 (o valor textual `Monitor (150 C)` e as 302 linhas com `active_limit = 1000`, placeholder numérico de "sem limite definido"), o que tornaria qualquer escalonamento dependente de um valor sem significado físico.
@@ -1338,7 +1388,7 @@ As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto d
 | 8 | Run 1 | Coil FR | Coil Temps | 55.69 |
 | 9 | Run 1 | Coil FL | Coil Temps | 49.33 |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 
 ---
 
@@ -1357,7 +1407,7 @@ As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto d
 | 8 | 55.69 | 0.113863 |
 | 9 | 49.33 | 0.088000 |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_long.csv.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 
 ---
 

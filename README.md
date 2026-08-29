@@ -50,9 +50,17 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 ## 💻 Execução dos projetos
 
-Descreva aqui os requisitos e os passos necessários para execução dos notebooks localmente (VS Code com instalação de Python) e no ambiente Google Colab
+**Localmente (VS Code):**
 
-> Não deixe de informar para o caso do Colab que, se o utilizador não salvar uma cópia do notebook no seu Google Drive próprio, não será possível salvar as alterações realizadas no arquivo.
+1. Instale as dependências: `pip install -r requirements.txt`.
+2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
+3. Abra `notebooks/expl_preprocessamenro_hipote.ipynb` e rode todas as células **em ordem, do início ao fim** (Run All). As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
+
+**No Google Colab:**
+
+1. Abra o notebook e salve uma cópia no seu Google Drive antes de editar — sem isso as alterações não são salvas.
+2. Faça upload de `data/dataset_bruto.csv` mantendo a mesma estrutura de pastas (`data/` um nível acima de `notebooks/`), ou ajuste os caminhos `../data/...` das células para onde você subiu o arquivo.
+3. Rode todas as células em ordem (Ambiente de execução > Executar tudo).
 
 ## 🗃 Histórico de lançamentos
 
