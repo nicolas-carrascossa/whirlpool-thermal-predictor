@@ -367,7 +367,7 @@ decisões de projeto a partir das necessidades, dores e objetivos reais desses p
 
 Para o Thermal Predictor, estamos usando proto-personas (suposições embasadas),
 definidas com base no entendimento atual do problema e nos diferentes papéis que se
-relacionam com a solução: a Engenheira de Materiais, o Especialista de Marketing, a Designer UX/UI e o Engenheiro de Qualidade.
+relacionam com a solução: a Engenheira de Materiais, o Especialista de Marketing, a Designer UX/UI, o Engenheiro de Qualidade e o Engenheiro de Produtos.
 
 ##### Engenheira de Materiais
 
@@ -431,6 +431,18 @@ afeta diretamente sua decisão de aprovar ou reprovar um produto. Por atuar em u
 ponto crítico do processo — a liberação do produto —, João garante que a solução contribua
 para decisões mais rápidas e seguras.
 
+##### Engenheiro de Produtos
+
+<div align="center">
+  <sub>Figura 9 — Persona: Engenheiro de Produtos</sub><br>
+  <img src="../assets/personaRafael.png" width="800" alt="Rafael"><br>
+  <sup>Fonte: Elaborado pelos autores (2026).</sup>
+</div>
+
+Esta persona foi escolhida por representar o profissional que define a arquitetura do produto e, portanto, toma as decisões que originam o comportamento térmico que todas as demais personas depois avaliam: a geometria, o arranjo dos componentes e a configuração construtiva do fogão.
+Hoje, cada alteração de arquitetura proposta por Rafael exige uma nova rodada de simulação de CFD, processo que leva dias e restringe o número de alternativas que ele consegue explorar antes de congelar o design. Sua necessidade é estimar o efeito térmico de uma mudança de geometria ou de arranjo ainda na concepção, comparando múltiplas arquiteturas em paralelo e sabendo em quais Key Areas o risco se concentra. No dia a dia, ele usa o dashboard para varrer configurações candidatas logo no início do projeto, observando a margem de erro e o indicador de confiabilidade (Seção 4.1.5, R04) para distinguir os casos em que a previsão é interpolação daqueles em que o design é inédito e ainda exige validação por simulação completa.
+Diferente de Estela e João, que consultam a previsão para aprovar ou reprovar uma escolha já feita, Rafael atua um passo antes: ele usa a previsão para gerar e descartar alternativas de projeto, no momento em que mudar o produto ainda é barato. É a persona que desloca o ganho do Thermal Predictor da etapa de validação para a etapa de concepção, evitando que decisões de arquitetura tomadas no início se revelem termicamente inviáveis apenas ao final do ciclo de desenvolvimento.
+
 #### 4.1.7. Jornadas do Usuário
 
 Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pensamentos e emoções de uma persona ao buscar um objetivo, evidenciando onde surgem dúvida, confiança e decisão ao longo da experiência, e não apenas o funcionamento técnico do sistema. Essa ferramenta é especialmente relevante para o Thermal Predictor porque a solução não devolve uma resposta definitiva, e sim uma previsão de aprendizado de máquina com margem de erro e indicador de confiabilidade (Seção 4.1.5, R04). O valor do produto depende de como cada persona interpreta essa previsão e a converte em uma decisão real de engenharia, e o mapa torna esse processo de interpretação e decisão explícito, permitindo identificar onde a solução pode reduzir incerteza e apoiar decisões mais rápidas e seguras, sem tratar a previsão do modelo como verdade absoluta.
@@ -440,7 +452,7 @@ Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pe
 **Cenário:** João recebe da equipe de Design um pedido de validação térmica para uma nova configuração de fogão. Sem uma previsão inicial disponível, ele precisa levantar manualmente o histórico de validações semelhantes, acionar a equipe de CFD para simulação e prototipagem física, aguardar a fila de agenda dessas equipes e, dentro do prazo e do orçamento de protótipos disponíveis, testar apenas algumas das alternativas possíveis antes de emitir seu parecer para as equipes de módulos e produto.
 
 <div align="center">
-  <sub>Figura 9 — Mapa de Jornada do Usuário (As Is): Engenheiro de Qualidade (João)</sub><br>
+  <sub>Figura 10 — Mapa de Jornada do Usuário (As Is): Engenheiro de Qualidade (João)</sub><br>
   <img src="../assets/journeyMapAsIs.png" width="800" alt="Mapa de jornada atual de João"><br>
   <sup>Fonte: Elaborado pelos autores (2026).</sup>
 </div>
@@ -494,7 +506,7 @@ Essa jornada atual evidencia os gargalos que o Thermal Predictor busca endereça
 **Cenário:** João recebe da equipe de Design uma nova configuração de fogão para avaliar antes da liberação do produto. Em vez de aguardar uma bateria completa de testes físicos destrutivos, ele usa o Thermal Predictor para gerar uma previsão térmica por sensor, com margem de erro e indicador de confiabilidade, e a partir dela decide quais componentes podem ser aprovados diretamente e quais ainda exigem confirmação por teste físico antes do encerramento do parecer.
 
 <div align="center">
-  <sub>Figura 10 — Mapa de Jornada do Usuário (To Be): Engenheiro de Qualidade (João)</sub><br>
+  <sub>Figura 11 — Mapa de Jornada do Usuário (To Be): Engenheiro de Qualidade (João)</sub><br>
   <img src="../assets/designJoaoQUalidade.png" width="800" alt="Mapa de jornada de João"><br>
   <sup>Fonte: Elaborado pelos autores (2026).</sup>
 </div>
@@ -726,7 +738,7 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 Além das tabelas de estatística descritiva, foram produzidos gráficos para investigar como a temperatura (`temp`) se relaciona com variáveis de configuração e localização do ensaio. Código completo na Seção 1.3 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
 <div align="center">
-  <sub>Figura 11 — Temperatura por área do produto (key_area)</sub><br>
+  <sub>Figura 12 — Temperatura por área do produto (key_area)</sub><br>
   <img src="../assets/graficos/temp_por_area.png" alt="Boxplot de temperatura por key_area, com Coil Temps apresentando a maior mediana e maior dispersão" width="90%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -734,7 +746,7 @@ Além das tabelas de estatística descritiva, foram produzidos gráficos para in
 `key_area` é a variável que mais separa os patamares de temperatura: a mediana varia de 47,1 °C em `CT Knobs` a 123,8 °C em `Coil Temps`, e `Mainback` concentra a maior parte dos valores extremos acima de 200 °C — coerente com o papel dessa região como destino do calor redistribuído, discutido na H1 (Seção 4.2.3).
 
 <div align="center">
-  <sub>Figura 12 — Temperatura média por housing e direção do blower</sub><br>
+  <sub>Figura 13 — Temperatura média por housing e direção do blower</sub><br>
   <img src="../assets/graficos/temp_housing_blower.png" alt="Gráfico de barras da temperatura média cruzando housing (Closed, Open, Open - Updated) com blower_direction (To Back, To Front)" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -742,7 +754,7 @@ Além das tabelas de estatística descritiva, foram produzidos gráficos para in
 As duas configurações interagem: com o housing `Closed`, o blower para trás (`To back`, 81,5 °C) aquece um pouco mais que para frente (`To front`, 79,8 °C); com o housing `Open`, essa ordem se inverte (86,2 °C para frente contra 83,4 °C para trás). Nenhuma combinação isolada é a mais fria em todas as áreas, o que antecipa o resultado da H2 (Seção 4.2.3): as configurações não têm efeito independente entre si.
 
 <div align="center">
-  <sub>Figura 13 — Taxa de excedência do limite por material do suporte da bobina</sub><br>
+  <sub>Figura 14 — Taxa de excedência do limite por material do suporte da bobina</sub><br>
   <img src="../assets/graficos/exceeds_por_material.png" alt="Gráfico de barras da porcentagem de leituras que excedem o active_limit, por material_coil_support: Aluminium 8,4%, Aluminium Plate 4,1%, Plastic 4,1%" width="70%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -750,7 +762,7 @@ As duas configurações interagem: com o housing `Closed`, o blower para trás (
 Sensores com suporte de bobina em `Aluminium` excedem o `active_limit` em 8,4% das leituras, cerca do dobro da taxa observada em `Aluminium Plate` (4,1%) e `Plastic` (4,1%). O gráfico não isola causalidade — `material_coil_support` está confundido com outras configurações do ensaio, como discutido na H2 —, mas evidencia que o material é uma variável relevante para priorizar testes físicos.
 
 <div align="center">
-  <sub>Figura 14 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
+  <sub>Figura 15 — Temperatura medida vs. limite de engenharia por sensor</sub><br>
   <img src="../assets/graficos/temp_vs_limite.png" alt="Dispersão de temp contra active_limit por sensor, com pontos acima da diagonal identidade destacados em vermelho como excedências" width="75%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -821,7 +833,7 @@ A hipótese é de que o modo de operação afeta a temperatura medida nos compon
 A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5 °C nos demais, uma diferença de 9,1 °C, e a amplitude entre o modo mais quente (Broil C2, 84,7 °C) e o mais frio (Pyro, 71,4 °C) chega a 13,3 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
 
 <div align="center">
-  <sub>Figura 15 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
+  <sub>Figura 16 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
   <img src="../assets/graficos/g_h3.png" alt="Boxplot de temperatura por run_case e barras comparando Broil vs. demais modos" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -837,7 +849,7 @@ A hipótese é de que a configuração da carcaça (housing) influencia a temper
 A hipótese se confirmou, na direção contra-intuitiva. Com a carcaça aberta o IGBT 1 opera a 91,7 °C em média, contra 82,1 °C com ela fechada, uma diferença de +9,6 °C, ou seja, aberto é mais quente, não o contrário. O efeito é estatisticamente significativo no teste de médias (Welch, p ≈ 0,03) e de magnitude média (Cohen's d ≈ 0,59), maior que o observado na H3.
 
 <div align="center">
-  <sub>Figura 16 — Temperatura do IGBT 1 por configuração da carcaça (housing)</sub><br>
+  <sub>Figura 17 — Temperatura do IGBT 1 por configuração da carcaça (housing)</sub><br>
   <img src="../assets/graficos/g_h4.png" alt="Boxplot e barras comparando a temperatura do IGBT 1 entre housing fechado e aberto" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -1009,7 +1021,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 17 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
+  <sub>Figura 18 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -1274,15 +1286,15 @@ Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo —
 
 **d) Histograma da variável após o escalonamento**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 17.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 18.
 
 <div align="center">
-  <sub>Figura 18 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
+  <sub>Figura 19 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp_scaled.png" alt="Histograma da temperatura normalizada por key_area, distribuída ao longo de todo o intervalo de 0 a 1, sem cauda longa" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 17)**
+**Comparação com o histograma antes do escalonamento (Figura 18)**
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -1294,17 +1306,17 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-Antes do escalonamento, o histograma de `temp` (Figura 17, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
+Antes do escalonamento, o histograma de `temp` (Figura 18, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 18 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 17: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 19 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 18: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
 
-**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 17) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 18) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
 **Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
 
-Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 18 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 19 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
 
-**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 17 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 18 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
