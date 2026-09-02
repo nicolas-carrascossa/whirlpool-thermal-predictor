@@ -776,7 +776,16 @@ Também foram documentados **dados confusos ou insuficientes**:
 
 Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
-#### 4.2.3. Hipóteses
+#### 4.2.3. Processamento final dos dados
+
+Nesta nova etapa de limpeza dos dados, a equipe consolidou um conjunto de ajustes voltados a simplificar a identificação dos registros e a reorganizar a base por área do produto. Em primeiro lugar, foram removidas as colunas “tc_id” e “tc_number”, que atuavam como identificadores redundantes do sensor: como ambas cumpriam a mesma função de rótulo já desempenhada por “tc_name”, sem agregar informação adicional e sem possuir significado quantitativo, sua manutenção apenas aumentava a redundância da base sem trazer ganho analítico. A partir dessa mudança, a identificação de cada termopar passa a ser feita exclusivamente pelo “tc_name”, simplificando o esquema de colunas sem perda de rastreabilidade.
+
+Em relação à coluna “key_area”, o grupo optou por decompor a base única em sete novas tabelas, uma para cada área-chave do fogão: “Mainback”, “Coil Temps”, “Main Vent Sys”, “IPC Cooling”, “IPC Comp”, “CT Knobs” e “Oven HMI”. Essa separação reorganiza os dados originalmente consolidados em “key_area” de modo que cada tabela reúna apenas os sensores e leituras pertencentes à sua respectiva região do produto, facilitando análises e comparações centradas em cada área térmica sem exigir filtragem repetida da base principal.
+
+Por fim, está em avaliação a possível unificação das colunas “run_case” e “losses”, motivada pela forte correlação identificada entre elas. Por exemplo, sempre que “run_case” assume o valor “Pyro”, “losses” invariavelmente registra “No Losses”. Essa correlação sugere que “losses” pode não carregar informação independente de run_case, tornando as duas colunas parcialmente redundantes. Ainda assim, essa decisão permanece em aberto e será submetida à validação do professor de programação e do restante do grupo antes de ser efetivada, de modo a garantir que a unificação não descarte nuances relevantes para a modelagem.
+
+
+#### 4.2.4. Hipóteses
 
 Hipóteses em um projeto de análise preditiva de dados são extremamente importantes, porque definem as premissas e expectativas que vão guiar todo o processo de pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1.
 
