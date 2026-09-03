@@ -947,11 +947,21 @@ em variação relativa, sem converter um no outro.
 
 d) Apresentar o primeiro modelo candidato, e uma discussão sobre os resultados deste modelo (discussão sobre as métricas para esse modelo candidato).
 
-Caso seu projeto seja Modelo Não-Supervisionado, apresentar:
-a) Modelagem para o problema (proposta de features com a explicação completa da linha de raciocínio).
-b) Primeiro modelo candidato para o problema.
-c) Justificativa para a definição do K do modelo.
-d) Escolha de um tipo de sistema de recomendação e a justificativa para essa escolha.
+Decision Tree Regressor e Random Forest Regressor lidam nativamente com múltiplas saídas: uma única árvore, ou um conjunto delas, estima simultaneamente a temperatura de todos os termopares de uma key_area a partir da mesma configuração de entrada, pois cada divisão de nó é escolhida otimizando o erro combinado entre os alvos. O Gradient Boosting Regressor não tem esse suporte nativo: cada estimador do algoritmo é construído para prever um único alvo escalar. Por isso, o candidato é treinado com MultiOutputRegressor, wrapper do scikit-learn que ajusta um GradientBoostingRegressor independente para cada termopar da key_area, tratando os alvos como problemas de regressão separados e sem compartilhamento de estrutura entre eles.
+
+Apesar dessa desvantagem estrutural, o resultado medido sobre os dados do projeto favorece o Gradient Boosting Regressor. A tabela abaixo resume a média das métricas de teste entre as sete key_area, com os três candidatos partindo da mesma divisão treino/teste/verificação e da mesma busca de hiperparâmetros por área, calculadas nos notebooks `Decision_tree_regre.ipynb`, `Random_for_regre.ipynb` e `Grad_Boosting_Regre.ipynb`:
+
+| Modelo | MAE (°C) | RMSE (°C) | R² | MAPE (%) | Dentro de 10% |
+|---|---|---|---|---|---|
+| Decision Tree Regressor | 4,72 | 8,02 | 0,156 | 6,04 | 85,52% |
+| Random Forest Regressor | 4,88 | 7,18 | 0,283 | 6,54 | 79,83% |
+| Gradient Boosting Regressor | 4,18 | 6,40 | 0,156 | 5,73 | 85,60% |
+
+Em quatro das cinco métricas, MAE, RMSE, MAPE e fração de previsões dentro da margem de 10% do Project Charter, o Gradient Boosting tem o melhor resultado médio entre os três candidatos. A exceção é o R², em que os três ficam próximos entre si (0,156, 0,283 e 0,156), com o Random Forest à frente apenas por sofrer uma queda menor em uma única área, `ipc_comp`.
+
+Essa vantagem média não é uniforme entre as sete áreas. Em `coil_temps`, o Gradient Boosting reduz o MAE de teste de 12,09 °C, obtido pelo Decision Tree, e 10,47 °C, obtido pelo Random Forest, para 7,53 °C, a maior diferença entre modelos observada em qualquer área, e essa área concentra boa parte do ganho da média geral. Nas outras seis áreas, os três candidatos ficam próximos entre si, com o MAE de teste variando entre 0,2 °C e 1,0 °C de uma extremidade a outra, e nenhum modelo vencendo em todas. Em `ipc_comp`, onde 37 termopares são estimados a partir de apenas 24 runs, a limitação estrutural do Gradient Boosting pesa mais: o modelo fica atrás do Decision Tree, 4,32 °C contra 4,24 °C de MAE de teste, ainda que à frente do Random Forest, 6,96 °C, o que é consistente com treinar 37 GBRs independentes a partir de poucas linhas de treino por termopar, sem compartilhar estrutura entre alvos correlacionados.
+
+Diante desses números, o Gradient Boosting Regressor é o candidato de melhor desempenho médio sobre os dados do projeto, mesmo pagando o custo computacional da limitação estrutural: 74 GBRs treinados no total, um por termopar em cada uma das sete áreas, contra sete modelos multi-saída no Decision Tree e no Random Forest.
 
 
 
