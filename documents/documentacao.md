@@ -901,6 +901,32 @@ A consequência é uma qualificação explícita do escopo de uso do modelo cand
 - **Uso sustentado pelas métricas atuais — triagem térmica.** Estimar o patamar de temperatura esperado de uma área sob uma dada configuração e sinalizar proximidade do `active_limit`, priorizando quais ensaios físicos executar primeiro. É exatamente a dor descrita na jornada do Engenheiro de Qualidade (Seção 4.1.7), em que a fila de ensaios é hoje ordenada por experiência tácita.
 - **Uso ainda não sustentado — ranqueamento fino.** Escolher entre duas configurações candidatas com base na diferença prevista entre elas, sobretudo em `mainback` e `ipc_comp`. Essa decisão continua exigindo ensaio físico, e apresentá-la como capacidade do modelo hoje seria prometer além da evidência.
 
+##### Superajuste
+
+O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`), mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas (FRIEDMAN, 2001), somada à profundidade limitada a 3 níveis, contém melhor a memorização do que a árvore única, que chegou a 8 níveis e 23 folhas em `coil_temps`.
+
+Esse gap materializa o **risco R03** mapeado na Seção 4.1.5, e sua causa é dimensional antes de ser algorítmica: 56 ensaios, dos quais restam de 24 a 56 linhas úteis por área, e apenas 31 combinações distintas de configuração. Nenhum ajuste de hiperparâmetro resolve escassez de dados — o caminho é ampliar a base de ensaios, e a recomendação ao parceiro é que os próximos sejam planejados para cobrir combinações ainda não testadas, não para repetir as já frequentes.
+
+##### O que a explicabilidade pode e não pode afirmar
+
+A Figura 19 mostra a importância média das variáveis para a área `Mainback`, com o termopar mais sensível a cada uma.
+
+<div align="center">
+  <sub>Figura 19 — Explicabilidade do modelo candidato: importância das variáveis na área Mainback</sub><br>
+  <img src="../assets/graficos/modelo_candidato_explicabilidade.png" alt="Gráfico de barras horizontais com a importância média de cada variável de configuração para o Gradient Boosting na área Mainback, indicando o termopar mais sensível a cada variável" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
+
+O `run_case` domina, com importância de 0,481 — quase o triplo da segunda variável (`housing`, 0,152) —, resultado coerente com a **H3** (Seção 4.2.4), que já identificara o modo de operação como fator real de elevação térmica. O detalhe que só a arquitetura multi-saída revela é *onde* cada variável pesa: o `run_case` concentra 0,866 de importância no termopar `Storage Drawer (Metal Above)`, justamente o de maior amplitude térmica da área (90,25 °C a 171,57 °C). Para o parceiro, essa leitura por sensor é acionável — indica qual ponto instrumentar com prioridade ao validar uma mudança de modo de operação.
+
+O gráfico, porém, **não deve ser lido como evidência de causa**. A **H2** demonstrou que as sete configurações estão confundidas no desenho experimental: cada categoria de `losses` corresponde a um único valor de `deflector_hole`, uma relação de identidade, não apenas de associação. Diante de variáveis redundantes, algoritmos baseados em árvores distribuem o crédito preditivo de forma arbitrária entre elas. A importância de 0,003 de `material_coil_support` indica que o modelo **não precisou** dessa variável — não que o material do suporte seja termicamente irrelevante. A leitura correta é que a figura descreve **como o modelo decide**, não **como o fogão aquece**.
+
+Vale registrar ainda uma divergência assumida em relação à H2, que recomendara retirar `losses` e `board_position` do modelo por redundância. Este primeiro candidato mantém as sete variáveis deliberadamente: com apenas 31 combinações distintas, removê-las antes de medir seu efeito eliminaria a própria evidência de que são dispensáveis. As importâncias agora medidas (0,055 e 0,098) confirmam com número o que a H2 antecipara por análise do desenho experimental, e transformam a remoção em um teste objetivo para a Seção 4.4.
+
+##### Síntese
+
+O Gradient Boosting sustenta-se como primeiro modelo candidato por entregar o menor erro em graus, a menor incidência de erros extremos e a maior taxa de acerto dentro da margem acordada com o parceiro. Seus limites são igualmente explícitos e decorrem da base disponível, não do algoritmo: baixo poder explicativo da variância intra-área (R² de 0,156, negativo em dois setores), superajuste de 2,15 °C e impossibilidade de atribuição causal por confundimento no desenho dos ensaios. Em termos práticos, o modelo já serve para **priorizar ensaios**, e ainda não para **substituí-los**. As Seções 4.4 e 4.5 retomam esse candidato para a comparação formal entre modelos e para a definição da solução final, incluindo o plano de contingência para os casos em que a previsão falhar.
+
 ### 4.4. Comparação de Modelos
 ```
 - Descrever e justificar a escolha da métrica de avaliação dos modelos com base no que é mais importante para o problema ao 
@@ -1034,6 +1060,7 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
 22. HOTZ, Nick. What is CRISP DM?. Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
 23. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
+24. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
 
 ## <a name="attachments"></a>Anexos
 
