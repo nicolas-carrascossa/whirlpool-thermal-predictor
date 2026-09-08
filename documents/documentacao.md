@@ -869,7 +869,9 @@ Dentro de cada `key_area`, cada ensaio produz uma leitura simultânea de vários
 
 **Por que um modelo por `key_area`**
 
-*Em andamento.*
+As sete `key_area` do produto correspondem a regimes térmicos distintos, não a um recorte arbitrário do conjunto de dados. A hipótese H1, confirmada na Seção 4.2.4, mostra isso diretamente: o efeito de uma mesma configuração de montagem muda de sinal conforme a área. Uma alteração que aquece um componente em uma região esfria outro em outra região. Um modelo único, treinado sobre o conjunto completo, estimaria um efeito médio entre as áreas, que não descreveria corretamente nenhuma delas e erraria o sinal do efeito em pelo menos uma.
+
+A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) quantifica essa heterogeneidade: a amplitude de temperatura vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`, uma diferença de 8,4 vezes, e o coeficiente de variação varia de 0,068 a 0,590 entre as sete regiões. Por isso o pipeline treina **um `RandomForestRegressor` por `key_area`** (sete modelos), em vez de um único modelo global: cada modelo aprende a relação entre configuração e temperatura dentro do regime térmico da sua própria região, sem que esse sinal seja diluído ou invertido pelas demais áreas. A justificativa para cada modelo prever, de uma vez, todos os termopares da sua área (abordagem multi-output) já foi apresentada em Enquadramento do problema, acima.
 
 **Features de entrada**
 
