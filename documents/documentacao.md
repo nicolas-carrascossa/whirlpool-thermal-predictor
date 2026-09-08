@@ -25,7 +25,9 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
 [5. Conclusões e Recomendações](#c5)
 
-[6. Referências](#c6)
+[6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
+
+[7. Referências](#c7)
 
 [Anexos](#attachments)
 
@@ -879,7 +881,44 @@ Escreva, de forma resumida, sobre os principais resultados do seu projeto e faç
 Remova este bloco ao final
 ```
 
-## <a name="c6"></a>6. Referências
+## <a name="c6"></a>6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo
+
+O Thermal Predictor é entregue em duas partes que operam em conjunto: um **dashboard interativo**, que é a camada visual da solução, e um **software preditivo open source**, que é o seu núcleo. O software abriga o pré-processamento, os modelos treinados e a rotina de predição; o dashboard traduz esse núcleo em uma interface de consulta. Ambos são construídos apenas com bibliotecas de código aberto em Python, sem qualquer dependência de software licenciado.
+
+Essa divisão define duas formas distintas de acesso ao modelo. Pelo dashboard, o usuário consulta a temperatura estimada de uma configuração de fogão sem escrever uma linha de código: informa os parâmetros de montagem que deseja avaliar e recebe as previsões dos sensores de interesse. É o caminho dos times de Produtos, Design, Qualidade e Marketing. Pelo software, o usuário chama o modelo diretamente, integrando-o a rotinas próprias, executando predições em lote e retreinando o modelo à medida que novos dados de simulação e de teste físico ficam disponíveis. É o caminho da equipe de Engenharia (CFD).
+
+Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. A arquitetura de implementação, o layout das telas e a escolha das bibliotecas serão definidos nas etapas seguintes do projeto.
+
+### 6.1. Requisitos funcionais do dashboard
+
+| ID | Requisito funcional | Prioridade |
+| --- | --- | --- |
+| RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a avaliar: direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e caso/modo de operação (Run Case). | Alta |
+| RF02 | Permitir que o usuário selecione a arquitetura do produto (Brasil ou México), direcionando a consulta ao modelo correspondente. | Alta |
+| RF03 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura de todos os 78 sensores a cada consulta. | Alta |
+| RF04 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, a partir da configuração informada. | Alta |
+| RF05 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
+| RF06 | Controlar o acesso ao dashboard por autenticação individual de usuário e senha. | Alta |
+| RF07 | Sinalizar quando a configuração consultada está fora da faixa de combinações já testadas, caracterizando extrapolação do modelo. | Média |
+| RF08 | Exibir o limite de engenharia aplicável a cada sensor consultado e destacar as predições que o excedem. | Média |
+| RF09 | Permitir a consulta simultânea de duas ou mais configurações, exibindo seus resultados lado a lado. | Média |
+| RF10 | Registrar o histórico de acessos ao dashboard, com identificação do usuário e data/hora de uso. | Baixa |
+| RF11 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
+
+### 6.2. Requisitos funcionais do software preditivo
+
+| ID | Requisito funcional | Prioridade |
+| --- | --- | --- |
+| RF12 | Expor uma rotina de predição que receba uma configuração de montagem e a arquitetura desejada e retorne as temperaturas estimadas, permitindo uso programático independente do dashboard. | Alta |
+| RF13 | Manter modelos treinados separadamente para as arquiteturas do Brasil e do México. | Alta |
+| RF14 | Aplicar sobre os dados de entrada da predição o mesmo pré-processamento usado no treinamento, garantindo consistência entre treino e uso. | Alta |
+| RF15 | Ser distribuído exclusivamente com bibliotecas de código aberto, sem dependência de software licenciado. | Alta |
+| RF16 | Carregar os dados de simulação e os históricos de teste a partir de fonte externa ao repositório de código. | Alta |
+| RF17 | Permitir o retreinamento dos modelos a partir de novos dados de simulação (CFD) e de testes físicos, sem alteração do código-fonte. | Média |
+| RF18 | Permitir a predição em lote, a partir de um conjunto de configurações fornecido pelo usuário. | Média |
+| RF19 | Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, permitindo acompanhar sua evolução entre versões. | Média |
+
+## <a name="c7"></a>7. Referências
 
 As referências abaixo estão numeradas na ordem em que aparecem citadas ao longo do texto.
 
