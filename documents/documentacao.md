@@ -1128,6 +1128,200 @@ Os valores, portanto, **reforçam os resultados dos testes estatísticos de norm
 
 Embora a média ≈ mediana seja condição necessária para simetria, ela não bastaria sozinha para provar normalidade; no caso da temp, porém, a diferença é clara (+5,27 °C) e aponta na mesma direção dos testes formais.
 
+**f) Diagnóstico comparativo por segmentação da variável**
+
+Os itens c) a e) trataram `temp` como uma distribuição única. O roteiro, porém, pede **diversidade de diagnóstico comparativo**, e a base não a oferece pela via usual: como registrado na nota de abertura desta subseção, há uma só variável quantitativa contínua. A alternativa adotada aqui é obter essa diversidade **dentro da própria variável** — em vez de comparar `temp` com outras colunas, comparam-se recortes de `temp` por região do produto, por configuração de ensaio e por período da campanha de ensaios. Cada recorte é uma distribuição própria, submetida às mesmas hipóteses do item a), ao mesmo $\alpha = 0{,}05$ do item b) e aos mesmos três testes do item c).
+
+A motivação não é apenas cumprir o roteiro. O item d) mostrou que a `temp` global é uma **mistura de sete regimes térmicos**, e uma mistura de normais pode ser fortemente não normal ainda que cada componente seja normal. Testar apenas o agregado não distingue as duas causas possíveis da rejeição:
+
+- **(i)** cada subpopulação é, ela própria, não normal; ou
+- **(ii)** as subpopulações são normais e a rejeição vem exclusivamente da mistura.
+
+Segmentar responde a essa pergunta. Ao todo foram testados **75 recortes** de `temp`: 7 por região, 16 por configuração, 3 por período, 21 no cruzamento região × período e 28 no cruzamento região × modo de operação.
+
+**f.1) Segmentação por região do produto (`key_area`)**
+
+| `key_area` | n | W (Shapiro-Wilk) | p (SW) | K² (D'Agostino) | p (DP) | A² (Anderson-Darling) | Crítico 5% | Decisão |
+|---|---:|---:|---:|---:|---:|---:|---:|:---|
+| Mainback | 610 | 0,7496 | 2,33 × 10⁻²⁹ | 215,98 | 1,26 × 10⁻⁴⁷ | 47,90 | 0,751 | Rejeita $H_0$ |
+| Coil Temps | 420 | 0,9539 | 3,54 × 10⁻¹⁰ | 8,18 | 1,67 × 10⁻² | 6,71 | 0,751 | Rejeita $H_0$ |
+| Main Vent Sys | 288 | 0,9533 | 5,90 × 10⁻⁸ | 21,10 | 2,62 × 10⁻⁵ | 4,59 | 0,750 | Rejeita $H_0$ |
+| IPC Cooling | 218 | 0,9319 | 1,59 × 10⁻⁸ | 14,62 | 6,68 × 10⁻⁴ | 5,45 | 0,749 | Rejeita $H_0$ |
+| IPC Comp | 1.979 | 0,9815 | 2,40 × 10⁻¹⁵ | 61,76 | 3,89 × 10⁻¹⁴ | 11,24 | 0,752 | Rejeita $H_0$ |
+| CT Knobs | 330 | 0,9418 | 4,24 × 10⁻¹⁰ | 29,65 | 3,64 × 10⁻⁷ | 6,71 | 0,750 | Rejeita $H_0$ |
+| Oven HMI | 220 | 0,9561 | 2,87 × 10⁻⁶ | 21,88 | 1,77 × 10⁻⁵ | 2,31 | 0,749 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026). Referência global do item c): W = 0,8669; A² = 93,89.</sup>
+
+As sete regiões rejeitam $H_0$, o que **descarta a hipótese (ii) pura**: a não normalidade não é apenas efeito da mistura. Mas a comparação entre segmentos, que o teste global não permitia fazer, revela duas coisas:
+
+- **O grau de afastamento varia muito.** O W vai de 0,7496 (`Mainback`) a 0,9815 (`IPC Comp`) — o W global de 0,8669 não representa nenhuma região em particular, é um valor intermediário que não descreve nem a pior nem a melhor.
+- **A mistura responde por boa parte do afastamento.** O A² global é 93,89; nenhuma região isolada passa de 47,90, seis das sete ficam abaixo de 11,3 e `Oven HMI` chega a 2,31 — cerca de 40 vezes menor que o agregado. Separar os regimes térmicos reduz muito a distância para a normal, sem eliminá-la.
+
+**f.2) Segmentação por configuração de ensaio**
+
+Cada run tem uma combinação de parâmetros de configuração. A tabela abaixo aplica o Shapiro-Wilk e o Anderson-Darling a cada categoria das seis configurações com mais de uma categoria efetiva.
+
+| Configuração | Categoria | n | W | p (SW) | A² | Crítico 5% | Decisão |
+|---|---|---:|---:|---:|---:|---:|:---|
+| `run_case` | Broil C1 | 148 | 0,8253 | 5,33 × 10⁻¹² | 5,67 | 0,748 | Rejeita $H_0$ |
+| `run_case` | Broil C2 | 1.531 | 0,8061 | 2,09 × 10⁻³⁹ | 71,47 | 0,752 | Rejeita $H_0$ |
+| `run_case` | Broil Qualitative | 1.817 | 0,9344 | 1,44 × 10⁻²⁷ | 14,70 | 0,752 | Rejeita $H_0$ |
+| `run_case` | Pyro | 569 | 0,7519 | 2,42 × 10⁻²⁸ | 28,45 | 0,751 | Rejeita $H_0$ |
+| `housing` | Closed | 2.063 | 0,8332 | 4,73 × 10⁻⁴² | 63,74 | 0,752 | Rejeita $H_0$ |
+| `housing` | Open | 1.328 | 0,9161 | 1,71 × 10⁻²⁶ | 17,04 | 0,752 | Rejeita $H_0$ |
+| `housing` | Open - Updated | 674 | 0,8500 | 9,18 × 10⁻²⁵ | 19,84 | 0,751 | Rejeita $H_0$ |
+| `blower_direction` | To back | 1.212 | 0,8938 | 4,18 × 10⁻²⁸ | 24,33 | 0,752 | Rejeita $H_0$ |
+| `blower_direction` | To front | 2.853 | 0,8525 | 1,16 × 10⁻⁴⁵ | 72,73 | 0,752 | Rejeita $H_0$ |
+| `deflector_hole` | Closed | 2.714 | 0,8351 | 1,47 × 10⁻⁴⁶ | 83,63 | 0,752 | Rejeita $H_0$ |
+| `deflector_hole` | Open | 1.351 | 0,9195 | 3,11 × 10⁻²⁶ | 17,52 | 0,752 | Rejeita $H_0$ |
+| `board_position` | Center | 3.843 | 0,8574 | 2,02 × 10⁻⁵⁰ | 96,40 | 0,752 | Rejeita $H_0$ |
+| `board_position` | Right | 222 | 0,9529 | 1,17 × 10⁻⁶ | 2,31 | 0,749 | Rejeita $H_0$ |
+| `material_coil_support` | Aluminium | 3.397 | 0,8774 | 9,81 × 10⁻⁴⁶ | 70,10 | 0,752 | Rejeita $H_0$ |
+| `material_coil_support` | Aluminium Plate | 74 | 0,8439 | 2,40 × 10⁻⁷ | 2,42 | 0,744 | Rejeita $H_0$ |
+| `material_coil_support` | Plastic | 594 | 0,8066 | 4,76 × 10⁻²⁶ | 24,93 | 0,751 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+As 16 categorias rejeitam $H_0$, e o resultado relevante aqui é **negativo**: segmentar por configuração **não reduz** o afastamento da normal. O W permanece na faixa de 0,81 a 0,95, em torno do valor global de 0,8669, e o A² de `board_position = Center` (96,40) chega a superar o do conjunto completo (93,89). A explicação é estrutural: configuração é propriedade do *run*, não do ponto de medição — cada fatia por configuração continua contendo as sete regiões térmicas e, portanto, continua sendo uma mistura. O contraste com o item f.1 é o achado: **a fonte dominante da não normalidade é espacial (a região), não operacional (a configuração)**.
+
+Vale registrar o caso extremo: `run_case = Pyro` tem o pior W da tabela (0,7519), com assimetria de +3,06 e curtose em excesso de +15,40. É coerente com o comportamento descrito no tratamento de outliers da Seção 4.2.2 — no modo de autolimpeza as *coils* operam muito mais frias que nos modos Broil, o que acentua a bimodalidade dentro da fatia.
+
+**f.3) Segmentação por período da campanha de ensaios**
+
+A base não tem coluna de data; o que existe é a ordem de execução codificada em `run_id` (Run 1 a Run 75, com lacunas, totalizando 56 runs). "Período", aqui, significa **posição na campanha**, não tempo de calendário. Os runs foram ordenados e divididos em três terços.
+
+| Período | Runs | n | W | p (SW) | A² | Crítico 5% | Assimetria | Média (°C) | Decisão |
+|---|---|---:|---:|---:|---:|---:|---:|---:|:---|
+| P1 | Run 1 – Run 19 (17 runs) | 1.351 | 0,9195 | 3,11 × 10⁻²⁶ | 17,52 | 0,752 | +1,27 | 83,79 | Rejeita $H_0$ |
+| P2 | Run 20 – Run 35 (16 runs) | 1.227 | 0,8641 | 2,62 × 10⁻³¹ | 30,73 | 0,752 | +1,67 | 84,43 | Rejeita $H_0$ |
+| P3 | Run 38 – Run 75 (16 runs) | 1.487 | 0,7989 | 1,83 × 10⁻³⁹ | 59,34 | 0,752 | +2,29 | 77,75 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+Os três períodos rejeitam $H_0$, mas há uma **tendência monotônica** que nenhum outro corte revelou: o afastamento da normal **cresce ao longo da campanha** (W cai de 0,9195 para 0,7989; A² sobe de 17,52 para 59,34; a assimetria vai de +1,27 a +2,29). A leitura mais provável é de cobertura, não de deterioração do ensaio: os runs finais introduzem configurações e condições mais severas — o máximo global de 273,60 °C, por exemplo, só aparece em P3 —, ampliando a cauda direita. O ponto é retomado no item f) da subseção de escalonamento, porque tem consequência direta sobre a escolha dos parâmetros de normalização.
+
+**f.4) Cruzamentos: região × período e região × modo de operação**
+
+Os três cortes anteriores são unidimensionais e cada um deixa a mistura parcialmente intacta. Cruzar região com condição de ensaio isola ao mesmo tempo o regime térmico e o regime de operação — é o recorte mais próximo de "uma distribuição, um mecanismo".
+
+*Região × período (21 segmentos)*
+
+| Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% | Decisão |
+|---|---:|---:|---:|---:|---:|---:|:---|
+| Oven HMI × P1 | 76 | 0,9695 | 0,0644 | 0,0769 | 0,542 | 0,744 | **Não rejeita $H_0$** |
+| Oven HMI × P2 | 64 | 0,9793 | 0,3578 | 0,4564 | 0,495 | 0,743 | **Não rejeita $H_0$** |
+| Oven HMI × P3 | 80 | 0,8435 | 9,88 × 10⁻⁸ | 1,04 × 10⁻⁶ | 4,559 | 0,745 | Rejeita $H_0$ |
+| Main Vent Sys × P1 | 103 | 0,9697 | 0,0183 | 0,6677 | 0,845 | 0,746 | Rejeita $H_0$ (SW e AD) |
+| Coil Temps × P1 | 124 | 0,9636 | 0,0020 | 0,5864 | 1,858 | 0,747 | Rejeita $H_0$ (SW e AD) |
+| Mainback × P2 | 186 | 0,7184 | 1,66 × 10⁻¹⁵ | 4,72 × 10⁻²⁶ | 16,828 | 0,749 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026). Recorte dos segmentos que sustentam a leitura; os 21 estão no notebook.</sup>
+
+O contraste dentro de `Oven HMI` é o resultado mais informativo do item: a mesma região passa de **compatível com a normal** em P1 e P2 para **rejeição inequívoca** em P3 (p = 9,88 × 10⁻⁸), com a assimetria virando de +0,59 para −1,47. Não é a região que mudou de natureza: é a campanha que, no terço final, passou a incluir condições que deslocam a cauda esquerda dessa região.
+
+*Região × modo de operação (`run_case`, 28 segmentos)*
+
+Oito dos 28 segmentos não rejeitam $H_0$ em **nenhum** dos três testes:
+
+| Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% |
+|---|---:|---:|---:|---:|---:|---:|
+| Coil Temps × Pyro | 52 | 0,9723 | 0,2641 | 0,2694 | 0,370 | 0,741 |
+| Main Vent Sys × Pyro | 44 | 0,9690 | 0,2799 | 0,3151 | 0,405 | 0,739 |
+| IPC Cooling × Pyro | 30 | 0,9449 | 0,1235 | 0,5050 | 0,431 | 0,732 |
+| IPC Comp × Broil C1 | 72 | 0,9701 | 0,0845 | 0,3807 | 0,649 | 0,744 |
+| CT Knobs × Broil C1 | 12 | 0,8912 | 0,1221 | 0,3294 | 0,527 | 0,698 |
+| Main Vent Sys × Broil C1 | 10 | 0,8766 | 0,1192 | 0,4742 | 0,545 | 0,685 |
+| IPC Cooling × Broil C1 | 8 | 0,8622 | 0,1264 | 0,2464 | 0,477 | 0,666 |
+| Oven HMI × Broil C1 | 8 | 0,8892 | 0,2301 | 0,6540 | 0,520 | 0,666 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+**Ressalva de poder estatístico.** Cinco desses oito segmentos têm n < 50 — `Broil C1` tem apenas 148 linhas no total, distribuídas entre sete regiões. Com amostras desse tamanho o teste tem pouco poder, e "não rejeitar" reflete tanto ausência de evidência contra a normalidade quanto incapacidade de detectá-la. Os casos que sustentam conclusão são os de amostra maior: `Oven HMI × P1` (n = 76), `IPC Comp × Broil C1` (n = 72), `Oven HMI × P2` (n = 64), `Coil Temps × Pyro` (n = 52) e `Main Vent Sys × Pyro` (n = 44).
+
+**Ressalva de multiplicidade.** Foram 75 testes ao nível de 5%; se $H_0$ fosse verdadeira em todos, esperar-se-iam cerca de 3,75 rejeições apenas por acaso. Com correção de Bonferroni ($\alpha_{ajustado} = 0{,}05 / 75 = 6{,}67 \times 10^{-4}$), 17 dos 75 segmentos deixariam de rejeitar pelo Shapiro-Wilk, contra 10 no critério não corrigido — entrariam no grupo casos como `Coil Temps × P1` (p = 0,0020) e `Main Vent Sys × P1` (p = 0,0183). A correção, portanto, **reforça** a leitura desta subseção em vez de enfraquecê-la: quanto mais rigoroso o critério, mais segmentos sobrevivem como compatíveis com a normal. A conclusão global do item c) não se altera, porque lá os p-valores são da ordem de 10⁻⁵⁰, muitas ordens de grandeza abaixo de qualquer limiar corrigido.
+
+**Síntese do diagnóstico comparativo**
+
+| Nível de recorte | Segmentos | Rejeitam $H_0$ nos 3 testes | Faixa de W | Leitura |
+|---|---:|---:|---|---|
+| Global (item c) | 1 | 1 | 0,8669 | Não normal |
+| Região | 7 | 7 | 0,7496 – 0,9815 | Não normal em toda parte, com grau muito desigual |
+| Configuração | 16 | 16 | 0,8061 – 0,9529 | Não normal; segmentar por configuração não ajuda |
+| Período | 3 | 3 | 0,7989 – 0,9195 | Não normal; afastamento cresce ao longo da campanha |
+| Região × período | 21 | 15 | 0,7184 – 0,9793 | 2 segmentos compatíveis com a normal |
+| Região × modo | 28 | 15 | 0,6979 – 0,9723 | 8 segmentos compatíveis com a normal |
+| **Total** | **75** | **56** | — | **10 segmentos sem rejeição em nenhum dos 3 testes** |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+A resposta à pergunta formulada no início do item é **"as duas causas, em proporções diferentes"**: cada região é individualmente não normal (causa i), mas a mistura amplifica bastante o afastamento (causa ii) — o A² cai de 93,89 no agregado para no máximo 47,90 em qualquer região isolada e para 2,31 em `Oven HMI`. E, quando se fixam simultaneamente região e condição de ensaio, a não normalidade deixa de ser universal: em 10 dos 75 recortes nenhum dos três testes rejeita $H_0$.
+
+**Consequências para o projeto**
+
+1. **Confirma a decisão de modelar por `key_area`.** A variação de W entre regiões (0,7496 a 0,9815) mostra que as sete regiões não são realizações da mesma distribuição, que é exatamente a premissa do argumento 4 do item a) da subseção de escalonamento.
+2. **Confirma o Min-Max no lugar do Z-score.** A rejeição não é marginal em nenhuma região: mesmo a melhor delas (`IPC Comp`, W = 0,9815) rejeita com p = 2,40 × 10⁻¹⁵. Não há região em que a leitura "em número de desvios-padrão" do Z-score seja estatisticamente confortável sobre a variável bruta.
+3. **Segmentar por configuração não substitui segmentar por região.** O item f.2 mostra que a configuração isolada não reduz o afastamento; usá-la como chave de escalonamento seria trocar uma mistura por outra equivalente.
+4. **Abre espaço para métodos paramétricos em escopo restrito.** Nas células região × modo com amostra suficiente e sem rejeição (`Coil Temps × Pyro`, `Main Vent Sys × Pyro`, `IPC Comp × Broil C1`), técnicas que pressupõem normalidade — intervalos de confiança de regressão, cartas de controle — passam a ser defensáveis *dentro daquele escopo*, o que não vale para a variável global.
+5. **Alerta sobre o período.** A tendência do item f.3 indica que os runs finais ampliam a faixa observada. Isso é tratado como risco operacional no item f) da subseção seguinte.
+
+**Código utilizado (Python):**
+
+```python
+import numpy as np
+import pandas as pd
+from scipy import stats
+
+ALPHA = 0.05
+
+
+def testar_normalidade(serie, rotulo):
+    """Aplica os tres testes do item c) a um segmento de temp."""
+    s = serie.dropna()
+    if len(s) < 8:                       # n minimo exigido pelo Shapiro-Wilk
+        return None
+    w, p_sw = stats.shapiro(s)
+    k2, p_dp = stats.normaltest(s)
+    ad = stats.anderson(s, dist='norm')
+    critico_5 = ad.critical_values[2]    # indice 2 = nivel de 5%
+    return {
+        'segmento': rotulo, 'n': len(s), 'W': w, 'p_sw': p_sw,
+        'K2': k2, 'p_dp': p_dp, 'A2': ad.statistic, 'critico_5': critico_5,
+        # so conta como "nao rejeita" quando os tres testes concordam
+        'nao_rejeita': (p_sw >= ALPHA) and (p_dp >= ALPHA)
+                       and (ad.statistic <= critico_5),
+    }
+
+
+# Periodo = posicao na campanha (a base nao tem data): terco da ordem de execucao.
+df['run_num'] = df['run_id'].str.extract(r'Run\s*(\d+)').astype(float)
+tercos = np.array_split(np.array(sorted(df['run_num'].dropna().unique())), 3)
+df['periodo'] = np.select(
+    [df['run_num'].isin(tercos[0]), df['run_num'].isin(tercos[1])],
+    ['P1', 'P2'], default='P3')
+
+CONFIGS = ['run_case', 'housing', 'blower_direction', 'deflector_hole',
+           'board_position', 'material_coil_support']
+
+resultados = []
+for area, g in df.groupby('key_area'):                        # f.1 — 7 segmentos
+    resultados.append(testar_normalidade(g['temp'], area))
+for col in CONFIGS:                                           # f.2 — 16 segmentos
+    for cat, g in df.groupby(col):
+        resultados.append(testar_normalidade(g['temp'], f'{col}={cat}'))
+for periodo, g in df.groupby('periodo'):                      # f.3 — 3 segmentos
+    resultados.append(testar_normalidade(g['temp'], periodo))
+for chave in ['periodo', 'run_case']:                         # f.4 — 21 + 28 segmentos
+    for (area, valor), g in df.groupby(['key_area', chave]):
+        resultados.append(testar_normalidade(g['temp'], f'{area} x {valor}'))
+
+tabela = pd.DataFrame([r for r in resultados if r is not None])
+print(f"{len(tabela)} segmentos testados | "
+      f"{tabela['nao_rejeita'].sum()} sem rejeicao nos tres testes")
+print(tabela[tabela['nao_rejeita']].to_string(index=False))
+```
+
+
 #### Escalonamento (Padronização ou normalização) da variável quantitativa
 
 Assim como no teste de normalidade, esta subseção aplica o escalonamento apenas a `temp`, pela mesma razão registrada na nota da subseção anterior: é a única variável quantitativa contínua do dataset (`tc_number` é identificador, `active_limit` é parâmetro de engenharia com placeholders sem significado físico).
