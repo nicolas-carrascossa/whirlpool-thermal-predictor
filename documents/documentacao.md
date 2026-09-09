@@ -852,11 +852,99 @@ A ressalva é o tamanho da amostra: com apenas 56 leituras (28 por grupo), os te
 Para a modelagem (Seção 4.3), isso indica que a interação entre housing e a posição do componente deve ser considerada: o efeito da carcaça sobre a temperatura não é uniforme nem segue a intuição de "fechado aquece". Como nas demais hipóteses, housing está confundido com outras configurações no desenho dos ensaios, de modo que o resultado identifica uma associação, não uma causa isolada.
 
 ### 4.3. Preparação dos Dados e Modelagem
-```
+
+
+
 Caso seu projeto seja Modelo Supervisionado, apresentar: 
 a) Organização dos dados (conjunto de treinamento, validação e testes)
 b) Modelagem para o problema (proposta de features com a explicação completa da linha de raciocínio).
-c) Métricas relacionadas ao modelo (pelo menos 3).
+
+ 
+#### Métricas de avaliação do modelo
+
+A avaliação do Thermal Predictor responde a três perguntas distintas 
+para identificar quão bom o modelo é, e
+nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
+grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
+configuração e temperatura ou apenas reproduz o comportamento médio de cada
+sensor. As três métricas abaixo cobrem uma pergunta cada e são reportadas em
+conjunto, sempre por termopar (`tc_name`), sobre o conjunto de teste e em graus
+Celsius, a unidade em que a decisão de engenharia é tomada. Estão implementadas
+com a biblioteca scikit-learn²² na seção de métricas do notebook do modelo
+candidato, que acompanha ainda o afastamento entre o erro de treino e o de teste,
+indicador de sobreajuste, risco elevado aqui pelo número reduzido de execuções
+disponíveis (R02, Seção 4.1.5).
+
+Onde $y_i$ é a temperatura registrada, $\hat{y}_i$ a temperatura prevista e $n$
+o número de leituras do termopar avaliado:
+
+**MAE (Erro Absoluto Médio)** média das diferenças absolutas entre valores
+reais e previstos. Responde a quantos graus, em média, a previsão erra. Por não
+elevar o erro ao quadrado, é a mais robusta das três diante de valores extremos.
+É a primeira das métricas oficiais formalizadas no plano de ação do risco R06.
+
+$$
+MAE = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+$$
+
+**RMSE (Raiz do Erro Quadrático Médio)** mede a mesma distância, mas elevando
+cada erro ao quadrado antes da média, com a raiz devolvendo o resultado à unidade
+do alvo. Erros grandes passam a pesar desproporcionalmente, o que expõe previsões
+pontualmente ruins que uma média simples esconderia. É sempre maior ou igual ao
+MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²³.
+
+$$
+RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^2}
+$$
+
+**R² (Coeficiente de Determinação)** indica quanto da variação da temperatura
+o modelo explica, comparando seu erro com o de um preditor que ignora as
+entradas e responde sempre a média do alvo. R² = 1 é previsão perfeita, R² = 0 é
+empate com essa média e R² negativo significa desempenho pior que ela. MAE e
+RMSE informam o tamanho do erro; o R² informa se houve aprendizado.
+
+$$
+R^{2} = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
+$$
+
+##### Por que a escolha dessas métricas para avaliar o modelo?
+
+O MAE é a métrica principal por estar na unidade em que a decisão é tomada: um
+erro em graus Celsius é confrontável com a folga até o limite normativo do
+componente, o que não ocorreria com uma métrica adimensional ou em °C². Sua
+limitação é tratar todos os erros com o mesmo peso.
+
+O RMSE cobre exatamente essa cegueira. A razão RMSE/MAE revela se o erro está
+concentrado em poucos pontos ou distribuído: quanto mais ela se afasta de 1,
+maior a cauda de previsões ruins. Isso importa porque uma única previsão que
+subestime um componente crítico pode liberar um projeto termicamente inseguro
+(R04), daí ambas serem calculadas por termopar, e não só como média entre
+alvos, para localizar o componente problemático.
+
+O R² é o único que distingue aprendizado de reprodução da média. Sua referência
+é a média do próprio conjunto de teste, um preditor-oráculo que ninguém conhece
+antes de medir; por isso o notebook reporta em paralelo um
+`DummyRegressor(strategy="mean")` ajustado no treino, contraparte realista que
+atende ao requisito de baselines obrigatórios do risco R03. É medido por termopar
+porque, agregado, o preditor de referência seria
+a média de todos os sensores do produto,
+
+valor que nenhum engenheiro usaria como
+estimativa. Como as regiões operam em patamares distintos (amplitude de 28,37 °C
+em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o R² agregado mediria essa
+diferença de patamar, já conhecida, e não o que o modelo aprendeu.
+
+O erro percentual (MAPE) foi descartado por incorrer na crítica do risco R06: a
+escala Celsius é intervalar, logo 10% de 150 °C são 15 °C, mas os mesmos 150 °C
+valem 423,15 K, cujos 10% são 42,3 °C. MAE e RMSE contornam o problema por
+reportarem erro absoluto, e o R² por ser invariante a transformações afins do
+alvo. O notebook reporta ainda o afastamento entre o MAE de treino e o de teste,
+indicador de sobreajuste. O R03 fixa esse gatilho em cinco pontos percentuais sem
+definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
+critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
+em variação relativa, sem converter um no outro.
+
+
 d) Apresentar o primeiro modelo candidato, e uma discussão sobre os resultados deste modelo (discussão sobre as métricas para esse modelo candidato).
 
 Caso seu projeto seja Modelo Não-Supervisionado, apresentar:
@@ -865,8 +953,7 @@ b) Primeiro modelo candidato para o problema.
 c) Justificativa para a definição do K do modelo.
 d) Escolha de um tipo de sistema de recomendação e a justificativa para essa escolha.
 
-Remova este bloco ao final
-```
+
 
 ### 4.4. Comparação de Modelos
 ```
