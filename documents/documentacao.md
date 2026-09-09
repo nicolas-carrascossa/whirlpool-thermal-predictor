@@ -904,7 +904,9 @@ Essa divisão define duas formas distintas de acesso ao modelo. Pelo dashboard, 
 
 Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. A arquitetura de implementação, o layout das telas e a escolha das bibliotecas serão definidos nas etapas seguintes do projeto.
 
-### 6.1. Requisitos funcionais do dashboard
+### 6.1. Requisitos funcionais
+
+#### 6.1.1. Requisitos funcionais do dashboard
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -914,13 +916,14 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF04 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, a partir da configuração informada. | Alta |
 | RF05 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
 | RF06 | Controlar o acesso ao dashboard por autenticação individual de usuário e senha. | Alta |
-| RF07 | Sinalizar quando a configuração consultada está fora da faixa de combinações já testadas, caracterizando extrapolação do modelo. | Média |
+| RF07 | Classificar e sinalizar a confiabilidade de cada predição em um dos três estados definidos na Seção 4.1.5 (R04) — interpolação, extrapolação moderada ou fora de domínio —, suprimindo o valor numérico e recomendando simulação CFD completa quando a configuração estiver fora de domínio. | Média |
 | RF08 | Exibir o limite de engenharia aplicável a cada sensor consultado e destacar as predições que o excedem. | Média |
 | RF09 | Permitir a consulta simultânea de duas ou mais configurações, exibindo seus resultados lado a lado. | Média |
 | RF10 | Registrar o histórico de acessos ao dashboard, com identificação do usuário e data/hora de uso. | Baixa |
 | RF11 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
+| RF20 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
 
-### 6.2. Requisitos funcionais do software preditivo
+#### 6.1.2. Requisitos funcionais do software preditivo
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -932,6 +935,44 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF17 | Permitir o retreinamento dos modelos a partir de novos dados de simulação (CFD) e de testes físicos, sem alteração do código-fonte. | Média |
 | RF18 | Permitir a predição em lote, a partir de um conjunto de configurações fornecido pelo usuário. | Média |
 | RF19 | Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, permitindo acompanhar sua evolução entre versões. | Média |
+
+### 6.2. Regras de negócio
+
+Enquanto os requisitos funcionais descrevem o que a solução deve permitir que o usuário faça, as regras de negócio descrevem as condições, restrições e critérios que governam como essas ações são executadas e validadas. Cada regra está associada ao(s) requisito(s) funcional(is) que ela restringe ou complementa.
+
+#### 6.2.1. Regras de negócio do dashboard
+
+| ID | Regra de negócio | RF relacionado(s) |
+| --- | --- | --- |
+| RN01 | Uma consulta só pode ser submetida se todos os parâmetros de configuração forem informados: direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e caso/modo de operação. | RF01 |
+| RN02 | A seleção do país do produto (Brasil ou México) é obrigatória em toda consulta realizada no dashboard. | RF02 |
+| RN03 | O país selecionado determina quais são os limites de temperatura (de engenharia) aplicáveis a cada sensor consultado, os quais variam por país. | RF02, RF13 |
+| RN04 | Ao menos um sensor ou área-chave deve ser selecionado para que a consulta seja realizada; a listagem de opções deve se limitar às áreas-chave já mapeadas (Mainback, bobinas, sistemas de ventilação, componentes do IPC e região de HMI). | RF03 |
+| RN05 | Toda temperatura estimada exibida deve vir obrigatoriamente acompanhada de sua margem de erro; não é permitido exibir uma predição sem indicar sua incerteza associada. | RF04, RF05 |
+| RN06 | A margem de erro exibida deve ser apresentada em formato comparável ao critério de aceite oficial do projeto (erro máximo de 10%, Seção 4.1.3). | RF04, RF05 |
+| RN07 | Toda predição deve ser classificada em um dos três estados de confiabilidade definidos na Seção 4.1.5 (R04) — interpolação, extrapolação moderada ou fora de domínio — antes de ser exibida ao usuário. | RF07 |
+| RN08 | No estado fora de domínio, o valor numérico da temperatura não pode ser exibido, devendo ser substituído pela recomendação de simulação CFD completa. | RF07 |
+| RN09 | Toda predição que exceda o limite de engenharia definido para o sensor consultado deve ser destacada visualmente, independentemente de a configuração estar ou não dentro da faixa testada. | RF08 |
+| RN10 | Na consulta simultânea de múltiplas configurações, cada configuração comparada deve ser validada individualmente pelas mesmas regras antes de ser exibida lado a lado com as demais. | RF09 |
+| RN11 | O acesso ao dashboard só é concedido mediante autenticação individual válida (usuário e senha). | RF06 |
+| RN12 | Não é permitido o acesso anônimo ao dashboard, nem o compartilhamento de credenciais entre usuários. | RF06 |
+| RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário e data/hora, de modo a permitir auditoria de uso. | RF06, RF10 |
+| RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade/extrapolação — nunca apenas o valor bruto da predição. | RF04, RF05, RF07, RF11 |
+| RN15 | Toda predição exibida deve comunicar explicitamente que o valor representa uma estimativa da saída da simulação CFD e não uma medição física direta, para que o usuário não a interprete como dado de campo. | RF20 |
+
+#### 6.2.2. Regras de negócio do software preditivo
+
+| ID | Regra de negócio | RF relacionado(s) |
+| --- | --- | --- |
+| RN16 | Toda chamada à rotina de predição deve informar obrigatoriamente o país (Brasil ou México). | RF12 |
+| RN17 | Nenhum dado de entrada pode ser submetido ao modelo sem antes passar pelo mesmo pipeline de pré-processamento aplicado no treinamento; uma predição feita sem essa etapa é considerada inválida. | RF14 |
+| RN18 | O software não pode importar ou depender, em nenhuma etapa (pré-processamento, treinamento ou predição), de bibliotecas proprietárias ou licenciadas; todas as dependências devem ser de código aberto. | RF15 |
+| RN19 | Os dados de simulação (CFD) e de testes físicos não podem ser versionados junto ao código-fonte; o software deve sempre carregá-los a partir de uma fonte de dados externa ao repositório. | RF16 |
+| RN20 | O retreinamento dos modelos a partir de novos dados de simulação ou de testes físicos não pode exigir alteração do código-fonte da rotina de predição — apenas a atualização da fonte de dados externa e o disparo do retreinamento. | RF16, RF17 
+| RN21 | Na predição em lote, cada configuração do conjunto deve ser validada e processada de forma independente, de modo que uma configuração inválida ou malformada não invalide o resultado das demais configurações do lote. | RF18, RF12 |
+| RN22 | Toda nova versão do modelo deve reportar as três métricas oficiais de aceite definidas para o projeto: erro médio absoluto em °C por termopar, erro normalizado pela folga térmica normativa e taxa de falsos-negativos de segurança. | RF19 |
+| RN23 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores, garantindo comparação de desempenho em condições idênticas entre versões. | RF19 |
+
 
 ## <a name="c7"></a>7. Referências
 
