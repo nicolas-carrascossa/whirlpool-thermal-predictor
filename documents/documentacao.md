@@ -859,14 +859,16 @@ b) Modelagem para o problema (proposta de features com a explicação completa d
 c) Métricas relacionadas ao modelo (pelo menos 3).
 d) Apresentar o primeiro modelo candidato, e uma discussão sobre os resultados deste modelo (discussão sobre as métricas para esse modelo candidato).
 
-Caso seu projeto seja Modelo Não-Supervisionado, apresentar:
-a) Modelagem para o problema (proposta de features com a explicação completa da linha de raciocínio).
-b) Primeiro modelo candidato para o problema.
-c) Justificativa para a definição do K do modelo.
-d) Escolha de um tipo de sistema de recomendação e a justificativa para essa escolha.
-
-Remova este bloco ao final
 ```
+
+d) 
+A discussão a seguir cobre os três modelos candidatos treinados para prever a temperatura de cada termopar do fogão: 
+
+* Decision Tree Regressor
+* Random Forest Regressor 
+* Gradient Boosting Regressor 
+
+Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em formato wide geradas anteriormente, uma por key_area, com uma linha por run e uma coluna por termopar, partindo das mesmas sete variáveis de configuração como entrada e da mesma divisão entre treino e teste. Cada modelo estima simultaneamente as temperaturas de todos os termopares de uma área a partir dessa configuração, seguindo a estrutura multi-saída já definida. As próximas partes trazem, para cada algoritmo, as métricas alcançadas e a leitura dos resultados obtidos.
 
 ### 4.4. Comparação de Modelos
 ```
