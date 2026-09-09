@@ -1493,7 +1493,7 @@ $$
 
 Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo — sem eles, as predições não são interpretáveis em unidade física.
 
-**d) Histograma da variável após o escalonamento**
+**e) Histograma da variável após o escalonamento**
 
 O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 18.
 
@@ -1529,7 +1529,93 @@ Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
-**e) Tabelas Comparativas dos Dados**
+**f) Alerta de produção — congelamento dos parâmetros de mínimo e máximo**
+
+O Min-Max por `key_area` (item a) tem uma propriedade que os itens anteriores não tornam explícita: **cada par $(\min_k, \max_k)$ é calculado sobre o conjunto de treino e precisa ser reutilizado, sem recálculo, sobre qualquer dado novo** — validação, teste e, mais adiante, produção. Diferente do que ocorre num pipeline em que o escalonamento é só um passo de conveniência, aqui os mínimos e máximos são também os parâmetros que definem a régua de cada região: recalculá-los sobre um conjunto diferente desloca essa régua e invalida a comparação entre o dado novo e o que o modelo aprendeu.
+
+O risco é concreto neste dataset porque, como o item f.3 da subseção de normalidade mostrou, a distribuição de `temp` **não é estável ao longo da campanha de ensaios**: o terço final introduz condições mais severas, e é justamente lá que aparece o máximo global de 273,60 °C. Um split temporal — treinar com os runs iniciais e validar com os finais, prática comum quando os dados têm ordem de coleta — é o cenário em que o efeito do congelamento fica mais visível.
+
+**Simulação do efeito.** Os 56 runs foram ordenados por `run_id` e divididos em treino (Run 1 a Run 35, 33 runs, 2.578 observações) e teste (Run 38 a Run 75, 16 runs, 1.487 observações), reproduzindo os mesmos terços do item f.3. Os parâmetros $(\min_k, \max_k)$ foram calculados **apenas sobre o treino** e depois comparados aos parâmetros que o item b) já reporta, calculados sobre a base completa:
+
+| `key_area` | Mín. treino (°C) | Mín. total (°C) | Máx. treino (°C) | Máx. total (°C) | Amplitude treino (°C) | Amplitude total (°C) |
+|---|---:|---:|---:|---:|---:|---:|
+| Mainback | 36,07 | 35,41 | 251,09 | 273,60 | 215,02 | 238,19 |
+| Coil Temps | 43,95 | 40,80 | 234,60 | 234,60 | 190,65 | 193,80 |
+| Main Vent Sys | 42,29 | 41,56 | 126,70 | 135,00 | 84,41 | 93,44 |
+| IPC Comp | 48,24 | 45,58 | 129,63 | 129,63 | 81,39 | 84,05 |
+| IPC Cooling | 27,69 | 27,69 | 114,94 | 114,94 | 87,25 | 87,25 |
+| CT Knobs | 36,99 | 34,34 | 73,42 | 73,42 | 36,43 | 39,08 |
+| Oven HMI | 49,77 | 43,64 | 72,01 | 72,01 | 22,24 | 28,37 |
+
+<sup>Fonte: Elaborado pelos autores (2026). "Total" reproduz a tabela do item b); "treino" usa apenas Run 1–35.</sup>
+
+Em cinco das sete regiões o **máximo** do treino já coincide com o da base inteira — os valores mais extremos aparecem cedo na campanha —, mas o **mínimo** do treino é sistematicamente mais alto que o real (a diferença chega a 6,13 °C em `Oven HMI`). `Mainback` é o caso mais grave: o máximo do treino (251,09 °C) fica 22,51 °C abaixo do máximo verdadeiro (273,60 °C), porque a leitura de 273,60 °C só ocorre em runs do terço final.
+
+Aplicando esses parâmetros do treino à fórmula do item c) sobre as observações de teste:
+
+| `key_area` | n (teste) | Abaixo de 0 | Acima de 1 | % fora de [0, 1] | scaled mín. | scaled máx. |
+|---|---:|---:|---:|---:|---:|---:|
+| Oven HMI | 80 | 8 | 0 | 10,0% | −0,2756 | 0,7428 |
+| Main Vent Sys | 100 | 2 | 3 | 5,0% | −0,0086 | 1,0983 |
+| CT Knobs | 120 | 3 | 0 | 2,5% | −0,0727 | 0,8993 |
+| Mainback | 219 | 2 | 3 | 2,3% | −0,0031 | 1,1047 |
+| Coil Temps | 160 | 2 | 0 | 1,3% | −0,0165 | 0,9824 |
+| IPC Comp | 728 | 4 | 0 | 0,5% | −0,0327 | 0,7109 |
+| IPC Cooling | 80 | 0 | 0 | 0,0% | 0,0473 | 0,6866 |
+| **Total** | **1.487** | **21** | **6** | **1,8%** | −0,2756 | 1,1047 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+Congelar os parâmetros no treino produz **27 observações (1,8% do conjunto de teste) fora do intervalo [0, 1]**, com `temp_scaled` chegando a −0,2756 em `Oven HMI` e a 1,1047 em `Mainback`. Isso não é um bug de implementação: é a consequência esperada e correta de aplicar, sobre dado novo, uma régua fixada no passado — o próprio objetivo do congelamento é permitir que o dado extrapole a régua quando for mais extremo do que tudo que o treino viu. O ponto do alerta é que essas 27 observações **precisam de uma decisão explícita de tratamento**, e não podem ser silenciosamente aceitas nem descartadas sem registro.
+
+**Efeito de um recorte (clipping) em [0, 1].** Se as observações fora do intervalo forem forçadas para os extremos — prática comum para manter a saída de um `MinMaxScaler` compatível com o intervalo esperado pelo modelo —, o erro introduzido, traduzido de volta para °C pela equação inversa do item c), tem média de **2,10 °C** e máximo de **22,51 °C** (a leitura de 273,60 °C de `Mainback`, recortada para 1,0, passaria a representar 251,09 °C). Para a variável-alvo do projeto, esse é um erro sistemático que se soma ao erro do próprio modelo, e que o KPI de erro do projeto não distingue de erro de previsão a menos que seja documentado.
+
+**Contraste com o vazamento (data leakage).** Se, em vez de congelar, os parâmetros forem recalculados sobre o conjunto de teste — ou, pior, sobre a base completa antes do split, erro mais comum na prática —, o mesmo dado de teste recebe valores de `temp_scaled` sistematicamente diferentes: a diferença média entre as duas versões é de 0,0276 (equivalente a 2,10 °C na régua do treino) e chega a 0,2756 em `Oven HMI`. Esse desvio não aparece como erro explícito — o pipeline roda sem falhar —, mas contamina a avaliação do modelo com informação que, num cenário real de produção, ainda não existiria no momento da previsão.
+
+**Recomendações para a etapa de modelagem (Seção 4.3):**
+
+1. **Persistir os sete pares $(\min_k, \max_k)$ junto ao artefato do modelo**, exatamente como o item c) já recomenda para a transformação inversa — não como metadado documental, mas como parte do contrato de inferência: o mesmo `key_area` sempre usa o mesmo par, em treino, validação e produção.
+2. **Ajustar os parâmetros exclusivamente sobre o conjunto de treino**, nunca sobre validação, teste ou a base completa — o padrão `fit` (só treino) e `transform` (treino, validação, teste e produção) do próprio `MinMaxScaler` do scikit-learn já impõe essa separação quando usado corretamente por `key_area`.
+3. **Monitorar em produção a fração de leituras que caem fora de [0, 1]** por região, com a tabela deste item como linha de base (0,0% a 10,0%, dependendo da região). Um aumento sustentado nessa fração é sinal de *drift*: a distribuição de temperatura real se afastando da distribuição observada no treino, o que este próprio anexo já demonstrou ser plausível (item f.3 da subseção de normalidade, sobre a tendência de a campanha ficar mais extrema ao longo do tempo).
+4. **Decidir e documentar o tratamento de valores fora do intervalo antes da consolidação do pipeline** — recortar em [0, 1] (com o custo de erro sistemático quantificado acima), permitir extrapolação sem recorte, ou tratar como excedência de `active_limit` (Seção 4.2.3) — em vez de deixar essa escolha implícita no comportamento padrão da biblioteca utilizada.
+
+**Código utilizado (Python):**
+
+```python
+import numpy as np
+import pandas as pd
+
+df['run_num'] = df['run_id'].str.extract(r'Run\s*(\d+)').astype(float)
+runs = sorted(df['run_num'].dropna().unique())
+tercos = np.array_split(np.array(runs), 3)          # mesmos tercos do item f.3
+runs_treino = np.concatenate([tercos[0], tercos[1]])
+runs_teste = tercos[2]
+
+treino = df[df['run_num'].isin(runs_treino)]
+teste = df[df['run_num'].isin(runs_teste)].copy()
+
+# Parametros SOMENTE do treino - o congelamento em si.
+parametros_treino = treino.groupby('key_area')['temp'].agg(minimo='min', maximo='max')
+
+teste = teste.join(parametros_treino, on='key_area')
+teste['temp_scaled'] = ((teste['temp'] - teste['minimo'])
+                         / (teste['maximo'] - teste['minimo']))
+teste['fora_do_intervalo'] = (teste['temp_scaled'] < 0) | (teste['temp_scaled'] > 1)
+
+resumo = teste.groupby('key_area').agg(
+    n=('temp', 'size'),
+    fora=('fora_do_intervalo', 'sum'),
+    pct_fora=('fora_do_intervalo', 'mean'),
+    scaled_min=('temp_scaled', 'min'),
+    scaled_max=('temp_scaled', 'max'),
+)
+resumo['pct_fora'] = (resumo['pct_fora'] * 100).round(1)
+print(resumo.round(4).to_string())
+print(f"\nTotal fora de [0,1]: {teste['fora_do_intervalo'].sum()} de {len(teste)} "
+      f"({teste['fora_do_intervalo'].mean() * 100:.1f}%)")
+```
+
+**g) Tabelas Comparativas dos Dados**
 
 O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
 
@@ -1651,7 +1737,7 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 
 Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação (*one-hot*), gerando colunas binárias no intervalo `[0,1]`. Sem normalizar `temp`, ela entraria no modelo em uma escala duas ordens de grandeza maior que as *dummies*, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
-A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item d) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
+A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item e) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
 
 **Verificação do intervalo de `temp_scaled` por `key_area`**
 
