@@ -862,15 +862,14 @@ b) Modelagem para o problema (proposta de features com a explicação completa d
  
 #### Métricas de avaliação do modelo
 
-A avaliação do Thermal Predictor responde a três perguntas distintas 
-para identificar quão bom o modelo é, e
+A avaliação do Thermal Predictor responde  a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
 grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
 configuração e temperatura ou apenas reproduz o comportamento médio de cada
 sensor. As três métricas abaixo cobrem uma pergunta cada e são reportadas em
 conjunto, sempre por termopar (`tc_name`), sobre o conjunto de teste e em graus
 Celsius, a unidade em que a decisão de engenharia é tomada. Estão implementadas
-com a biblioteca scikit-learn²² na seção de métricas do notebook do modelo
+com a biblioteca scikit-learn²⁴ na seção de métricas do notebook do modelo
 candidato, que acompanha ainda o afastamento entre o erro de treino e o de teste,
 indicador de sobreajuste, risco elevado aqui pelo número reduzido de execuções
 disponíveis (R02, Seção 4.1.5).
@@ -878,10 +877,13 @@ disponíveis (R02, Seção 4.1.5).
 Onde $y_i$ é a temperatura registrada, $\hat{y}_i$ a temperatura prevista e $n$
 o número de leituras do termopar avaliado:
 
-**MAE (Erro Absoluto Médio)** média das diferenças absolutas entre valores
-reais e previstos. Responde a quantos graus, em média, a previsão erra. Por não
-elevar o erro ao quadrado, é a mais robusta das três diante de valores extremos.
-É a primeira das métricas oficiais formalizadas no plano de ação do risco R06.
+**MAE (Erro Absoluto Médio)** é a média das diferenças absolutas entre os
+valores reais e os previstos. Responde a quantos graus, em média, a previsão erra.
+Por não elevar o erro ao quadrado, é a mais robusta das três diante de valores
+extremos. É também a primeira das três métricas oficiais formalizadas no plano de
+ação do risco R06. As outras duas de lá, erro normalizado pela folga térmica e
+taxa de falsos-negativos de segurança, são métricas de risco e pertencem à Seção
+4.5, não a este conjunto.
 
 $$
 MAE = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
@@ -891,7 +893,7 @@ $$
 cada erro ao quadrado antes da média, com a raiz devolvendo o resultado à unidade
 do alvo. Erros grandes passam a pesar desproporcionalmente, o que expõe previsões
 pontualmente ruins que uma média simples esconderia. É sempre maior ou igual ao
-MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²³.
+MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²⁵.
 
 $$
 RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^2}
@@ -918,21 +920,20 @@ O RMSE cobre exatamente essa cegueira. A razão RMSE/MAE revela se o erro está
 concentrado em poucos pontos ou distribuído: quanto mais ela se afasta de 1,
 maior a cauda de previsões ruins. Isso importa porque uma única previsão que
 subestime um componente crítico pode liberar um projeto termicamente inseguro
-(R04), daí ambas serem calculadas por termopar, e não só como média entre
+(R04), e por isso ambas são calculadas por termopar, e não só como média entre
 alvos, para localizar o componente problemático.
 
 O R² é o único que distingue aprendizado de reprodução da média. Sua referência
 é a média do próprio conjunto de teste, um preditor-oráculo que ninguém conhece
 antes de medir; por isso o notebook reporta em paralelo um
 `DummyRegressor(strategy="mean")` ajustado no treino, contraparte realista que
-atende ao requisito de baselines obrigatórios do risco R03. É medido por termopar
-porque, agregado, o preditor de referência seria
-a média de todos os sensores do produto,
-
-valor que nenhum engenheiro usaria como
-estimativa. Como as regiões operam em patamares distintos (amplitude de 28,37 °C
-em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o R² agregado mediria essa
-diferença de patamar, já conhecida, e não o que o modelo aprendeu.
+é o primeiro dos dois baselines exigidos pelo risco R03, ficando o segundo
+registrado como pendência. É medido por termopar porque, agregado, o preditor de
+referência seria a média de todos os sensores do produto, valor que nenhum
+engenheiro usaria como estimativa. Como as regiões operam em patamares distintos
+(amplitude de 28,37 °C em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o
+R² agregado mediria essa diferença de patamar, já conhecida, e não o que o modelo
+aprendeu.
 
 O erro percentual (MAPE) foi descartado por incorrer na crítica do risco R06: a
 escala Celsius é intervalar, logo 10% de 150 °C são 15 °C, mas os mesmos 150 °C
@@ -1088,6 +1089,8 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
 22. HOTZ, Nick. What is CRISP DM?. Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
 23. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
+24. PEDREGOSA, F. et al. *Scikit-learn: Machine Learning in Python.* Journal of Machine Learning Research, v. 12, p. 2825-2830, 2011.
+25. CHAI, T.; DRAXLER, R. R. *Root mean square error (RMSE) or mean absolute error (MAE)? — Arguments against avoiding RMSE in the literature.* Geoscientific Model Development, v. 7, n. 3, p. 1247-1250, 2014.
 
 ## <a name="attachments"></a>Anexos
 
