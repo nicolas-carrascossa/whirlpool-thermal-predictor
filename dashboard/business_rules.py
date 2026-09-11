@@ -119,6 +119,56 @@ def classify_severity(predicted_temp: float, engineering_limit: float) -> str:
     return SEVERITY_CRITICO
 
 
+# Ordem de gravidade, para responder "qual e a pior severidade deste grupo".
+SEVERITY_RANK: dict[str, int] = {sev: i for i, sev in enumerate(SEVERITY_ORDER)}
+
+
+def compute_region_severities(predictions: list[dict[str, Any]]) -> dict[str, str]:
+    """Pior severidade encontrada em cada `key_area` consultada.
+
+    Usado pela visualizacao 3D (`stove_3d.py`), que pinta uma regiao inteira
+    do produto de uma cor so: entre varios sensores da mesma area, quem manda
+    e o pior caso - esconder um sensor critico atras da media da area seria
+    exatamente o tipo de erro que a RN09 quer evitar.
+
+    RN08 - um sensor "fora de dominio" nao tem valor numerico, entao nao da
+    para classifica-lo pela razao temperatura/limite. Ele conta como
+    `vistoria`: nao e um diagnostico de que a peca esta quente, e o
+    reconhecimento de que aquela regiao precisa de verificacao humana (rodar
+    a CFD completa) antes de qualquer conclusao.
+
+    Areas nao consultadas simplesmente nao aparecem no dicionario - quem
+    desenha decide o neutro (ver `styles.NEUTRAL_REGION_COLOR`).
+
+    Aceita predicoes cruas (do modelo) ou enriquecidas (por
+    `enrich_prediction`): se `severity` ja estiver calculada, reusa.
+    """
+    worst: dict[str, str] = {}
+
+    for prediction in predictions:
+        area = prediction.get("key_area")
+        if not area:
+            continue
+
+        out_of_domain = (
+            prediction.get("reliability_state") == RELIABILITY_OUT_OF_DOMAIN
+            or prediction.get("show_numeric_value") is False
+        )
+        if out_of_domain:
+            severity = SEVERITY_VISTORIA
+        else:
+            severity = prediction.get("severity") or classify_severity(
+                prediction.get("predicted_temp") or 0.0,
+                prediction.get("engineering_limit") or 0.0,
+            )
+
+        current = worst.get(area)
+        if current is None or SEVERITY_RANK[severity] > SEVERITY_RANK[current]:
+            worst[area] = severity
+
+    return worst
+
+
 # --------------------------------------------------------------------------- #
 # Validacoes de entrada
 # --------------------------------------------------------------------------- #
