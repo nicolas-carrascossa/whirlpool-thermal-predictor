@@ -29,6 +29,7 @@ import streamlit as st
 
 import access_log
 import business_rules as rules
+import stove_3d
 import styles
 from mock_data import (
     CONFIG_FIELDS,
@@ -411,6 +412,54 @@ def render_export_buttons(queries: list[dict[str, Any]]) -> None:
         col_xlsx.warning("Exportação Excel indisponível: instale `openpyxl`.")
 
 
+def render_stove_3d(queries: list[dict[str, Any]]) -> None:
+    """Modelo 3D do fogão, colorido pela pior severidade de cada área-chave.
+
+    Um único modelo em largura total, com seletor quando há mais de uma
+    configuração — em vez de um canvas por coluna, que ficaria espremido no
+    layout lado a lado. Áreas não consultadas ficam no neutro do guia.
+
+    O modelo é ilustrativo (ver `stove_3d.py`): comunica *onde* está o
+    problema, não a geometria real do produto.
+    """
+    st.markdown("#### Visualização 3D — severidade por região")
+
+    if len(queries) > 1:
+        labels = [q["label"] for q in queries]
+        chosen = st.selectbox(
+            "Configuração exibida no modelo",
+            labels,
+            key="stove_3d_config",
+        )
+        query = next(q for q in queries if q["label"] == chosen)
+    else:
+        query = queries[0]
+
+    # Regra de negocio (pior severidade da area) fica em `business_rules`;
+    # a traducao severidade -> cor fica em `styles`. Aqui so se costura.
+    severities = rules.compute_region_severities(query["predictions"])
+    region_colors = {
+        area: styles.SEVERITY_COLOR_HEX[severity]
+        for area, severity in severities.items()
+    }
+
+    # `st.iframe` e nao `st.components.v1.html`: este ultimo esta deprecado
+    # nesta versao do Streamlit e sera removido. O iframe isola o canvas 3D
+    # do resto da pagina - a CSS de `styles.py` nao alcanca la dentro, por
+    # isso as cores vao como parametro, nao como classe.
+    st.iframe(
+        stove_3d.build_stove_html(
+            region_colors,
+            neutral_color=styles.NEUTRAL_REGION_COLOR,
+        ),
+        height=510,
+    )
+    st.markdown(
+        stove_3d.build_legend_html(),
+        unsafe_allow_html=True,
+    )
+
+
 def render_results(queries: list[dict[str, Any]]) -> None:
     st.divider()
     st.subheader("Resultados")
@@ -437,6 +486,8 @@ def render_results(queries: list[dict[str, Any]]) -> None:
             "Legenda: ✓ interpolação · ! extrapolação moderada · "
             "✕ fora de domínio · ▲ excede o limite de engenharia."
         )
+
+    render_stove_3d(queries)
 
     st.markdown("#### Detalhamento por configuração")
     columns = st.columns(len(queries))

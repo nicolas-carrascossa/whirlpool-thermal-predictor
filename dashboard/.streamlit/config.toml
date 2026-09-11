@@ -21,6 +21,12 @@ font = "sans serif"
 # alteração salva já reaparece sozinha no próximo refresh.
 runOnSave = true
 
+# Serve a pasta `static/` em /app/static/. É assim que o `stove_3d.py`
+# carrega o Three.js do próprio repositório, em vez de depender de um CDN
+# externo — redes corporativas costumam bloquear CDNs, e sem isto o 3D
+# simplesmente não apareceria lá.
+enableStaticServing = true
+
 [client]
 # Esconde o botão "Deploy" e o menu "⋮" da barra superior — é o fluxo de
 # publicação no Streamlit Community Cloud, sem uso num dashboard interno.

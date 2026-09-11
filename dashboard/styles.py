@@ -62,6 +62,20 @@ SEVERITY_BADGE_CLASS = {
     "critico": "badge-critico",
 }
 
+# Mesma escala, em cor pura (hex) — para contextos que não são HTML/CSS e
+# portanto não podem usar as classes de badge acima. É o caso do canvas 3D
+# (`stove_3d.py`), que roda dentro de um iframe isolado e recebe as cores
+# como parâmetro. Deriva de `COLORS` para não duplicar valores.
+SEVERITY_COLOR_HEX = {
+    "normal": COLORS["conscientious_green"],
+    "atencao": COLORS["accent_yellow"],
+    "vistoria": COLORS["vermelho_vistoria"],
+    "critico": COLORS["vermelho_critico"],
+}
+
+# Cor de uma região do produto que NÃO foi consultada: neutro do guia, nunca
+# uma cor de estado — "não consultado" não é um diagnóstico.
+NEUTRAL_REGION_COLOR = COLORS["cinza"]
 
 # --- Mapeamento dos 3 estados de confiabilidade (RN07) para o mesmo
 # vocabulário visual do guia (verde = ok, amarelo = atenção, vermelho =
@@ -186,6 +200,22 @@ h1, h2, h3, h4, h5, .titulo {
 .badge-atencao  { background-color: #f3d04f; color: #484949; }              /* Accent Yellow — texto quase-preto */
 .badge-vistoria { background-color: #c8382b; color: #ffffff; }             /* Vermelho Vistoria */
 .badge-critico  { background-color: #8c1d18; color: #ffffff; }             /* Vermelho Crítico */
+/* "Não consultada" NAO e um estado da previsao - e ausencia de dado. Por
+   isso usa o neutro do guia, nunca uma cor de estado. Texto quase-preto:
+   o cinza e claro demais para texto branco. */
+.badge-neutro   { background-color: #d1d3d4; color: #484949; }             /* Cinza */
+
+/* Legenda do 3D: uma fileira de badges que quebra linha junto, com o
+   espacamento vindo do `gap` em vez do `margin-right` individual. */
+.legenda-3d {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0 6px 0;
+}
+.legenda-3d .badge { margin-right: 0; }
+
 /* Botões / CTA — Nunito Sans Bold, caixa alta, azul central.
    `[data-testid^="stBaseButton"]` cobre todo tipo de botão do Streamlit
    (primary, secondary, form-submit, download) com um único seletor estável;
