@@ -891,8 +891,7 @@ A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) qua
 
 #### Métricas de avaliação do modelo
 
-A avaliação do Thermal Predictor responde a três perguntas distintas 
-para identificar quão bom o modelo é, e
+A avaliação do Thermal Predictor responde  a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
 grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
 configuração e temperatura ou apenas reproduz o comportamento médio de cada
@@ -947,21 +946,20 @@ O RMSE cobre exatamente essa cegueira. A razão RMSE/MAE revela se o erro está
 concentrado em poucos pontos ou distribuído: quanto mais ela se afasta de 1,
 maior a cauda de previsões ruins. Isso importa porque uma única previsão que
 subestime um componente crítico pode liberar um projeto termicamente inseguro
-(R04), daí ambas serem calculadas por termopar, e não só como média entre
+(R04), e por isso ambas são calculadas por termopar, e não só como média entre
 alvos, para localizar o componente problemático.
 
 O R² é o único que distingue aprendizado de reprodução da média. Sua referência
 é a média do próprio conjunto de teste, um preditor-oráculo que ninguém conhece
 antes de medir; por isso o notebook reporta em paralelo um
 `DummyRegressor(strategy="mean")` ajustado no treino, contraparte realista que
-atende ao requisito de baselines obrigatórios do risco R03. É medido por termopar
-porque, agregado, o preditor de referência seria
-a média de todos os sensores do produto,
-
-valor que nenhum engenheiro usaria como
-estimativa. Como as regiões operam em patamares distintos (amplitude de 28,37 °C
-em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o R² agregado mediria essa
-diferença de patamar, já conhecida, e não o que o modelo aprendeu.
+é o primeiro dos dois baselines exigidos pelo risco R03, ficando o segundo
+registrado como pendência. É medido por termopar porque, agregado, o preditor de
+referência seria a média de todos os sensores do produto, valor que nenhum
+engenheiro usaria como estimativa. Como as regiões operam em patamares distintos
+(amplitude de 28,37 °C em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o
+R² agregado mediria essa diferença de patamar, já conhecida, e não o que o modelo
+aprendeu.
 
 O erro percentual (MAPE) foi descartado por incorrer na crítica do risco R06: a
 escala Celsius é intervalar, logo 10% de 150 °C são 15 °C, mas os mesmos 150 °C
@@ -979,7 +977,7 @@ O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regre
 
 ##### Desempenho comparado
 
-A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10 — apenas o algoritmo varia.
+A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10, apenas o algoritmo varia. O R² de cada setor, nessa média, já é a mediana entre os termopares daquele setor  a mesma agregação descrita em "Métricas de avaliação do modelo", acima, e não a média simples sobre todos os termopares do produto.
 
 <div align="center">
   <sub>Figura 18 — Comparativo de métricas entre os modelos candidatos no conjunto de teste</sub><br>
@@ -1040,14 +1038,6 @@ A discussão a seguir cobre os três modelos candidatos treinados para prever a 
 Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em formato wide geradas anteriormente, uma por key_area, com uma linha por run e uma coluna por termopar, partindo das mesmas sete variáveis de configuração como entrada e da mesma divisão entre treino e teste. Cada modelo estima simultaneamente as temperaturas de todos os termopares de uma área a partir dessa configuração, seguindo a estrutura multi-saída já definida. As próximas partes trazem, para cada algoritmo, as métricas alcançadas e a leitura dos resultados obtidos.
 
 ### 4.4. Comparação de Modelos
-```
-- Descrever e justificar a escolha da métrica de avaliação dos modelos com base no que é mais importante para o problema ao 
-  se medir a qualidade desses modelos;
-- Descrever ao menos três modelos candidatos, seus respectivos algoritmos, seus tunings de hiperparâmetros e suas métricas 
-  alcançadas;
-
-Remova este bloco ao final
-```
 
 ### 4.5. Avaliação
 ```
