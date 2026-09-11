@@ -1,0 +1,127 @@
+/**
+ * Tela principal do Thermal Predictor: configurar → prever → ler resultados.
+ * Toda a leitura de dados passa por `PredictionSource`; nada aqui sabe se a
+ * origem é o mock local ou a API da Fase 2.
+ */
+
+import { useEffect } from 'react'
+import { OctagonAlert } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+
+import { AppShell } from '@/components/layout/AppShell'
+import { Card, CardContent } from '@/components/ui/card'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import type { ArchitectureMeta } from '@/contract/v1'
+import { ConfigPanel } from '@/features/config/ConfigPanel'
+import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
+import { useAuth } from '@/features/auth/authStore'
+import { isApiMode } from '@/features/auth/RequireAuth'
+import { ResultsPanel } from '@/features/results/ResultsPanel'
+import {
+  useMetadataQuery,
+  usePredictionQuery,
+  useReferencePredictionQuery,
+} from '@/hooks/useThermalQueries'
+
+const FALLBACK_ARCHITECTURES: ArchitectureMeta[] = [
+  { code: 'BR', available: true, label_pt: 'Brasil' },
+  { code: 'MX', available: false, label_pt: 'Sem dados de treino para a arquitetura México' },
+]
+
+function HomeContent() {
+  const store = useConfigStore()
+  const prediction = usePredictionQuery(store.request)
+  const referencePrediction = useReferencePredictionQuery(
+    store.request,
+    store.metadata?.reference_config,
+  )
+  const apiMode = isApiMode()
+  const isMock = !apiMode
+  const isReferenceConfig =
+    !!store.config &&
+    !!store.metadata &&
+    JSON.stringify(store.config) === JSON.stringify(store.metadata.reference_config)
+
+  // `AuthProvider` envolve toda a aplicação (ver App.tsx), então o hook é
+  // sempre seguro de chamar; seus valores só importam em modo `api`.
+  const auth = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (apiMode && auth.sessionExpired) {
+      navigate('/login', { replace: true })
+    }
+  }, [apiMode, auth.sessionExpired, navigate])
+
+  return (
+    <AppShell
+      architectures={store.metadata?.architectures ?? FALLBACK_ARCHITECTURES}
+      architecture={store.architecture}
+      onArchitectureChange={store.setArchitecture}
+      isMock={isMock}
+      userDisplayName={apiMode ? auth.user?.display_name : undefined}
+      onLogout={apiMode ? auth.logout : undefined}
+      sidebar={<ConfigPanel />}
+    >
+      {apiMode && auth.sessionExpired && (
+        <div
+          role="alert"
+          className="mb-4 rounded-md border border-status-warn bg-orange-50 px-4 py-3 font-body text-sm text-wp-gray85"
+        >
+          Sessão expirada — entre novamente.
+        </div>
+      )}
+      <ResultsPanel
+        metadata={store.metadata}
+        response={prediction.data}
+        request={store.request}
+        referenceResponse={referencePrediction.data}
+        isReferenceConfig={isReferenceConfig}
+        isLoading={prediction.isFetching && !prediction.data}
+        error={prediction.error}
+        hasRequest={store.request !== null}
+        selectedKeyArea={store.selectedKeyArea}
+        onSelectKeyArea={store.selectKeyArea}
+        draftConfig={store.config}
+        hoveredVariable={store.hoveredVariable}
+        highlightPart={store.highlightPart}
+        onHoverVariable={store.setHoveredVariable}
+      />
+    </AppShell>
+  )
+}
+
+export function HomePage() {
+  const metadata = useMetadataQuery()
+
+  if (metadata.error) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-16">
+        <Card>
+          <CardContent
+            role="alert"
+            className="flex flex-col items-center gap-2 px-6 py-14 text-center"
+          >
+            <OctagonAlert className="h-6 w-6 text-status-danger" strokeWidth={1.5} aria-hidden="true" />
+            <h1 className="font-display text-lg font-semibold text-wp-gray85">
+              Não foi possível carregar os metadados
+            </h1>
+            <p className="text-sm leading-relaxed text-wp-gray65">
+              {metadata.error instanceof Error
+                ? metadata.error.message
+                : 'Erro desconhecido ao carregar os metadados.'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <ConfigStoreProvider metadata={metadata.data}>
+        <HomeContent />
+      </ConfigStoreProvider>
+    </TooltipProvider>
+  )
+}
