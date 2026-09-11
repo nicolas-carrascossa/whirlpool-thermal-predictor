@@ -34,7 +34,7 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
 ## <a name="c1"></a>1. Introdução
 
-A Whirlpool Corporation é uma multinacional fundada nos EUA em 1911, inicialmente com o propósito de fabricar máquinas de lavar roupa manuais. Atualmente, ela é conhecida como empresa líder global na fabricação de eletrodomésticos para cozinha e lavanderia, com operações em cerca de 170 países e faturamento de R$12,9 bilhões no Brasil em 2024 (Brazil Economy). Ela já está presente no Brasil há mais de 70 anos por meio de marcas amplamente reconhecidas no mercado brasileiro, como Brastemp, Consul, KitchenAid, B.blend etc, detendo cerca de 38% de participação no mercado de linha branca. A parceira direta no caso deste trabalho é a Divisão de Fogões da companhia, responsável pelo desenvolvimento de produtos para os mercados do Brasil e do México, com atuação voltada à engenharia e à pesquisa e desenvolvimento (P&D) de eletrodomésticos.
+A Whirlpool Corporation é uma multinacional fundada nos EUA em 1911, inicialmente com o propósito de fabricar máquinas de lavar roupa manuais. Atualmente, ela é conhecida como empresa líder global na fabricação de eletrodomésticos para cozinha e lavanderia, com operações em cerca de 170 países e faturamento de R$12,9 bilhões no Brasil em 2024²¹. Ela já está presente no Brasil há mais de 70 anos por meio de marcas amplamente reconhecidas no mercado brasileiro, como Brastemp, Consul, KitchenAid, B.blend etc, detendo cerca de 38% de participação no mercado de linha branca. A parceira direta no caso deste trabalho é a Divisão de Fogões da companhia, responsável pelo desenvolvimento de produtos para os mercados do Brasil e do México, com atuação voltada à engenharia e à pesquisa e desenvolvimento (P&D) de eletrodomésticos.
 
 Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diretamente da construção de protótipos físicos e da realização de testes destrutivos para validar o comportamento térmico dos equipamentos. Esse processo é indispensável para validar se o fogão desenvolvido realmente se enquadra nos padrões de qualidade, segurança e desempenho exigidos. Porém, o desenvolvimento desses protótipos demanda grandes investimentos e é bem demorado, já que cada teste exige novos protótipos e ciclos completos de testes físicos. Portanto, o processo de um novo lançamento de um fogão é caro e lento, o que pode ser considerado uma fraqueza para esse setor do mercado, levantando um obstáculo que necessita de uma solução.
 
@@ -77,79 +77,77 @@ A metodologia consiste em seis fases, que embora normalmente sigam uma sequênci
 ### 4.1. Compreensão do Problema
 #### 4.1.1. Contexto da indústria
 
-O setor de linha branca (eletrodomésticos de grande porte) no Brasil e no México é dominado por um pequeno grupo de fabricantes multinacionais que competem simultaneamente em escala industrial, penetração de marca e velocidade de lançamento de produto. Nesse cenário, a Divisão de Fogões da Whirlpool — parceira direta deste projeto — atua como unidade de engenharia e P&D responsável pelo desenvolvimento de fogões de piso (Freestanding) para as arquiteturas de produto do Brasil e do México, operando sob o guarda-chuva comercial da Whirlpool Latin America e das marcas Brastemp, Consul e KitchenAid. 
+O setor de linha branca no Brasil e no México é dominado por um pequeno grupo de fabricantes multinacionais que competem simultaneamente em escala industrial, penetração de marca e velocidade de lançamento de produto. Nesse cenário, a Divisão de Fogões da Whirlpool, parceira direta deste projeto, atua como unidade de engenharia e P&D responsável pelo desenvolvimento de fogões de piso (freestanding) para as arquiteturas de produto do Brasil e do México, sob o guarda-chuva comercial da Whirlpool Latin America e das marcas Brastemp, Consul e KitchenAid.
 
 
-##### 4.1.1.1 Análise do contexto da Whirlpool segundo as cinco forças de Porter
+##### 4.1.1.1. Concorrentes identificados
+
+Três empresas atuam como concorrentes diretos da Whirlpool. A Electrolux é a marca com maior penetração domiciliar do país, presente em 67% dos lares brasileiros⁹, e inaugurou em agosto de 2025 sua quinta planta no país, em São José dos Pinhais (PR), com investimento de R$ 700 milhões, para reduzir a dependência de importação asiática e nacionalizar categorias hoje importadas¹⁰. A Midea, multinacional chinesa, já não deve ser tratada apenas como ameaça potencial de entrada (Força 4): ocupa hoje a terceira posição no mercado brasileiro de eletrodomésticos, com cerca de 8% de participação em refrigeradores¹¹, e converteu sua estratégia de importação para manufatura local ao inaugurar em Pouso Alegre (MG) sua primeira planta 100% própria no país, investimento de R$ 630 milhões¹². Por fim, a Mabe, grupo mexicano com planta dedicada a fogões e produtos de cocção a gás em Durango, é historicamente o concorrente mais diretamente sobreposto ao escopo do Thermal Predictor: já deteve cerca de 70% de participação em eletrodomésticos na América Latina (excluindo Estados Unidos e México) e anuncia US$ 668 milhões em investimento para 2025–2027¹³.
+
+##### 4.1.1.2. Análise do modelo de negócio do parceiro
+
+A Whirlpool Latin America opera um modelo de negócio ancorado em três pilares: segmentação de marca multiportfólio, manufatura local verticalizada e diversificação incipiente para serviços e economia circular. Brastemp, Consul e KitchenAid ocupam territórios de posicionamento distintos e deliberadamente não concorrentes: Brastemp em design, tecnologia e aspiração; Consul em durabilidade, eficiência e acesso, com distribuição voltada à base da pirâmide; KitchenAid no extremo premium a super-premium de eletroportáteis. Essa arquitetura permite competir simultaneamente em múltiplas faixas de preço sem canibalizar a marca âncora, resposta direta à pressão de rivalidade (Força 1) e ao poder de barganha do canal varejista (Força 3). Mais de 95% dos produtos vendidos pela Whirlpool no Brasil são fabricados localmente, com cerca de 80% dos insumos adquiridos de fornecedores nacionais, historicamente a principal barreira de proteção contra concorrência via importação (Força 4) e resposta direta à exposição cambial. A companhia também opera canal de venda direta ao consumidor (Compra Certa) e programa de logística reversa que já coletou mais de 1 milhão de produtos usados, inclusive de marcas concorrentes, sinalizando tentativa de capturar valor além da venda única de hardware, ainda que como fração marginal da receita frente ao modelo tradicional de venda via grande varejo. Investe cerca de 4% da receita em pesquisa e inovação, mantém hub de inovação em Rio Claro (SP) e parcerias com universidades, sustentando um ritmo constante de lançamento de novos produtos.
+
+##### 4.1.1.3. Análise das tendências do setor do parceiro
+
+O setor de linha branca na América Latina converge, para 2026, em torno de quatro tendências estruturais: premiumização funcional, em que o consumidor prioriza conveniência, multifuncionalidade e benefícios de saúde e bem-estar acima do preço puro; conectividade e inteligência artificial embarcada (cozinha conectada, sensores de ajuste automático, monitoramento remoto via aplicativo), destacada na Eletrolar Show All Connected 2026 como principal eixo de diferenciação do setor; eficiência energética e sustentabilidade, que deixaram de ser diferencial competitivo e se consolidaram como requisito básico de mercado; e miniaturização/reconfiguração de portfólio, com migração observável para produtos mais compactos e tecnologias alternativas de cocção como a indução. Em conjunto, essas tendências reforçam a tese central desta análise: a competitividade no setor passou a exigir capacidade de iteração rápida de produto sobre novas arquiteturas térmicas e eletrônicas — exatamente a capacidade que o Thermal Predictor busca viabilizar.
+
+##### 4.1.1.4. Análise do contexto da Whirlpool segundo as cinco forças de Porter
 ###### 1. Rivalidade entre concorrentes existentes — Alta
- 
+
 A Whirlpool Latin America lidera a região com Brastemp, Consul e KitchenAid, mas opera em um oligopólio fragmentado e ativamente disputado por preço:
- 
-- **Multinacionais âncora:** Electrolux (europeia, com aposta estratégica declarada no Brasil apesar de tarifas), Mabe (mexicana, com investimento de US$ 668 milhões anunciado para 2025–2027 e liderança em fogões a gás via planta em Durango), BSH/Bosch e Midea (joint-venture sino-americana que se consolidou como terceira força relevante em linha branca).
+
+- **Multinacionais âncora:** Electrolux, Mabe, BSH/Bosch e Midea (joint-venture sino-americana consolidada como terceira força relevante em linha branca).
 - **Fabricantes nacionais robustos:** Esmaltec (líder em fogões no Nordeste), Mueller, Britânia, Philco, Atlas e Continental (marca do grupo Mabe).
 - **Entrantes chinesas em expansão acelerada:** Hisense, TCL e Gree, competindo agressivamente por preço.
-A evidência mais forte de rivalidade intensa é financeira, não anedótica: a compressão de margem EBIT de 6,0% para 3,0% em um ano, atribuída pela própria Whirlpool a "intensidade promocional" no Brasil, mostra uma guerra de preços ativa entre os players estabelecidos — não apenas concorrência latente¹. Em 2023, a Whirlpool reportava recuperação de quase 4 pontos de *market share* em refrigeradores, lavadoras e fogões em um único trimestre — o que só é possível em um mercado onde a disputa por participação é constante e o custo de reconquista de posição é alto².
- 
-O setor de linha branca no Brasil (fogões, lavadoras e geladeiras) recuou 1% em vendas em 2025, segundo a Eletros³ — um mercado maduro e de crescimento raso intensifica estruturalmente a rivalidade, pois o crescimento de um player passa a depender quase inteiramente da erosão de participação dos concorrentes, não da expansão da demanda agregada.
- 
+
+A evidência mais forte de rivalidade é financeira: a compressão de margem EBIT de 6,0% para 3,0% em um ano, atribuída pela própria Whirlpool a "intensidade promocional" no Brasil¹. Em 2023, a Whirlpool reportava recuperação de quase 4 pontos de *market share* em refrigeradores, lavadoras e fogões em um único trimestre, evidência de disputa constante por participação². O setor de linha branca no Brasil recuou 1% em vendas em 2025, segundo a Eletros³, mercado maduro em que o crescimento de um player passa a depender da erosão da fatia dos concorrentes.
+
 ###### 2. Poder de negociação dos fornecedores — Moderado, com concentração pontual em componentes eletrônicos
- 
+
 A Whirlpool Latin America mantém uma base ampla de 3.730 fornecedores (750 de materiais diretos, 2.980 de indiretos), concentrados nos estados onde possui plantas — Amazonas, Santa Catarina e São Paulo⁴. Essa diversificação dilui o poder da maioria dos fornecedores, mas não de forma homogênea entre categorias de insumo:
- 
-- **Componentes eletrônicos (placas, sensores, semicondutores):** segmento historicamente sujeito a choques globais de oferta, elevando o poder de barganha de fornecedores especializados durante ciclos de escassez — relevante porque a própria estratégia de portfólio da Whirlpool vem incorporando cada vez mais sensores e eletrônica embarcada (ajuste automático de temperatura, detecção de carga em lavadoras), aumentando a dependência da companhia desses insumos⁵.
+
+- **Componentes eletrônicos (placas, sensores, semicondutores):** segmento sujeito a choques globais de oferta, elevando o poder de barganha de fornecedores especializados em ciclos de escassez, à medida que a Whirlpool amplia a eletrônica embarcada de seus produtos.
 - **Aço e insumos de commodity:** menor poder de barganha, dado o caráter padronizado e substituível do material.
-- O volume de compra da própria Whirlpool, como maior fabricante de eletrodomésticos da América Latina, gera poder de barganha reverso relevante sobre fornecedores de médio e pequeno porte.
+
+O volume de compra da própria Whirlpool, como maior fabricante de eletrodomésticos da América Latina, gera poder de barganha reverso relevante sobre fornecedores de médio e pequeno porte.
+
 ###### 3. Poder de negociação dos compradores — Alto
- 
+
 Como o modelo é B2C indireto, o comprador relevante para fins de precificação e condição comercial é o canal varejista, não o consumidor final isolado:
- 
+
 - No Brasil, Magazine Luiza e Grupo Casas Bahia (via Via Varejo, ~1.073 lojas) concentram parcela relevante do volume de eletrodomésticos, com lojas físicas ainda decisivas em 87% da jornada de compra.
-- É particularmente relevante notar que, entre os grandes varejistas, houve fragilidade financeira recente — Americanas em recuperação judicial e desvalorizações acionárias expressivas de Casas Bahia e Magazine Luiza — o que paradoxalmente pode elevar (não reduzir) o poder de barganha de curto prazo desses varejistas sobre fabricantes, que precisam sustentar volume de giro em parceiros financeiramente fragilizados via condições comerciais mais favoráveis, prazos e ações promocionais conjuntas².
+- A fragilidade financeira recente de grandes varejistas — Americanas em recuperação judicial, desvalorizações acionárias expressivas de Casas Bahia e Magazine Luiza — eleva, paradoxalmente, o poder de barganha de curto prazo desses varejistas, que passam a exigir condições comerciais mais favoráveis².
 - No México, cadeias como Liverpool e Elektra cumprem função equivalente.
-- O consumidor final tem baixo custo de troca entre marcas no segmento econômico, o que reforça o papel do varejo como intermediário capaz de colocar fabricantes concorrentes em disputa direta — bem exemplificado pela própria Whirlpool ao reconhecer que "as negociações de preços nunca são fáceis" com os grandes revendedores.
+- O baixo custo de troca do consumidor final entre marcas no segmento econômico reforça o papel do varejo como intermediário capaz de colocar fabricantes concorrentes em disputa direta.
+
 ###### 4. Ameaça de novos entrantes — Moderada, em elevação estrutural
- 
-As barreiras tradicionais de entrada permanecem relevantes — intensidade de capital, certificação regulatória (INMETRO), rede de distribuição consolidada e fidelidade de marca (Brastemp e Consul têm mais de 70 anos de presença regional). Contudo, dois movimentos recentes reduzem a efetividade dessas barreiras:
- 
-- **Marcas chinesas** (Hisense, TCL, Midea, Gree) expandem agressivamente no varejo brasileiro, em parte redirecionando capacidade excedente originalmente destinada aos EUA em razão de tarifas americanas. Essas marcas entram via importação e parceria de varejo, contornando a barreira histórica de manufatura local — a própria Whirlpool reconhece que a presença chinesa "contribui para aumentar o mercado e expor os diferenciais das marcas", uma leitura que minimiza publicamente uma ameaça que é, estruturalmente, real.
-- No México, o boom de *nearshoring* — puxado pelo USMCA e por investimentos como o programa de US$ 668 milhões da Mabe para 2025–2027 — eleva a barreira de entrada para quem não possui planta local, favorecendo incumbentes com operação física estabelecida (caso da própria Whirlpool), mas também sinaliza que o custo de entrada via manufatura doméstica está subindo, o que direciona novos entrantes para a rota de importação — o mesmo caminho já adotado pelas chinesas no Brasil.
+
+As barreiras tradicionais de entrada permanecem relevantes — intensidade de capital, certificação regulatória (INMETRO), rede de distribuição consolidada e fidelidade de marca (Brastemp e Consul têm mais de 70 anos de presença regional). Contudo, dois movimentos reduzem a efetividade dessas barreiras: marcas chinesas (Hisense, TCL, Midea, Gree) expandem agressivamente no varejo brasileiro, redirecionando capacidade excedente das tarifas americanas e contornando a barreira de manufatura local via importação, a própria Whirlpool reconhece que a presença chinesa "contribui para aumentar o mercado e expor os diferenciais das marcas". No México, o boom de *nearshoring*, puxado pelo USMCA, eleva a barreira para quem não possui planta local, mas também sinaliza custo crescente de entrada via manufatura doméstica, o que direciona novos entrantes à rota de importação, o mesmo caminho já adotado pelas chinesas no Brasil.
+
 ###### 5. Ameaça de produtos e comportamentos substitutos — Alta e estruturalmente crescente
- 
-Esta é a força mais dinâmica e menos óbvia da análise, e onde a leitura simplista ("indução substitui gás") deixa de capturar a real amplitude do fenômeno. Há pelo menos quatro camadas distintas de substituição atuando simultaneamente sobre o portfólio de cocção e refrigeração da Whirlpool na América Latina, com evidência direta de que a própria companhia já reconhece e reage a três delas.
- 
-**a) Substituição tecnológica intra-categoria — fogão a gás por indução.** A indução deixou de ser artigo de nicho premium e ganha tração em 2026 por eficiência energética, segurança (sem risco de explosão por vazamento) e queda de preço de entrada, com modelos compactos a partir de R$ 180–350. A resposta da própria Whirlpool confirma a materialidade da ameaça: início de produção nacional de fogões por indução em Manaus a partir do segundo semestre de 2026 — uma migração de capacidade fabril, não apenas de portfólio de importação⁶.
- 
-**b) *Unbundling* funcional do fogão por eletroportáteis — a air fryer.** Este é o vetor de substituição com a evidência quantitativa mais robusta e o mais subestimado em análises convencionais do setor. A penetração de air fryers nos domicílios brasileiros saltou de 36,2% para 64% entre 2022 e 2025 — o maior avanço percentual entre todas as categorias de eletrodomésticos monitoradas —, com o mercado da categoria crescendo 340% no período⁷. As ocasiões de preparo rápido de refeições já respondem por mais de 30% do total de preparos domésticos, enquanto a fritura tradicional (a função historicamente mais associada ao fogão e ao forno) caiu para 17% das ocasiões, recuo de três pontos percentuais apenas entre 2024 e 2025. Isso não é substituição de compra (o consumidor não deixa de ter fogão), mas substituição de **uso e intensidade de uso**: funções antes concentradas no fogão/forno migram para um eletroportátil dedicado, de ticket médio muito inferior, o que tende a alongar o ciclo de reposição do fogão principal e a pressionar para baixo a demanda por capacidade e robustez térmica do produto principal.
- 
-**c) Substituição do próprio ato de cozinhar — aplicativos de delivery.** A penetração de pedidos por aplicativo entre consumidores brasileiros passou de 80% em 2020 para 89% em 2022, e "não querer cozinhar" é a motivação declarada por 24% dos usuários — a razão mais citada⁸. O efeito líquido sobre a demanda por eletrodomésticos é ambíguo e deve ser tratado com o devido rigor analítico: o consumo doméstico agregado de alimentos ainda cresceu 3,09% entre 2022 e 2023, sugerindo complementaridade mais do que substituição direta na média da população. Ainda assim, a motivação qualitativa é evidência de uma redução na *frequência* de uso do fogão em parcelas específicas do mercado — sobretudo domicílios urbanos menores e unipessoais —, o que modera, sem eliminar, a demanda por produtos de maior capacidade.
- 
-**d) Substituição por mudança de hábito alimentar e de moradia — o efeito GLP-1 e a compactação urbana.** Este é o sinal mais recente e mais diretamente confirmado pela própria liderança da Whirlpool no Brasil. Segundo executivos da companhia entrevistados em janeiro de 2026, a disseminação de medicamentos GLP-1 (Ozempic, Mounjaro, Wegovy — cuja importação cresceu 88% em 2025) já altera o padrão de compra de eletrodomésticos: consumidores priorizam freezers maiores para armazenar refeições congeladas em porções menores (*meal prep*) e **migram para fogões menores, com menos bocas** — nas palavras do diretor de marketing de categoria da companhia, "as pessoas não querem mais aqueles fogões enormes". Em resposta direta a esse insight, a Whirlpool renovou por completo as linhas de cooktop de Consul e Brastemp, e reposicionou o frigobar Brastemp Retrô (líder com mais de 50% de participação no segmento de compactos premium) como solução de armazenamento de medicamentos e produtos de skincare fora da cozinha. O relatório *Home Appliances Outlook 2026*, da NielsenIQ, corrobora a tendência em nível setorial: o consumidor latino-americano já prioriza "conveniência, multifuncionalidade e benefícios de saúde e bem-estar" acima de preço puro, com o valor das vendas globais de eletrodomésticos crescendo 5% no primeiro semestre de 2025 mesmo com volume estável (+1%) — evidência de premiumização funcional, não apenas de crescimento de mercado⁵. Esse mesmo movimento já havia sido antecipado em 2023, quando a Whirlpool declarou apostar em soluções de lavanderia e cocção voltadas a apartamentos de 30–40 m², um "mercado crescente" segundo a própria liderança regional².
+
+A ameaça de substituição é alta e estruturalmente crescente, com quatro camadas atuando sobre o portfólio de cocção e refrigeração da Whirlpool na América Latina.
+
+**a) Substituição tecnológica intra-categoria — fogão a gás por indução.** A indução ganha tração em 2026 por eficiência energética, segurança e queda de preço de entrada, com modelos compactos a partir de R$ 180–350. A própria Whirlpool responde com início de produção nacional de fogões por indução em Manaus a partir do segundo semestre de 2026, migração de capacidade fabril, não apenas de portfólio de importação⁶.
+
+**b) *Unbundling* funcional do fogão por eletroportáteis — a air fryer.** A penetração de air fryers nos domicílios brasileiros saltou de 36,2% para 64% entre 2022 e 2025, com o mercado da categoria crescendo 340% no período⁷. As ocasiões de preparo rápido já respondem por mais de 30% dos preparos domésticos, enquanto a fritura tradicional caiu para 17% das ocasiões. Não é substituição de compra, mas de **uso e intensidade de uso**: funções do fogão migram para um eletroportátil dedicado, o que tende a alongar o ciclo de reposição e a pressionar para baixo a demanda por capacidade e robustez térmica do produto principal.
+
+**c) Substituição do próprio ato de cozinhar — aplicativos de delivery.** A penetração de pedidos por aplicativo entre consumidores brasileiros passou de 80% em 2020 para 89% em 2022, e "não querer cozinhar" é a motivação declarada por 24% dos usuários, a razão mais citada⁸. O efeito líquido sobre a demanda por eletrodomésticos é ambíguo: o consumo doméstico agregado de alimentos ainda cresceu 3,09% entre 2022 e 2023, sugerindo complementaridade mais do que substituição direta na média da população. Ainda assim, evidencia redução na frequência de uso do fogão em domicílios urbanos menores e unipessoais.
+
+**d) Substituição por mudança de hábito alimentar e de moradia — o efeito GLP-1 e a compactação urbana.** Segundo executivos da Whirlpool entrevistados em janeiro de 2026, a disseminação de impacto de medicamentos GLP-1 (Ozempic, Mounjaro, Wegovy), cuja importação cresceu 88% em 2025 já altera o padrão de compra de eletrodomésticos: consumidores priorizam freezers maiores e **migram para fogões menores, com menos bocas**, "as pessoas não querem mais aqueles fogões enormes", nas palavras do diretor de marketing de categoria da companhia. Em resposta, a Whirlpool renovou por completo as linhas de cooktop de Consul e Brastemp, e reposicionou o frigobar Brastemp Retrô como solução de armazenamento fora da cozinha. O relatório *Home Appliances Outlook 2026*, da NielsenIQ, corrobora a tendência: o consumidor latino-americano já prioriza conveniência, multifuncionalidade e bem-estar acima de preço puro, com o valor das vendas globais de eletrodomésticos crescendo 5% no primeiro semestre de 2025 mesmo com volume estável (+1%)⁵.
 
 ###### Síntese e implicações estratégicas
 
-O setor de linha branca na América Latina apresenta atratividade estrutural moderada a baixa sob a ótica de Porter: rivalidade alta, sustentada por evidência financeira concreta — compressão da margem EBIT da própria Whirlpool de 6,0% para 3,0% em um único ano —, poder de barganha elevado do canal varejista, poder de fornecedores concentrado em componentes eletrônicos críticos, barreiras de entrada em erosão frente a competidores asiáticos via importação, e uma ameaça de substituição multifacetada e ativa, que combina fatores tecnológicos (indução), comportamentais (air fryer, aplicativos de delivery) e sociodemográficos (efeito GLP-1, compactação urbana).
+O setor de linha branca na América Latina apresenta atratividade moderada a baixa sob a ótica de Porter: rivalidade alta (compressão da margem EBIT de 6,0% para 3,0% em um ano), poder de barganha elevado do canal varejista, fornecedores concentrados em componentes eletrônicos críticos, barreiras de entrada em erosão frente a competidores asiáticos, e uma ameaça de substituição multifacetada que combina fatores tecnológicos, comportamentais e sociodemográficos.
 
-Duas dessas forças têm implicação mais diretas e específicas sobre o projeto Thermal Predictor.
-
-Da segunda força (fornecedores) decorre uma dependência estrutural e crescente de componentes eletrônicos e sensores embarcados — insumos sujeitos a ciclos de escassez global e a concentração de fornecimento —, à medida que a Whirlpool amplia a eletrônica de seus produtos (ajuste automático de temperatura, sensoriamento de carga). Essa dependência eleva o custo e o risco de qualquer processo de desenvolvimento que dependa de iteração física repetida de protótipos, reforçando o valor estratégico de um modelo preditivo capaz de antecipar o comportamento térmico do produto sem depender de múltiplos ciclos de teste físico e digital twin.
-
-Da quinta força (substitutos) decorre uma transição de portfólio já em curso e reconhecida publicamente pela própria liderança da Whirlpool no Brasil: migração para fogões mais compactos, com menor número de bocas, e para tecnologia de indução, motivada por pressão competitiva e por mudança de comportamento do consumidor. Essa transição amplia — e não reduz — a necessidade de um modelo preditivo robusto: sob o modelo tradicional de validação térmica, cada nova arquitetura de produto exigiria um novo ciclo completo de simulação e teste físico, incompatível com a velocidade de renovação de portfólio já imposta pelo mercado.
+Duas forças têm implicação mais direta sobre o Thermal Predictor. Da segunda (fornecedores) decorre dependência crescente de componentes eletrônicos e sensores embarcados, à medida que a Whirlpool amplia a eletrônica de seus produtos, dependência que eleva o custo e o risco de desenvolvimento baseado em iteração física repetida de protótipos, reforçando o valor de um modelo preditivo capaz de antecipar o comportamento térmico sem múltiplos ciclos de teste. Da quinta (substitutos) decorre uma transição de portfólio já em curso, fogões mais compactos, com menos bocas, e migração para indução, que amplia, e não reduz, a necessidade de um modelo preditivo robusto: cada nova arquitetura exige um novo ciclo de simulação e teste, incompatível com a velocidade de renovação de portfólio já imposta pelo mercado.
 
 Em conjunto, essas duas forças convertem a leitura setorial em justificativa direta de negócio para o projeto: o Thermal Predictor não responde apenas a uma dor operacional interna de lead time e custo de prototipagem, mas a uma pressão estrutural de mercado que torna a velocidade de validação térmica um fator de competitividade. Reduzir a dependência de ciclos físicos de teste é, neste contexto, condição para que a Whirlpool consiga acompanhar o ritmo de transição de portfólio já imposto pela concorrência e pelo comportamento do consumidor.
 
-##### 4.1.1.2. Concorrentes identificados
-
-Para efeito de seleção, foram escolhidas três empresas do setor que atuam como concorrentes diretos da Whirlpool. Destaca-se, em primeiro lugar, a Electrolux: incumbente europeu com presença quase centenária no Brasil — 100 anos completados em 2026 — e a marca com maior penetração domiciliar do país, presente em 67% dos lares brasileiros somando o portfólio da marca Continental. O Brasil é, para o grupo global, o segundo mercado mais rentável, atrás apenas da Europa, o que indica que a operação regional não é periférica, e sim um dos pilares de rentabilidade da companhia mundialmente⁹. Em agosto de 2025, a Electrolux inaugurou sua quinta planta no país, em São José dos Pinhais (PR), com investimento de R$ 700 milhões, explicitamente para reduzir dependência de importação asiática e nacionalizar categorias hoje importadas (liquidificadores, ventiladores), com plano declarado de transformar a unidade em plataforma de exportação para o restante da América Latina¹⁰. Outra empresa concorrente que se destaca é a Midea, multinacional chinesa que já não deve ser tratada apenas como ameaça potencial de entrada (Força 4), mas como concorrente estabelecido: ocupa hoje a terceira posição no mercado brasileiro de eletrodomésticos, com cerca de 8% de participação em refrigeradores e 6%–7% em lavadoras¹¹. A companhia converteu deliberadamente sua estratégia de importação para manufatura local, inaugurando em Pouso Alegre (MG) sua primeira planta 100% própria no país — investimento de R$ 630 milhões, capacidade para 1,3 milhão de unidades por ano (700 mil refrigeradores, 600 mil lavadoras) —, movimento motivado explicitamente por contornar o custo do sistema tributário de importação e cumprir exigências de conteúdo local¹². A marca também amplia agressivamente sua linha de eletroportáteis — expansão de portfólio que a equipe recomenda revalidar diretamente com o parceiro, por não ter sido localizada uma fonte primária confiável até o fechamento desta versão. Por fim, identifica-se a Mabe, grupo mexicano fundado em 1946, historicamente o concorrente mais diretamente sobreposto ao escopo do Thermal Predictor por sua forte especialização em fogões e produtos de cocção a gás, com planta dedicada a essa categoria em Durango. Consolidou domínio de mercado na América Latina — chegou a deter cerca de 70% de participação em eletrodomésticos na região, excluindo Estados Unidos e México — por meio de uma joint venture histórica com a General Electric, firmada em 1986, que lhe deu acesso à rede de distribuição americana; em meados dos anos 1990, dois terços de todos os fogões a gás e refrigeradores importados pelos EUA eram projetados e fabricados pela Mabe¹³.
-
-#### 4.1.1.3. Análise do modelo de negócio do parceiro
-
-A Whirlpool Latin America opera um modelo de negócio ancorado em três pilares que se reforçam mutuamente: segmentação de marca multiportfólio, manufatura local verticalizada, e diversificação incipiente para serviços e economia circular como camada adicional de captura de valor. Arquitetura de marcas segmentada: a companhia opera com Brastemp, Consul e KitchenAid ocupando territórios de posicionamento distintos e deliberadamente não concorrentes entre si: Brastemp é posicionada em torno de design, tecnologia e aspiração, capturando o consumidor disposto a pagar prêmio por inovação; Consul compete em durabilidade, eficiência e acesso, com penetração de distribuição mais ampla voltada à base da pirâmide de consumo; KitchenAid atua no extremo superior, como marca premium a super-premium em eletroportáteis. Essa arquitetura permite à companhia competir simultaneamente em múltiplas faixas de preço sem canibalizar a marca âncora — uma resposta estrutural direta à pressão de rivalidade (Força 1) e ao poder de barganha do canal varejista (Força 3), que tende a empurrar negociação de preço para baixo justamente nas faixas mais disputadas. Manufatura local verticalizada como vantagem — e como rigidez-: mais de 95% dos produtos vendidos pela Whirlpool no Brasil são fabricados localmente, com aproximadamente 80% dos insumos adquiridos de fornecedores nacionais. Essa é historicamente a principal barreira de proteção contra concorrência via importação (Força 4) e uma resposta direta à exposição cambial. Diversificação para serviços e economia circular: a companhia opera um canal de venda direta ao consumidor via plataforma própria (Compra Certa) e um programa de logística reversa que já coletou mais de 1 milhão de produtos usados — inclusive de marcas concorrentes — sem custo ao consumidor, integrando esse fluxo a modelos de troca em que o cliente devolve o produto antigo na compra do novo via canal digital. Esse movimento sinaliza uma tentativa de capturar valor além da venda única de hardware, criando relacionamento recorrente com o consumidor e coletando dados de ciclo de vida do produto — mas ainda representa fração marginal da receita total frente ao modelo tradicional de venda via grande varejo. Investimento em inovação como resposta à pressão de margem: a companhia investe cerca de 4% da receita em pesquisa e inovação, mantém hub de inovação em Rio Claro (SP) e parcerias com universidades, sustentando um ritmo de lançamento de dezenas de novos produtos por ciclo.
-
-#### 4.1.1.4. Análise das tendências do setor do parceiro
-
-O setor de linha branca na América Latina converge, para 2026, em torno de quatro tendências estruturais bem documentadas por pesquisas de mercado estabelecidas: premiumização funcional, em que o consumidor prioriza conveniência, multifuncionalidade e benefícios de saúde e bem-estar acima do preço puro — segundo o relatório Home Appliances Outlook 2026 da NielsenIQ, o valor das vendas globais de eletrodomésticos cresceu 5% no primeiro semestre de 2025 mesmo com volume estável (+1%); conectividade e inteligência artificial embarcada (cozinha conectada, sensores de ajuste automático, monitoramento remoto via aplicativo), destacada na Eletrolar Show All Connected 2026 como o principal eixo de diferenciação do setor; eficiência energética e sustentabilidade, que deixaram de ser diferencial competitivo e se consolidaram como requisito básico de mercado; e miniaturização/reconfiguração de portfólio, com migração observável para produtos mais compactos e tecnologias alternativas de cocção como a indução, motivada tanto por mudança comportamental do consumidor quanto por pressão competitiva de custo. Em conjunto, essas tendências reforçam a tese central desta análise: a competitividade no setor deixou de depender apenas de escala e preço, e passou a exigir capacidade de iteração rápida de produto sobre novas arquiteturas térmicas e eletrônicas — exatamente a capacidade que o Thermal Predictor busca viabilizar.
-
 #### 4.1.2. Análise SWOT
+
+##### Escopo e critério de classificação
 
 A análise delimita-se à Divisão de Fogões da Whirlpool — engenharia e P&D de fogões de piso (Freestanding) para Brasil e México, subordinada à Whirlpool Latin America —, no recorte do desenvolvimento de produtos de cocção e da avaliação térmica por CFD, ponto do negócio em que a solução se insere.
 
@@ -201,11 +199,11 @@ A análise delimita-se à Divisão de Fogões da Whirlpool — engenharia e P&D 
 | | **Forças (S)** | **Fraquezas (W)** |
 |:---|:---|:---|
 | **Oportunidades (O)** | **SO —** Usar o acervo de CFD (S3) e a validação própria (S5) para maximizar a classe de eficiência energética (O1) antes de comprometer horas de CFD, estendendo o ganho às linhas nacionalizadas (O2) e ao portfólio mexicano (O3). | **WO —** Estruturar o dicionário de dados, padronizar a saída das simulações e planejar novas rodadas por DOE nas regiões de maior incerteza (W2, W3), apoiando-se na parceria acadêmica e nos incentivos à P&D (O4). |
-| **Ameaças (T)** | **ST —** Encurtar o ciclo de concepção e validação com escala industrial (S1), cultura de melhoria contínua (S4) e engenharia própria (S5), respondendo à concorrência asiática (T3), preservando margem (T5) e mitigando exposição de propriedade intelectual. | **🛡 WT —** Posicionar o modelo como ferramenta de triagem e priorização — não substituto do CFD na homologação —, reportando faixa de erro explícita e critério objetivo de escalonamento para simulação completa, para conter o risco normativo (T2); documentar o pipeline e automatizar o retreino reduz a dependência de especialistas (W4) e a exposição à rotatividade de talentos (T1). |
+| **Ameaças (T)** | **ST —** Encurtar o ciclo de concepção e validação com escala industrial (S1), cultura de melhoria contínua (S4) e engenharia própria (S5), respondendo à concorrência asiática (T3), preservando margem (T5) e mitigando exposição de propriedade intelectual. | **🛡 WT —** Posicionar o modelo como ferramenta de triagem e priorização, não substituto do CFD na homologação, reportando faixa de erro explícita e critério objetivo de escalonamento para simulação completa, para conter o risco normativo (T2); documentar o pipeline e automatizar o retreino reduz a dependência de especialistas (W4) e a exposição à rotatividade de talentos (T1). |
 
 ##### Implicação para o projeto
 
-O gargalo de custo e lentidão do ciclo de simulação térmica (W1) coincide com as pressões externas que mais crescem: exigência regulatória de eficiência (O1, T2), concorrência acelerada (T3) e necessidade de mais variantes de produto por período (O2, O3). A empresa detém os ativos para atacá-lo — acervo histórico de simulações (S3), engenharia térmica própria (S5) e orçamento de P&D consolidado (S2). O modelo preditivo converte essa fraqueza operacional em capacidade de resposta ao mercado; a principal condicionante de sucesso, evidenciada pela própria análise, não é algorítmica, mas de qualidade e volume de dados (W2, W3) — o que justifica a prioridade das etapas de estruturação do dataset no cronograma do projeto.
+O gargalo de custo e lentidão do ciclo de simulação térmica (W1) coincide com as pressões externas que mais crescem: exigência regulatória de eficiência (O1, T2), concorrência acelerada (T3) e necessidade de mais variantes de produto por período (O2, O3). A empresa detém os ativos para atacá-lo, acervo histórico de simulações (S3), engenharia térmica própria (S5) e orçamento de P&D consolidado (S2). O modelo preditivo converte essa fraqueza operacional em capacidade de resposta ao mercado; a principal condicionante de sucesso, evidenciada pela própria análise, não é algorítmica, mas de qualidade e volume de dados (W2, W3), o que justifica a prioridade das etapas de estruturação do dataset no cronograma do projeto.
 
 ##### Limitações da análise
 
@@ -218,7 +216,7 @@ A base de dados disponibilizada pela Whirlpool reúne o histórico de simulaçõ
  
 A solução proposta é um modelo de machine learning supervisionado, treinado a partir desses dados históricos, capaz de aprender a relação entre a configuração de montagem do fogão e a temperatura resultante em cada sensor. Com isso, torna-se possível estimar a temperatura de uma nova configuração sem a necessidade de executar uma simulação CFD completa ou construir um protótipo físico para testá-la.
  
-Do ponto de vista operacional, o dashboard funciona da seguinte forma: como input, o usuário seleciona os parâmetros de configuração do fogão que deseja avaliar, direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e o caso/modo de operação (Run Case) simulado. Como output, o modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada e de uma indicação de confiabilidade, sinalizando se a configuração consultada está dentro da faixa de combinações já testadas pela Whirlpool ou se representa uma extrapolação do modelo, caso em que a estimativa deve ser tratada com mais cautela.
+Do ponto de vista operacional, o usuário seleciona os parâmetros de configuração do fogão a avaliar (direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, furo do defletor e Run Case). O modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada. O dashboard sinaliza ainda se a configuração consultada está dentro da faixa já testada pela Whirlpool ou representa uma extrapolação, caso em que a estimativa exige mais cautela.
 
 O uso está previsto para múltiplas áreas da Whirlpool identificadas junto ao parceiro no kickoff do projeto, cada uma impactada de forma distinta pela solução. Para o time de Engenharia (CFD), hoje responsável por rodar as simulações numéricas completas, o impacto é a liberação de capacidade: em vez de simular todas as configurações candidatas, a equipe pode usar o dashboard para triar rapidamente quais delas realmente justificam o tempo de uma simulação CFD completa ou de um teste físico, concentrando seu esforço especializado nos casos mais críticos — o que é especialmente relevante diante da disponibilidade limitada já identificada para essa equipe no primeiro semestre de 2026. Para os times de Produtos e Design, o impacto é a redução do tempo de iteração: decisões de posicionamento de componentes que hoje dependem do ciclo completo de simulação ou protótipo passam a poder ser exploradas em minutos ainda na fase conceitual, permitindo avaliar mais alternativas de design dentro do mesmo prazo de projeto. Para o time de Qualidade, o impacto é a priorização mais informada de quais configurações merecem avançar para testes físicos e destrutivos, reduzindo o número de protótipos construídos apenas para serem descartados. Já para o time de Marketing, o impacto é o acesso antecipado a características térmicas do produto, antes da validação final, para embasar posicionamento e comunicação sem depender do cronograma de testes físicos.
 
@@ -234,13 +232,15 @@ Como critério de sucesso, o modelo deverá prever a temperatura com margem de e
   <sup>Fonte: Elaborado pelos autores (2026).</sup>
 </div>
 
+**Segmento de clientes.** O cliente primário da solução são as áreas de Engenharia e Qualidade, que operam diretamente o modelo e tomam a decisão técnica a partir da previsão gerada. Produtos, Design e Marketing são beneficiários secundários, que consomem o resultado da previsão sem operar a ferramenta.
+
 **Produtos e Serviços** 
 
-O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. Esse último é o ponto de contato direto com a persona Beatriz (Designer UX/UI), responsável por manter e atualizar a interface que traduz as previsões do modelo para os demais usuários. 
+O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. O dashboard é a interface pela qual Engenharia e Qualidade operam o modelo, tendo em Beatriz (Designer UX/UI) a persona responsável por mantê-la e evoluí-la. 
 
 **Criadores de Ganho**
 
-Os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento sustentam diretamente as necessidades da persona Geraldo (Especialista de Marketing), cuja dor central é depender do cronograma de testes físicos para saber quando o produto estará pronto para divulgação. A pesquisa de gestão de produto melhora a competitividade de várias formas, reduz diretamente os custos de desenvolvimento, permite acesso antecipado ao potencial de mercado e garante vantagens de pioneirismo¹⁸. Os dois criadores adicionais (eliminação de retrabalho entre arquiteturas BR/MX e democratização de decisões técnicas) sustentam a necessidade de Estela (Engenheira de Materiais) de comparar diferentes materiais e espessuras sem depender de um novo protótipo para cada opção.
+Os dois criadores centrais — eliminação de retrabalho entre arquiteturas BR/MX e democratização de decisões técnicas — sustentam a necessidade de Estela (Engenheira de Materiais), operadora direta do modelo, de comparar diferentes materiais e espessuras sem depender de um novo protótipo para cada opção. Em posição de apoio, os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento sustentam as necessidades da persona Geraldo (Especialista de Marketing), cuja dor central é depender do cronograma de testes físicos para saber quando o produto estará pronto para divulgação. A pesquisa de gestão de produto reforça essa relação: reduz diretamente os custos de desenvolvimento, permite acesso antecipado ao potencial de mercado e garante vantagens de pioneirismo¹⁸.
 
 **Aliviadores de Dor**
 
@@ -248,7 +248,7 @@ Este bloco tem aderência direta às dores das personas técnicas do projeto. A 
 
 **Ganhos do Cliente**
 
-O ganho de lançar produtos mais rapidamente sem perder qualidade térmica conecta-se novamente à persona Geraldo, cuja necessidade central é alinhar o cronograma de campanha à data real de validação do produto. Pesquisa publicada no IEEE Transactions on Engineering Management reforça essa relação: em estudo com 692 projetos de desenvolvimento de novos produtos, a velocidade de lançamento mostrou-se geralmente associada de forma positiva ao sucesso do novo produto, sustentando por que a previsibilidade de cronograma é um ganho estratégico, e não apenas operacional²⁰. O ganho de custo zero de licenciamento, por sua vez, sustenta a viabilidade orçamentária da solução como um todo.
+O ganho de tomar decisões de engenharia baseadas em dados, e não em intuição, conecta-se diretamente a João (Engenheiro de Qualidade) e Estela (Engenheira de Materiais), que passam a aprovar ou priorizar configurações com base em um número verificável, em vez de aguardar o ciclo completo de teste físico. Em posição de apoio, o ganho de lançar produtos mais rapidamente sem perder qualidade térmica conecta-se à persona Geraldo, cuja necessidade central é alinhar o cronograma de campanha à data real de validação do produto — relação sustentada por pesquisa publicada no IEEE Transactions on Engineering Management: em estudo com 692 projetos de desenvolvimento de novos produtos, a velocidade de lançamento mostrou-se geralmente associada de forma positiva ao sucesso do novo produto²⁰. O ganho de custo zero de licenciamento, por sua vez, sustenta a viabilidade orçamentária da solução como um todo.
 
 **Dores do Cliente**
 
@@ -361,7 +361,7 @@ relacionam com a solução: a Engenheira de Materiais, o Especialista de Marketi
 </div>
 
 A persona de Estela foi escolhida por representar um dos cargos diretamente responsáveis pelas decisões que o Thermal Predictor visa otimizar, já que a escolha do material de cada componente do fogão depende diretamente da temperatura que ele vai atingir em uso.
-Hoje, para aprovar ou descartar um material, Estela depende de um protótipo físico e, muitas vezes, de um teste destrutivo — um processo lento e caro que atrasa a decisão de engenharia. Sua necessidade é validar rapidamente se um material resiste termicamente ao ponto de ser aprovado, comparando diferentes materiais e espessuras sem precisar de um novo protótipo para cada opção. No dia a dia, ela consulta o dashboard antes de solicitar um teste físico, usando a previsão do modelo e sua margem de erro para priorizar quais combinações realmente justificam avançar para validação física completa.
+Hoje, para aprovar ou descartar um material, Estela depende de um protótipo físico e, muitas vezes, de um teste destrutivo, um processo lento e caro que atrasa a decisão de engenharia. Sua necessidade é validar rapidamente se um material resiste termicamente ao ponto de ser aprovado, comparando diferentes materiais e espessuras sem precisar de um novo protótipo para cada opção. No dia a dia, ela consulta o dashboard antes de solicitar um teste físico, usando a previsão do modelo e sua margem de erro para priorizar quais combinações realmente justificam avançar para validação física completa.
 Diferente de outras personas que se relacionam com a solução de forma mais indireta, Estela toma decisões técnicas diretamente a partir do resultado da previsão, sendo diretamente impactada pela margem de erro do modelo. Trata-se, portanto, da persona que representa o ganho central do projeto: substituir a dependência de testes físicos demorados e caros por uma validação rápida e confiável.
 
 ##### Especialista de Marketing
@@ -388,7 +388,7 @@ Esta persona foi escolhida porque o dashboard é um dos principais entregáveis 
 Thermal Predictor, e a designer de interface é a responsável por mantê-lo e
 atualizá-lo, garantindo que as previsões do modelo sejam apresentadas em telas
 claras e confiáveis para os usuários.
-A dor de Beatriz é o risco de os engenheiros pararem de usar o dashboard caso a informação seja apresentada de forma confusa, especialmente quando a previsão vem acompanhada de faixa de erro e de estados como interpolação, extrapolação moderada ou fora de domínio (Seção 4.1.5, R04), que precisam ser compreendidos sem ambiguidade. Ela precisa de uma hierarquia de informação clara — agrupada por Key Area, como já é utilizado pelo time de engenharia — que comunique previsão, margem de erro e nível de confiabilidade de forma imediata, sem exigir interpretação técnica adicional do usuário. No dia a dia, atualiza a interface a partir do retorno dos usuários e da telemetria de uso do dashboard, priorizando ajustes nas telas e nos fluxos mais utilizados pelas equipes de Engenharia, Qualidade e Marketing.
+A dor de Beatriz é o risco de os engenheiros pararem de usar o dashboard caso a informação seja apresentada de forma confusa, especialmente quando a previsão vem acompanhada de faixa de erro e de estados como interpolação, extrapolação moderada ou fora de domínio (Seção 4.1.5, R04), que precisam ser compreendidos sem ambiguidade. Ela precisa de uma hierarquia de informação clara, agrupada por Key Area, como já é utilizado pelo time de engenharia, que comunique previsão, margem de erro e nível de confiabilidade de forma imediata, sem exigir interpretação técnica adicional do usuário. No dia a dia, atualiza a interface a partir do retorno dos usuários e da telemetria de uso do dashboard, priorizando ajustes nas telas e nos fluxos mais utilizados pelas equipes de Engenharia, Qualidade e Marketing.
 Embora a construção inicial do dashboard seja
 feita pela equipe de desenvolvimento e Beatriz não utilize as previsões para tomar
 decisões, é uma persona importante porque assegura que os resultados do modelo
@@ -407,11 +407,11 @@ contínua da solução.
 Esta persona foi escolhida por representar um dos usuários diretos e mais críticos do
 projeto: o Engenheiro de Qualidade é responsável por validar a segurança
 térmica dos produtos e decidir se um design pode ou não ser liberado.
-João depende de testes físicos destrutivos — lentos e caros — para confirmar que cada componente se mantém dentro do limite térmico normativo antes de liberar um design. Sua necessidade é verificar rapidamente, para múltiplas configurações, se um componente ultrapassa seu limite térmico, com uma margem de erro clara (≤ 10%) que permita auditar a previsão antes de confiar nela. Por isso, usa o dashboard para triar quais configurações apresentam maior risco térmico e, a partir daí, decide quais ainda precisam de teste físico completo antes da liberação do produto.
+João depende de testes físicos destrutivos, lentos e caros, para confirmar que cada componente se mantém dentro do limite térmico normativo antes de liberar um design. Sua necessidade é verificar rapidamente, para múltiplas configurações, se um componente ultrapassa seu limite térmico, com uma margem de erro clara (≤ 10%) que permita auditar a previsão antes de confiar nela. Por isso, usa o dashboard para triar quais configurações apresentam maior risco térmico e, a partir daí, decide quais ainda precisam de teste físico completo antes da liberação do produto.
 É uma persona importante porque tanto usa a solução no dia a dia quanto é
 diretamente impactada por ela: a confiabilidade da previsão (margem de erro ≤ 10%)
 afeta diretamente sua decisão de aprovar ou reprovar um produto. Por atuar em um
-ponto crítico do processo — a liberação do produto —, João garante que a solução contribua
+ponto crítico do processo, a liberação do produto, João garante que a solução contribua
 para decisões mais rápidas e seguras.
 
 ##### Engenheiro de Produtos
@@ -573,47 +573,55 @@ O mapa de jornada completo, com todas as fases, ações, pensamentos, emoções 
 
 #### 4.1.8 Política de Privacidade
 
-A Política de Privacidade é o documento responsável por garantir a transparência
-e a segurança no tratamento de dados. Por meio dela, informamos como os dados são
-coletados, utilizados, armazenados e protegidos durante o uso da solução, assegurando
-que sejam tratados de forma responsável e em conformidade com a Lei nº 13.709/2018 (LGPD).
+Projeto Thermal Predictor
 
-**Projeto:** Thermal Predictor
+**Informações Gerais:**
 
-**Informações Gerais**
+Esta política de privacidade informa como o projeto Thermal Predictor, desenvolvido pelo grupo FOG em parceria com a Whirlpool (Divisão de Fogões BR/MX), trata os dados pessoais coletados durante o uso da solução. Está em conformidade com a Lei nº 13.709/2018 – LGPD²².
 
-Esta política de privacidade informa como o projeto Thermal Predictor, desenvolvido pelo grupo FOG, trata os dados pessoais coletados durante o uso da solução. Está em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados (LGPD).
+A solução envolve duas naturezas de dados, submetidas a regimes jurídicos distintos. Os dados técnicos e operacionais de produto, temperaturas de sensores, limites de engenharia, configurações de teste e identificadores de componentes que compõem o dataset, não são dados pessoais e, portanto, não estão sob a incidência da LGPD; sua proteção decorre dos acordos de confidencialidade e de propriedade intelectual firmados com a Whirlpool. Os dados pessoais, únicos regidos por esta política, limitam-se às informações de identificação dos usuários que operam o sistema. Nenhum registro do dataset de temperatura se refere a pessoa natural identificada ou identificável, nos termos do art. 5º, I, da LGPD.
 
-**Dados Coletados**
+**Dados Coletados:**
 
-- Dados fornecidos diretamente: dados dos componentes e temperaturas do dataset inserido pelo usuário.
-- Dados coletados automaticamente: nome e e-mail do usuário, e dados de acesso (data e hora de uso).
+Dados fornecidos diretamente: nome e e-mail, informados no cadastro e no login da solução.
 
-**Finalidade do Tratamento**
+Dados coletados automaticamente: data, hora e identificador de sessão dos acessos (logs de sistema), para fins de segurança e rastreabilidade.
 
-Autenticar usuários e controlar o acesso à solução (dashboard preditivo).
+Os dados de componentes e temperaturas inseridos na solução são dados técnicos de produto, e não dados pessoais, conforme a distinção acima.
 
-**Armazenamento e Retenção**
+**Finalidade do Tratamento:**
 
-- Local: ambiente local onde o sistema é executado. 
-- Prazo: durante a vigência do projeto acadêmico.
+Autenticar usuários e controlar o acesso ao dashboard preditivo, assegurando que apenas profissionais autorizados das áreas de Engenharia e Qualidade utilizem a ferramenta.
 
-**Compartilhamento de Dados**
+O tratamento apoia-se em duas bases legais. O nome e o e-mail são tratados com fundamento na execução de contrato e de procedimentos preliminares (art. 7º, V), pois o usuário adere aos Termos de Uso da solução e o cadastro é condição para a prestação do serviço. Os logs de acesso apoiam-se no legítimo interesse do controlador (art. 7º, IX), voltado à segurança da informação e à auditoria, limitado ao mínimo necessário e sem sobrepor-se aos direitos e liberdades do titular. Observam-se os princípios do art. 6º, em especial finalidade, adequação, necessidade, transparência e segurança. Não há elaboração de perfil, publicidade ou decisão automatizada sobre pessoas: o modelo prevê a temperatura de componentes do produto, não o comportamento de indivíduos, de modo que não incide a hipótese do art. 20 da Lei.
 
-Os dados são compartilhados apenas com a equipe do projeto, supervisores acadêmicos e a Whirlpool. Não há venda a terceiros.
+**Armazenamento e Retenção:**
 
-**Segurança dos Dados**
+Local: ambiente local em que o sistema é executado, sem hospedagem em nuvem pública. O dataset fornecido pelo parceiro não é versionado no repositório público do projeto.
 
-Controle de acesso por autenticação individual e senha criptografada.
+Prazo: durante a vigência do módulo acadêmico, com eliminação ao término, em observância ao princípio da necessidade (art. 6º, III) e às hipóteses de término do tratamento previstas nos arts. 15 e 16 da LGPD.
 
-**Direitos dos Titulares**
+**Compartilhamento de Dados:**
 
-Os titulares dos dados têm direito a acesso, correção, exclusão e revogação do consentimento. Solicitações podem ser feitas pelo e-mail: felipe.pessoa@sou.inteli.edu.br.
+Equipe do projeto, orientadores e supervisores acadêmicos do Inteli e Whirlpool. Não há venda, cessão ou compartilhamento com terceiros.
 
-**Encarregado de Dados (DPO)**
+Como o parceiro desenvolve produtos para as arquiteturas de Brasil e México, dados de engenharia podem transitar entre as duas jurisdições. Os dados técnicos de produto são regidos pelos acordos de confidencialidade corporativos da Whirlpool. Eventual transferência internacional de dados pessoais observaria os arts. 33 a 36 da LGPD, que a condicionam a país com grau de proteção adequado ou à adoção de garantias contratuais específicas, como cláusulas-padrão contratuais ou normas corporativas globais; no México, aplica-se a Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)²³. No escopo atual, os dados pessoais permanecem armazenados no Brasil e não há transferência internacional ativa; caso o piloto seja estendido às equipes mexicanas, a base de transferência será formalizada antes da liberação de acesso.
 
-- Nome: Felipe Sodré Pessôa
-- E-mail: felipe.pessoa@sou.inteli.edu.br
+**Segurança dos Dados:**
+
+Autenticação individual com senha armazenada em formato de hash criptográfico; controle de acesso por perfil, segundo o princípio do menor privilégio, de modo que cada usuário acesse apenas as funcionalidades pertinentes à sua área; registro de logs de acesso para auditoria; e segregação entre o repositório público do projeto e os dados do parceiro, que não são publicados. Em caso de incidente de segurança com risco relevante aos titulares, a equipe comunicará o Encarregado, o parceiro e, quando aplicável, a Autoridade Nacional de Proteção de Dados (ANPD) e os titulares afetados, nos termos do art. 48 da LGPD.
+
+**Direitos dos Titulares:**
+
+Acesso, correção, exclusão e revogação de consentimento, além de confirmação da existência de tratamento, anonimização, bloqueio, portabilidade e informação sobre compartilhamento, nos termos do art. 18 da LGPD. Como o tratamento se apoia em execução de contrato e em legítimo interesse, e não em consentimento, não há consentimento em vigor a ser revogado; caso alguma finalidade futura passe a depender dele, a revogação será garantida a qualquer momento, por procedimento gratuito e facilitado (art. 8º, § 5º). Ao titular assegura-se, ainda, o direito de oposição ao tratamento realizado com dispensa de consentimento (art. 18, § 2º).
+
+Solicitações via e-mail: felipe.pessoa@sou.inteli.edu.br
+
+**Encarregado de Dados (DPO):**
+
+Nome: Felipe Sodré Pessôa
+
+E-mail: felipe.pessoa@sou.inteli.edu.br
 
 ### 4.2. Compreensão dos Dados
 
@@ -881,13 +889,148 @@ A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) qua
 
 *Em andamento.*
 
-**c) Métricas relacionadas ao modelo**
+#### Métricas de avaliação do modelo
 
-*Em andamento.*
+A avaliação do Thermal Predictor responde a três perguntas distintas 
+para identificar quão bom o modelo é, e
+nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
+grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
+configuração e temperatura ou apenas reproduz o comportamento médio de cada
+sensor. As três métricas abaixo cobrem uma pergunta cada e são reportadas em
+conjunto, sempre por termopar (`tc_name`), sobre o conjunto de teste e em graus
+Celsius, a unidade em que a decisão de engenharia é tomada. Estão implementadas
+com a biblioteca scikit-learn²⁶ na seção de métricas do notebook do modelo
+candidato, que acompanha ainda o afastamento entre o erro de treino e o de teste,
+indicador de sobreajuste, risco elevado aqui pelo número reduzido de execuções
+disponíveis (R02, Seção 4.1.5).
 
-**d) Modelo candidato e discussão**
+Onde $y_i$ é a temperatura registrada, $\hat{y}_i$ a temperatura prevista e $n$
+o número de leituras do termopar avaliado:
 
-*Em andamento.*
+**MAE (Erro Absoluto Médio)** média das diferenças absolutas entre valores
+reais e previstos. Responde a quantos graus, em média, a previsão erra. Por não
+elevar o erro ao quadrado, é a mais robusta das três diante de valores extremos.
+É a primeira das métricas oficiais formalizadas no plano de ação do risco R06.
+
+$$
+MAE = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+$$
+
+**RMSE (Raiz do Erro Quadrático Médio)** mede a mesma distância, mas elevando
+cada erro ao quadrado antes da média, com a raiz devolvendo o resultado à unidade
+do alvo. Erros grandes passam a pesar desproporcionalmente, o que expõe previsões
+pontualmente ruins que uma média simples esconderia. É sempre maior ou igual ao
+MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²⁷.
+
+$$
+RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^2}
+$$
+
+**R² (Coeficiente de Determinação)** indica quanto da variação da temperatura
+o modelo explica, comparando seu erro com o de um preditor que ignora as
+entradas e responde sempre a média do alvo. R² = 1 é previsão perfeita, R² = 0 é
+empate com essa média e R² negativo significa desempenho pior que ela. MAE e
+RMSE informam o tamanho do erro; o R² informa se houve aprendizado.
+
+$$
+R^{2} = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
+$$
+
+##### Por que a escolha dessas métricas para avaliar o modelo?
+
+O MAE é a métrica principal por estar na unidade em que a decisão é tomada: um
+erro em graus Celsius é confrontável com a folga até o limite normativo do
+componente, o que não ocorreria com uma métrica adimensional ou em °C². Sua
+limitação é tratar todos os erros com o mesmo peso.
+
+O RMSE cobre exatamente essa cegueira. A razão RMSE/MAE revela se o erro está
+concentrado em poucos pontos ou distribuído: quanto mais ela se afasta de 1,
+maior a cauda de previsões ruins. Isso importa porque uma única previsão que
+subestime um componente crítico pode liberar um projeto termicamente inseguro
+(R04), daí ambas serem calculadas por termopar, e não só como média entre
+alvos, para localizar o componente problemático.
+
+O R² é o único que distingue aprendizado de reprodução da média. Sua referência
+é a média do próprio conjunto de teste, um preditor-oráculo que ninguém conhece
+antes de medir; por isso o notebook reporta em paralelo um
+`DummyRegressor(strategy="mean")` ajustado no treino, contraparte realista que
+atende ao requisito de baselines obrigatórios do risco R03. É medido por termopar
+porque, agregado, o preditor de referência seria
+a média de todos os sensores do produto,
+
+valor que nenhum engenheiro usaria como
+estimativa. Como as regiões operam em patamares distintos (amplitude de 28,37 °C
+em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o R² agregado mediria essa
+diferença de patamar, já conhecida, e não o que o modelo aprendeu.
+
+O erro percentual (MAPE) foi descartado por incorrer na crítica do risco R06: a
+escala Celsius é intervalar, logo 10% de 150 °C são 15 °C, mas os mesmos 150 °C
+valem 423,15 K, cujos 10% são 42,3 °C. MAE e RMSE contornam o problema por
+reportarem erro absoluto, e o R² por ser invariante a transformações afins do
+alvo. O notebook reporta ainda o afastamento entre o MAE de treino e o de teste,
+indicador de sobreajuste. O R03 fixa esse gatilho em cinco pontos percentuais sem
+definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
+critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
+em variação relativa, sem converter um no outro.
+
+#### 4.3.4. Análise e interpretação dos resultados do modelo candidato
+
+O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regressor** multi-saída, treinado em sete instâncias independentes — uma por `key_area`. Sua arquitetura e seus hiperparâmetros estão implementados nas Seções 1 a 8 de [`notebooks/Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb); esta subseção interpreta **o que suas métricas significam** para o uso pretendido pelo parceiro, e onde estão os limites do que ele pode sustentar. A consolidação das métricas dos três modelos está na Seção 9 do mesmo notebook.
+
+##### Desempenho comparado
+
+A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10 — apenas o algoritmo varia.
+
+<div align="center">
+  <sub>Figura 18 — Comparativo de métricas entre os modelos candidatos no conjunto de teste</sub><br>
+  <img src="../assets/graficos/modelo_candidato_comparativo.png" alt="Painéis comparando MAE, RMSE, R², MAPE e fração dentro de 10% entre Gradient Boosting, Decision Tree e Random Forest, e gráfico de MAE por setor" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir dos notebooks de modelagem.</sup>
+</div>
+
+| Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| **Gradient Boosting** | **4,18** | **6,40** | 0,156 | **5,73** | **85,6%** |
+| Decision Tree | 4,72 | 8,02 | 0,156 | 6,04 | 85,5% |
+| Random Forest | 4,88 | 7,18 | **0,283** | 6,54 | 79,8% |
+
+**Pontos fortes.** O Gradient Boosting vence em quatro das cinco métricas. O ganho mais relevante para o parceiro é o MAE: **4,18 °C** contra 4,72 °C da árvore de decisão e 4,88 °C da floresta aleatória — uma redução de 11% a 14% no erro típico, medido na mesma unidade em que a engenharia negocia margem de projeto. O RMSE, que penaliza erros grandes de forma quadrática, cai proporcionalmente mais (6,40 contra 8,02 e 7,18): o ganho não vem de acertar melhor o caso médio, mas de **errar menos nos casos extremos** — exatamente o comportamento desejável em um modelo cuja função é sinalizar risco de superaquecimento, já que o custo de uma previsão errada não é simétrico. Subestimar em 15 °C um componente próximo do `active_limit` libera para ensaio físico uma configuração que deveria ter sido barrada; superestimar apenas desperdiça uma checagem. Por fim, **85,6% das previsões caem dentro da margem de 10%** acordada com o parceiro, contra 79,8% do Random Forest.
+
+##### A ressalva do R², e o que ela delimita
+
+O Gradient Boosting **perde** na única métrica adimensional: seu R² médio é 0,156, contra 0,283 do Random Forest. Mais do que isso, o R² é **negativo** em dois setores (`mainback`, −0,01; `ipc_comp`, −0,89), o que significa que, nesses casos, prever simplesmente a média histórica da área teria explicado a variância tão bem ou melhor que o modelo.
+
+Esse resultado não contradiz o anterior, e a distância entre os dois é o achado central desta análise. MAE e MAPE medem a distância entre o valor previsto e o observado; o R² mede quanto da **variação** entre ensaios o modelo consegue reproduzir. Um modelo pode acertar o patamar térmico de uma área com folga e ainda assim falhar em ordenar corretamente os ensaios dentro dela. É o que ocorre aqui: o Gradient Boosting acerta **onde a área opera** (4,18 °C de erro típico), mas ainda **não distingue com segurança duas configurações próximas** dentro da mesma área.
+
+A consequência é uma qualificação explícita do escopo de uso do modelo candidato:
+
+- **Uso sustentado pelas métricas atuais — triagem térmica.** Estimar o patamar de temperatura esperado de uma área sob uma dada configuração e sinalizar proximidade do `active_limit`, priorizando quais ensaios físicos executar primeiro. É exatamente a dor descrita na jornada do Engenheiro de Qualidade (Seção 4.1.7), em que a fila de ensaios é hoje ordenada por experiência tácita.
+- **Uso ainda não sustentado — ranqueamento fino.** Escolher entre duas configurações candidatas com base na diferença prevista entre elas, sobretudo em `mainback` e `ipc_comp`. Essa decisão continua exigindo ensaio físico, e apresentá-la como capacidade do modelo hoje seria prometer além da evidência.
+
+##### Superajuste
+
+O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`), mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas (FRIEDMAN, 2001), somada à profundidade limitada a 3 níveis, contém melhor a memorização do que a árvore única, que chegou a 8 níveis e 23 folhas em `coil_temps`.
+
+Esse gap materializa o **risco R03** mapeado na Seção 4.1.5, e sua causa é dimensional antes de ser algorítmica: 56 ensaios, dos quais restam de 24 a 56 linhas úteis por área, e apenas 31 combinações distintas de configuração. Nenhum ajuste de hiperparâmetro resolve escassez de dados — o caminho é ampliar a base de ensaios, e a recomendação ao parceiro é que os próximos sejam planejados para cobrir combinações ainda não testadas, não para repetir as já frequentes.
+
+##### O que a explicabilidade pode e não pode afirmar
+
+A Figura 19 mostra a importância média das variáveis para a área `Mainback`, com o termopar mais sensível a cada uma.
+
+<div align="center">
+  <sub>Figura 19 — Explicabilidade do modelo candidato: importância das variáveis na área Mainback</sub><br>
+  <img src="../assets/graficos/modelo_candidato_explicabilidade.png" alt="Gráfico de barras horizontais com a importância média de cada variável de configuração para o Gradient Boosting na área Mainback, indicando o termopar mais sensível a cada variável" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
+
+O `run_case` domina, com importância de 0,481 — quase o triplo da segunda variável (`housing`, 0,152) —, resultado coerente com a **H3** (Seção 4.2.4), que já identificara o modo de operação como fator real de elevação térmica. O detalhe que só a arquitetura multi-saída revela é *onde* cada variável pesa: o `run_case` concentra 0,866 de importância no termopar `Storage Drawer (Metal Above)`, justamente o de maior amplitude térmica da área (90,25 °C a 171,57 °C). Para o parceiro, essa leitura por sensor é acionável — indica qual ponto instrumentar com prioridade ao validar uma mudança de modo de operação.
+
+O gráfico, porém, **não deve ser lido como evidência de causa**. A **H2** demonstrou que as sete configurações estão confundidas no desenho experimental: cada categoria de `losses` corresponde a um único valor de `deflector_hole`, uma relação de identidade, não apenas de associação. Diante de variáveis redundantes, algoritmos baseados em árvores distribuem o crédito preditivo de forma arbitrária entre elas. A importância de 0,003 de `material_coil_support` indica que o modelo **não precisou** dessa variável — não que o material do suporte seja termicamente irrelevante. A leitura correta é que a figura descreve **como o modelo decide**, não **como o fogão aquece**.
+
+Vale registrar ainda uma divergência assumida em relação à H2, que recomendara retirar `losses` e `board_position` do modelo por redundância. Este primeiro candidato mantém as sete variáveis deliberadamente: com apenas 31 combinações distintas, removê-las antes de medir seu efeito eliminaria a própria evidência de que são dispensáveis. As importâncias agora medidas (0,055 e 0,098) confirmam com número o que a H2 antecipara por análise do desenho experimental, e transformam a remoção em um teste objetivo para a Seção 4.4.
+
+##### Síntese
+
+O Gradient Boosting sustenta-se como primeiro modelo candidato por entregar o menor erro em graus, a menor incidência de erros extremos e a maior taxa de acerto dentro da margem acordada com o parceiro. Seus limites são igualmente explícitos e decorrem da base disponível, não do algoritmo: baixo poder explicativo da variância intra-área (R² de 0,156, negativo em dois setores), superajuste de 2,15 °C e impossibilidade de atribuição causal por confundimento no desenho dos ensaios. Em termos práticos, o modelo já serve para **priorizar ensaios**, e ainda não para **substituí-los**. As Seções 4.4 e 4.5 retomam esse candidato para a comparação formal entre modelos e para a definição da solução final, incluindo o plano de contingência para os casos em que a previsão falhar.
 
 ### 4.4. Comparação de Modelos
 ```
@@ -994,7 +1137,6 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 | RN22 | Toda nova versão do modelo deve reportar as três métricas oficiais de aceite definidas para o projeto: erro médio absoluto em °C por termopar, erro normalizado pela folga térmica normativa e taxa de falsos-negativos de segurança. | RF19 |
 | RN23 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores, garantindo comparação de desempenho em condições idênticas entre versões. | RF19 |
 
-
 ## <a name="c7"></a>7. Referências
 
 As referências abaixo estão numeradas na ordem em que aparecem citadas ao longo do texto.
@@ -1020,8 +1162,13 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 19. MCKINSEY & COMPANY. *Digital twins: the key to smart product development.* Disponível em: https://www.mckinsey.com.br/industries/industrials/our-insights/digital-twins-the-key-to-smart-product-development. Acesso em: 13 ago. 2026.
 20. CHEN, Jiyao; REILLY, Richard R.; LYNN, Gary S. *The impacts of speed-to-market on new product success: the moderating effects of uncertainty.* IEEE Transactions on Engineering Management, v. 52, n. 2, p. 199-212, 2005.
 21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
-22. HOTZ, Nick. What is CRISP DM?. Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
-23. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
+22. BRASIL. **Lei nº 13.709, de 14 de agosto de 2018.** Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018. Disponível em: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm. Acesso em: 1 set. 2026.
+23. MÉXICO. **Ley Federal de Protección de Datos Personales en Posesión de los Particulares.** Diario Oficial de la Federación, Ciudad de México, 5 jul. 2010. Disponível em: https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf. Acesso em: 1 set. 2026.
+24. HOTZ, Nick. What is CRISP DM?. Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
+25. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
+26. PEDREGOSA, F. et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research, v. 12, p. 2825-2830, 2011. Disponível em: https://jmlr.org/papers/v12/pedregosa11a.html. Acesso em: 11 set. 2026.
+27. CHAI, T.; DRAXLER, R. R. Root mean square error (RMSE) or mean absolute error (MAE)? – Arguments against avoiding RMSE in the literature. Geoscientific Model Development, v. 7, p. 1247-1250, 2014. Disponível em: https://gmd.copernicus.org/articles/7/1247/2014/. Acesso em: 11 set. 2026.
+28. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
 
 ## <a name="attachments"></a>Anexos
 
@@ -1115,7 +1262,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 18 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
+  <sub>Figura 20 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -1148,6 +1295,200 @@ A média fica 5,27 °C acima da mediana. Esse sinal, média maior que a mediana,
 Os valores, portanto, **reforçam os resultados dos testes estatísticos de normalidade**: a diferença entre média e mediana é coerente com a assimetria positiva (coeficiente de +1,76) já apontada, e converge com a rejeição de H₀ pelos três testes do item c). Tanto a evidência formal quanto as medidas de tendência central levam à mesma conclusão: `temp` não segue uma distribuição normal.
 
 Embora a média ≈ mediana seja condição necessária para simetria, ela não bastaria sozinha para provar normalidade; no caso da temp, porém, a diferença é clara (+5,27 °C) e aponta na mesma direção dos testes formais.
+
+**f) Diagnóstico comparativo por segmentação da variável**
+
+Os itens c) a e) trataram `temp` como uma distribuição única. O roteiro, porém, pede **diversidade de diagnóstico comparativo**, e a base não a oferece pela via usual: como registrado na nota de abertura desta subseção, há uma só variável quantitativa contínua. A alternativa adotada aqui é obter essa diversidade **dentro da própria variável** — em vez de comparar `temp` com outras colunas, comparam-se recortes de `temp` por região do produto, por configuração de ensaio e por período da campanha de ensaios. Cada recorte é uma distribuição própria, submetida às mesmas hipóteses do item a), ao mesmo $\alpha = 0{,}05$ do item b) e aos mesmos três testes do item c).
+
+A motivação não é apenas cumprir o roteiro. O item d) mostrou que a `temp` global é uma **mistura de sete regimes térmicos**, e uma mistura de normais pode ser fortemente não normal ainda que cada componente seja normal. Testar apenas o agregado não distingue as duas causas possíveis da rejeição:
+
+- **(i)** cada subpopulação é, ela própria, não normal; ou
+- **(ii)** as subpopulações são normais e a rejeição vem exclusivamente da mistura.
+
+Segmentar responde a essa pergunta. Ao todo foram testados **75 recortes** de `temp`: 7 por região, 16 por configuração, 3 por período, 21 no cruzamento região × período e 28 no cruzamento região × modo de operação.
+
+**f.1) Segmentação por região do produto (`key_area`)**
+
+| `key_area` | n | W (Shapiro-Wilk) | p (SW) | K² (D'Agostino) | p (DP) | A² (Anderson-Darling) | Crítico 5% | Decisão |
+|---|---:|---:|---:|---:|---:|---:|---:|:---|
+| Mainback | 610 | 0,7496 | 2,33 × 10⁻²⁹ | 215,98 | 1,26 × 10⁻⁴⁷ | 47,90 | 0,751 | Rejeita $H_0$ |
+| Coil Temps | 420 | 0,9539 | 3,54 × 10⁻¹⁰ | 8,18 | 1,67 × 10⁻² | 6,71 | 0,751 | Rejeita $H_0$ |
+| Main Vent Sys | 288 | 0,9533 | 5,90 × 10⁻⁸ | 21,10 | 2,62 × 10⁻⁵ | 4,59 | 0,750 | Rejeita $H_0$ |
+| IPC Cooling | 218 | 0,9319 | 1,59 × 10⁻⁸ | 14,62 | 6,68 × 10⁻⁴ | 5,45 | 0,749 | Rejeita $H_0$ |
+| IPC Comp | 1.979 | 0,9815 | 2,40 × 10⁻¹⁵ | 61,76 | 3,89 × 10⁻¹⁴ | 11,24 | 0,752 | Rejeita $H_0$ |
+| CT Knobs | 330 | 0,9418 | 4,24 × 10⁻¹⁰ | 29,65 | 3,64 × 10⁻⁷ | 6,71 | 0,750 | Rejeita $H_0$ |
+| Oven HMI | 220 | 0,9561 | 2,87 × 10⁻⁶ | 21,88 | 1,77 × 10⁻⁵ | 2,31 | 0,749 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026). Referência global do item c): W = 0,8669; A² = 93,89.</sup>
+
+As sete regiões rejeitam $H_0$, o que **descarta a hipótese (ii) pura**: a não normalidade não é apenas efeito da mistura. Mas a comparação entre segmentos, que o teste global não permitia fazer, revela duas coisas:
+
+- **O grau de afastamento varia muito.** O W vai de 0,7496 (`Mainback`) a 0,9815 (`IPC Comp`) — o W global de 0,8669 não representa nenhuma região em particular, é um valor intermediário que não descreve nem a pior nem a melhor.
+- **A mistura responde por boa parte do afastamento.** O A² global é 93,89; nenhuma região isolada passa de 47,90, seis das sete ficam abaixo de 11,3 e `Oven HMI` chega a 2,31 — cerca de 40 vezes menor que o agregado. Separar os regimes térmicos reduz muito a distância para a normal, sem eliminá-la.
+
+**f.2) Segmentação por configuração de ensaio**
+
+Cada run tem uma combinação de parâmetros de configuração. A tabela abaixo aplica o Shapiro-Wilk e o Anderson-Darling a cada categoria das seis configurações com mais de uma categoria efetiva.
+
+| Configuração | Categoria | n | W | p (SW) | A² | Crítico 5% | Decisão |
+|---|---|---:|---:|---:|---:|---:|:---|
+| `run_case` | Broil C1 | 148 | 0,8253 | 5,33 × 10⁻¹² | 5,67 | 0,748 | Rejeita $H_0$ |
+| `run_case` | Broil C2 | 1.531 | 0,8061 | 2,09 × 10⁻³⁹ | 71,47 | 0,752 | Rejeita $H_0$ |
+| `run_case` | Broil Qualitative | 1.817 | 0,9344 | 1,44 × 10⁻²⁷ | 14,70 | 0,752 | Rejeita $H_0$ |
+| `run_case` | Pyro | 569 | 0,7519 | 2,42 × 10⁻²⁸ | 28,45 | 0,751 | Rejeita $H_0$ |
+| `housing` | Closed | 2.063 | 0,8332 | 4,73 × 10⁻⁴² | 63,74 | 0,752 | Rejeita $H_0$ |
+| `housing` | Open | 1.328 | 0,9161 | 1,71 × 10⁻²⁶ | 17,04 | 0,752 | Rejeita $H_0$ |
+| `housing` | Open - Updated | 674 | 0,8500 | 9,18 × 10⁻²⁵ | 19,84 | 0,751 | Rejeita $H_0$ |
+| `blower_direction` | To back | 1.212 | 0,8938 | 4,18 × 10⁻²⁸ | 24,33 | 0,752 | Rejeita $H_0$ |
+| `blower_direction` | To front | 2.853 | 0,8525 | 1,16 × 10⁻⁴⁵ | 72,73 | 0,752 | Rejeita $H_0$ |
+| `deflector_hole` | Closed | 2.714 | 0,8351 | 1,47 × 10⁻⁴⁶ | 83,63 | 0,752 | Rejeita $H_0$ |
+| `deflector_hole` | Open | 1.351 | 0,9195 | 3,11 × 10⁻²⁶ | 17,52 | 0,752 | Rejeita $H_0$ |
+| `board_position` | Center | 3.843 | 0,8574 | 2,02 × 10⁻⁵⁰ | 96,40 | 0,752 | Rejeita $H_0$ |
+| `board_position` | Right | 222 | 0,9529 | 1,17 × 10⁻⁶ | 2,31 | 0,749 | Rejeita $H_0$ |
+| `material_coil_support` | Aluminium | 3.397 | 0,8774 | 9,81 × 10⁻⁴⁶ | 70,10 | 0,752 | Rejeita $H_0$ |
+| `material_coil_support` | Aluminium Plate | 74 | 0,8439 | 2,40 × 10⁻⁷ | 2,42 | 0,744 | Rejeita $H_0$ |
+| `material_coil_support` | Plastic | 594 | 0,8066 | 4,76 × 10⁻²⁶ | 24,93 | 0,751 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+As 16 categorias rejeitam $H_0$, e o resultado relevante aqui é **negativo**: segmentar por configuração **não reduz** o afastamento da normal. O W permanece na faixa de 0,81 a 0,95, em torno do valor global de 0,8669, e o A² de `board_position = Center` (96,40) chega a superar o do conjunto completo (93,89). A explicação é estrutural: configuração é propriedade do *run*, não do ponto de medição — cada fatia por configuração continua contendo as sete regiões térmicas e, portanto, continua sendo uma mistura. O contraste com o item f.1 é o achado: **a fonte dominante da não normalidade é espacial (a região), não operacional (a configuração)**.
+
+Vale registrar o caso extremo: `run_case = Pyro` tem o pior W da tabela (0,7519), com assimetria de +3,06 e curtose em excesso de +15,40. É coerente com o comportamento descrito no tratamento de outliers da Seção 4.2.2 — no modo de autolimpeza as *coils* operam muito mais frias que nos modos Broil, o que acentua a bimodalidade dentro da fatia.
+
+**f.3) Segmentação por período da campanha de ensaios**
+
+A base não tem coluna de data; o que existe é a ordem de execução codificada em `run_id` (Run 1 a Run 75, com lacunas, totalizando 56 runs). "Período", aqui, significa **posição na campanha**, não tempo de calendário. Os runs foram ordenados e divididos em três terços.
+
+| Período | Runs | n | W | p (SW) | A² | Crítico 5% | Assimetria | Média (°C) | Decisão |
+|---|---|---:|---:|---:|---:|---:|---:|---:|:---|
+| P1 | Run 1 – Run 19 (17 runs) | 1.351 | 0,9195 | 3,11 × 10⁻²⁶ | 17,52 | 0,752 | +1,27 | 83,79 | Rejeita $H_0$ |
+| P2 | Run 20 – Run 35 (16 runs) | 1.227 | 0,8641 | 2,62 × 10⁻³¹ | 30,73 | 0,752 | +1,67 | 84,43 | Rejeita $H_0$ |
+| P3 | Run 38 – Run 75 (16 runs) | 1.487 | 0,7989 | 1,83 × 10⁻³⁹ | 59,34 | 0,752 | +2,29 | 77,75 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+Os três períodos rejeitam $H_0$, mas há uma **tendência monotônica** que nenhum outro corte revelou: o afastamento da normal **cresce ao longo da campanha** (W cai de 0,9195 para 0,7989; A² sobe de 17,52 para 59,34; a assimetria vai de +1,27 a +2,29). A leitura mais provável é de cobertura, não de deterioração do ensaio: os runs finais introduzem configurações e condições mais severas — o máximo global de 273,60 °C, por exemplo, só aparece em P3 —, ampliando a cauda direita. O ponto é retomado no item f) da subseção de escalonamento, porque tem consequência direta sobre a escolha dos parâmetros de normalização.
+
+**f.4) Cruzamentos: região × período e região × modo de operação**
+
+Os três cortes anteriores são unidimensionais e cada um deixa a mistura parcialmente intacta. Cruzar região com condição de ensaio isola ao mesmo tempo o regime térmico e o regime de operação — é o recorte mais próximo de "uma distribuição, um mecanismo".
+
+*Região × período (21 segmentos)*
+
+| Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% | Decisão |
+|---|---:|---:|---:|---:|---:|---:|:---|
+| Oven HMI × P1 | 76 | 0,9695 | 0,0644 | 0,0769 | 0,542 | 0,744 | **Não rejeita $H_0$** |
+| Oven HMI × P2 | 64 | 0,9793 | 0,3578 | 0,4564 | 0,495 | 0,743 | **Não rejeita $H_0$** |
+| Oven HMI × P3 | 80 | 0,8435 | 9,88 × 10⁻⁸ | 1,04 × 10⁻⁶ | 4,559 | 0,745 | Rejeita $H_0$ |
+| Main Vent Sys × P1 | 103 | 0,9697 | 0,0183 | 0,6677 | 0,845 | 0,746 | Rejeita $H_0$ (SW e AD) |
+| Coil Temps × P1 | 124 | 0,9636 | 0,0020 | 0,5864 | 1,858 | 0,747 | Rejeita $H_0$ (SW e AD) |
+| Mainback × P2 | 186 | 0,7184 | 1,66 × 10⁻¹⁵ | 4,72 × 10⁻²⁶ | 16,828 | 0,749 | Rejeita $H_0$ |
+
+<sup>Fonte: Elaborado pelos autores (2026). Recorte dos segmentos que sustentam a leitura; os 21 estão no notebook.</sup>
+
+O contraste dentro de `Oven HMI` é o resultado mais informativo do item: a mesma região passa de **compatível com a normal** em P1 e P2 para **rejeição inequívoca** em P3 (p = 9,88 × 10⁻⁸), com a assimetria virando de +0,59 para −1,47. Não é a região que mudou de natureza: é a campanha que, no terço final, passou a incluir condições que deslocam a cauda esquerda dessa região.
+
+*Região × modo de operação (`run_case`, 28 segmentos)*
+
+Oito dos 28 segmentos não rejeitam $H_0$ em **nenhum** dos três testes:
+
+| Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% |
+|---|---:|---:|---:|---:|---:|---:|
+| Coil Temps × Pyro | 52 | 0,9723 | 0,2641 | 0,2694 | 0,370 | 0,741 |
+| Main Vent Sys × Pyro | 44 | 0,9690 | 0,2799 | 0,3151 | 0,405 | 0,739 |
+| IPC Cooling × Pyro | 30 | 0,9449 | 0,1235 | 0,5050 | 0,431 | 0,732 |
+| IPC Comp × Broil C1 | 72 | 0,9701 | 0,0845 | 0,3807 | 0,649 | 0,744 |
+| CT Knobs × Broil C1 | 12 | 0,8912 | 0,1221 | 0,3294 | 0,527 | 0,698 |
+| Main Vent Sys × Broil C1 | 10 | 0,8766 | 0,1192 | 0,4742 | 0,545 | 0,685 |
+| IPC Cooling × Broil C1 | 8 | 0,8622 | 0,1264 | 0,2464 | 0,477 | 0,666 |
+| Oven HMI × Broil C1 | 8 | 0,8892 | 0,2301 | 0,6540 | 0,520 | 0,666 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+**Ressalva de poder estatístico.** Cinco desses oito segmentos têm n < 50 — `Broil C1` tem apenas 148 linhas no total, distribuídas entre sete regiões. Com amostras desse tamanho o teste tem pouco poder, e "não rejeitar" reflete tanto ausência de evidência contra a normalidade quanto incapacidade de detectá-la. Os casos que sustentam conclusão são os de amostra maior: `Oven HMI × P1` (n = 76), `IPC Comp × Broil C1` (n = 72), `Oven HMI × P2` (n = 64), `Coil Temps × Pyro` (n = 52) e `Main Vent Sys × Pyro` (n = 44).
+
+**Ressalva de multiplicidade.** Foram 75 testes ao nível de 5%; se $H_0$ fosse verdadeira em todos, esperar-se-iam cerca de 3,75 rejeições apenas por acaso. Com correção de Bonferroni ($\alpha_{ajustado} = 0{,}05 / 75 = 6{,}67 \times 10^{-4}$), 17 dos 75 segmentos deixariam de rejeitar pelo Shapiro-Wilk, contra 10 no critério não corrigido — entrariam no grupo casos como `Coil Temps × P1` (p = 0,0020) e `Main Vent Sys × P1` (p = 0,0183). A correção, portanto, **reforça** a leitura desta subseção em vez de enfraquecê-la: quanto mais rigoroso o critério, mais segmentos sobrevivem como compatíveis com a normal. A conclusão global do item c) não se altera, porque lá os p-valores são da ordem de 10⁻⁵⁰, muitas ordens de grandeza abaixo de qualquer limiar corrigido.
+
+**Síntese do diagnóstico comparativo**
+
+| Nível de recorte | Segmentos | Rejeitam $H_0$ nos 3 testes | Faixa de W | Leitura |
+|---|---:|---:|---|---|
+| Global (item c) | 1 | 1 | 0,8669 | Não normal |
+| Região | 7 | 7 | 0,7496 – 0,9815 | Não normal em toda parte, com grau muito desigual |
+| Configuração | 16 | 16 | 0,8061 – 0,9529 | Não normal; segmentar por configuração não ajuda |
+| Período | 3 | 3 | 0,7989 – 0,9195 | Não normal; afastamento cresce ao longo da campanha |
+| Região × período | 21 | 15 | 0,7184 – 0,9793 | 2 segmentos compatíveis com a normal |
+| Região × modo | 28 | 15 | 0,6979 – 0,9723 | 8 segmentos compatíveis com a normal |
+| **Total** | **75** | **56** | — | **10 segmentos sem rejeição em nenhum dos 3 testes** |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+A resposta à pergunta formulada no início do item é **"as duas causas, em proporções diferentes"**: cada região é individualmente não normal (causa i), mas a mistura amplifica bastante o afastamento (causa ii) — o A² cai de 93,89 no agregado para no máximo 47,90 em qualquer região isolada e para 2,31 em `Oven HMI`. E, quando se fixam simultaneamente região e condição de ensaio, a não normalidade deixa de ser universal: em 10 dos 75 recortes nenhum dos três testes rejeita $H_0$.
+
+**Consequências para o projeto**
+
+1. **Confirma a decisão de modelar por `key_area`.** A variação de W entre regiões (0,7496 a 0,9815) mostra que as sete regiões não são realizações da mesma distribuição, que é exatamente a premissa do argumento 4 do item a) da subseção de escalonamento.
+2. **Confirma o Min-Max no lugar do Z-score.** A rejeição não é marginal em nenhuma região: mesmo a melhor delas (`IPC Comp`, W = 0,9815) rejeita com p = 2,40 × 10⁻¹⁵. Não há região em que a leitura "em número de desvios-padrão" do Z-score seja estatisticamente confortável sobre a variável bruta.
+3. **Segmentar por configuração não substitui segmentar por região.** O item f.2 mostra que a configuração isolada não reduz o afastamento; usá-la como chave de escalonamento seria trocar uma mistura por outra equivalente.
+4. **Abre espaço para métodos paramétricos em escopo restrito.** Nas células região × modo com amostra suficiente e sem rejeição (`Coil Temps × Pyro`, `Main Vent Sys × Pyro`, `IPC Comp × Broil C1`), técnicas que pressupõem normalidade — intervalos de confiança de regressão, cartas de controle — passam a ser defensáveis *dentro daquele escopo*, o que não vale para a variável global.
+5. **Alerta sobre o período.** A tendência do item f.3 indica que os runs finais ampliam a faixa observada. Isso é tratado como risco operacional no item f) da subseção seguinte.
+
+**Código utilizado (Python):**
+
+```python
+import numpy as np
+import pandas as pd
+from scipy import stats
+
+ALPHA = 0.05
+
+
+def testar_normalidade(serie, rotulo):
+    """Aplica os tres testes do item c) a um segmento de temp."""
+    s = serie.dropna()
+    if len(s) < 8:                       # n minimo exigido pelo Shapiro-Wilk
+        return None
+    w, p_sw = stats.shapiro(s)
+    k2, p_dp = stats.normaltest(s)
+    ad = stats.anderson(s, dist='norm')
+    critico_5 = ad.critical_values[2]    # indice 2 = nivel de 5%
+    return {
+        'segmento': rotulo, 'n': len(s), 'W': w, 'p_sw': p_sw,
+        'K2': k2, 'p_dp': p_dp, 'A2': ad.statistic, 'critico_5': critico_5,
+        # so conta como "nao rejeita" quando os tres testes concordam
+        'nao_rejeita': (p_sw >= ALPHA) and (p_dp >= ALPHA)
+                       and (ad.statistic <= critico_5),
+    }
+
+
+# Periodo = posicao na campanha (a base nao tem data): terco da ordem de execucao.
+df['run_num'] = df['run_id'].str.extract(r'Run\s*(\d+)').astype(float)
+tercos = np.array_split(np.array(sorted(df['run_num'].dropna().unique())), 3)
+df['periodo'] = np.select(
+    [df['run_num'].isin(tercos[0]), df['run_num'].isin(tercos[1])],
+    ['P1', 'P2'], default='P3')
+
+CONFIGS = ['run_case', 'housing', 'blower_direction', 'deflector_hole',
+           'board_position', 'material_coil_support']
+
+resultados = []
+for area, g in df.groupby('key_area'):                        # f.1 — 7 segmentos
+    resultados.append(testar_normalidade(g['temp'], area))
+for col in CONFIGS:                                           # f.2 — 16 segmentos
+    for cat, g in df.groupby(col):
+        resultados.append(testar_normalidade(g['temp'], f'{col}={cat}'))
+for periodo, g in df.groupby('periodo'):                      # f.3 — 3 segmentos
+    resultados.append(testar_normalidade(g['temp'], periodo))
+for chave in ['periodo', 'run_case']:                         # f.4 — 21 + 28 segmentos
+    for (area, valor), g in df.groupby(['key_area', chave]):
+        resultados.append(testar_normalidade(g['temp'], f'{area} x {valor}'))
+
+tabela = pd.DataFrame([r for r in resultados if r is not None])
+print(f"{len(tabela)} segmentos testados | "
+      f"{tabela['nao_rejeita'].sum()} sem rejeicao nos tres testes")
+print(tabela[tabela['nao_rejeita']].to_string(index=False))
+```
+
 
 #### Escalonamento (Padronização ou normalização) da variável quantitativa
 
@@ -1378,17 +1719,17 @@ $$
 
 Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo — sem eles, as predições não são interpretáveis em unidade física.
 
-**d) Histograma da variável após o escalonamento**
+**e) Histograma da variável após o escalonamento**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 18.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 20.
 
 <div align="center">
-  <sub>Figura 19 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
+  <sub>Figura 21 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp_scaled.png" alt="Histograma da temperatura normalizada por key_area, distribuída ao longo de todo o intervalo de 0 a 1, sem cauda longa" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 18)**
+**Comparação com o histograma antes do escalonamento (Figura 20)**
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -1400,21 +1741,107 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-Antes do escalonamento, o histograma de `temp` (Figura 18, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
+Antes do escalonamento, o histograma de `temp` (Figura 20, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 19 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 18: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 21 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 20: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
 
-**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 18) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 20) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
 **Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
 
-Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 19 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 21 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
 
-**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 18 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 20 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
-**e) Tabelas Comparativas dos Dados**
+**f) Alerta de produção — congelamento dos parâmetros de mínimo e máximo**
+
+O Min-Max por `key_area` (item a) tem uma propriedade que os itens anteriores não tornam explícita: **cada par $(\min_k, \max_k)$ é calculado sobre o conjunto de treino e precisa ser reutilizado, sem recálculo, sobre qualquer dado novo** — validação, teste e, mais adiante, produção. Diferente do que ocorre num pipeline em que o escalonamento é só um passo de conveniência, aqui os mínimos e máximos são também os parâmetros que definem a régua de cada região: recalculá-los sobre um conjunto diferente desloca essa régua e invalida a comparação entre o dado novo e o que o modelo aprendeu.
+
+O risco é concreto neste dataset porque, como o item f.3 da subseção de normalidade mostrou, a distribuição de `temp` **não é estável ao longo da campanha de ensaios**: o terço final introduz condições mais severas, e é justamente lá que aparece o máximo global de 273,60 °C. Um split temporal — treinar com os runs iniciais e validar com os finais, prática comum quando os dados têm ordem de coleta — é o cenário em que o efeito do congelamento fica mais visível.
+
+**Simulação do efeito.** Os 56 runs foram ordenados por `run_id` e divididos em treino (Run 1 a Run 35, 33 runs, 2.578 observações) e teste (Run 38 a Run 75, 16 runs, 1.487 observações), reproduzindo os mesmos terços do item f.3. Os parâmetros $(\min_k, \max_k)$ foram calculados **apenas sobre o treino** e depois comparados aos parâmetros que o item b) já reporta, calculados sobre a base completa:
+
+| `key_area` | Mín. treino (°C) | Mín. total (°C) | Máx. treino (°C) | Máx. total (°C) | Amplitude treino (°C) | Amplitude total (°C) |
+|---|---:|---:|---:|---:|---:|---:|
+| Mainback | 36,07 | 35,41 | 251,09 | 273,60 | 215,02 | 238,19 |
+| Coil Temps | 43,95 | 40,80 | 234,60 | 234,60 | 190,65 | 193,80 |
+| Main Vent Sys | 42,29 | 41,56 | 126,70 | 135,00 | 84,41 | 93,44 |
+| IPC Comp | 48,24 | 45,58 | 129,63 | 129,63 | 81,39 | 84,05 |
+| IPC Cooling | 27,69 | 27,69 | 114,94 | 114,94 | 87,25 | 87,25 |
+| CT Knobs | 36,99 | 34,34 | 73,42 | 73,42 | 36,43 | 39,08 |
+| Oven HMI | 49,77 | 43,64 | 72,01 | 72,01 | 22,24 | 28,37 |
+
+<sup>Fonte: Elaborado pelos autores (2026). "Total" reproduz a tabela do item b); "treino" usa apenas Run 1–35.</sup>
+
+Em cinco das sete regiões o **máximo** do treino já coincide com o da base inteira — os valores mais extremos aparecem cedo na campanha —, mas o **mínimo** do treino é sistematicamente mais alto que o real (a diferença chega a 6,13 °C em `Oven HMI`). `Mainback` é o caso mais grave: o máximo do treino (251,09 °C) fica 22,51 °C abaixo do máximo verdadeiro (273,60 °C), porque a leitura de 273,60 °C só ocorre em runs do terço final.
+
+Aplicando esses parâmetros do treino à fórmula do item c) sobre as observações de teste:
+
+| `key_area` | n (teste) | Abaixo de 0 | Acima de 1 | % fora de [0, 1] | scaled mín. | scaled máx. |
+|---|---:|---:|---:|---:|---:|---:|
+| Oven HMI | 80 | 8 | 0 | 10,0% | −0,2756 | 0,7428 |
+| Main Vent Sys | 100 | 2 | 3 | 5,0% | −0,0086 | 1,0983 |
+| CT Knobs | 120 | 3 | 0 | 2,5% | −0,0727 | 0,8993 |
+| Mainback | 219 | 2 | 3 | 2,3% | −0,0031 | 1,1047 |
+| Coil Temps | 160 | 2 | 0 | 1,3% | −0,0165 | 0,9824 |
+| IPC Comp | 728 | 4 | 0 | 0,5% | −0,0327 | 0,7109 |
+| IPC Cooling | 80 | 0 | 0 | 0,0% | 0,0473 | 0,6866 |
+| **Total** | **1.487** | **21** | **6** | **1,8%** | −0,2756 | 1,1047 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+Congelar os parâmetros no treino produz **27 observações (1,8% do conjunto de teste) fora do intervalo [0, 1]**, com `temp_scaled` chegando a −0,2756 em `Oven HMI` e a 1,1047 em `Mainback`. Isso não é um bug de implementação: é a consequência esperada e correta de aplicar, sobre dado novo, uma régua fixada no passado — o próprio objetivo do congelamento é permitir que o dado extrapole a régua quando for mais extremo do que tudo que o treino viu. O ponto do alerta é que essas 27 observações **precisam de uma decisão explícita de tratamento**, e não podem ser silenciosamente aceitas nem descartadas sem registro.
+
+**Efeito de um recorte (clipping) em [0, 1].** Se as observações fora do intervalo forem forçadas para os extremos — prática comum para manter a saída de um `MinMaxScaler` compatível com o intervalo esperado pelo modelo —, o erro introduzido, traduzido de volta para °C pela equação inversa do item c), tem média de **2,10 °C** e máximo de **22,51 °C** (a leitura de 273,60 °C de `Mainback`, recortada para 1,0, passaria a representar 251,09 °C). Para a variável-alvo do projeto, esse é um erro sistemático que se soma ao erro do próprio modelo, e que o KPI de erro do projeto não distingue de erro de previsão a menos que seja documentado.
+
+**Contraste com o vazamento (data leakage).** Se, em vez de congelar, os parâmetros forem recalculados sobre o conjunto de teste — ou, pior, sobre a base completa antes do split, erro mais comum na prática —, o mesmo dado de teste recebe valores de `temp_scaled` sistematicamente diferentes: a diferença média entre as duas versões é de 0,0276 (equivalente a 2,10 °C na régua do treino) e chega a 0,2756 em `Oven HMI`. Esse desvio não aparece como erro explícito — o pipeline roda sem falhar —, mas contamina a avaliação do modelo com informação que, num cenário real de produção, ainda não existiria no momento da previsão.
+
+**Recomendações para a etapa de modelagem (Seção 4.3):**
+
+1. **Persistir os sete pares $(\min_k, \max_k)$ junto ao artefato do modelo**, exatamente como o item c) já recomenda para a transformação inversa — não como metadado documental, mas como parte do contrato de inferência: o mesmo `key_area` sempre usa o mesmo par, em treino, validação e produção.
+2. **Ajustar os parâmetros exclusivamente sobre o conjunto de treino**, nunca sobre validação, teste ou a base completa — o padrão `fit` (só treino) e `transform` (treino, validação, teste e produção) do próprio `MinMaxScaler` do scikit-learn já impõe essa separação quando usado corretamente por `key_area`.
+3. **Monitorar em produção a fração de leituras que caem fora de [0, 1]** por região, com a tabela deste item como linha de base (0,0% a 10,0%, dependendo da região). Um aumento sustentado nessa fração é sinal de *drift*: a distribuição de temperatura real se afastando da distribuição observada no treino, o que este próprio anexo já demonstrou ser plausível (item f.3 da subseção de normalidade, sobre a tendência de a campanha ficar mais extrema ao longo do tempo).
+4. **Decidir e documentar o tratamento de valores fora do intervalo antes da consolidação do pipeline** — recortar em [0, 1] (com o custo de erro sistemático quantificado acima), permitir extrapolação sem recorte, ou tratar como excedência de `active_limit` (Seção 4.2.3) — em vez de deixar essa escolha implícita no comportamento padrão da biblioteca utilizada.
+
+**Código utilizado (Python):**
+
+```python
+import numpy as np
+import pandas as pd
+
+df['run_num'] = df['run_id'].str.extract(r'Run\s*(\d+)').astype(float)
+runs = sorted(df['run_num'].dropna().unique())
+tercos = np.array_split(np.array(runs), 3)          # mesmos tercos do item f.3
+runs_treino = np.concatenate([tercos[0], tercos[1]])
+runs_teste = tercos[2]
+
+treino = df[df['run_num'].isin(runs_treino)]
+teste = df[df['run_num'].isin(runs_teste)].copy()
+
+# Parametros SOMENTE do treino - o congelamento em si.
+parametros_treino = treino.groupby('key_area')['temp'].agg(minimo='min', maximo='max')
+
+teste = teste.join(parametros_treino, on='key_area')
+teste['temp_scaled'] = ((teste['temp'] - teste['minimo'])
+                         / (teste['maximo'] - teste['minimo']))
+teste['fora_do_intervalo'] = (teste['temp_scaled'] < 0) | (teste['temp_scaled'] > 1)
+
+resumo = teste.groupby('key_area').agg(
+    n=('temp', 'size'),
+    fora=('fora_do_intervalo', 'sum'),
+    pct_fora=('fora_do_intervalo', 'mean'),
+    scaled_min=('temp_scaled', 'min'),
+    scaled_max=('temp_scaled', 'max'),
+)
+resumo['pct_fora'] = (resumo['pct_fora'] * 100).round(1)
+print(resumo.round(4).to_string())
+print(f"\nTotal fora de [0,1]: {teste['fora_do_intervalo'].sum()} de {len(teste)} "
+      f"({teste['fora_do_intervalo'].mean() * 100:.1f}%)")
+```
+
+**g) Tabelas Comparativas dos Dados**
 
 O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
 
@@ -1534,9 +1961,9 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 
 **Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
 
-Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação (*one-hot*), gerando colunas binárias no intervalo `[0,1]`. Sem normalizar `temp`, ela entraria no modelo em uma escala duas ordens de grandeza maior que as *dummies*, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
+Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3, item a), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
-A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item d) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
+A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item e) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
 
 **Verificação do intervalo de `temp_scaled` por `key_area`**
 
