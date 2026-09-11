@@ -977,7 +977,7 @@ O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regre
 
 ##### Desempenho comparado
 
-A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10 — apenas o algoritmo varia.
+A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10, apenas o algoritmo varia. O R² de cada setor, nessa média, já é a mediana entre os termopares daquele setor  a mesma agregação descrita em "Métricas de avaliação do modelo", acima, e não a média simples sobre todos os termopares do produto.
 
 <div align="center">
   <sub>Figura 18 — Comparativo de métricas entre os modelos candidatos no conjunto de teste</sub><br>
