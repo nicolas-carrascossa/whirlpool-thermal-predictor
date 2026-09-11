@@ -1,0 +1,117 @@
+{
+  "blower_direction": {
+    "n_missing": 0,
+    "name": "blower_direction",
+    "options": [
+      "To back",
+      "To front"
+    ],
+    "raw_to_canonical": {
+      "To back": "To back",
+      "To front": "To front"
+    }
+  },
+  "board_position": {
+    "n_missing": 0,
+    "name": "board_position",
+    "options": [
+      "Center",
+      "Right"
+    ],
+    "raw_to_canonical": {
+      "Center": "Center",
+      "Right": "Right"
+    }
+  },
+  "deflector_hole": {
+    "n_missing": 0,
+    "name": "deflector_hole",
+    "options": [
+      "Closed",
+      "Open"
+    ],
+    "raw_to_canonical": {
+      "Closed": "Closed",
+      "Open": "Open"
+    }
+  },
+  "housing": {
+    "n_missing": 0,
+    "name": "housing",
+    "options": [
+      "Closed",
+      "Open",
+      "Open - Updated"
+    ],
+    "raw_to_canonical": {
+      "Closed": "Closed",
+      "Open": "Open",
+      "Open - Updated": "Open - Updated"
+    }
+  },
+  "losses": {
+    "n_missing": 418,
+    "name": "losses",
+    "options": [
+      "Broil C2 Simone - 240/145/180/180",
+      "Broil C2 Simone - Front Order",
+      "Broil Miro - Front Order",
+      "C1 Simone - 240/145/180/180",
+      "Miro",
+      "Miro - Front Order",
+      "Miro Qualitative  - Back Order",
+      "Miro Qualitative  - Front Order",
+      "No losses",
+      "Qual Simone - Front Order",
+      "Simone",
+      "Simone Losses",
+      "Simone Modified - Back Order"
+    ],
+    "raw_to_canonical": {
+      "Broil C2 Simone - 240/145/180/180": "Broil C2 Simone - 240/145/180/180",
+      "Broil C2 Simone - Front Order": "Broil C2 Simone - Front Order",
+      "Broil Miro - Front Order": "Broil Miro - Front Order",
+      "C1 Simone - 240/145/180/180": "C1 Simone - 240/145/180/180",
+      "Miro": "Miro",
+      "Miro - Front Order": "Miro - Front Order",
+      "Miro Qualitative  - Back Order": "Miro Qualitative  - Back Order",
+      "Miro Qualitative  - Front Order": "Miro Qualitative  - Front Order",
+      "No losses": "No losses",
+      "Não informado": null,
+      "Qual Simone - Front Order": "Qual Simone - Front Order",
+      "Simone": "Simone",
+      "Simone Losses": "Simone Losses",
+      "Simone Modified - Back Order": "Simone Modified - Back Order"
+    }
+  },
+  "material_coil_support": {
+    "n_missing": 0,
+    "name": "material_coil_support",
+    "options": [
+      "Aluminium",
+      "Aluminium Plate",
+      "Plastic"
+    ],
+    "raw_to_canonical": {
+      "Aluminium ": "Aluminium",
+      "Aluminium Plate": "Aluminium Plate",
+      "Plastic ": "Plastic"
+    }
+  },
+  "run_case": {
+    "n_missing": 0,
+    "name": "run_case",
+    "options": [
+      "Broil C1",
+      "Broil C2",
+      "Broil Qualitative",
+      "Pyro"
+    ],
+    "raw_to_canonical": {
+      "Broil C1": "Broil C1",
+      "Broil C2": "Broil C2",
+      "Broil Qualitative": "Broil Qualitative",
+      "Pyro": "Pyro"
+    }
+  }
+}

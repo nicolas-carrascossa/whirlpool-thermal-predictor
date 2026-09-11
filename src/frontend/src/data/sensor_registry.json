@@ -1,0 +1,618 @@
+[
+  {
+    "active_limit_c": 155.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Door Lock Motor Ambient 1/2\" Below",
+    "tc_number": 1
+  },
+  {
+    "active_limit_c": 136.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Door Lock Microswitch Body",
+    "tc_number": 2
+  },
+  {
+    "active_limit_c": 165.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Convect Motor Winding",
+    "tc_number": 3
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Hot Surface Indicator Body",
+    "tc_number": 4
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Power On Indicator Body",
+    "tc_number": 5
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Oven RTD Connector Body",
+    "tc_number": 6
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Storage Drawer (Metal Above)",
+    "tc_number": 7
+  },
+  {
+    "active_limit_c": 60.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "L2, Wire, Power Cord",
+    "tc_number": 8
+  },
+  {
+    "active_limit_c": 60.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "Ambient Below Terminal Block",
+    "tc_number": 9
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "ACU Ambient (Hill Only) Top",
+    "tc_number": 10
+  },
+  {
+    "active_limit_c": 140.0,
+    "is_monitor": false,
+    "key_area": "Mainback",
+    "monitor_reference_c": null,
+    "tc_name": "ACU K8 Housing / Double Line Break",
+    "tc_number": 11
+  },
+  {
+    "active_limit_c": 220.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Coil FR",
+    "tc_number": 12
+  },
+  {
+    "active_limit_c": 220.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Coil FL",
+    "tc_number": 13
+  },
+  {
+    "active_limit_c": 220.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Coil  RR",
+    "tc_number": 14
+  },
+  {
+    "active_limit_c": 220.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Coil RL",
+    "tc_number": 15
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Aluminium Plate FL",
+    "tc_number": 16
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Aluminium Plate  RR",
+    "tc_number": 17
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Aluminium Plate RL",
+    "tc_number": 18
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Coil Temps",
+    "monitor_reference_c": null,
+    "tc_name": "Aluminium Plate FR",
+    "tc_number": 19
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "AC Blower Inlet Max",
+    "tc_number": 20
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "AC Blower Inlet Avg",
+    "tc_number": 21
+  },
+  {
+    "active_limit_c": 130.0,
+    "is_monitor": false,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "AC Blower HES Connector",
+    "tc_number": 22
+  },
+  {
+    "active_limit_c": 175.0,
+    "is_monitor": false,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "AC Blower Windings",
+    "tc_number": 23
+  },
+  {
+    "active_limit_c": 150.0,
+    "is_monitor": false,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "AC Blower Housing",
+    "tc_number": 24
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": null,
+    "tc_name": "Top Duct Inlet",
+    "tc_number": 25
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "Main Vent Sys",
+    "monitor_reference_c": 150.0,
+    "tc_name": "Turbo Duct / AC Blower Outlet",
+    "tc_number": 26
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "IPC Cooling",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Vertical Duct Inlet (Bottom)",
+    "tc_number": 27
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "IPC Cooling",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Horizontal Duct Oulet (Inlet IPC Fan)",
+    "tc_number": 28
+  },
+  {
+    "active_limit_c": 120.0,
+    "is_monitor": false,
+    "key_area": "IPC Cooling",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Housing Surface",
+    "tc_number": 29
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "IPC Cooling",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Housing Outlet",
+    "tc_number": 30
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Blower (Air Outlet Temp)",
+    "tc_number": 32
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IPC Blower Housing",
+    "tc_number": 33
+  },
+  {
+    "active_limit_c": null,
+    "is_monitor": true,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Heat Sink (Point/Probe)",
+    "tc_number": 34
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Bridge",
+    "tc_number": 35
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 1",
+    "tc_number": 36
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 2",
+    "tc_number": 37
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 3",
+    "tc_number": 38
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 4",
+    "tc_number": 39
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 5",
+    "tc_number": 40
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 6",
+    "tc_number": 41
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 7",
+    "tc_number": 42
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 8",
+    "tc_number": 43
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 9",
+    "tc_number": 44
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 10",
+    "tc_number": 45
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 11",
+    "tc_number": 46
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 12",
+    "tc_number": 47
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 13",
+    "tc_number": 48
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 14",
+    "tc_number": 49
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 15",
+    "tc_number": 50
+  },
+  {
+    "active_limit_c": 110.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "IGBT 16",
+    "tc_number": 51
+  },
+  {
+    "active_limit_c": 125.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "DCBUS Cap 1",
+    "tc_number": 52
+  },
+  {
+    "active_limit_c": 125.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "DCBUS Cap 2",
+    "tc_number": 53
+  },
+  {
+    "active_limit_c": 125.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "DCBUS Cap 3",
+    "tc_number": 54
+  },
+  {
+    "active_limit_c": 125.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "DCBUS Cap 4",
+    "tc_number": 55
+  },
+  {
+    "active_limit_c": 90.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "CMC 1",
+    "tc_number": 56
+  },
+  {
+    "active_limit_c": 90.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "CMC 2",
+    "tc_number": 57
+  },
+  {
+    "active_limit_c": 90.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "DMC",
+    "tc_number": 58
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 1",
+    "tc_number": 59
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 2",
+    "tc_number": 60
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 3",
+    "tc_number": 61
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 4",
+    "tc_number": 62
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 5",
+    "tc_number": 63
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 6",
+    "tc_number": 64
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 7",
+    "tc_number": 65
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Reso Cap 8",
+    "tc_number": 66
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Beatrice Micro",
+    "tc_number": 67
+  },
+  {
+    "active_limit_c": 100.0,
+    "is_monitor": false,
+    "key_area": "IPC Comp",
+    "monitor_reference_c": null,
+    "tc_name": "Micro (Below Board)",
+    "tc_number": 68
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Oven HMI",
+    "monitor_reference_c": null,
+    "tc_name": "A33/Bellatrix Thermistor",
+    "tc_number": 69
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Oven HMI",
+    "monitor_reference_c": null,
+    "tc_name": "A33/Bellatrix UI Wifi",
+    "tc_number": 70
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Oven HMI",
+    "monitor_reference_c": null,
+    "tc_name": "A33/Bellatrix Microchip",
+    "tc_number": 71
+  },
+  {
+    "active_limit_c": 85.0,
+    "is_monitor": false,
+    "key_area": "Oven HMI",
+    "monitor_reference_c": null,
+    "tc_name": "A33/Bellatrix UI LCD Screen",
+    "tc_number": 72
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Ambient Between Left Encoders",
+    "tc_number": 73
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Left Encoder",
+    "tc_number": 74
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Left Center Encoder",
+    "tc_number": 75
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Ambient Between Right Encoders",
+    "tc_number": 76
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Right Center Encoder",
+    "tc_number": 77
+  },
+  {
+    "active_limit_c": 105.0,
+    "is_monitor": false,
+    "key_area": "CT Knobs",
+    "monitor_reference_c": null,
+    "tc_name": "Right Encoder",
+    "tc_number": 78
+  }
+]
