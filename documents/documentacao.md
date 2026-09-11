@@ -214,11 +214,11 @@ Os fatores internos relativos a dados e à concentração de conhecimento foram 
 
 #### 4.1.3. Planejamento Geral da Solução
  
-A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 39 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e formato do duct de ventilação, e acompanhada da leitura de temperatura de 78 sensores/termopares, distribuídos entre as áreas-chave do equipamento (Mainback, bobinas, sistemas de ventilação, componentes do IPC e região de HMI) — lista que a equipe recomenda confirmar com o parceiro caso alguma área-chave adicional exista além das cinco aqui identificadas. Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
+A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 39 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e material do suporte da bobina, e acompanhada da leitura de temperatura de 78 sensores/termopares, distribuídos entre as seis áreas-chave do equipamento identificadas no dicionário de dados: Mainback, bobinas, sistemas de ventilação, componentes do IPC, comandos do cooktop (CT Knobs) e região de HMI. Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
  
 A solução proposta é um modelo de machine learning supervisionado, treinado a partir desses dados históricos, capaz de aprender a relação entre a configuração de montagem do fogão e a temperatura resultante em cada sensor. Com isso, torna-se possível estimar a temperatura de uma nova configuração sem a necessidade de executar uma simulação CFD completa ou construir um protótipo físico para testá-la.
  
-Do ponto de vista operacional, o dashboard funciona da seguinte forma: como input, o usuário seleciona os parâmetros de configuração do fogão que deseja avaliar, direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e o caso/modo de operação (Run Case) simulado. Como output, o modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada e de uma indicação de confiabilidade, sinalizando se a configuração consultada está dentro da faixa de combinações já testadas pela Whirlpool ou se representa uma extrapolação do modelo, caso em que a estimativa deve ser tratada com mais cautela.
+Do ponto de vista operacional, o dashboard funciona da seguinte forma: como input, o usuário seleciona os parâmetros de configuração do fogão que deseja avaliar, direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. Como output, o modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada e de uma indicação de confiabilidade, sinalizando se a configuração consultada está dentro da faixa de combinações já testadas pela Whirlpool ou se representa uma extrapolação do modelo, caso em que a estimativa deve ser tratada com mais cautela.
 
 O uso está previsto para múltiplas áreas da Whirlpool identificadas junto ao parceiro no kickoff do projeto, cada uma impactada de forma distinta pela solução. Para o time de Engenharia (CFD), hoje responsável por rodar as simulações numéricas completas, o impacto é a liberação de capacidade: em vez de simular todas as configurações candidatas, a equipe pode usar o dashboard para triar rapidamente quais delas realmente justificam o tempo de uma simulação CFD completa ou de um teste físico, concentrando seu esforço especializado nos casos mais críticos — o que é especialmente relevante diante da disponibilidade limitada já identificada para essa equipe no primeiro semestre de 2026. Para os times de Produtos e Design, o impacto é a redução do tempo de iteração: decisões de posicionamento de componentes que hoje dependem do ciclo completo de simulação ou protótipo passam a poder ser exploradas em minutos ainda na fase conceitual, permitindo avaliar mais alternativas de design dentro do mesmo prazo de projeto. Para o time de Qualidade, o impacto é a priorização mais informada de quais configurações merecem avançar para testes físicos e destrutivos, reduzindo o número de protótipos construídos apenas para serem descartados. Já para o time de Marketing, o impacto é o acesso antecipado a características térmicas do produto, antes da validação final, para embasar posicionamento e comunicação sem depender do cronograma de testes físicos.
 
@@ -503,7 +503,7 @@ Essa jornada atual evidencia os gargalos que o Thermal Predictor busca endereça
 
 **Fase 2 — Configurar Parâmetros**
 
-- *Ações:* Seleciona as áreas-chave a avaliar (Mainback, bobinas, ventilação, área do cooktop, painel de comandos), preenche os parâmetros da configuração (direção do fluxo de ar, estado do housing, posição da placa, tipo de duto, Run Case), confere no resumo da tela se todos os campos obrigatórios foram preenchidos e clica em "Gerar previsão".
+- *Ações:* Seleciona as áreas-chave a avaliar (Mainback, bobinas, ventilação, área do cooktop, painel de comandos), preenche os parâmetros da configuração (direção do fluxo de ar, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor), confere no resumo da tela se todos os campos obrigatórios foram preenchidos e clica em "Gerar previsão".
 - *Pensamento:* "Um campo errado invalida a previsão inteira — preciso conferir antes de enviar."
 - *Emoção:* Atenção concentrada.
 - *Ponto de dor:* Sem validação prévia, o erro só apareceria depois de gerada a previsão, obrigando a repetir o ciclo.
@@ -881,7 +881,7 @@ o número de leituras do termopar avaliado:
 **MAE (Erro Absoluto Médio)** média das diferenças absolutas entre valores
 reais e previstos. Responde a quantos graus, em média, a previsão erra. Por não
 elevar o erro ao quadrado, é a mais robusta das três diante de valores extremos.
-É a primeira das métricas oficiais formalizadas no plano de ação do risco R06.
+É a primeira das métricas oficiais formalizadas no plano de ação do risco R06; as outras duas métricas desse plano, o erro normalizado pela folga até o limite de engenharia e a taxa de falsos-negativos de segurança, compõem o critério formal de aceite reportado a cada nova versão do modelo, não este comparativo entre candidatos. RMSE e R², descritos a seguir, servem exclusivamente à seleção do modelo nesta fase de modelagem, e não substituem essas duas métricas de aceite.
 
 $$
 MAE = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
@@ -997,31 +997,30 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
-| RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a avaliar: direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e caso/modo de operação (Run Case). | Alta |
-| RF02 | Permitir que o usuário selecione a arquitetura do produto (Brasil ou México), direcionando a consulta ao modelo correspondente. | Alta |
-| RF03 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura de todos os 78 sensores a cada consulta. | Alta |
-| RF04 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, a partir da configuração informada. | Alta |
+| RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a ser avaliado: direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. | Alta |
+| RF02 | Permitir que o usuário selecione o país de referência da consulta, Brasil ou México, para que a predição seja avaliada contra os limites de engenharia do mercado correspondente. | Alta |
+| RF03 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura dos 78 sensores a cada consulta. | Alta |
+| RF04 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, desde que a confiabilidade da predição permita a exibição de um valor numérico. | Alta |
 | RF05 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
-| RF06 | Controlar o acesso ao dashboard por autenticação individual de usuário e senha. | Alta |
-| RF07 | Classificar e sinalizar a confiabilidade de cada predição em um dos três estados definidos na Seção 4.1.5 (R04) — interpolação, extrapolação moderada ou fora de domínio —, suprimindo o valor numérico e recomendando simulação CFD completa quando a configuração estiver fora de domínio. | Média |
-| RF08 | Exibir o limite de engenharia aplicável a cada sensor consultado e destacar as predições que o excedem. | Média |
-| RF09 | Permitir a consulta simultânea de duas ou mais configurações, exibindo seus resultados lado a lado. | Média |
-| RF10 | Registrar o histórico de acessos ao dashboard, com identificação do usuário e data/hora de uso. | Baixa |
+| RF06 | Controlar o acesso ao dashboard por autenticação individual, com usuário e senha. | Alta |
+| RF07 | Classificar e sinalizar a confiabilidade de cada predição em um dos três estados possíveis: interpolação (a configuração está dentro da faixa já testada), extrapolação moderada (está próxima dessa faixa) ou fora de domínio (está fora de qualquer faixa testada). No estado fora de domínio, o valor numérico é suprimido e o sistema recomenda simulação CFD completa. | Alta |
+| RF08 | Exibir o limite de engenharia aplicável a cada sensor consultado, destacando as predições que o excedem. | Média |
+| RF09 | Permitir a consulta simultânea de duas ou mais configurações, exibindo os resultados lado a lado. | Média |
+| RF10 | Registrar o histórico de acessos ao dashboard, incluindo a data e o horário de cada acesso. | Baixa |
 | RF11 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
-| RF20 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
 
 #### 6.1.2. Requisitos funcionais do software preditivo
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
-| RF12 | Expor uma rotina de predição que receba uma configuração de montagem e a arquitetura desejada e retorne as temperaturas estimadas, permitindo uso programático independente do dashboard. | Alta |
-| RF13 | Manter modelos treinados separadamente para as arquiteturas do Brasil e do México. | Alta |
-| RF14 | Aplicar sobre os dados de entrada da predição o mesmo pré-processamento usado no treinamento, garantindo consistência entre treino e uso. | Alta |
-| RF15 | Ser distribuído exclusivamente com bibliotecas de código aberto, sem dependência de software licenciado. | Alta |
-| RF16 | Carregar os dados de simulação e os históricos de teste a partir de fonte externa ao repositório de código. | Alta |
-| RF17 | Permitir o retreinamento dos modelos a partir de novos dados de simulação (CFD) e de testes físicos, sem alteração do código-fonte. | Média |
+| RF12 | Expor uma rotina de predição que receba uma configuração de montagem e retorne as temperaturas estimadas, permitindo uso programático independente do dashboard. | Alta |
+| RF13 | Manter os limites de engenharia de temperatura organizados por país, Brasil ou México, aplicados às temperaturas estimadas por um único modelo preditivo. | Alta |
+| RF14 | Aplicar, sobre os dados de entrada da predição, o mesmo pré-processamento usado no treinamento. | Alta |
+| RF15 | Ser distribuído exclusivamente com bibliotecas de código aberto, sem depender de nenhum software licenciado. | Alta |
+| RF16 | Carregar os dados de simulação e os históricos de teste a partir de uma fonte externa ao repositório de código, ou permitir que o usuário anexe novos dados de teste diretamente no sistema para que passem a integrar o conjunto de treinamento. | Alta |
+| RF17 | Permitir o retreinamento dos modelos com novos dados de simulação (CFD) ou de testes físicos, sem exigir alteração do código-fonte. | Média |
 | RF18 | Permitir a predição em lote, a partir de um conjunto de configurações fornecido pelo usuário. | Média |
-| RF19 | Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, permitindo acompanhar sua evolução entre versões. | Média |
+| RF19 | Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, para acompanhar sua evolução entre versões. | Média |
 
 ### 6.2. Regras de negócio
 
@@ -1031,34 +1030,33 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
-| RN01 | Uma consulta só pode ser submetida se todos os parâmetros de configuração forem informados: direção do fluxo de ar do blower, estado do housing, posição da placa, tipo de mesh duct, presença do furo do defletor e caso/modo de operação. | RF01 |
-| RN02 | A seleção do país do produto (Brasil ou México) é obrigatória em toda consulta realizada no dashboard. | RF02 |
-| RN03 | O país selecionado determina quais são os limites de temperatura (de engenharia) aplicáveis a cada sensor consultado, os quais variam por país. | RF02, RF13 |
-| RN04 | Ao menos um sensor ou área-chave deve ser selecionado para que a consulta seja realizada; a listagem de opções deve se limitar às áreas-chave já mapeadas (Mainback, bobinas, sistemas de ventilação, componentes do IPC e região de HMI). | RF03 |
-| RN05 | Toda temperatura estimada exibida deve vir obrigatoriamente acompanhada de sua margem de erro; não é permitido exibir uma predição sem indicar sua incerteza associada. | RF04, RF05 |
-| RN06 | A margem de erro exibida deve ser apresentada em formato comparável ao critério de aceite oficial do projeto (erro máximo de 10%, Seção 4.1.3). | RF04, RF05 |
-| RN07 | Toda predição deve ser classificada em um dos três estados de confiabilidade definidos na Seção 4.1.5 (R04) — interpolação, extrapolação moderada ou fora de domínio — antes de ser exibida ao usuário. | RF07 |
+| RN01 | Uma consulta só pode ser submetida se todos os parâmetros de configuração forem informados; o dashboard não deve aceitar o envio com algum desses campos em branco. | RF01 |
+| RN02 | A seleção do país de referência é obrigatória em toda consulta realizada no dashboard. | RF02 |
+| RN03 | O país selecionado determina os limites de temperatura de engenharia aplicáveis a cada sensor consultado; o modelo preditivo usado na predição é o mesmo para os dois países, apenas os limites de comparação variam. | RF02, RF13 |
+| RN04 | Ao menos um sensor ou área-chave deve ser selecionado para que a consulta seja realizada, dentro das áreas-chave já mapeadas: Mainback, bobinas, sistemas de ventilação, componentes do IPC, comandos do cooktop (CT Knobs) e região de HMI. | RF03 |
+| RN05 | Toda temperatura estimada exibida deve vir acompanhada de sua margem de erro; não é permitido exibir uma predição sem indicar sua incerteza associada. | RF04, RF05 |
+| RN06 | A margem de erro exibida deve ser apresentada em formato comparável ao critério de aceite oficial do projeto, o erro máximo de 10%. | RF04, RF05 |
+| RN07 | Toda predição deve passar pela classificação de confiabilidade antes de ser exibida ao usuário; o dashboard não deve apresentar um resultado que ainda não tenha sido classificado. | RF07 |
 | RN08 | No estado fora de domínio, o valor numérico da temperatura não pode ser exibido, devendo ser substituído pela recomendação de simulação CFD completa. | RF07 |
-| RN09 | Toda predição que exceda o limite de engenharia definido para o sensor consultado deve ser destacada visualmente, independentemente de a configuração estar ou não dentro da faixa testada. | RF08 |
-| RN10 | Na consulta simultânea de múltiplas configurações, cada configuração comparada deve ser validada individualmente pelas mesmas regras antes de ser exibida lado a lado com as demais. | RF09 |
-| RN11 | O acesso ao dashboard só é concedido mediante autenticação individual válida (usuário e senha). | RF06 |
+| RN09 | Toda predição com valor numérico exibido que exceda o limite de engenharia definido para o sensor consultado deve ser destacada visualmente, esteja a configuração em interpolação ou em extrapolação moderada. | RF08 |
+| RN10 | Na consulta simultânea de múltiplas configurações, cada uma deve ser validada individualmente pelas mesmas regras antes de ser exibida lado a lado com as demais. | RF09 |
+| RN11 | Nenhuma ação do dashboard pode ser realizada sem uma sessão autenticada válida, com usuário e senha individuais. | RF06 |
 | RN12 | Não é permitido o acesso anônimo ao dashboard, nem o compartilhamento de credenciais entre usuários. | RF06 |
-| RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário e data/hora, de modo a permitir auditoria de uso. | RF06, RF10 |
-| RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade/extrapolação — nunca apenas o valor bruto da predição. | RF04, RF05, RF07, RF11 |
-| RN15 | Toda predição exibida deve comunicar explicitamente que o valor representa uma estimativa da saída da simulação CFD e não uma medição física direta, para que o usuário não a interprete como dado de campo. | RF20 |
+| RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com data e horário, ainda que sem identificar o usuário. | RF06, RF10 |
+| RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade, nunca apenas o valor bruto da predição. | RF04, RF05, RF07, RF11 |
 
 #### 6.2.2. Regras de negócio do software preditivo
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
-| RN16 | Toda chamada à rotina de predição deve informar obrigatoriamente o país (Brasil ou México). | RF12 |
-| RN17 | Nenhum dado de entrada pode ser submetido ao modelo sem antes passar pelo mesmo pipeline de pré-processamento aplicado no treinamento; uma predição feita sem essa etapa é considerada inválida. | RF14 |
-| RN18 | O software não pode importar ou depender, em nenhuma etapa (pré-processamento, treinamento ou predição), de bibliotecas proprietárias ou licenciadas; todas as dependências devem ser de código aberto. | RF15 |
-| RN19 | Os dados de simulação (CFD) e de testes físicos não podem ser versionados junto ao código-fonte; o software deve sempre carregá-los a partir de uma fonte de dados externa ao repositório. | RF16 |
-| RN20 | O retreinamento dos modelos a partir de novos dados de simulação ou de testes físicos não pode exigir alteração do código-fonte da rotina de predição — apenas a atualização da fonte de dados externa e o disparo do retreinamento. | RF16, RF17 
-| RN21 | Na predição em lote, cada configuração do conjunto deve ser validada e processada de forma independente, de modo que uma configuração inválida ou malformada não invalide o resultado das demais configurações do lote. | RF18, RF12 |
-| RN22 | Toda nova versão do modelo deve reportar as três métricas oficiais de aceite definidas para o projeto: erro médio absoluto em °C por termopar, erro normalizado pela folga térmica normativa e taxa de falsos-negativos de segurança. | RF19 |
-| RN23 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores, garantindo comparação de desempenho em condições idênticas entre versões. | RF19 |
+| RN15 | Toda avaliação de uma predição contra os limites de engenharia deve informar obrigatoriamente o país de referência, Brasil ou México, usado exclusivamente para selecionar a tabela de limites aplicável, e não para escolher entre modelos preditivos distintos. | RF13 |
+| RN16 | Uma predição é considerada inválida se os dados de entrada não tiverem passado pelo mesmo pré-processamento aplicado no treinamento. | RF14 |
+| RN17 | A vedação a bibliotecas proprietárias ou licenciadas vale para todas as etapas do software: pré-processamento, treinamento e predição. | RF15 |
+| RN18 | Os dados de simulação (CFD), de testes físicos e os anexados pelo usuário não podem ser versionados junto ao código-fonte; devem sempre residir na fonte de dados externa ao repositório. | RF16 |
+| RN19 | O retreinamento dos modelos não pode exigir alteração do código-fonte da rotina de predição; a atualização deve se limitar à fonte de dados externa e ao disparo do retreinamento. | RF16, RF17 |
+| RN20 | Na predição em lote, cada configuração do conjunto deve ser validada e processada de forma independente, de modo que uma configuração inválida ou malformada não invalide o resultado das demais configurações do lote. | RF18, RF12 |
+| RN21 | Toda nova versão do modelo deve reportar as métricas que operacionalizam o critério de aceite de erro máximo de 10%: o erro médio absoluto em °C por termopar, o erro normalizado pela folga entre a temperatura prevista e o limite de engenharia do sensor, e a taxa de falsos-negativos de segurança (a proporção de predições não sinalizadas como excedentes que, no teste físico correspondente, ultrapassam o limite de engenharia). | RF08, RF19 |
+| RN22 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores. | RF19 |
 
 ## <a name="c7"></a>7. Referências
 
