@@ -825,7 +825,7 @@ A hipótese se confirmou, no caso mais extremo possível. Cada categoria de `los
 
 Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e reproduzíveis, porém pertencem a blocos de configuração inteiros, não a peças isoladas. A base permite identificar configurações de risco, não atribuir a causa a um componente específico.
 
-As decisões que isso gera para a modelagem são: retirar `losses` e `board_position` do modelo, por não trazerem informação além de outras variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
+As decisões que isso gera para a modelagem são: manter as sete variáveis de configuração como preditoras — `losses` e `board_position` inclusos —, já que a redundância estatística observada reflete uma limitação do desenho experimental (ensaios não fatoriais, histórico), não a ausência de relevância física dessas variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
 
 ##### H3 — O modo de operação eleva a temperatura, mas é um fator secundário
 
@@ -861,13 +861,34 @@ Para a modelagem (Seção 4.3), isso indica que a interação entre housing e a 
 
 ### 4.3. Preparação dos Dados e Modelagem
 
+O Thermal Predictor é um modelo supervisionado: a variável a ser prevista (temperatura de cada termopar) é conhecida no histórico de ensaios, o que permite treinar o modelo por aprendizado supervisionado sobre esses exemplos rotulados.
 
+**a) Organização dos dados**
 
-Caso seu projeto seja Modelo Supervisionado, apresentar: 
-a) Organização dos dados (conjunto de treinamento, validação e testes)
-b) Modelagem para o problema (proposta de features com a explicação completa da linha de raciocínio).
+Antes do treinamento, as sete variáveis de configuração de entrada são codificadas ordinalmente: cada categoria de uma variável recebe um número inteiro (0, 1, 2...) em ordem alfabética. Essa codificação não atribui significado ao valor numérico em si, o que não é um problema para um modelo baseado em árvores como o `RandomForestRegressor`: a árvore aprende limiares de decisão sobre esse número, não uma relação linear com ele. A justificativa da escolha de cada uma das sete features está detalhada em Features de entrada, abaixo.
 
- 
+Os dados de cada `key_area` são então divididos em três conjuntos disjuntos: 70% para treino, 20% para teste e 10% para verificação. O treino é o único conjunto usado para ajustar o modelo. Teste e verificação ficam totalmente fora do treinamento e são avaliados apenas ao final, sobre dados que o modelo nunca viu.
+
+Dentro do conjunto de treino, os hiperparâmetros do modelo (número de árvores, profundidade máxima, mínimo de amostras por folha, número de features consideradas em cada divisão) são escolhidos por validação cruzada via `GridSearchCV`: o treino é dividido internamente em partições, o modelo é treinado e avaliado em cada combinação de hiperparâmetros da grade, e a combinação com melhor erro médio absoluto (MAE) entre as partições é escolhida. Esse processo nunca toca os dados de teste ou verificação. O número de partições é reduzido automaticamente quando o conjunto de treino de uma `key_area` é pequeno demais para o número de partições padrão.
+
+**b) Modelagem para o problema**
+
+**Enquadramento do problema**
+
+O modelo precisa prever a temperatura de cada termopar, uma variável numérica contínua, não uma categoria. Por isso o problema é enquadrado como **regressão**, não classificação: o objetivo é estimar um valor em °C, não decidir entre rótulos discretos.
+
+Dentro de cada `key_area`, cada ensaio produz uma leitura simultânea de vários termopares para a mesma configuração de entrada. Chegou a se cogitar treinar **um modelo por termopar**, mas essa abordagem foi descartada: tratar cada sensor como um problema isolado ignoraria que todos os termopares de uma mesma região respondem à mesma física de transferência de calor e à mesma configuração de ensaio, desperdiçando o sinal que um sensor carrega sobre os demais da sua área. Por isso o problema foi modelado como **regressão multi-output**: um único `RandomForestRegressor` por `key_area`, cuja saída é um vetor com a temperatura de todos os termopares daquela região simultaneamente — cada folha da árvore armazena um vetor de médias, uma por termopar, em vez de uma única média.
+
+**Por que um modelo por `key_area`**
+
+As sete `key_area` do produto correspondem a regimes térmicos distintos, não a um recorte arbitrário do conjunto de dados. A hipótese H1, confirmada na Seção 4.2.4, mostra isso diretamente: o efeito de uma mesma configuração de montagem muda de sinal conforme a área. Uma alteração que aquece um componente em uma região esfria outro em outra região. Um modelo único, treinado sobre o conjunto completo, estimaria um efeito médio entre as áreas, que não descreveria corretamente nenhuma delas e erraria o sinal do efeito em pelo menos uma.
+
+A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) quantifica essa heterogeneidade: a amplitude de temperatura vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`, uma diferença de 8,4 vezes, e o coeficiente de variação varia de 0,068 a 0,590 entre as sete regiões. Por isso o pipeline treina **um `RandomForestRegressor` por `key_area`** (sete modelos), em vez de um único modelo global: cada modelo aprende a relação entre configuração e temperatura dentro do regime térmico da sua própria região, sem que esse sinal seja diluído ou invertido pelas demais áreas. A justificativa para cada modelo prever, de uma vez, todos os termopares da sua área (abordagem multi-output) já foi apresentada em Enquadramento do problema, acima.
+
+**Features de entrada**
+
+*Em andamento.*
+
 #### Métricas de avaliação do modelo
 
 A avaliação do Thermal Predictor responde a três perguntas distintas 
@@ -951,17 +972,6 @@ indicador de sobreajuste. O R03 fixa esse gatilho em cinco pontos percentuais se
 definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
 critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
 em variação relativa, sem converter um no outro.
-
-
-d) Apresentar o primeiro modelo candidato, e uma discussão sobre os resultados deste modelo (discussão sobre as métricas para esse modelo candidato).
-
-Caso seu projeto seja Modelo Não-Supervisionado, apresentar:
-a) Modelagem para o problema (proposta de features com a explicação completa da linha de raciocínio).
-b) Primeiro modelo candidato para o problema.
-c) Justificativa para a definição do K do modelo.
-d) Escolha de um tipo de sistema de recomendação e a justificativa para essa escolha.
-
-
 
 #### 4.3.4. Análise e interpretação dos resultados do modelo candidato
 
@@ -1951,7 +1961,7 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 
 **Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
 
-Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação (*one-hot*), gerando colunas binárias no intervalo `[0,1]`. Sem normalizar `temp`, ela entraria no modelo em uma escala duas ordens de grandeza maior que as *dummies*, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
+Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3, item a), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
 A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item e) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
 
