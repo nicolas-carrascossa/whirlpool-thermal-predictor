@@ -1,0 +1,27 @@
+# Tema nativo do Streamlit — Guia de Estilo Whirlpool.
+#
+# Isto NÃO é decorativo: é o mecanismo que faz componentes internos do
+# Streamlit que a CSS injetada em styles.py não alcança por classe própria
+# (tags do multiselect, o ponto do radio button, o anel de foco, a barra de
+# progresso) usarem a cor azul do guia em vez do vermelho padrão do tema
+# default do Streamlit. Sem isto, esses componentes ficam vermelhos mesmo
+# com todo o CSS customizado certo.
+[theme]
+primaryColor = "#0d436b"            # accomplished_blue — CTAs e seleção
+backgroundColor = "#ffffff"          # branco
+secondaryBackgroundColor = "#f5f6f7" # cinza_extra_claro — sidebar, cartões
+textColor = "#484949"                # quase_preto
+font = "sans serif"
+
+[server]
+# Sem isto, o Streamlit só recarrega o app quando alguém clica manualmente
+# no aviso "Source file changed" que aparece no topo da página — se a aba
+# ficar aberta e ninguém clicar, o navegador continua mostrando código
+# antigo mesmo depois de o arquivo ser salvo. Com `runOnSave`, qualquer
+# alteração salva já reaparece sozinha no próximo refresh.
+runOnSave = true
+
+[client]
+# Esconde o botão "Deploy" e o menu "⋮" da barra superior — é o fluxo de
+# publicação no Streamlit Community Cloud, sem uso num dashboard interno.
+toolbarMode = "minimal"
