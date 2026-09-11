@@ -1031,6 +1031,13 @@ Vale registrar ainda uma divergência assumida em relação à H2, que recomenda
 ##### Síntese
 
 O Gradient Boosting sustenta-se como primeiro modelo candidato por entregar o menor erro em graus, a menor incidência de erros extremos e a maior taxa de acerto dentro da margem acordada com o parceiro. Seus limites são igualmente explícitos e decorrem da base disponível, não do algoritmo: baixo poder explicativo da variância intra-área (R² de 0,156, negativo em dois setores), superajuste de 2,15 °C e impossibilidade de atribuição causal por confundimento no desenho dos ensaios. Em termos práticos, o modelo já serve para **priorizar ensaios**, e ainda não para **substituí-los**. As Seções 4.4 e 4.5 retomam esse candidato para a comparação formal entre modelos e para a definição da solução final, incluindo o plano de contingência para os casos em que a previsão falhar.
+A discussão a seguir cobre os três modelos candidatos treinados para prever a temperatura de cada termopar do fogão:
+
+* Decision Tree Regressor
+* Random Forest Regressor
+* Gradient Boosting Regressor
+
+Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em formato wide geradas anteriormente, uma por key_area, com uma linha por run e uma coluna por termopar, partindo das mesmas sete variáveis de configuração como entrada e da mesma divisão entre treino e teste. Cada modelo estima simultaneamente as temperaturas de todos os termopares de uma área a partir dessa configuração, seguindo a estrutura multi-saída já definida. As próximas partes trazem, para cada algoritmo, as métricas alcançadas e a leitura dos resultados obtidos.
 
 ### 4.4. Comparação de Modelos
 ```
