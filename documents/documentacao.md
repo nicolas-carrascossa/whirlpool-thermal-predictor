@@ -949,30 +949,47 @@ d) Apresentar o primeiro modelo candidato, e uma discussão sobre os resultados 
 
 Decision Tree Regressor e Random Forest Regressor lidam nativamente com múltiplas saídas: uma única árvore, ou um conjunto delas, estima simultaneamente a temperatura de todos os termopares de uma key_area a partir da mesma configuração de entrada, pois cada divisão de nó é escolhida otimizando o erro combinado entre os alvos. O Gradient Boosting Regressor não tem esse suporte nativo: cada estimador do algoritmo é construído para prever um único alvo escalar. Por isso, o candidato é treinado com MultiOutputRegressor, wrapper do scikit-learn que ajusta um GradientBoostingRegressor independente para cada termopar da key_area, tratando os alvos como problemas de regressão separados e sem compartilhamento de estrutura entre eles.
 
-Apesar dessa desvantagem estrutural, o resultado medido sobre os dados do projeto favorece o Gradient Boosting Regressor. A tabela abaixo resume a média das métricas de teste entre as sete key_area, com os três candidatos partindo da mesma divisão treino/teste/verificação e da mesma busca de hiperparâmetros por área, calculadas nos notebooks `Decision_tree_regre.ipynb`, `Random_for_regre.ipynb` e `Grad_Boosting_Regre.ipynb`:
+A tabela abaixo resume a média das métricas de teste entre as sete key_area, com os três candidatos, chamados a partir daqui de DT, RF e GBR, partindo da mesma divisão treino/teste/verificação e da mesma busca de hiperparâmetros por área, calculadas nos notebooks `Decision_tree_regre.ipynb`, `Random_for_regre.ipynb` e `Grad_Boosting_Regre.ipynb`:
 
 | Modelo | MAE (°C) | RMSE (°C) | R² | MAPE (%) | Dentro de 10% |
 |---|---|---|---|---|---|
-| Decision Tree Regressor | 4,72 | 8,02 | 0,156 | 6,04 | 85,52% |
-| Random Forest Regressor | 4,88 | 7,18 | 0,283 | 6,54 | 79,83% |
-| Gradient Boosting Regressor | 4,18 | 6,40 | 0,156 | 5,73 | 85,60% |
+| Decision Tree Regressor | 5,30 | 8,49 | -0,126 | 6,82 | 82,02% |
+| Random Forest Regressor | 5,25 | 7,65 | 0,131 | 7,03 | 76,86% |
+| Gradient Boosting Regressor | 4,16 | 6,42 | 0,095 | 5,65 | 85,30% |
 
-Em quatro das cinco métricas, MAE, RMSE, MAPE e fração de previsões dentro da margem de 10% do Project Charter, o Gradient Boosting tem o melhor resultado médio entre os três candidatos. A exceção é o R², em que os três ficam próximos entre si (0,156, 0,283 e 0,156), com o Random Forest à frente apenas por sofrer uma queda menor em uma única área, `ipc_comp`.
+O GBR tem o menor MAE, o menor RMSE, o menor MAPE e a maior fração de previsões dentro da margem de 10% do Project Charter, vencendo em quatro das cinco métricas médias. O RF tem o maior R² médio, seguido de perto pelo GBR. O DT é o único candidato com R² médio negativo: somando o desempenho nas sete áreas, suas previsões erram mais do que uma previsão constante igual à média de cada área no conjunto de teste.
 
-Essa vantagem média não é uniforme entre as sete áreas. Em `coil_temps`, o Gradient Boosting reduz o MAE de teste de 12,09 °C, obtido pelo Decision Tree, e 10,47 °C, obtido pelo Random Forest, para 7,53 °C, a maior diferença entre modelos observada em qualquer área, e essa área concentra boa parte do ganho da média geral. Nas outras seis áreas, os três candidatos ficam próximos entre si, com o MAE de teste variando entre 0,2 °C e 1,0 °C de uma extremidade a outra, e nenhum modelo vencendo em todas. Em `ipc_comp`, onde 37 termopares são estimados a partir de apenas 24 runs, a limitação estrutural do Gradient Boosting pesa mais: o modelo fica atrás do Decision Tree, 4,32 °C contra 4,24 °C de MAE de teste, ainda que à frente do Random Forest, 6,96 °C, o que é consistente com treinar 37 GBRs independentes a partir de poucas linhas de treino por termopar, sem compartilhar estrutura entre alvos correlacionados.
+Essa média geral esconde uma variação grande entre as sete áreas, detalhada na tabela a seguir:
 
-Diante desses números, o Gradient Boosting Regressor é o candidato de melhor desempenho médio sobre os dados do projeto, mesmo pagando o custo computacional da limitação estrutural: 74 GBRs treinados no total, um por termopar em cada uma das sete áreas, contra sete modelos multi-saída no Decision Tree e no Random Forest.
+| Área | Linhas | Alvos | MAE DT (°C) | MAE RF (°C) | MAE GBR (°C) | R² DT | R² RF | R² GBR |
+|---|---|---|---|---|---|---|---|---|
+| Mainback | 54 | 10 | 5,57 | 5,83 | 5,31 | -0,162 | 0,026 | -0,053 |
+| Coil Temps | 49 | 8 | 13,06 | 9,52 | 7,34 | 0,629 | 0,852 | 0,865 |
+| Main Vent Sys | 56 | 5 | 4,10 | 4,27 | 3,28 | 0,443 | 0,352 | 0,563 |
+| CT Knobs | 55 | 6 | 2,81 | 2,63 | 1,74 | 0,392 | 0,518 | 0,752 |
+| IPC Comp | 24 | 37 | 3,84 | 7,89 | 4,58 | -0,801 | -0,935 | -1,041 |
+| IPC Cooling | 53 | 4 | 4,82 | 4,61 | 4,65 | -0,053 | 0,173 | 0,050 |
+| Oven HMI | 55 | 4 | 2,89 | 1,97 | 2,24 | -1,329 | -0,067 | -0,473 |
 
-A discrepância de desempenho entre as sete áreas não é exclusividade do Gradient Boosting: o mesmo padrão se repete nos três candidatos. Em `oven_hmi`, os três modelos alcançam seu melhor resultado, com o menor MAPE de teste entre as sete áreas (2,45% no Decision Tree, 3,15% no Random Forest e 3,55% no Gradient Boosting) e 100% das previsões dentro da margem de erro de 10% do Project Charter, único setor em que isso ocorre nos três candidatos ao mesmo tempo. Em `ipc_comp`, o oposto também se repete: é a única área em que o R² de teste é negativo nos três modelos (-1,0032 no Decision Tree, -0,6802 no Random Forest e -0,8931 no Gradient Boosting), isto é, nenhum dos três consegue, ali, superar uma previsão constante igual à média do conjunto de teste.
+Coil Temps concentra o maior MAE dos três modelos e também o maior R² dos três, o que não é uma contradição: essa é a área de maior amplitude e maior média de temperatura entre as sete, cerca de 194 °C de amplitude e 127 °C de média, então o mesmo erro absoluto representa ali uma fração menor da variação total que o modelo precisa explicar. É também a área com a maior diferença entre modelos: o GBR reduz o MAE de teste de 13,06 °C, no DT, e 9,52 °C, no RF, para 7,34 °C.
 
-O setor `coil_temps` concentra a discrepância mais expressiva entre métricas absolutas e relativas. É a área de maior MAE e RMSE de teste nos três candidatos (MAE de 12,09 °C no Decision Tree, 10,47 °C no Random Forest e 7,53 °C no Gradient Boosting), mas também a de maior R² de teste nos três (0,6172, 0,8463 e 0,8917, respectivamente). As duas coisas são compatíveis porque o R² pondera o erro absoluto pela variância total do alvo medida no próprio conjunto de teste, e `coil_temps` é a área de maior amplitude e maior média de temperatura entre as sete (cerca de 194 °C de amplitude e 127 °C de média): o mesmo erro absoluto que produz o pior MAE e RMSE representa, nessa área, uma fração menor da variação total que o modelo precisa explicar.
+IPC Comp é a única área em que os três modelos têm R² de teste negativo, resultado plausível considerando que apenas 24 runs alimentam 37 termopares simultâneos, bem abaixo das 49 a 56 linhas disponíveis nas outras seis áreas. O RF é o mais afetado ali: seu MAE de teste, 7,89 °C, é quase o dobro do DT, 3,84 °C, e do GBR, 4,58 °C, e sua fração de previsões dentro de 10% cai para 53,51%, a pior combinação de área e modelo entre as 21 avaliadas.
 
-Em `mainback`, a discrepância aparece entre modelos, não entre áreas: Decision Tree e Random Forest têm R² de teste positivo (0,1873 e 0,1905), enquanto o Gradient Boosting é o único candidato com R² negativo nessa área (-0,0123). Isso acompanha o maior afastamento entre MAE de treino e MAE de teste registrado pelo Gradient Boosting em qualquer área, de 1,84 °C para 5,09 °C, um salto de 3,26 °C, contra 2,07 °C no Decision Tree para a mesma área (de 2,02 °C para 4,09 °C).
+O RF tem vantagem nas duas áreas de sinal mais fraco, IPC Cooling e Oven HMI, com o maior R² e o menor MAE entre os três candidatos nas duas. Em Oven HMI, RF e GBR acertam 100% das previsões de teste dentro da margem de 10%, mas o DT fica em 88,64% ali, então esse resultado não é unânime entre os três.
 
-O volume de dados disponível por área também varia de forma acentuada e pode estar relacionado ao desempenho mais fraco de `ipc_comp`: enquanto as outras seis áreas usam entre 49 e 56 das linhas originais, `ipc_comp` usa apenas 24, pois o descarte de linhas com valores ausentes exige que as 37 colunas de termopares dessa área estejam preenchidas simultaneamente no mesmo run, eliminando 32 das 56 linhas disponíveis. Os notebooks não estabelecem essa relação de forma explícita entre o volume reduzido de dados e o R² negativo dos três modelos nessa área; são dois fatos registrados separadamente, e não uma explicação causal documentada, de modo que essa conexão deve ser tratada como observação a validar, não como causa confirmada.
+A tabela a seguir traz o percentual de previsões de teste dentro da margem de 10% definida no Project Charter, por área e por modelo:
 
-Confrontando esses resultados com o critério de aceite do TAPI, margem de erro de temperatura máxima de 10%, os três candidatos atendem a esse critério na maior parte, mas não na totalidade, das previsões de teste: 85,52% dentro da margem no Decision Tree, 79,83% no Random Forest e 85,60% no Gradient Boosting, ou seja, entre 14% e 20% das previsões de cada modelo ultrapassam o limite de erro definido pelo parceiro. Essa folga desaparece em `oven_hmi`, onde os três modelos atendem 100% das previsões dentro do critério, mas se agrava justamente nas áreas já identificadas como mais difíceis: em `ipc_comp`, o atendimento cai para 88,11% no Decision Tree e no Gradient Boosting e para 61,08% no Random Forest, e em `coil_temps` cai para 72,50% no Decision Tree, 67,50% no Random Forest e 81,25% no Gradient Boosting. Como o critério de aceite prevê que o sucesso desta etapa seja avaliado pela validação consistente nas áreas priorizadas junto ao parceiro, e não apenas pela média geral entre todos os sensores, o atendimento ao limite de 10% precisa ser lido por área: nenhum dos três candidatos cumpre o critério de forma homogênea nas sete áreas, e é nas áreas de pior desempenho, sobretudo `ipc_comp` no Random Forest, que o modelo mais se distancia do que o parceiro definiu como aceitável.
+| Área | Dentro de 10% DT | Dentro de 10% RF | Dentro de 10% GBR |
+|---|---|---|---|
+| Mainback | 78,18% | 63,64% | 74,55% |
+| Coil Temps | 66,25% | 75,00% | 76,25% |
+| Main Vent Sys | 87,27% | 80,00% | 87,27% |
+| CT Knobs | 83,33% | 83,33% | 93,94% |
+| IPC Comp | 92,97% | 53,51% | 87,57% |
+| IPC Cooling | 77,50% | 82,50% | 77,50% |
+| Oven HMI | 88,64% | 100,00% | 100,00% |
 
+Nenhum dos três candidatos atende esse critério de forma homogênea nas sete áreas: entre 14,70% e 23,14% das previsões de cada modelo ultrapassam o limite de erro definido pelo parceiro, e o critério de aceite prevê que o sucesso seja avaliado pela validação nas áreas priorizadas junto ao parceiro, não apenas pela média geral entre todos os sensores. Diante desses números, o GBR é o candidato de melhor desempenho médio, mas paga o custo computacional da limitação estrutural já descrita, 74 GBRs treinados no total, um por termopar em cada uma das sete áreas, contra sete modelos multi-saída no DT e no RF, e ainda assim IPC Comp continua sendo a área de pior desempenho para os três candidatos.
 ### 4.4. Comparação de Modelos
 ```
 - Descrever e justificar a escolha da métrica de avaliação dos modelos com base no que é mais importante para o problema ao 
