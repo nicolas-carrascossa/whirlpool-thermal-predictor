@@ -885,9 +885,67 @@ As sete `key_area` do produto correspondem a regimes térmicos distintos, não a
 
 A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) quantifica essa heterogeneidade: a amplitude de temperatura vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`, uma diferença de 8,4 vezes, e o coeficiente de variação varia de 0,068 a 0,590 entre as sete regiões. Por isso o pipeline treina **um `RandomForestRegressor` por `key_area`** (sete modelos), em vez de um único modelo global: cada modelo aprende a relação entre configuração e temperatura dentro do regime térmico da sua própria região, sem que esse sinal seja diluído ou invertido pelas demais áreas. A justificativa para cada modelo prever, de uma vez, todos os termopares da sua área (abordagem multi-output) já foi apresentada em Enquadramento do problema, acima.
 
+
 **Features de entrada**
 
-*Em andamento.*
+O modelo recebe como entrada as sete variáveis de configuração registradas no
+dataset, todas categóricas e codificadas ordinalmente antes do treinamento
+(Célula 3 de `notebooks/Random_for_regre.ipynb`). A variável-alvo é `temp`, a
+temperatura em graus Celsius, prevista simultaneamente para todos os termopares
+da `key_area`, conforme a modelagem multi-output descrita acima.
+
+| Variável | O que descreve | Categorias |
+| --- | --- | --- |
+| `blower_direction` | Sentido do fluxo de ar do ventilador | 2 |
+| `housing` | Estado do compartimento, aberto ou fechado | 2 |
+| `board_position` | Posição da placa eletrônica | 2 |
+| `run_case` | Modo de operação ensaiado | 4 |
+| `losses` | Perfil de perdas térmicas do ensaio | 14 |
+| `deflector_hole` | Presença do furo no defletor | 2 |
+| `material_coil_support` | Material do suporte da bobina | 3 |
+
+Todas descrevem decisões de montagem que alteram a troca de calor no interior do
+produto, e as hipóteses da Seção 4.2.4 confirmam esse efeito com dados. A H1
+mostra que abrir o furo do defletor eleva a temperatura em 7,9 °C na região
+`IPC Comp` e a reduz em 5,1 °C em `Main Vent Sys`, efeito que inverte de sinal
+conforme a área. A H4 mostra que o compartimento aberto aquece o IGBT 1 em 9,6 °C,
+resultado contraintuitivo que reforça a relevância de `housing` como preditora. A
+H3 confirma que `run_case` diferencia os patamares térmicos, ainda que com efeito
+secundário. As demais variáveis descrevem geometria e material no caminho térmico,
+e seu efeito é discutido adiante à luz da importância atribuída pelos modelos.
+
+Não houve, portanto, seleção de um subconjunto: as sete disponíveis são mantidas,
+apesar de a hipótese H2 ter recomendado retirar `losses` e `board_position`.
+
+O confundimento que motivou aquela recomendação é real e está medido. A associação
+entre `losses` e `deflector_hole` alcança V de Cramér de 0,89: doze das quatorze
+categorias de `losses` correspondem a um único valor de `deflector_hole`, e as
+outras duas misturam os dois valores, de modo que a relação é de associação quase
+perfeita, não de identidade. Apenas onze das trinta e seis combinações possíveis
+entre as quatro variáveis principais foram ensaiadas. Ocorre que retirar uma
+variável por redundância pressupõe que a redundância seja do fenômeno, e não do
+desenho experimental. Com esse nível de cobertura, não há como distinguir as duas
+coisas: as variáveis aparecem associadas porque nunca foram ensaiadas em
+combinações que as separassem. Remover antes de medir eliminaria a evidência
+necessária para decidir a remoção. Este primeiro candidato mantém as sete para
+observar o comportamento de cada uma, decisão a ser revista quando o espaço de
+configurações estiver mais preenchido.
+
+A importância de variáveis apoia a escolha: nenhuma zera nos três algoritmos
+avaliados, e as duas que a H2 recomendara retirar aparecem entre as mais
+relevantes, `losses` em segundo na floresta aleatória (0,2217) e `board_position`
+em terceiro na árvore de decisão (0,1423). Sob confundimento, porém, a importância
+atribuída a uma variável pode pertencer àquela com que ela se confunde, de modo
+que esses valores indicam apenas que nenhuma variável é dispensável à luz dos
+dados atuais, e não uma relação causal.
+
+Duas categorias são raras no conjunto, `board_position` igual a *Right* (5,5% das
+leituras) e `material_coil_support` igual a *Aluminium Plate* (1,8%); predições que
+dependam delas apoiam-se em poucos ensaios e devem ser lidas com a cautela
+prevista na classificação de confiabilidade (R04, Seção 4.1.5). A codificação
+atribui a cada categoria um inteiro sequencial em ordem alfabética; optou-se pela
+forma ordinal porque modelos baseados em árvores aprendem limiares sobre o valor
+codificado, sem pressupor ordem entre os códigos.
 
 #### Métricas de avaliação do modelo
 
