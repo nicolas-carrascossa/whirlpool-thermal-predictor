@@ -63,8 +63,8 @@ Remova este bloco ao final
 
 ## <a name="c3"></a>3. Metodologia
 
-O desenvolvimento deste projeto segue o CRISP-DM (Cross Industry Standard Process for Data Mining), metodologia amplamente reconhecida como a mais utilizada em projetos de mineração de dados, análise de dados e ciência de dados no mundo, sendo consistentemente apontada como a abordagem mais adotada em pesquisas conduzidas ao longo de mais de uma década. Seu objetivo é oferecer uma abordagem sistemática que garanta que projetos de dados sejam bem definidos, geridos de forma estruturada e capazes de entregar resultados de valor, reduzindo o risco de erros custosos e mantendo o alinhamento com os objetivos de negócio (SHARMA, 2025).
-A metodologia consiste em seis fases, que embora normalmente sigam uma sequência lógica, podem ser revisitadas de forma iterativa ao longo do projeto, já que o resultado de uma fase frequentemente indica a necessidade de retornos (HOTZ, 2024):
+O desenvolvimento deste projeto segue o CRISP-DM (Cross Industry Standard Process for Data Mining), metodologia amplamente reconhecida como a mais utilizada em projetos de mineração de dados, análise de dados e ciência de dados no mundo, sendo consistentemente apontada como a abordagem mais adotada em pesquisas conduzidas ao longo de mais de uma década. Seu objetivo é oferecer uma abordagem sistemática que garanta que projetos de dados sejam bem definidos, geridos de forma estruturada e capazes de entregar resultados de valor, reduzindo o risco de erros custosos e mantendo o alinhamento com os objetivos de negócio²⁵.
+A metodologia consiste em seis fases, que embora normalmente sigam uma sequência lógica, podem ser revisitadas de forma iterativa ao longo do projeto, já que o resultado de uma fase frequentemente indica a necessidade de retornos²⁴:
 1. Entendimento do Negócio (Business Understanding): fase inicial voltada a compreender, sob a perspectiva do negócio, os objetivos e requisitos do projeto. Envolve determinar os objetivos de negócio, avaliar a situação (recursos, riscos e restrições disponíveis), traduzir esses objetivos em metas técnicas de mineração de dados e produzir um plano de projeto.
 2. Entendimento dos Dados (Data Understanding): etapa de coleta, descrição, exploração e verificação da qualidade dos dados disponíveis. Inclui identificar e acessar as fontes de dados relevantes, compreender o significado de cada variável, aplicar técnicas de visualização e análise estatística para identificar padrões e relações, e identificar problemas de qualidade, como valores ausentes ou outliers.
 3. Preparação dos Dados (Data Preparation): é conhecida como a fase mais demorada do processo, na qual os dados brutos são selecionados, limpos, transformados e organizados em um formato adequado à modelagem. Contempla o tratamento de valores ausentes, a identificação e correção de outliers, a padronização de formatos e rótulos, a construção de novas variáveis (feature engineering), a normalização/padronização de escalas e a codificação de variáveis categóricas.
@@ -891,7 +891,7 @@ A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) qua
 
 #### Métricas de avaliação do modelo
 
-A avaliação do Thermal Predictor responde  a três perguntas distintas, e
+A avaliação do Thermal Predictor responde a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
 grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
 configuração e temperatura ou apenas reproduz o comportamento médio de cada
@@ -1006,7 +1006,7 @@ A consequência é uma qualificação explícita do escopo de uso do modelo cand
 
 ##### Superajuste
 
-O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`), mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas (FRIEDMAN, 2001), somada à profundidade limitada a 3 níveis, contém melhor a memorização do que a árvore única, que chegou a 8 níveis e 23 folhas em `coil_temps`.
+O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`), mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas²⁸, somada à profundidade limitada a 3 níveis, contém melhor a memorização do que a árvore única, que chegou a 8 níveis e 23 folhas em `coil_temps`.
 
 Esse gap materializa o **risco R03** mapeado na Seção 4.1.5, e sua causa é dimensional antes de ser algorítmica: 56 ensaios, dos quais restam de 24 a 56 linhas úteis por área, e apenas 31 combinações distintas de configuração. Nenhum ajuste de hiperparâmetro resolve escassez de dados — o caminho é ampliar a base de ensaios, e a recomendação ao parceiro é que os próximos sejam planejados para cobrir combinações ainda não testadas, não para repetir as já frequentes.
 
