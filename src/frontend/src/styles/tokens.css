@@ -1,0 +1,23 @@
+/* src/frontend/src/styles/tokens.css — única fonte de verdade visual */
+:root {
+  /* núcleo + acento (Whirlpool) */
+  --wp-core:        #0d436b;  /* Accomplished Blue — títulos, botões primários, links */
+  --wp-accent:      #00a0dd;  /* Accent Blue — foco, seleção, destaques */
+  --wp-accent-lt:   #edf4fc;  /* Light Accent Blue — fundos de seleção, linhas ativas */
+  /* neutros (Whirlpool) */
+  --wp-gray-05:     #f5f6f7;  /* fundo de página secundário, cabeçalho de tabela */
+  --wp-gray-12:     #dee0e3;  /* bordas */
+  --wp-gray-20:     #d1d3d4;  /* divisores */
+  --wp-gray-45:     #9fa0a1;  /* texto desabilitado */
+  --wp-gray-65:     #767777;  /* texto secundário */
+  --wp-gray-85:     #484949;  /* texto principal */
+  --wp-white:       #ffffff;  /* fundo dominante */
+  /* semântica de status (exceção documentada — ver nota) */
+  --status-ok:      #6aa342;  /* Conscientious Green — dentro do limite */
+  --status-warn:    #e08650;  /* Empathetic Orange — perto do limite (≥ 90%) */
+  --status-danger:  #b3261e;  /* fora da paleta: excede o limite */
+  /* tipografia */
+  --font-display:   'Nunito Sans', 'Noto Sans', system-ui, sans-serif;
+  --font-body:      'Open Sans', 'Noto Sans', system-ui, sans-serif;
+  --font-mono:      'Noto Sans Mono', ui-monospace, Consolas, monospace;
+}
