@@ -904,6 +904,12 @@ da `key_area`, conforme a modelagem multi-output descrita acima.
 | `deflector_hole` | Presença do furo no defletor | 2 |
 | `material_coil_support` | Material do suporte da bobina | 3 |
 
+A contagem acima é a observada dentro de cada `key_area` — a granularidade em
+que o modelo é de fato treinado (Célula 3 dos notebooks de modelagem) — e por
+isso é menor do que a contagem sobre a base completa apresentada na Seção
+4.2.1: nem toda categoria de uma variável aparece em toda região do produto,
+reflexo do desenho não fatorial dos ensaios já discutido na H2 (Seção 4.2.4).
+
 Todas descrevem decisões de montagem que alteram a troca de calor no interior do
 produto, e as hipóteses da Seção 4.2.4 confirmam esse efeito com dados. A H1
 mostra que abrir o furo do defletor eleva a temperatura em 7,9 °C na região
@@ -1009,10 +1015,13 @@ alvos, para localizar o componente problemático.
 
 O R² é o único que distingue aprendizado de reprodução da média. Sua referência
 é a média do próprio conjunto de teste, um preditor-oráculo que ninguém conhece
-antes de medir; por isso o notebook reporta em paralelo um
+antes de medir; por isso `notebooks/Random_for_regre.ipynb` — um dos três
+notebooks de modelagem — reporta em paralelo um
 `DummyRegressor(strategy="mean")` ajustado no treino, contraparte realista que
 é o primeiro dos dois baselines exigidos pelo risco R03, ficando o segundo
-registrado como pendência. É medido por termopar porque, agregado, o preditor de
+registrado como pendência; generalizar essa mesma comparação aos notebooks de
+Gradient Boosting e Árvore de Decisão é um ajuste ainda pendente. É medido por
+termopar porque, agregado, o preditor de
 referência seria a média de todos os sensores do produto, valor que nenhum
 engenheiro usaria como estimativa. Como as regiões operam em patamares distintos
 (amplitude de 28,37 °C em `Oven HMI` contra 238,19 °C em `Mainback`, Anexos), o
@@ -1064,7 +1073,7 @@ A consequência é uma qualificação explícita do escopo de uso do modelo cand
 
 ##### Superajuste
 
-O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`), mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas²⁸, somada à profundidade limitada a 3 níveis, contém melhor a memorização do que a árvore única, que chegou a 8 níveis e 23 folhas em `coil_temps`.
+O erro médio de treino do Gradient Boosting é de 2,03 °C contra 4,18 °C no teste, um **gap de 2,15 °C**. É um sinal claro de superajuste, embora menor que o da árvore de decisão (2,80 °C): a amostragem estocástica de linhas a cada estágio (`subsample = 0,8`) e a profundidade limitada a 3 níveis — hiperparâmetros escolhidos por `GridSearchCV` para a área analisada em detalhe (`Mainback`, Célula 5 de `Grad_Boosting_Regre.ipynb`), já que a busca roda de forma independente em cada uma das sete áreas — são o mecanismo de regularização proposto por Friedman justamente para conter a variância do *boosting* em amostras pequenas²⁸, e contêm melhor a memorização do que a árvore única, cujas folhas se multiplicam nas áreas com menos combinações de configuração distintas — o mesmo sobreajuste, já quantificado acima pelo gap de MAE treino-teste de 2,80 °C.
 
 Esse gap materializa o **risco R03** mapeado na Seção 4.1.5, e sua causa é dimensional antes de ser algorítmica: 56 ensaios, dos quais restam de 24 a 56 linhas úteis por área, e apenas 31 combinações distintas de configuração. Nenhum ajuste de hiperparâmetro resolve escassez de dados — o caminho é ampliar a base de ensaios, e a recomendação ao parceiro é que os próximos sejam planejados para cobrir combinações ainda não testadas, não para repetir as já frequentes.
 
