@@ -1,0 +1,69 @@
+"""Portuguese UI copy for the 7 config variables and the 7 key areas.
+
+Mirror of `src/frontend/src/contract/glossary_copy.ts` (kept in sync by hand).
+No excerpt here reproduces confidential partner material.
+"""
+
+from __future__ import annotations
+
+VARIABLE_COPY: dict[str, dict[str, str]] = {
+    "run_case": {
+        "label_pt": "Modo de operação",
+        "help_pt": "Cenário de uso simulado, cada um com seus setpoints. Pyro: autolimpeza com o forno a 400 °C e o cooktop desligado. Broil C2: forno a 280 °C com o cooktop ligado, chapa a 246 °C e duas panelas a 110 °C. Broil Qualitative: forno a 280 °C com o cooktop ligado e quatro panelas a 110 °C. Broil C1: forno a 280 °C com o cooktop desligado, três panelas e uma chapa. Na média dos sensores, os modos Broil operam por volta de 83 °C contra cerca de 71 °C do Pyro (H3): o forno mais quente do Pyro não compensa o calor que o cooktop ligado injeta na região da eletrônica."
+    },
+    "blower_direction": {
+        "label_pt": "Direção do blower",
+        "help_pt": "Sentido em que o ventilador de resfriamento empurra o ar dentro do produto. \"To front\" sopra em direção à frente do console, aliviando os botões do cooktop e a interface do forno; \"To back\" empurra o ar para o fundo, o que desloca o calor para o painel traseiro. É uma escolha de qual região proteger, não de quanto calor existe no total."
+    },
+    "housing": {
+        "label_pt": "Carcaça da eletrônica",
+        "help_pt": "Estado da carcaça que envolve a eletrônica de potência: fechada, aberta, ou \"Open - Updated\" (geometria aberta revisada). Contra a intuição, a carcaça aberta deixa o sensor IGBT 1 mais quente que a fechada — cerca de 9,6 °C acima na base analisada (H4) — porque abrir a carcaça redireciona o fluxo de ar em vez de simplesmente liberar calor."
+    },
+    "deflector_hole": {
+        "label_pt": "Furo do defletor",
+        "help_pt": "Furo no defletor de ar, aberto ou fechado. Abri-lo redistribui o fluxo entre a região do console/IPC e o sistema de ventilação principal: uma área esfria enquanto a outra esquenta (H1). O calor total do produto não diminui, apenas muda de endereço — a decisão é qual área você prefere proteger."
+    },
+    "material_coil_support": {
+        "label_pt": "Material do suporte da resistência",
+        "help_pt": "Material da peça que sustenta a resistência: alumínio, chapa de alumínio ou plástico. O material muda a condução de calor para os componentes vizinhos — o plástico isola e faz a própria região da resistência trabalhar mais quente, enquanto a chapa de alumínio espalha melhor o calor."
+    },
+    "losses": {
+        "label_pt": "Perfil de perdas (não usado pelo modelo)",
+        "help_pt": "Perfil de dissipação térmica (em W) assumido na simulação, calculado por analistas diferentes e para ordens de montagem diferentes. No conjunto de 56 ensaios cada categoria de perdas corresponde a um único valor de \"Furo do defletor\" (H2), ou seja, é redundante com ele. Fica disponível como informação de rastreabilidade do ensaio, mas não entra no modelo e não altera a predição."
+    },
+    "board_position": {
+        "label_pt": "Posição da placa (não usada pelo modelo)",
+        "help_pt": "Posição da placa eletrônica no produto (centro ou direita). No desenho dos ensaios essa variável está confundida com as demais (H2): não existe par de ensaios que a isole, então qualquer efeito atribuído a ela seria efeito de outras mudanças. Registrada para rastreabilidade, mas não entra no modelo e não altera a predição."
+    }
+}
+
+KEY_AREA_COPY: dict[str, dict[str, str]] = {
+    "Mainback": {
+        "label_pt": "Painel traseiro",
+        "help_pt": "Região do painel traseiro do fogão, onde ficam componentes como a trava da porta e o motor de convecção. Recebe boa parte do calor quando o blower sopra para trás."
+    },
+    "Coil Temps": {
+        "label_pt": "Resistências",
+        "help_pt": "Sensores nas resistências e no seu suporte. É a área mais quente do produto e a mais sensível ao material do suporte da resistência."
+    },
+    "Main Vent Sys": {
+        "label_pt": "Ventilação principal",
+        "help_pt": "Sistema de ventilação principal, por onde o ar quente deixa o produto. Aparece com frequência como a área que recebe o calor retirado das outras quando uma configuração muda (H1)."
+    },
+    "IPC Comp": {
+        "label_pt": "Compartimento da eletrônica de potência",
+        "help_pt": "Compartimento que abriga a eletrônica de potência (IGBTs, placa de controle). Concentra a maior parte das leituras da base e é a área mais afetada pelo estado da carcaça."
+    },
+    "IPC Cooling": {
+        "label_pt": "Resfriamento da eletrônica",
+        "help_pt": "Caminho de resfriamento da eletrônica de potência: dutos, saídas de ar e o blower que serve o compartimento. Responde diretamente à direção do blower e ao furo do defletor."
+    },
+    "Oven HMI": {
+        "label_pt": "Interface do forno",
+        "help_pt": "Interface de usuário do forno (display e comandos). Área de contato com o usuário, com limites relativamente baixos apesar de temperaturas moderadas."
+    },
+    "CT Knobs": {
+        "label_pt": "Botões do cooktop",
+        "help_pt": "Botões e hastes de comando do cooktop. É a região mais fria do produto, mas também de contato direto com o usuário, o que a torna crítica em conforto e segurança."
+    }
+}

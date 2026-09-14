@@ -11,3 +11,6 @@
 .venv/
 __pycache__/
 *.pyc
+# ambiente local do back-end (contém segredos)
+.env
+src/backend/.env
