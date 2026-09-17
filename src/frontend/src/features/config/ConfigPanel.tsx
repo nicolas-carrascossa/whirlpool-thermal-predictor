@@ -228,7 +228,7 @@ export function ConfigPanel() {
             onChange={(event) => setSensorSearch(event.target.value)}
           />
         </div>
-        <ul className="max-h-56 overflow-y-auto rounded-md border border-wp-gray12">
+        <ul className="rounded-md border border-wp-gray12">
           {sensorsInScope.length === 0 ? (
             <li className="px-2 py-3 text-xs text-wp-gray65">Nenhum sensor encontrado.</li>
           ) : (
