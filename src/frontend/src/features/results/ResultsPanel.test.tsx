@@ -42,10 +42,29 @@ describe('groupByArea', () => {
 })
 
 describe('ResultsPanel', () => {
-  it('reserva o espaço do mapa térmico 3D', () => {
+  it('abre com a aba de resultados e deixa o mapa térmico numa aba própria', () => {
     const { container } = renderPanel()
+    expect(screen.getByRole('tab', { name: 'Resultados' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Mapa térmico' })).toHaveAttribute('aria-selected', 'false')
+    // A aba inativa fica desmontada: o mapa 3D não paga custo enquanto escondido.
+    expect(container.querySelector('[data-slot="thermal-map"]')).not.toBeInTheDocument()
+    expect(screen.getByText('Sensores previstos')).toBeInTheDocument()
+  })
+
+  it('monta o mapa térmico ao entrar na aba "Mapa térmico"', () => {
+    const { container } = renderPanel()
+    // O Radix ativa a aba no mousedown (não no click).
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Mapa térmico' }))
     expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
-    expect(screen.getByText('Mapa térmico')).toBeInTheDocument()
+    expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
+  })
+
+  it('respeita a aba controlada de fora e avisa a troca', () => {
+    let changed: string | undefined
+    const { container } = renderPanel({ activeTab: 'mapa', onTabChange: (tab) => (changed = tab) })
+    expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Resultados' }))
+    expect(changed).toBe('resultados')
   })
 
   it('resume a consulta com as contagens e o pior sensor', () => {
