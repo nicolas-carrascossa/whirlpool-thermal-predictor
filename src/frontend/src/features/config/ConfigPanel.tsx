@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { StoveConfig } from '@/contract/v1'
 import { useConfigStore } from '@/features/config/store'
 import { formatCount } from '@/lib/format'
@@ -87,16 +88,24 @@ export function ConfigPanel() {
   const { metadata, config } = store
   const [sensorSearch, setSensorSearch] = useState('')
 
-  const sensorsInScope = useMemo(() => {
+  const selectedAreas = useMemo(() => {
     if (!metadata) return []
-    const areaFiltered =
-      store.areas.length > 0
-        ? metadata.sensors.filter((s) => store.areas.includes(s.key_area))
-        : metadata.sensors
+    return metadata.key_areas.filter(
+      (area) => store.areas.length === 0 || store.areas.includes(area.name),
+    )
+  }, [metadata, store.areas])
+
+  const sensorsBySelectedArea = useMemo(() => {
+    if (!metadata) return []
     const q = sensorSearch.trim().toLowerCase()
-    if (!q) return areaFiltered
-    return areaFiltered.filter((s) => s.tc_name.toLowerCase().includes(q))
-  }, [metadata, store.areas, sensorSearch])
+    return selectedAreas.map((area) => ({
+      area,
+      sensors: metadata.sensors.filter(
+        (sensor) =>
+          sensor.key_area === area.name && (!q || sensor.tc_name.toLowerCase().includes(q)),
+      ),
+    }))
+  }, [metadata, selectedAreas, sensorSearch])
 
   if (!metadata || !config) {
     return (
@@ -116,48 +125,6 @@ export function ConfigPanel() {
         store.submit()
       }}
     >
-      <PanelSection title="Configuração do fogão">
-        <div className="flex flex-col gap-4">
-          {metadata.variables.map((variable) => {
-            const id = `var-${variable.name}`
-            const field = variable.name as keyof StoveConfig
-            const value = config[field] ?? ''
-            return (
-              <div key={variable.name} className="flex flex-col gap-1.5">
-                <FieldLabel
-                  htmlFor={id}
-                  label={variable.label_pt}
-                  help={variable.help_pt}
-                  usedByModel={variable.used_by_model}
-                  onHoverChange={(hovered) => store.setHoveredVariable(hovered ? field : null)}
-                />
-                <Select
-                  value={value}
-                  onValueChange={(next) =>
-                    store.setField(variable.name as keyof StoveConfig, next)
-                  }
-                >
-                  <SelectTrigger
-                    id={id}
-                    aria-label={variable.label_pt}
-                    className={variable.used_by_model ? undefined : 'text-wp-gray65'}
-                  >
-                    <SelectValue placeholder="Selecione…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {variable.options.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )
-          })}
-        </div>
-      </PanelSection>
-
       <PanelSection
         title="Áreas"
         action={
@@ -199,7 +166,7 @@ export function ConfigPanel() {
       </PanelSection>
 
       <PanelSection
-        title="Sensores"
+        title="Sensores das áreas selecionadas"
         action={
           store.sensors.length > 0 ? (
             <Button type="button" variant="ghost" size="sm" onClick={store.clearSensors}>
@@ -210,7 +177,7 @@ export function ConfigPanel() {
       >
         <p className="text-xs text-wp-gray65">
           {store.sensors.length === 0
-            ? 'Todos os sensores das áreas escolhidas (padrão)'
+            ? 'Todos os sensores das áreas selecionadas (padrão)'
             : `${formatCount(store.sensors.length)} sensor(es) escolhido(s)`}
         </p>
         <div className="relative">
@@ -229,27 +196,82 @@ export function ConfigPanel() {
           />
         </div>
         <ul className="max-h-56 overflow-y-auto rounded-md border border-wp-gray12">
-          {sensorsInScope.length === 0 ? (
-            <li className="px-2 py-3 text-xs text-wp-gray65">Nenhum sensor encontrado.</li>
+          {sensorsBySelectedArea.length === 0 ? (
+            <li className="px-2 py-3 text-xs text-wp-gray65">Nenhuma área selecionada.</li>
           ) : (
-            sensorsInScope.map((sensor) => (
-              <li key={sensor.tc_number}>
-                <label className="flex cursor-pointer items-center gap-2 px-2 py-1.5 text-xs text-wp-gray85 transition-colors hover:bg-wp-accentLt">
-                  <input
-                    type="checkbox"
-                    className="h-3.5 w-3.5 accent-[color:var(--wp-core)]"
-                    checked={store.sensors.includes(sensor.tc_number)}
-                    onChange={() => store.toggleSensor(sensor.tc_number)}
-                  />
-                  <span className="tabular text-wp-gray45">
-                    {String(sensor.tc_number).padStart(2, '0')}
-                  </span>
-                  <span className="flex-1 leading-snug">{sensor.tc_name}</span>
-                </label>
+            sensorsBySelectedArea.map(({ area, sensors }) => (
+              <li key={area.name} className="border-b border-wp-gray12 last:border-b-0">
+                <h3 className="px-2 py-2 font-body text-xs font-semibold text-wp-core">
+                  {area.label_pt}
+                </h3>
+                {sensors.length === 0 ? (
+                  <p className="px-2 pb-2 text-xs text-wp-gray65">Nenhum sensor encontrado.</p>
+                ) : (
+                  <ul>
+                    {sensors.map((sensor) => (
+                      <li key={sensor.tc_number}>
+                        <label className="flex cursor-pointer items-center gap-2 px-2 py-1.5 text-xs text-wp-gray85 transition-colors hover:bg-wp-accentLt">
+                          <input
+                            type="checkbox"
+                            className="h-3.5 w-3.5 accent-[color:var(--wp-core)]"
+                            checked={store.sensors.includes(sensor.tc_number)}
+                            onChange={() => store.toggleSensor(sensor.tc_number)}
+                          />
+                          <span className="tabular text-wp-gray45">
+                            {String(sensor.tc_number).padStart(2, '0')}
+                          </span>
+                          <span className="flex-1 leading-snug">{sensor.tc_name}</span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))
           )}
         </ul>
+      </PanelSection>
+
+      <PanelSection title="Configurações do fogão">
+        <div className="flex flex-col gap-4">
+          {metadata.variables.map((variable) => {
+            const id = `var-${variable.name}`
+            const field = variable.name as keyof StoveConfig
+            const value = config[field] ?? ''
+            return (
+              <div key={variable.name} className="flex flex-col gap-1.5">
+                <FieldLabel
+                  htmlFor={id}
+                  label={variable.label_pt}
+                  help={variable.help_pt}
+                  usedByModel={variable.used_by_model}
+                  onHoverChange={(hovered) => store.setHoveredVariable(hovered ? field : null)}
+                />
+                <Select
+                  value={value}
+                  onValueChange={(next) =>
+                    store.setField(variable.name as keyof StoveConfig, next)
+                  }
+                >
+                  <SelectTrigger
+                    id={id}
+                    aria-label={variable.label_pt}
+                    className={variable.used_by_model ? undefined : 'text-wp-gray65'}
+                  >
+                    <SelectValue placeholder="Selecione…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {variable.options.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )
+          })}
+        </div>
       </PanelSection>
 
       {/* Abaixo de 1024 px o painel não é um contêiner de rolagem próprio, então
@@ -259,15 +281,20 @@ export function ConfigPanel() {
           Prever{store.isDirty ? ' — configuração alterada' : ''}
         </Button>
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="flex-1"
-            onClick={store.resetToReference}
-          >
-            Configuração de referência
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="flex-1"
+                onClick={store.runAll}
+              >
+                Run All
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Roda todas as áreas do fogão com a configuração selecionada.</TooltipContent>
+          </Tooltip>
           <Button type="button" variant="outline" size="sm" onClick={store.clearSelection}>
             Limpar seleção
           </Button>
