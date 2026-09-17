@@ -47,7 +47,8 @@ export interface ConfigStore extends QueryState {
   toggleSensor: (tcNumber: number) => void
   clearSensors: () => void
   submit: () => void
-  resetToReference: () => void
+  /** Submete a configuração atual para todas as áreas e sensores. */
+  runAll: () => void
   clearSelection: () => void
   /** Clicar na mesma área limpa a seleção; clicar em outra troca o filtro. */
   selectKeyArea: (area: string | null) => void
@@ -58,8 +59,14 @@ const ConfigStoreContext = createContext<ConfigStore | null>(null)
 export function buildRequest(state: QueryState): PredictionRequest | null {
   if (!state.config) return null
   const targets: NonNullable<PredictionRequest['targets']> = {}
-  if (state.areas.length > 0) targets.key_areas = [...state.areas].sort()
-  if (state.sensors.length > 0) targets.sensors = [...state.sensors].sort((a, b) => a - b)
+  // Uma seleção explícita de sensores é mais específica que o recorte por área.
+  // Enviar ambos faria as fontes tratarem os filtros como união e retornarem
+  // todos os sensores das áreas escolhidas.
+  if (state.sensors.length > 0) {
+    targets.sensors = [...state.sensors].sort((a, b) => a - b)
+  } else if (state.areas.length > 0) {
+    targets.key_areas = [...state.areas].sort()
+  }
   return {
     architecture: state.architecture,
     config: { ...state.config },
@@ -183,15 +190,7 @@ export function ConfigStoreProvider({
         })),
       clearSensors: () => setState((prev) => ({ ...prev, sensors: [] })),
       submit: () => setRequest(pending),
-      resetToReference: () => {
-        if (!metadata) return
-        commit({
-          architecture: state.architecture,
-          config: { ...metadata.reference_config },
-          areas: [],
-          sensors: [],
-        })
-      },
+      runAll: () => commit({ ...state, areas: [], sensors: [] }),
       clearSelection: () => setState((prev) => ({ ...prev, areas: [], sensors: [] })),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
