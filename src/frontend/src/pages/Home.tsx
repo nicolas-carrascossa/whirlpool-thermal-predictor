@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { Card, CardContent } from '@/components/ui/card'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import type { ArchitectureMeta } from '@/contract/v1'
 import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { useAuth } from '@/features/auth/authStore'
@@ -22,11 +21,6 @@ import {
   usePredictionQuery,
   useReferencePredictionQuery,
 } from '@/hooks/useThermalQueries'
-
-const FALLBACK_ARCHITECTURES: ArchitectureMeta[] = [
-  { code: 'BR', available: true, label_pt: 'Brasil' },
-  { code: 'MX', available: false, label_pt: 'Sem dados de treino para a arquitetura México' },
-]
 
 function HomeContent() {
   const store = useConfigStore()
@@ -59,9 +53,6 @@ function HomeContent() {
 
   return (
     <AppShell
-      architectures={store.metadata?.architectures ?? FALLBACK_ARCHITECTURES}
-      architecture={store.architecture}
-      onArchitectureChange={store.setArchitecture}
       isMock={isMock}
       userDisplayName={apiMode ? auth.user?.display_name : undefined}
       onLogout={apiMode ? auth.logout : undefined}

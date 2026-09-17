@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import type { StoveConfig } from '@/contract/v1'
 import { cn } from '@/lib/utils'
 
+import { CollapseToggle } from './CollapseToggle'
 import { PART_TO_VARIABLE, VARIABLE_TO_PART, type PartId } from './parts'
 
 /** Rótulos curtos — o resumo é compacto, os nomes completos ficam na legenda. */
@@ -57,17 +58,11 @@ export function ConfigSummaryOverlay({
       className="absolute right-3 top-3 z-10 max-w-[12rem] rounded-md border border-wp-gray12 bg-white/90 px-2 py-1 font-body text-[11px] leading-tight text-wp-gray65 shadow-sm backdrop-blur"
       aria-label="Resumo da configuração"
     >
-      <button
-        type="button"
+      <CollapseToggle
+        label="Configuração"
+        expanded={expanded}
         onClick={() => setManualExpanded(!expanded)}
-        aria-expanded={expanded}
-        className="flex w-full items-center justify-between gap-2 text-left font-semibold text-wp-gray85 focus-visible:outline-none"
-      >
-        Configuração
-        <span aria-hidden="true" className={cn('transition-transform', expanded ? 'rotate-180' : 'rotate-0')}>
-          ▾
-        </span>
-      </button>
+      />
       {expanded && (
         <ul className="mt-1 flex flex-col">
           {SUMMARY_FIELDS.map((field) => {
