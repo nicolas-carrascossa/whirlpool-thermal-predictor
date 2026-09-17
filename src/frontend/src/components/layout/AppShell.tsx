@@ -4,7 +4,8 @@
  * resultados. Fundo branco dominante, conforme o style guide.
  */
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,37 @@ function ArchitectureSelector({
   )
 }
 
+function SidebarToggle({
+  isOpen,
+  onClick,
+  className,
+}: {
+  isOpen: boolean
+  onClick: () => void
+  className?: string
+}) {
+  const label = isOpen ? 'Fechar painel de configurações' : 'Abrir painel de configurações'
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      aria-controls="dashboard-sidebar"
+      aria-expanded={isOpen}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={cn(
+        'h-9 w-9 rounded-full border-wp-core bg-wp-core p-0 text-white shadow-sm hover:bg-wp-core/90 hover:text-white',
+        className,
+      )}
+    >
+      {isOpen ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+    </Button>
+  )
+}
+
 export function AppShell({
   architectures,
   architecture,
@@ -78,6 +110,8 @@ export function AppShell({
   sidebar: ReactNode
   children: ReactNode
 }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
   return (
     <div className="min-h-screen bg-white text-wp-gray85">
       <header className="sticky top-0 z-30 border-b border-wp-gray12 bg-white/95 backdrop-blur">
@@ -116,9 +150,36 @@ export function AppShell({
       </header>
 
       <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-6 py-6 lg:flex-row lg:items-start">
-        <aside className="w-full shrink-0 lg:sticky lg:top-[73px] lg:max-h-[calc(100vh-97px)] lg:w-[340px] lg:overflow-y-auto lg:pr-1">
-          {sidebar}
-        </aside>
+        <div
+          className={cn(
+            'relative shrink-0 lg:sticky lg:top-[73px] lg:max-h-[calc(100vh-97px)]',
+            isSidebarOpen ? 'w-full lg:w-[340px]' : 'w-full lg:w-0',
+          )}
+        >
+          <div className="flex justify-end pb-2 lg:hidden">
+            <SidebarToggle
+              isOpen={isSidebarOpen}
+              onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+            />
+          </div>
+          <aside
+            id="dashboard-sidebar"
+            className={cn(
+              'w-full lg:max-h-[calc(100vh-97px)] lg:overflow-y-auto lg:pr-12',
+              !isSidebarOpen && 'hidden',
+            )}
+          >
+            {sidebar}
+          </aside>
+          <SidebarToggle
+            isOpen={isSidebarOpen}
+            onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+            className={cn(
+              'absolute z-10 hidden lg:inline-flex',
+              isSidebarOpen ? 'right-3 top-3' : '-left-4 top-0',
+            )}
+          />
+        </div>
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
