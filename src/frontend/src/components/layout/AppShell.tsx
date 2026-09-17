@@ -6,7 +6,6 @@
 
 import type { ReactNode } from 'react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ArchitectureMeta, Architecture } from '@/contract/v1'
@@ -65,16 +64,20 @@ export function AppShell({
   isMock,
   userDisplayName,
   onLogout,
+  onOpenThermalMap,
   sidebar,
   children,
 }: {
   architectures: ArchitectureMeta[]
   architecture: Architecture
   onArchitectureChange: (value: Architecture) => void
+  /** Modo `local` (mock). Hoje só afeta a nota do rodapé. */
   isMock: boolean
   /** Nome do usuário autenticado (modo `api`). Ausente/`undefined` no modo `local`. */
   userDisplayName?: string
   onLogout?: () => void
+  /** Abre a aba "Mapa térmico" da área de resultados. Sem a prop, o botão não aparece. */
+  onOpenThermalMap?: () => void
   sidebar: ReactNode
   children: ReactNode
 }) {
@@ -91,10 +94,10 @@ export function AppShell({
             </h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            {isMock && (
-              <Badge variant="outline" className="whitespace-nowrap font-normal">
-                dados de demonstração (mock)
-              </Badge>
+            {onOpenThermalMap && (
+              <Button variant="secondary" size="sm" onClick={onOpenThermalMap}>
+                Acessar Mapa térmico
+              </Button>
             )}
             {userDisplayName && (
               <span className="whitespace-nowrap font-body text-sm text-wp-gray65">

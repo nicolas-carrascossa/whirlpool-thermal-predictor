@@ -4,7 +4,7 @@
  * origem é o mock local ou a API da Fase 2.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { OctagonAlert } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -16,7 +16,7 @@ import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
-import { ResultsPanel } from '@/features/results/ResultsPanel'
+import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
 import {
   useMetadataQuery,
   usePredictionQuery,
@@ -47,6 +47,10 @@ function HomeContent() {
   const auth = useAuth()
   const navigate = useNavigate()
 
+  // Aba ativa da área de resultados; vive aqui porque o botão que abre o mapa
+  // fica na barra superior (AppShell) e as abas ficam no ResultsPanel.
+  const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
+
   useEffect(() => {
     if (apiMode && auth.sessionExpired) {
       navigate('/login', { replace: true })
@@ -61,6 +65,7 @@ function HomeContent() {
       isMock={isMock}
       userDisplayName={apiMode ? auth.user?.display_name : undefined}
       onLogout={apiMode ? auth.logout : undefined}
+      onOpenThermalMap={() => setResultsTab('mapa')}
       sidebar={<ConfigPanel />}
     >
       {apiMode && auth.sessionExpired && (
@@ -86,6 +91,8 @@ function HomeContent() {
         hoveredVariable={store.hoveredVariable}
         highlightPart={store.highlightPart}
         onHoverVariable={store.setHoveredVariable}
+        activeTab={resultsTab}
+        onTabChange={setResultsTab}
       />
     </AppShell>
   )
