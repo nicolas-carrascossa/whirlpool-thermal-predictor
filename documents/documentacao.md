@@ -1139,17 +1139,16 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
 | RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a ser avaliado: direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. | Alta |
-| RF02 | Permitir que o usuário selecione o país de referência da consulta, Brasil ou México, para que a predição seja avaliada contra os limites de engenharia do mercado correspondente. | Alta |
-| RF03 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura dos 78 sensores a cada consulta. | Alta |
-| RF04 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, desde que a confiabilidade da predição permita a exibição de um valor numérico. | Alta |
-| RF05 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
-| RF06 | Controlar o acesso ao dashboard por autenticação individual, com usuário e senha. | Alta |
-| RF07 | Classificar e sinalizar a confiabilidade de cada predição em um dos três estados possíveis: interpolação (a configuração está dentro da faixa já testada), extrapolação moderada (está próxima dessa faixa) ou fora de domínio (está fora de qualquer faixa testada). No estado fora de domínio, o valor numérico é suprimido e o sistema recomenda simulação CFD completa. | Alta |
-| RF08 | Exibir o limite de engenharia aplicável a cada sensor consultado, destacando as predições que o excedem. | Média |
-| RF09 | Permitir a consulta simultânea de duas ou mais configurações, exibindo os resultados lado a lado. | Média |
-| RF10 | Registrar o histórico de acessos ao dashboard, incluindo a data e o horário de cada acesso. | Baixa |
-| RF11 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
-| RF20 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
+| RF02 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura dos 78 sensores a cada consulta. | Alta |
+| RF03 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, desde que a confiabilidade da predição permita a exibição de um valor numérico. | Alta |
+| RF04 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
+| RF05 | Controlar o acesso ao dashboard por autenticação individual, com usuário e senha. | Alta |
+| RF06 | Classificar e sinalizar a confiabilidade de cada predição em um dos três estados possíveis: interpolação (a configuração está dentro da faixa já testada), extrapolação moderada (está próxima dessa faixa) ou fora de domínio (está fora de qualquer faixa testada). No estado fora de domínio, o valor numérico é suprimido e o sistema recomenda simulação CFD completa. | Alta |
+| RF07 | Exibir o limite de engenharia aplicável a cada sensor consultado, destacando as predições que o excedem. | Média |
+| RF08 | Permitir a consulta simultânea de duas ou mais configurações, exibindo os resultados lado a lado. | Média |
+| RF09 | Registrar o histórico de acessos ao dashboard, incluindo a data e o horário de cada acesso. | Baixa |
+| RF10 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
+| RF11 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
 
 #### 6.1.2. Requisitos funcionais do software preditivo
 
