@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
+import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
 import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
@@ -51,6 +52,14 @@ function HomeContent() {
     }
   }, [apiMode, auth.sessionExpired, navigate])
 
+  // O identificador da consulta é gerado pela fonte de predição. Assim que a
+  // resposta atual chega, ele é associado ao snapshot salvo ao clicar em
+  // "Prever"; `isPlaceholderData` evita usar a resposta da consulta anterior.
+  useEffect(() => {
+    if (!store.request || !prediction.data || prediction.isPlaceholderData) return
+    store.recordHistoryPrediction(store.request, prediction.data)
+  }, [prediction.data, prediction.isPlaceholderData, store])
+
   return (
     <AppShell
       isMock={isMock}
@@ -58,6 +67,7 @@ function HomeContent() {
       onLogout={apiMode ? auth.logout : undefined}
       onOpenThermalMap={() => setResultsTab('mapa')}
       sidebar={<ConfigPanel />}
+      historySidebar={<HistoryPanel />}
     >
       {apiMode && auth.sessionExpired && (
         <div

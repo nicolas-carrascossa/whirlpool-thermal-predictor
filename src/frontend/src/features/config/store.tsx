@@ -11,7 +11,13 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import type { ReactNode } from 'react'
 
 import { VARIABLE_TO_PART, type PartId } from '@/components/thermal-map/parts'
-import type { Architecture, Metadata, PredictionRequest, StoveConfig } from '@/contract/v1'
+import type {
+  Architecture,
+  Metadata,
+  PredictionRequest,
+  PredictionResponse,
+  StoveConfig,
+} from '@/contract/v1'
 
 export interface QueryState {
   architecture: Architecture
@@ -23,12 +29,26 @@ export interface QueryState {
   sensors: number[]
 }
 
+/** Consulta salva durante a sessão para que possa ser reaberta posteriormente. */
+export interface HistoryEntry {
+  id: number
+  /** Título editável da consulta, iniciado como "Consulta N". */
+  name: string
+  /** Mesmo `request_id` retornado pelo preditor; nulo enquanto a previsão carrega. */
+  record: string | null
+  /** Momento em que a previsão foi submetida, em ISO-8601. */
+  createdAt: string
+  request: PredictionRequest
+}
+
 export interface ConfigStore extends QueryState {
   metadata: Metadata | undefined
   /** Requisição já submetida (o que a área de resultados mostra). */
   request: PredictionRequest | null
   /** `true` quando a configuração mudou depois da última submissão. */
   isDirty: boolean
+  /** `true` quando a mesma arquitetura, configuração e recorte já estão no histórico. */
+  hasDuplicateHistory: boolean
   /** `key_area` selecionada no mapa 3D ou nos cards de resultado; `null` = todas visíveis. */
   selectedKeyArea: string | null
   /**
@@ -39,6 +59,8 @@ export interface ConfigStore extends QueryState {
   highlightPart: PartId | null
   /** Variável cujo select/legenda está sob o cursor — destaque contínuo no 3D. */
   hoveredVariable: keyof StoveConfig | null
+  /** Consultas submetidas manualmente, na ordem em que foram criadas. */
+  history: HistoryEntry[]
   setHoveredVariable: (field: keyof StoveConfig | null) => void
   setArchitecture: (value: Architecture) => void
   setField: (field: keyof StoveConfig, value: string) => void
@@ -47,6 +69,12 @@ export interface ConfigStore extends QueryState {
   toggleSensor: (tcNumber: number) => void
   clearSensors: () => void
   submit: () => void
+  /** Restaura a configuração e o recorte de uma consulta salva. */
+  restoreHistory: (entry: HistoryEntry) => void
+  /** Associa ao histórico o identificador e o instante retornados pelo preditor. */
+  recordHistoryPrediction: (request: PredictionRequest, response: PredictionResponse) => void
+  renameHistory: (id: number, name: string) => void
+  deleteHistory: (id: number) => void
   /** Submete a configuração atual para todas as áreas e sensores. */
   runAll: () => void
   clearSelection: () => void
@@ -78,6 +106,28 @@ function sameRequest(a: PredictionRequest | null, b: PredictionRequest | null): 
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
+function stateFromRequest(request: PredictionRequest): QueryState {
+  return {
+    architecture: request.architecture,
+    config: { ...request.config },
+    areas: request.targets?.key_areas ? [...request.targets.key_areas] : [],
+    sensors: request.targets?.sensors ? [...request.targets.sensors] : [],
+  }
+}
+
+function cloneRequest(request: PredictionRequest): PredictionRequest {
+  return {
+    architecture: request.architecture,
+    config: { ...request.config },
+    targets: request.targets
+      ? {
+          key_areas: request.targets.key_areas ? [...request.targets.key_areas] : undefined,
+          sensors: request.targets.sensors ? [...request.targets.sensors] : undefined,
+        }
+      : undefined,
+  }
+}
+
 export function ConfigStoreProvider({
   metadata,
   children,
@@ -92,6 +142,8 @@ export function ConfigStoreProvider({
     sensors: [],
   })
   const [request, setRequest] = useState<PredictionRequest | null>(null)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const nextHistoryId = useRef(1)
   const [selectedKeyArea, setSelectedKeyArea] = useState<string | null>(null)
   const [hoveredVariable, setHoveredVariable] = useState<keyof StoveConfig | null>(null)
   const [highlightPart, setHighlightPart] = useState<PartId | null>(null)
@@ -124,10 +176,24 @@ export function ConfigStoreProvider({
     [],
   )
 
+  function saveToHistory(nextRequest: PredictionRequest) {
+    const entry: HistoryEntry = {
+      id: nextHistoryId.current,
+      name: `Consulta ${nextHistoryId.current}`,
+      record: null,
+      createdAt: new Date().toISOString(),
+      request: cloneRequest(nextRequest),
+    }
+    nextHistoryId.current += 1
+    setHistory((current) => [...current, entry])
+  }
+
   /** Aplica o novo estado e já o submete (usado por ações que re-consultam). */
-  function commit(next: QueryState) {
+  function commit(next: QueryState, saveHistory = false) {
     setState(next)
-    setRequest(buildRequest(next))
+    const nextRequest = buildRequest(next)
+    setRequest(nextRequest)
+    if (saveHistory && nextRequest) saveToHistory(nextRequest)
   }
 
   // Preenchimento inicial + predição automática na primeira carga.
@@ -144,14 +210,18 @@ export function ConfigStoreProvider({
 
   const value = useMemo<ConfigStore>(() => {
     const pending = buildRequest(state)
+    const hasDuplicateHistory =
+      pending !== null && history.some((entry) => sameRequest(entry.request, pending))
     return {
       ...state,
       metadata,
       request,
       isDirty: !sameRequest(pending, request),
+      hasDuplicateHistory,
       selectedKeyArea,
       highlightPart,
       hoveredVariable,
+      history,
       setHoveredVariable,
       selectKeyArea: (area) => setSelectedKeyArea((current) => (current === area ? null : area)),
       // A arquitetura re-submete na hora: a indisponibilidade do México precisa
@@ -189,12 +259,57 @@ export function ConfigStoreProvider({
             : [...prev.sensors, tc],
         })),
       clearSensors: () => setState((prev) => ({ ...prev, sensors: [] })),
-      submit: () => setRequest(pending),
-      runAll: () => commit({ ...state, areas: [], sensors: [] }),
+      // Salva antes de atualizar o resultado: mesmo que o usuário altere o
+      // formulário em seguida, a consulta acabada de prever continua acessível.
+      submit: () => {
+        if (!pending || hasDuplicateHistory) return
+        saveToHistory(pending)
+        setRequest(pending)
+      },
+      restoreHistory: (entry) => {
+        const restored = stateFromRequest(entry.request)
+        setState(restored)
+        setRequest(cloneRequest(entry.request))
+        setSelectedKeyArea(null)
+      },
+      recordHistoryPrediction: (submittedRequest, response) =>
+        setHistory((current) => {
+          // Uma mesma configuração pode ser prevista mais de uma vez. Atualizamos
+          // somente a última entrada ainda sem resposta para não sobrescrever uma
+          // consulta anterior idêntica.
+          const entryIndex = current.findLastIndex(
+            (entry) => entry.record === null && sameRequest(entry.request, submittedRequest),
+          )
+          if (entryIndex < 0) return current
+          return current.map((entry, index) =>
+            index === entryIndex
+              ? {
+                  ...entry,
+                  record: response.request_id,
+                  createdAt: response.generated_at,
+                }
+              : entry,
+          )
+        }),
+      renameHistory: (id, name) => {
+        const nextName = name.trim()
+        if (!nextName) return
+        setHistory((current) =>
+          current.map((entry) => (entry.id === id ? { ...entry, name: nextName } : entry)),
+        )
+      },
+      deleteHistory: (id) =>
+        setHistory((current) => current.filter((entry) => entry.id !== id)),
+      runAll: () => {
+        const next = { ...state, areas: [], sensors: [] }
+        const nextRequest = buildRequest(next)
+        if (nextRequest && history.some((entry) => sameRequest(entry.request, nextRequest))) return
+        commit(next, true)
+      },
       clearSelection: () => setState((prev) => ({ ...prev, areas: [], sensors: [] })),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, metadata, request, selectedKeyArea, highlightPart, hoveredVariable])
+  }, [state, metadata, request, selectedKeyArea, highlightPart, hoveredVariable, history])
 
   return <ConfigStoreContext.Provider value={value}>{children}</ConfigStoreContext.Provider>
 }
