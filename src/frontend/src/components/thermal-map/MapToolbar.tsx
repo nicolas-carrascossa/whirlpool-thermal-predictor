@@ -9,7 +9,7 @@ import { LABEL_MODE_LABEL_PT, type LabelMode } from './zoneStatus'
 
 const VIEW_LABELS: { id: StoveView; label: string; title: string }[] = [
   { id: 'solid', label: 'Sólido', title: 'Corpo opaco; o interior só aparece pelo vidro da porta' },
-  { id: 'cutaway', label: 'Corte', title: 'Plano de corte revela o console e a cavidade' },
+  { id: 'cutaway', label: 'Corte', title: 'Plano de corte revela a baía da eletrônica e a cavidade' },
   { id: 'xray', label: 'Raio-X', title: 'Carcaça translúcida; zonas e peças opacas' },
 ]
 
@@ -23,12 +23,18 @@ const CAMERA_LABELS: { id: CameraPreset; label: string }[] = [
 /** Aberturas semânticas: o controle principal do que se vê por dentro. */
 const OPENING_LABELS: { id: keyof OpeningState; label: string; title: string }[] = [
   {
+    // a chave continua `console` (estado); o gesto agora levanta o cooktop
     id: 'console',
-    label: 'Abrir console',
-    title: 'Levanta a tampa do console: carcaça da eletrônica, blower, defletor e placa',
+    label: 'Levantar cooktop',
+    title: 'Levanta o cooktop (vidro, elementos e bandeja): mostra a baía da eletrônica — carcaça, blower, defletor e placa',
   },
-  { id: 'rear', label: 'Abrir traseira', title: 'Afasta o painel traseiro: fundo do console e caminho do ar' },
+  { id: 'rear', label: 'Abrir traseira', title: 'Afasta o painel traseiro: fundo da baía e caminho do ar' },
   { id: 'oven', label: 'Abrir forno', title: 'Abaixa a porta: resistência e suporte da resistência' },
+  {
+    id: 'explode',
+    label: 'Vista explodida',
+    title: 'Afasta as camadas em altura — vidro, elementos, bandeja e baía da eletrônica; o quanto, pelo controle abaixo',
+  },
 ]
 
 const LABEL_MODES: LabelMode[] = ['alerts', 'all', 'none']
@@ -42,6 +48,9 @@ interface MapToolbarProps {
   onViewChange: (view: StoveView) => void
   cutDepth: number
   onCutDepthChange: (depth: number) => void
+  /** Afastamento das camadas na vista explodida, 0–100 %. */
+  explodeAmount: number
+  onExplodeAmountChange: (amount: number) => void
   cameraPreset: CameraPreset
   onCameraPresetChange: (preset: CameraPreset) => void
   onRecenter: () => void
@@ -63,6 +72,8 @@ export function MapToolbar({
   onViewChange,
   cutDepth,
   onCutDepthChange,
+  explodeAmount,
+  onExplodeAmountChange,
   cameraPreset,
   onCameraPresetChange,
   onRecenter,
@@ -101,6 +112,23 @@ export function MapToolbar({
               </button>
             ))}
           </div>
+
+          {openings.explode && (
+            <label className="flex items-center gap-2 font-body text-xs text-wp-gray65">
+              <span className="whitespace-nowrap">Afastamento</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={explodeAmount}
+                onChange={(e) => onExplodeAmountChange(Number(e.target.value))}
+                className="h-1 flex-1 accent-wp-accent"
+                aria-label="Afastamento das camadas na vista explodida, em porcento"
+              />
+              <span className="tabular w-8 text-right text-wp-gray85">{explodeAmount}%</span>
+            </label>
+          )}
 
           <div className="flex items-center gap-1" role="group" aria-label="Rótulos das zonas">
             <span className="font-body text-xs text-wp-gray65">Rótulos</span>
