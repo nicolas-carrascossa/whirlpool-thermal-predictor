@@ -86,10 +86,7 @@ export function AppShell({
       >
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
           <div className="flex min-w-0 flex-col">
-            <span className="font-display text-[11px] font-bold uppercase tracking-[0.05em] text-wp-accent">
-              Inteli × Whirlpool
-            </span>
-            <h1 className="font-display text-xl font-light leading-tight text-wp-core">
+            <h1 className="font-display text-xl font-bold uppercase leading-tight tracking-[0.05em] text-wp-accent">
               Thermal Predictor
             </h1>
           </div>

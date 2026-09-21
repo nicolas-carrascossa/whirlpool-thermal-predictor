@@ -4,8 +4,8 @@
  * é digitada aqui, para que a Fase 2 (API) não exija mudança de tela.
  */
 
-import { useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { useId, useMemo, useState } from 'react'
+import { ChevronDown, Search, X } from 'lucide-react'
 
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import type { StoveConfig } from '@/contract/v1'
 import { useConfigStore } from '@/features/config/store'
 import { formatCount } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 function FieldLabel({
   htmlFor,
@@ -61,6 +62,14 @@ function FieldLabel({
   )
 }
 
+/**
+ * Seção recolhível do painel. O cabeçalho é um disclosure: o título é um
+ * `<button>` dentro do `<h2>` (o heading continua existindo com o mesmo texto),
+ * com `aria-expanded`/`aria-controls`. `action` fica como irmã do gatilho — não
+ * dentro dele, que seria HTML inválido — então um clique nela nunca chega ao
+ * toggle. O conteúdo permanece montado e recebe `hidden` quando recolhido, para
+ * preservar estado interno (busca, rolagem) e manter o `aria-controls` válido.
+ */
 function PanelSection({
   title,
   action,
@@ -70,15 +79,36 @@ function PanelSection({
   action?: React.ReactNode
   children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(true)
+  const contentId = useId()
   return (
     <section className="flex flex-col gap-3 border-t border-wp-gray12 pt-5 first:border-t-0 first:pt-0">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">
-          {title}
+          {/* O preflight zera `text-transform` e `letter-spacing` em <button>, por
+              isso a tipografia do título é repetida aqui em vez de só herdada. */}
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={contentId}
+            onClick={() => setOpen((current) => !current)}
+            className="flex items-center gap-1.5 rounded-sm text-left font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {title}
+            <ChevronDown
+              className={cn('h-4 w-4 shrink-0 transition-transform', open && 'rotate-180')}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          </button>
         </h2>
         {action}
       </div>
-      {children}
+      {/* `flex` só quando aberto: a classe de display tem a mesma especificidade
+          do `[hidden]` do preflight e, por vir depois, o anularia. */}
+      <div id={contentId} hidden={!open} className={cn('flex-col gap-3', open && 'flex')}>
+        {children}
+      </div>
     </section>
   )
 }
@@ -90,9 +120,7 @@ export function ConfigPanel() {
 
   const selectedAreas = useMemo(() => {
     if (!metadata) return []
-    return metadata.key_areas.filter(
-      (area) => store.areas.length === 0 || store.areas.includes(area.name),
-    )
+    return metadata.key_areas.filter((area) => store.areas.includes(area.name))
   }, [metadata, store.areas])
 
   const sensorsBySelectedArea = useMemo(() => {
@@ -106,6 +134,16 @@ export function ConfigPanel() {
       ),
     }))
   }, [metadata, selectedAreas, sensorSearch])
+
+  /** Sensores visíveis na lista (áreas selecionadas + filtro de busca aplicado). */
+  const listedSensorNumbers = useMemo(
+    () => sensorsBySelectedArea.flatMap(({ sensors }) => sensors.map((s) => s.tc_number)),
+    [sensorsBySelectedArea],
+  )
+
+  const totalAreas = metadata?.key_areas.length ?? 0
+  const noAreaSelected = store.areas.length === 0
+  const allAreasSelected = totalAreas > 0 && store.areas.length === totalAreas
 
   if (!metadata || !config) {
     return (
@@ -130,23 +168,25 @@ export function ConfigPanel() {
         action={
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={store.setAllAreas}
-            disabled={store.areas.length === 0}
+            disabled={allAreasSelected}
           >
-            Todas
+            Selecionar todas
           </Button>
         }
       >
         <p className="text-xs text-wp-gray65">
-          {store.areas.length === 0
-            ? 'Todas as áreas (padrão)'
-            : `${formatCount(store.areas.length)} de ${formatCount(metadata.key_areas.length)} áreas`}
+          {noAreaSelected
+            ? 'Nenhuma área selecionada'
+            : allAreasSelected
+              ? 'Todas as áreas'
+              : `${formatCount(store.areas.length)} de ${formatCount(totalAreas)} áreas`}
         </p>
         <ul className="flex flex-col gap-1">
           {metadata.key_areas.map((area) => {
-            const checked = store.areas.length === 0 || store.areas.includes(area.name)
+            const checked = store.areas.includes(area.name)
             return (
               <li key={area.name}>
                 <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-wp-gray85 transition-colors hover:bg-wp-accentLt">
@@ -230,6 +270,19 @@ export function ConfigPanel() {
             ))
           )}
         </ul>
+        {/* Age sobre o que está listado: áreas selecionadas já com o filtro de busca. */}
+        <div className="border-t border-wp-gray12 pt-3">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onClick={() => store.setAllSensors(listedSensorNumbers)}
+            disabled={listedSensorNumbers.length === 0}
+          >
+            Selecionar todos os sensores
+          </Button>
+        </div>
       </PanelSection>
 
       <PanelSection title="Configurações do fogão">
@@ -277,9 +330,14 @@ export function ConfigPanel() {
       {/* Abaixo de 1024 px o painel não é um contêiner de rolagem próprio, então
           a barra de ações só gruda no modo de duas colunas. */}
       <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 lg:sticky lg:bottom-0">
-        <Button type="submit">
-          Prever{store.isDirty ? ' — configuração alterada' : ''}
+        <Button type="submit" disabled={noAreaSelected}>
+          Prever{store.isDirty && !noAreaSelected ? ' — configuração alterada' : ''}
         </Button>
+        {noAreaSelected && (
+          <p role="status" className="text-xs text-wp-gray65">
+            Selecione ao menos uma área para prever.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
