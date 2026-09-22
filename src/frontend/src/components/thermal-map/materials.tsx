@@ -30,6 +30,21 @@ export const C = {
   ember: '#ff5b1f',
   /** Tinta quente e discreta do fundo da cavidade (emissivo ≤ 0,25). */
   ovenTint: '#b08a63',
+  // Acabamentos do produto real (range elétrica de 30"), todos neutros:
+  /** Inox escovado dos painéis externos. */
+  steel: '#b4b7ba',
+  /** Inox mais escuro: molduras, trim do cooktop, bezels dos botões. */
+  steelDark: '#8e9194',
+  /** Grafite da faixa de comando do console. */
+  graphite: '#55585b',
+  /** Vitrocerâmica: vidro quase preto, levemente reflexivo. */
+  ceran: '#131517',
+  /** Serigrafia dos elementos radiantes sobre o vidro. */
+  ceranPrint: '#7c7f82',
+  /** Esmalte escuro da cavidade do forno. */
+  enamel: '#3c3f42',
+  /** Arame cromado das grades do forno. */
+  wire: '#c6c9cc',
 } as const
 
 const NO_PLANES: THREE.Plane[] = []

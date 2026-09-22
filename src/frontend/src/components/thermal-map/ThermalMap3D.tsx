@@ -14,6 +14,7 @@ import { ConfigSummaryOverlay } from './ConfigSummaryOverlay'
 import { DEFAULT_CUT_DEPTH } from './cutPlane'
 import { legendModel, type MapColorMode } from './legendModel'
 import { LegendOverlay } from './LegendOverlay'
+import { DEFAULT_EXPLODE_AMOUNT } from './explode'
 import { MapToolbar } from './MapToolbar'
 import { FALLBACK_CONFIG, type PartId } from './parts'
 import { buildSensorPins } from './SensorPins'
@@ -106,6 +107,7 @@ export function ThermalMap3D({
   const [internalOpenings, setInternalOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
   const [internalLabelMode, setInternalLabelMode] = useState<LabelMode>('alerts')
   const [cutDepth, setCutDepth] = useState(DEFAULT_CUT_DEPTH)
+  const [explodeAmount, setExplodeAmount] = useState(DEFAULT_EXPLODE_AMOUNT)
   const [recenterToken, setRecenterToken] = useState(0)
   const [cameraFollowsPart, setCameraFollowsPart] = useState(false)
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -168,6 +170,17 @@ export function ThermalMap3D({
   useEffect(() => {
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
+
+  // Ligar/desligar a vista explodida muda a altura do fogão: reenquadra uma
+  // vez no toggle (o slider em si não reenquadra — ver `CameraRig`).
+  const explodeOn = effectiveOpenings.explode
+  const previousExplode = useRef(explodeOn)
+  useEffect(() => {
+    if (previousExplode.current !== explodeOn) {
+      previousExplode.current = explodeOn
+      setRecenterToken((n) => n + 1)
+    }
+  }, [explodeOn])
 
   const aggregates = useMemo(
     () => aggregateByKeyArea(predictions, keyAreaLabels, mode === 'delta' ? referencePredictions : undefined),
@@ -294,6 +307,7 @@ export function ThermalMap3D({
                 tooltipFor={tooltipFor}
                 view={effectiveView}
                 cutDepth={cutDepth}
+                explodeAmount={explodeAmount}
                 config={effectiveConfig}
                 openings={effectiveOpenings}
                 highlightPart={highlightPart}
@@ -319,6 +333,8 @@ export function ThermalMap3D({
             onViewChange={handleViewChange}
             cutDepth={cutDepth}
             onCutDepthChange={setCutDepth}
+            explodeAmount={explodeAmount}
+            onExplodeAmountChange={setExplodeAmount}
             cameraPreset={effectiveCamera}
             onCameraPresetChange={setInternalCamera}
             onRecenter={() => setRecenterToken((n) => n + 1)}

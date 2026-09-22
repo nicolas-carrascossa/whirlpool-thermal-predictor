@@ -15,8 +15,9 @@ export interface CameraForPartResult {
 }
 
 /**
- * - `housing-lid` / `blower` / `deflector` / `control-board`: eletrônica do
- *   console → preset `console` com a tampa aberta.
+ * - `housing-lid` / `blower` / `deflector` / `control-board`: eletrônica na
+ *   baía sob o cooktop → preset `console` (enquadra o andar de cima) com o
+ *   cooktop levantado (chave `console`).
  * - `coil-support` / `oven-glow`: dentro do forno → preset `front` com a
  *   porta do forno aberta.
  * - `cooktop-load`: superfície do cooktop → preset `iso`, visível sem abrir nada.

@@ -52,7 +52,9 @@ describe('ConfigPanel', () => {
       const checkbox = screen.getByRole('checkbox', { name: new RegExp(area.label_pt) })
       expect(checkbox).toBeChecked()
     }
-    expect(screen.getByText('Todas as áreas (padrão)')).toBeInTheDocument()
+    expect(screen.getByText('Todas as áreas')).toBeInTheDocument()
+    // Com todas já marcadas, "Selecionar todas" não tem o que fazer.
+    expect(screen.getByRole('button', { name: 'Selecionar todas' })).toBeDisabled()
   })
 
   it('ordena as seções por áreas, sensores selecionados e configurações', () => {
@@ -64,7 +66,7 @@ describe('ConfigPanel', () => {
     ])
   })
 
-  it('desmarcar uma área no estado "todas" mantém as demais marcadas', () => {
+  it('desmarcar uma área remove só ela da lista explícita e mantém as demais marcadas', () => {
     renderPanel()
     const ipc = screen.getByRole('checkbox', {
       name: /Compartimento da eletrônica de potência/,
@@ -77,6 +79,33 @@ describe('ConfigPanel', () => {
     expect(
       screen.getByRole('heading', { level: 3, name: 'Botões do cooktop' }),
     ).toBeInTheDocument()
+    // Recorte parcial: "Selecionar todas" volta a ficar disponível e restaura o estado "todas".
+    const selectAll = screen.getByRole('button', { name: 'Selecionar todas' })
+    expect(selectAll).toBeEnabled()
+    fireEvent.click(selectAll)
+    expect(ipc).toBeChecked()
+    expect(screen.getByText('Todas as áreas')).toBeInTheDocument()
+  })
+
+  it('desmarcar todas as áreas deixa zero selecionadas e desabilita "Prever"', () => {
+    renderPanel()
+    const initialRequest = screen.getByTestId('prediction-request').textContent
+    for (const area of FIXTURE_METADATA.key_areas) {
+      fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(area.label_pt) }))
+    }
+    for (const area of FIXTURE_METADATA.key_areas) {
+      expect(screen.getByRole('checkbox', { name: new RegExp(area.label_pt) })).not.toBeChecked()
+    }
+    expect(screen.getByText('Nenhuma área selecionada')).toBeInTheDocument()
+    expect(screen.getByText('Nenhuma área selecionada.')).toBeInTheDocument()
+
+    const predict = screen.getByRole('button', { name: /^Prever/ })
+    expect(predict).toBeDisabled()
+    expect(screen.getByText('Selecione ao menos uma área para prever.')).toBeInTheDocument()
+
+    // Sem área não há requisição representável: submeter não muda nada.
+    fireEvent.submit(predict.closest('form') as HTMLFormElement)
+    expect(screen.getByTestId('prediction-request').textContent).toBe(initialRequest)
   })
 
   it('mostra as ações da consulta', async () => {
@@ -102,10 +131,88 @@ describe('ConfigPanel', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Run All' }))
 
-    expect(screen.getByText('Todas as áreas (padrão)')).toBeInTheDocument()
+    expect(screen.getByText('Todas as áreas')).toBeInTheDocument()
     const request = JSON.parse(screen.getByTestId('prediction-request').textContent ?? 'null')
     expect(request.config.run_case).toBe('Broil C2')
+    // Todas as áreas selecionadas = sem recorte: `key_areas` não é enviado.
     expect(request.targets).toBeUndefined()
+  })
+
+  it('só envia key_areas em recorte parcial; voltar a marcar todas omite targets', () => {
+    renderPanel()
+    const ipc = screen.getByRole('checkbox', { name: /Compartimento da eletrônica de potência/ })
+    fireEvent.click(ipc)
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    let request = JSON.parse(screen.getByTestId('prediction-request').textContent ?? 'null')
+    expect(request.targets).toEqual({ key_areas: ['CT Knobs', 'Main Vent Sys'] })
+
+    fireEvent.click(ipc)
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    request = JSON.parse(screen.getByTestId('prediction-request').textContent ?? 'null')
+    expect(request.targets).toBeUndefined()
+  })
+
+  it('"Selecionar todos os sensores" marca os sensores listados (áreas selecionadas + busca)', () => {
+    renderPanel()
+    const selectAllSensors = screen.getByRole('button', { name: 'Selecionar todos os sensores' })
+
+    // Com o filtro de busca, só o que está visível na lista é marcado.
+    fireEvent.change(screen.getByLabelText('Buscar sensor pelo nome'), { target: { value: 'igbt' } })
+    fireEvent.click(selectAllSensors)
+    fireEvent.change(screen.getByLabelText('Buscar sensor pelo nome'), { target: { value: '' } })
+    expect(screen.getByRole('checkbox', { name: /IGBT 1/ })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /CMC 1/ })).not.toBeChecked()
+    expect(screen.getByText('1 sensor(es) escolhido(s)')).toBeInTheDocument()
+
+    // Sem filtro, marca todos os sensores das áreas selecionadas.
+    fireEvent.click(selectAllSensors)
+    for (const s of FIXTURE_METADATA.sensors) {
+      expect(screen.getByRole('checkbox', { name: new RegExp(s.tc_name) })).toBeChecked()
+    }
+    expect(screen.getByText('4 sensor(es) escolhido(s)')).toBeInTheDocument()
+
+    // Sem sensor listado (nenhuma área), o botão não tem o que marcar.
+    for (const area of FIXTURE_METADATA.key_areas) {
+      fireEvent.click(screen.getByRole('checkbox', { name: new RegExp(area.label_pt) }))
+    }
+    expect(selectAllSensors).toBeDisabled()
+  })
+
+  it('as seções recolhem e expandem pelo cabeçalho, mantendo os headings', () => {
+    renderPanel()
+    const toggle = screen.getByRole('button', { name: 'Áreas' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    const contentId = toggle.getAttribute('aria-controls')
+    expect(contentId).toBeTruthy()
+    expect(document.getElementById(contentId as string)).toBeVisible()
+
+    // Desmarca uma área antes de recolher, para a ação "Selecionar todas" ter efeito.
+    const ipc = screen.getByRole('checkbox', { name: /Compartimento da eletrônica de potência/ })
+    fireEvent.click(ipc)
+
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(document.getElementById(contentId as string)).not.toBeVisible()
+    expect(screen.queryByRole('checkbox', { name: /Botões do cooktop/ })).not.toBeInTheDocument()
+    // O heading nível 2 continua lá com o mesmo texto.
+    expect(screen.getByRole('heading', { level: 2, name: 'Áreas' })).toBeInTheDocument()
+    // A ação ao lado do gatilho segue clicável e não alterna a seção.
+    fireEvent.click(screen.getByRole('button', { name: 'Selecionar todas' }))
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('checkbox', { name: /Botões do cooktop/ })).toBeInTheDocument()
+    expect(ipc).toBeChecked()
+
+    // As outras duas seções também são disclosures.
+    for (const title of ['Sensores das áreas selecionadas', 'Configurações do fogão']) {
+      const button = screen.getByRole('button', { name: title })
+      fireEvent.click(button)
+      expect(button).toHaveAttribute('aria-expanded', 'false')
+      fireEvent.click(button)
+      expect(button).toHaveAttribute('aria-expanded', 'true')
+    }
   })
 
   it('submete somente os sensores marcados, mesmo com áreas selecionadas', () => {

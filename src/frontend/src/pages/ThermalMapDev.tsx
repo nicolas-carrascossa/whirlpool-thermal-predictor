@@ -190,9 +190,10 @@ export function ThermalMapDevPage() {
           <span className="font-semibold text-wp-gray85">Aberturas</span>
           {(
             [
-              ['console', 'Abrir console'],
+              ['console', 'Levantar cooktop'],
               ['rear', 'Abrir traseira'],
               ['oven', 'Abrir forno'],
+              ['explode', 'Vista explodida'],
             ] as [keyof OpeningState, string][]
           ).map(([id, label]) => (
             <button
