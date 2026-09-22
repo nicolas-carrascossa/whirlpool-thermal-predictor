@@ -333,7 +333,7 @@ export function ConfigPanel() {
         <Button type="submit" disabled={noAreaSelected || store.hasDuplicateHistory}>
           {store.hasDuplicateHistory
             ? 'Previsão já salva no histórico'
-            : `Prever${store.isDirty && !noAreaSelected ? ' — configuração alterada' : ''}`}
+            : 'Prever'}
         </Button>
         {noAreaSelected && (
           <p role="status" className="text-xs text-wp-gray65">
