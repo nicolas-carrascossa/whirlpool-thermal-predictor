@@ -48,6 +48,8 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>notebooks</b>: todos os Jupyter Notebooks criados para desenvolvimento do projeto.
 
+- <b>dashboard</b>: aplicação web em Streamlit (Thermal Predictor) para consulta das temperaturas estimadas por sensor. Instruções de execução e de integração com o modelo em <a href="dashboard/README.md">dashboard/README.md</a>.
+
 ## 💻 Execução dos projetos
 
 **Localmente (VS Code):**

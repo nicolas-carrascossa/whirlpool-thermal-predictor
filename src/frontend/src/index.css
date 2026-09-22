@@ -1,0 +1,71 @@
+/* Fontes hospedadas localmente (@fontsource) — sem dependência de rede externa
+   (Google Fonts), cujo fallback (`system-ui`) tem métricas variáveis entre
+   máquinas e causava quebra de linha inconsistente nos rótulos do formulário. */
+@import '@fontsource/nunito-sans/300.css';
+@import '@fontsource/nunito-sans/700.css';
+@import '@fontsource/open-sans/400.css';
+@import '@fontsource/open-sans/600.css';
+@import '@fontsource/noto-sans-mono/400.css';
+@import '@fontsource/noto-sans-mono/600.css';
+
+@import './styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* tokens semânticos shadcn/ui mapeados para a paleta Whirlpool */
+    --background: var(--wp-white);
+    --foreground: var(--wp-gray-85);
+
+    --card: var(--wp-white);
+    --card-foreground: var(--wp-gray-85);
+
+    --popover: var(--wp-white);
+    --popover-foreground: var(--wp-gray-85);
+
+    --primary: var(--wp-core);
+    --primary-foreground: var(--wp-white);
+
+    --secondary: var(--wp-gray-05);
+    --secondary-foreground: var(--wp-core);
+
+    --muted: var(--wp-gray-05);
+    --muted-foreground: var(--wp-gray-65);
+
+    --accent: var(--wp-accent-lt);
+    --accent-foreground: var(--wp-core);
+
+    --destructive: var(--status-danger);
+    --destructive-foreground: var(--wp-white);
+
+    --border: var(--wp-gray-12);
+    --input: var(--wp-gray-12);
+    --ring: var(--wp-accent);
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    line-height: 1.4;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
