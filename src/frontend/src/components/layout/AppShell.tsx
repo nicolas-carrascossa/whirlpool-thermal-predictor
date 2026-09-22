@@ -46,6 +46,7 @@ export function AppShell({
   userDisplayName,
   onLogout,
   onOpenThermalMap,
+  onOpenMetrics,
   sidebar,
   children,
 }: {
@@ -56,6 +57,8 @@ export function AppShell({
   onLogout?: () => void
   /** Abre a aba "Mapa térmico" da área de resultados. Sem a prop, o botão não aparece. */
   onOpenThermalMap?: () => void
+  /** Abre a aba "Métricas Estatísticas" da área de resultados. Sem a prop, o botão não aparece. */
+  onOpenMetrics?: () => void
   sidebar: ReactNode
   children: ReactNode
 }) {
@@ -94,6 +97,11 @@ export function AppShell({
             {onOpenThermalMap && (
               <Button variant="secondary" size="sm" onClick={onOpenThermalMap}>
                 Acessar Mapa térmico
+              </Button>
+            )}
+            {onOpenMetrics && (
+              <Button variant="secondary" size="sm" onClick={onOpenMetrics}>
+                Acessar Métricas
               </Button>
             )}
             {userDisplayName && (

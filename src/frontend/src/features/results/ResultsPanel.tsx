@@ -26,6 +26,7 @@ import {
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
+import { MetricsPanel } from '@/features/metrics/MetricsPanel'
 import { ratioOf } from '@/lib/status'
 
 export function groupByArea(response: PredictionResponse, metadata: Metadata | undefined): AreaGroup[] {
@@ -117,7 +118,7 @@ function ResultsSkeleton() {
 }
 
 /** Abas da área de resultados. */
-export type ResultsTab = 'resultados' | 'mapa'
+export type ResultsTab = 'resultados' | 'mapa' | 'metricas'
 
 export function ResultsPanel({
   metadata,
@@ -296,6 +297,7 @@ export function ResultsPanel({
       <TabsList aria-label="Seções dos resultados">
         <TabsTrigger value="resultados">Resultados</TabsTrigger>
         <TabsTrigger value="mapa">Mapa térmico</TabsTrigger>
+        <TabsTrigger value="metricas">Métricas Estatísticas</TabsTrigger>
       </TabsList>
       <TabsContent value="resultados" className="mt-4 flex flex-col gap-4">
         {body}
@@ -319,6 +321,10 @@ export function ResultsPanel({
           hoveredVariable={hoveredVariable}
           onHoverVariable={onHoverVariable}
         />
+      </TabsContent>
+      {/* Dados simulados (mockMetrics.ts) — nada aqui vem da API. */}
+      <TabsContent value="metricas" className="mt-4">
+        <MetricsPanel metadata={metadata} />
       </TabsContent>
     </Tabs>
   )

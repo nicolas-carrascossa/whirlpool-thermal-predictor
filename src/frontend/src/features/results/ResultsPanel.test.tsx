@@ -46,9 +46,20 @@ describe('ResultsPanel', () => {
     const { container } = renderPanel()
     expect(screen.getByRole('tab', { name: 'Resultados' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('tab', { name: 'Mapa térmico' })).toHaveAttribute('aria-selected', 'false')
-    // A aba inativa fica desmontada: o mapa 3D não paga custo enquanto escondido.
+    expect(screen.getByRole('tab', { name: 'Métricas Estatísticas' })).toHaveAttribute('aria-selected', 'false')
+    // As abas inativas ficam desmontadas: nem o mapa 3D nem as métricas pagam custo escondidos.
     expect(container.querySelector('[data-slot="thermal-map"]')).not.toBeInTheDocument()
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
     expect(screen.getByText('Sensores previstos')).toBeInTheDocument()
+  })
+
+  it('monta as métricas estatísticas (simuladas) ao entrar na aba "Métricas Estatísticas"', () => {
+    renderPanel()
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Métricas Estatísticas' }))
+    expect(screen.getByRole('tab', { name: 'Métricas Estatísticas' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('note')).toHaveTextContent(/simulad/i)
+    expect(screen.getByLabelText('Área do modelo')).toBeInTheDocument()
+    expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
   })
 
   it('monta o mapa térmico ao entrar na aba "Mapa térmico"', () => {
@@ -65,6 +76,8 @@ describe('ResultsPanel', () => {
     expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Resultados' }))
     expect(changed).toBe('resultados')
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Métricas Estatísticas' }))
+    expect(changed).toBe('metricas')
   })
 
   it('resume a consulta com as contagens e o pior sensor', () => {
