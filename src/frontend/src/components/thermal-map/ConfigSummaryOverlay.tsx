@@ -5,7 +5,7 @@
  * (hover no select ou peça pulsando).
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import type { StoveConfig } from '@/contract/v1'
 import { cn } from '@/lib/utils'
@@ -27,21 +27,6 @@ const SUMMARY_FIELDS = (Object.keys(SUMMARY_LABEL_PT) as (keyof StoveConfig)[]).
   (field) => VARIABLE_TO_PART[field] !== null,
 )
 
-/** `true` por padrão em telas largas (≥ 1280 px); recolhido abaixo disso. */
-function useDefaultExpanded(): boolean {
-  const [expanded, setExpanded] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches,
-  )
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mql = window.matchMedia('(min-width: 1280px)')
-    const onChange = () => setExpanded(mql.matches)
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
-  }, [])
-  return expanded
-}
-
 export function ConfigSummaryOverlay({
   config,
   highlightPart,
@@ -49,9 +34,7 @@ export function ConfigSummaryOverlay({
   config: StoveConfig
   highlightPart?: PartId | null
 }) {
-  const defaultExpanded = useDefaultExpanded()
-  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null)
-  const expanded = manualExpanded ?? defaultExpanded
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <div
@@ -61,7 +44,7 @@ export function ConfigSummaryOverlay({
       <CollapseToggle
         label="Configuração"
         expanded={expanded}
-        onClick={() => setManualExpanded(!expanded)}
+        onClick={() => setExpanded(!expanded)}
       />
       {expanded && (
         <ul className="mt-1 flex flex-col">
