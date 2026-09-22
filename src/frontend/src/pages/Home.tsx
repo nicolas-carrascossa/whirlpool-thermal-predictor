@@ -66,6 +66,7 @@ function HomeContent() {
       userDisplayName={apiMode ? auth.user?.display_name : undefined}
       onLogout={apiMode ? auth.logout : undefined}
       onOpenThermalMap={() => setResultsTab('mapa')}
+      onOpenMetrics={() => setResultsTab('metricas')}
       sidebar={<ConfigPanel />}
       historySidebar={<HistoryPanel />}
     >

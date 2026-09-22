@@ -12,16 +12,22 @@ export type StoveView = 'solid' | 'cutaway' | 'xray'
  * principal. Várias podem estar abertas ao mesmo tempo.
  */
 export interface OpeningState {
-  /** Tampa do console levantada: mostra carcaça, blower, defletor e placa. */
+  /**
+   * Cooktop levantado (vidro, elementos, bandeja e faixa do console sobem
+   * juntos): mostra a baía da eletrônica — carcaça, blower, defletor e placa.
+   * A chave continua `console` por compatibilidade de estado.
+   */
   console: boolean
-  /** Painel traseiro afastado: mostra o fundo do console e o caminho do ar. */
+  /** Painel traseiro afastado: mostra o fundo da baía e o caminho do ar. */
   rear: boolean
   /** Porta do forno abaixada ~80°: mostra a resistência e o suporte. */
   oven: boolean
+  /** Vista explodida: as camadas do cooktop e a baía se afastam em Y (`explodeAmount`). */
+  explode: boolean
 }
 
-/** Padrão ao abrir: console aberto (área com mais sensores), o resto fechado. */
-export const DEFAULT_OPENINGS: OpeningState = { console: true, rear: false, oven: false }
+/** Padrão ao abrir: cooktop levantado (área com mais sensores), o resto fechado. */
+export const DEFAULT_OPENINGS: OpeningState = { console: true, rear: false, oven: false, explode: false }
 
 export interface StoveContextValue {
   view: StoveView
@@ -29,6 +35,8 @@ export interface StoveContextValue {
   clipPlanes: THREE.Plane[]
   /** Profundidade do corte em % — usada pela tampa escura da face cortada. */
   cutDepth: number
+  /** Afastamento das camadas na vista explodida, 0–100 % (só vale com `openings.explode`). */
+  explodeAmount: number
   config: StoveConfig
   parts: PartState
   openings: OpeningState

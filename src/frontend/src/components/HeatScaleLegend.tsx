@@ -1,3 +1,5 @@
+import { formatTemp } from '@/lib/format'
+
 export function HeatScaleLegend({ min = 0, max = 100 }: { min?: number; max?: number }) {
   return (
     <div className="flex w-full flex-col gap-1">
@@ -8,8 +10,8 @@ export function HeatScaleLegend({ min = 0, max = 100 }: { min?: number; max?: nu
         }}
       />
       <div className="tabular flex justify-between text-xs text-wp-gray65">
-        <span>{min.toFixed(1)} °C</span>
-        <span>{max.toFixed(1)} °C</span>
+        <span>{formatTemp(min)}</span>
+        <span>{formatTemp(max)}</span>
       </div>
     </div>
   )

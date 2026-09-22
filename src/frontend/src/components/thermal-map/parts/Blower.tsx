@@ -8,18 +8,20 @@ import { BLOWER } from '../zoneGeometry'
 import { PartGroup } from './PartGroup'
 
 /** Trajetos retos percorridos pelas setas de ar. */
+// Na baía sob o cooktop: "frente" sopra para +Z (frente do fogão), "traseira"
+// atravessa o painel Mainback em -Z.
 const PATH_FRONT: [THREE.Vector3, THREE.Vector3] = [
-  new THREE.Vector3(BLOWER.x, BLOWER.y, -8.4),
-  new THREE.Vector3(BLOWER.x, 15.6, -2.2),
+  new THREE.Vector3(BLOWER.x, BLOWER.y, BLOWER.z - 1.2),
+  new THREE.Vector3(BLOWER.x, BLOWER.y + 0.3, BLOWER.z + 7.0),
 ]
 const PATH_BACK: [THREE.Vector3, THREE.Vector3] = [
-  new THREE.Vector3(BLOWER.x, BLOWER.y, -4.2),
+  new THREE.Vector3(BLOWER.x, BLOWER.y, BLOWER.z + 1.2),
   new THREE.Vector3(BLOWER.x, BLOWER.y, -10.6),
 ]
 /** Ramificação para a carcaça do IPC, atravessando o furo do defletor (H1). */
 const PATH_BRANCH: [THREE.Vector3, THREE.Vector3] = [
-  new THREE.Vector3(BLOWER.x + 2.3, BLOWER.y - 0.1, -6.25),
-  new THREE.Vector3(7.6, BLOWER.y - 0.3, -6.25),
+  new THREE.Vector3(BLOWER.x + 2.3, BLOWER.y - 0.1, BLOWER.z),
+  new THREE.Vector3(7.6, BLOWER.y - 0.3, BLOWER.z),
 ]
 
 const ARROW_COUNT = 30

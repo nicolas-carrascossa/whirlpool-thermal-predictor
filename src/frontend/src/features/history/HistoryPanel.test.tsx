@@ -59,7 +59,7 @@ describe('HistoryPanel', () => {
 
     fireEvent.click(screen.getByLabelText('Modo de operação'))
     fireEvent.click(screen.getByRole('option', { name: 'Pyro' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Todas' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Selecionar todas' }))
     fireEvent.click(screen.getByRole('button', { name: 'Reabrir consulta' }))
 
     expect(screen.getByLabelText('Modo de operação')).toHaveTextContent('Broil C2')

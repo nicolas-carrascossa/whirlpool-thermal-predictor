@@ -14,3 +14,12 @@ __pycache__/
 # ambiente local do back-end (contém segredos)
 .env
 src/backend/.env
+
+# arquivos e configuracoes de agentes de IA (Claude, Codex)
+.claude/
+.claude.json
+.claude.json.backup
+.codex/
+CLAUDE.md
+AGENTS.md
+.mcp.json

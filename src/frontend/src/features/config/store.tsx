@@ -23,7 +23,10 @@ export interface QueryState {
   architecture: Architecture
   /** `null` enquanto o metadata não chegou. */
   config: StoveConfig | null
-  /** Vazio = todas as áreas. */
+  /**
+   * Lista explícita das áreas selecionadas. "Todas" = todos os nomes de
+   * `metadata.key_areas`; vazio = nenhuma (estado sem requisição possível).
+   */
   areas: string[]
   /** Vazio = todos os sensores das áreas escolhidas. */
   sensors: number[]
@@ -67,6 +70,8 @@ export interface ConfigStore extends QueryState {
   toggleArea: (area: string) => void
   setAllAreas: () => void
   toggleSensor: (tcNumber: number) => void
+  /** Marca de uma vez os sensores informados (substitui a seleção atual). */
+  setAllSensors: (tcNumbers: number[]) => void
   clearSensors: () => void
   submit: () => void
   /** Restaura a configuração e o recorte de uma consulta salva. */
@@ -84,15 +89,25 @@ export interface ConfigStore extends QueryState {
 
 const ConfigStoreContext = createContext<ConfigStore | null>(null)
 
-export function buildRequest(state: QueryState): PredictionRequest | null {
+/**
+ * Monta a requisição a partir do estado. `allAreas` é a lista completa de
+ * `metadata.key_areas`: com ela dá para saber se o recorte é parcial (envia
+ * `key_areas`) ou total (omite `targets`, que o contrato v1 lê como "todos").
+ *
+ * Nenhuma área selecionada não é representável no contrato — `targets` vazio
+ * significaria "todos os sensores" — então devolve `null`.
+ */
+export function buildRequest(state: QueryState, allAreas: string[]): PredictionRequest | null {
   if (!state.config) return null
+  if (state.areas.length === 0) return null
   const targets: NonNullable<PredictionRequest['targets']> = {}
+  const isPartialAreaSelection = state.areas.length < allAreas.length
   // Uma seleção explícita de sensores é mais específica que o recorte por área.
   // Enviar ambos faria as fontes tratarem os filtros como união e retornarem
   // todos os sensores das áreas escolhidas.
   if (state.sensors.length > 0) {
     targets.sensors = [...state.sensors].sort((a, b) => a - b)
-  } else if (state.areas.length > 0) {
+  } else if (isPartialAreaSelection) {
     targets.key_areas = [...state.areas].sort()
   }
   return {
@@ -106,11 +121,13 @@ function sameRequest(a: PredictionRequest | null, b: PredictionRequest | null): 
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-function stateFromRequest(request: PredictionRequest): QueryState {
+function stateFromRequest(request: PredictionRequest, allAreas: string[]): QueryState {
   return {
     architecture: request.architecture,
     config: { ...request.config },
-    areas: request.targets?.key_areas ? [...request.targets.key_areas] : [],
+    // Sem `key_areas`, o contrato representa todas as áreas. Restaurar a lista
+    // explícita evita que a interface interprete esse estado como "nenhuma".
+    areas: request.targets?.key_areas ? [...request.targets.key_areas] : [...allAreas],
     sensors: request.targets?.sensors ? [...request.targets.sensors] : [],
   }
 }
@@ -176,6 +193,9 @@ export function ConfigStoreProvider({
     [],
   )
 
+  /** Nomes de todas as áreas do metadata — o valor de `areas` no estado "todas". */
+  const allAreas = useMemo(() => (metadata?.key_areas ?? []).map((a) => a.name), [metadata])
+
   function saveToHistory(nextRequest: PredictionRequest) {
     const entry: HistoryEntry = {
       id: nextHistoryId.current,
@@ -191,7 +211,7 @@ export function ConfigStoreProvider({
   /** Aplica o novo estado e já o submete (usado por ações que re-consultam). */
   function commit(next: QueryState, saveHistory = false) {
     setState(next)
-    const nextRequest = buildRequest(next)
+    const nextRequest = buildRequest(next, allAreas)
     setRequest(nextRequest)
     if (saveHistory && nextRequest) saveToHistory(nextRequest)
   }
@@ -202,14 +222,14 @@ export function ConfigStoreProvider({
     commit({
       architecture: 'BR',
       config: { ...metadata.reference_config },
-      areas: [],
+      areas: allAreas,
       sensors: [],
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata, state.config])
 
   const value = useMemo<ConfigStore>(() => {
-    const pending = buildRequest(state)
+    const pending = buildRequest(state, allAreas)
     const hasDuplicateHistory =
       pending !== null && history.some((entry) => sameRequest(entry.request, pending))
     return {
@@ -233,24 +253,18 @@ export function ConfigStoreProvider({
         )
         pulseHighlight(field)
       },
-      // `areas: []` significa "todas". Desmarcar uma caixa nesse estado precisa
-      // materializar a lista completa menos a área clicada — senão o usuário
-      // desmarca uma e acaba com apenas ela selecionada.
+      // `areas` é a lista literal: desmarcar a última área deixa zero
+      // selecionadas (e sem requisição possível), em vez de voltar a "todas".
+      // Mudar o recorte de áreas descarta a seleção de sensores.
       toggleArea: (area) =>
-        setState((prev) => {
-          const all = (metadata?.key_areas ?? []).map((a) => a.name)
-          const current = prev.areas.length > 0 ? prev.areas : all
-          const next = current.includes(area)
-            ? current.filter((a) => a !== area)
-            : [...current, area]
-          return {
-            ...prev,
-            // Voltar a marcar todas equivale a "todas" (recorte vazio).
-            areas: next.length === all.length ? [] : next,
-            sensors: [],
-          }
-        }),
-      setAllAreas: () => setState((prev) => ({ ...prev, areas: [], sensors: [] })),
+        setState((prev) => ({
+          ...prev,
+          areas: prev.areas.includes(area)
+            ? prev.areas.filter((a) => a !== area)
+            : [...prev.areas, area],
+          sensors: [],
+        })),
+      setAllAreas: () => setState((prev) => ({ ...prev, areas: allAreas, sensors: [] })),
       toggleSensor: (tc) =>
         setState((prev) => ({
           ...prev,
@@ -258,6 +272,7 @@ export function ConfigStoreProvider({
             ? prev.sensors.filter((s) => s !== tc)
             : [...prev.sensors, tc],
         })),
+      setAllSensors: (tcNumbers) => setState((prev) => ({ ...prev, sensors: [...tcNumbers] })),
       clearSensors: () => setState((prev) => ({ ...prev, sensors: [] })),
       // Salva antes de atualizar o resultado: mesmo que o usuário altere o
       // formulário em seguida, a consulta acabada de prever continua acessível.
@@ -267,7 +282,7 @@ export function ConfigStoreProvider({
         setRequest(pending)
       },
       restoreHistory: (entry) => {
-        const restored = stateFromRequest(entry.request)
+        const restored = stateFromRequest(entry.request, allAreas)
         setState(restored)
         setRequest(cloneRequest(entry.request))
         setSelectedKeyArea(null)
@@ -301,15 +316,15 @@ export function ConfigStoreProvider({
       deleteHistory: (id) =>
         setHistory((current) => current.filter((entry) => entry.id !== id)),
       runAll: () => {
-        const next = { ...state, areas: [], sensors: [] }
-        const nextRequest = buildRequest(next)
+        const next = { ...state, areas: allAreas, sensors: [] }
+        const nextRequest = buildRequest(next, allAreas)
         if (nextRequest && history.some((entry) => sameRequest(entry.request, nextRequest))) return
         commit(next, true)
       },
-      clearSelection: () => setState((prev) => ({ ...prev, areas: [], sensors: [] })),
+      clearSelection: () => setState((prev) => ({ ...prev, areas: allAreas, sensors: [] })),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, metadata, request, selectedKeyArea, highlightPart, hoveredVariable, history])
+  }, [state, metadata, allAreas, request, selectedKeyArea, highlightPart, hoveredVariable, history])
 
   return <ConfigStoreContext.Provider value={value}>{children}</ConfigStoreContext.Provider>
 }
