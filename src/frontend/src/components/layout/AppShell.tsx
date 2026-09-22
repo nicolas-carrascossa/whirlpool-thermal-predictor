@@ -1,7 +1,6 @@
 /**
- * Casca da aplicação: barra superior + painel de configuração fixo à esquerda
- * (≈340 px) + área de resultados. Abaixo de 1024 px o painel empilha acima dos
- * resultados. Fundo branco dominante, conforme o style guide.
+ * Casca da aplicação: barra superior + painéis fixos de configuração e histórico
+ * ao redor da área de resultados. Abaixo de 1024 px os painéis se empilham.
  */
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
@@ -13,20 +12,29 @@ import { cn } from '@/lib/utils'
 function SidebarToggle({
   isOpen,
   onClick,
+  panelId,
+  openLabel,
+  closeLabel,
+  side,
   className,
 }: {
   isOpen: boolean
   onClick: () => void
+  panelId: string
+  openLabel: string
+  closeLabel: string
+  side: 'left' | 'right'
   className?: string
 }) {
-  const label = isOpen ? 'Fechar painel de configurações' : 'Abrir painel de configurações'
+  const label = isOpen ? closeLabel : openLabel
+  const iconPointsInward = side === 'left' ? isOpen : !isOpen
 
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      aria-controls="dashboard-sidebar"
+      aria-controls={panelId}
       aria-expanded={isOpen}
       aria-label={label}
       title={label}
@@ -36,7 +44,7 @@ function SidebarToggle({
         className,
       )}
     >
-      {isOpen ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+      {iconPointsInward ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
     </Button>
   )
 }
@@ -48,6 +56,7 @@ export function AppShell({
   onOpenThermalMap,
   onOpenMetrics,
   sidebar,
+  historySidebar,
   children,
 }: {
   /** Modo `local` (mock). Hoje só afeta a nota do rodapé. */
@@ -60,10 +69,13 @@ export function AppShell({
   /** Abre a aba "Métricas Estatísticas" da área de resultados. Sem a prop, o botão não aparece. */
   onOpenMetrics?: () => void
   sidebar: ReactNode
+  /** Painel opcional de consultas recentes, exibido à direita dos resultados. */
+  historySidebar?: ReactNode
   children: ReactNode
 }) {
   const headerRef = useRef<HTMLElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(true)
 
   // O header quebra em 2 linhas (flex-wrap) dependendo do nome do usuário e
   // dos botões visíveis, então sua altura real varia entre telas/máquinas.
@@ -129,6 +141,10 @@ export function AppShell({
             <SidebarToggle
               isOpen={isSidebarOpen}
               onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+              panelId="dashboard-sidebar"
+              openLabel="Abrir painel de configurações"
+              closeLabel="Fechar painel de configurações"
+              side="left"
             />
           </div>
           <aside
@@ -143,6 +159,10 @@ export function AppShell({
           <SidebarToggle
             isOpen={isSidebarOpen}
             onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+            panelId="dashboard-sidebar"
+            openLabel="Abrir painel de configurações"
+            closeLabel="Fechar painel de configurações"
+            side="left"
             className={cn(
               'absolute z-10 hidden lg:inline-flex',
               isSidebarOpen ? 'right-3 top-3' : '-left-4 top-0',
@@ -150,6 +170,46 @@ export function AppShell({
           />
         </div>
         <main className="min-w-0 flex-1">{children}</main>
+        {historySidebar && (
+          <div
+            className={cn(
+              'relative shrink-0 lg:sticky lg:top-[var(--header-h)] lg:max-h-[calc(100vh-var(--header-h)-24px)]',
+              isHistorySidebarOpen ? 'w-full lg:w-[340px]' : 'w-full lg:w-0',
+            )}
+          >
+            <div className="flex justify-start pb-2 lg:hidden">
+              <SidebarToggle
+                isOpen={isHistorySidebarOpen}
+                onClick={() => setIsHistorySidebarOpen((isOpen) => !isOpen)}
+                panelId="dashboard-history-sidebar"
+                openLabel="Abrir painel de histórico"
+                closeLabel="Fechar painel de histórico"
+                side="right"
+              />
+            </div>
+            <aside
+              id="dashboard-history-sidebar"
+              className={cn(
+                'w-full lg:max-h-[calc(100vh-var(--header-h)-24px)] lg:overflow-y-auto lg:pl-14',
+                !isHistorySidebarOpen && 'hidden',
+              )}
+            >
+              {historySidebar}
+            </aside>
+            <SidebarToggle
+              isOpen={isHistorySidebarOpen}
+              onClick={() => setIsHistorySidebarOpen((isOpen) => !isOpen)}
+              panelId="dashboard-history-sidebar"
+              openLabel="Abrir painel de histórico"
+              closeLabel="Fechar painel de histórico"
+              side="right"
+              className={cn(
+                'absolute z-10 hidden lg:inline-flex',
+                isHistorySidebarOpen ? 'left-3 top-3' : '-right-4 top-0',
+              )}
+            />
+          </div>
+        )}
       </div>
 
       <footer className="border-t border-wp-gray12 px-6 py-3">

@@ -330,8 +330,10 @@ export function ConfigPanel() {
       {/* Abaixo de 1024 px o painel não é um contêiner de rolagem próprio, então
           a barra de ações só gruda no modo de duas colunas. */}
       <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 lg:sticky lg:bottom-0">
-        <Button type="submit" disabled={noAreaSelected}>
-          Prever{store.isDirty && !noAreaSelected ? ' — configuração alterada' : ''}
+        <Button type="submit" disabled={noAreaSelected || store.hasDuplicateHistory}>
+          {store.hasDuplicateHistory
+            ? 'Previsão já salva no histórico'
+            : `Prever${store.isDirty && !noAreaSelected ? ' — configuração alterada' : ''}`}
         </Button>
         {noAreaSelected && (
           <p role="status" className="text-xs text-wp-gray65">
