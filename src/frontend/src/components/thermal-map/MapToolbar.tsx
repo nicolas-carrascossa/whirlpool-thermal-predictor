@@ -80,7 +80,10 @@ export function MapToolbar({
   cameraFollowsPart = false,
   onCameraFollowsPartChange,
 }: MapToolbarProps) {
-  const [expanded, setExpanded] = useState(true)
+  // Começa compacto para não encobrir o modelo 3D; os filtros seguem acessíveis
+  // pelo botão e preservam o mesmo comportamento quando expandidos.
+  const [expanded, setExpanded] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   return (
     <div
@@ -131,7 +134,7 @@ export function MapToolbar({
           )}
 
           <div className="flex items-center gap-1" role="group" aria-label="Rótulos das zonas">
-            <span className="font-body text-xs text-wp-gray65">Rótulos</span>
+            <span className="font-body text-xs text-wp-gray85">Rótulos</span>
             {LABEL_MODES.map((m) => (
               <button
                 key={m}
@@ -178,62 +181,66 @@ export function MapToolbar({
             </button>
           </div>
 
-          <details className="group">
-            <summary className="cursor-pointer list-none font-body text-xs text-wp-gray65 hover:text-wp-core">
-              Avançado
-            </summary>
-            <div className="mt-2 flex flex-col gap-2">
-              <div role="group" aria-label="Modo de visualização" className="flex gap-1">
-                {VIEW_LABELS.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    title={v.title}
-                    aria-pressed={view === v.id}
-                    onClick={() => onViewChange(v.id)}
-                    className={cn(
-                      chip,
-                      'flex-1 border',
-                      view === v.id
-                        ? 'border-wp-core bg-wp-core text-white'
-                        : 'border-wp-gray20 text-wp-gray85 hover:bg-wp-accentLt',
-                    )}
-                  >
-                    {v.label}
-                  </button>
-                ))}
+          <div>
+            <CollapseToggle
+              label="Avançado"
+              expanded={advancedOpen}
+              onClick={() => setAdvancedOpen(!advancedOpen)}
+            />
+            {advancedOpen && (
+              <div className="mt-2 flex flex-col gap-2">
+                <div role="group" aria-label="Modo de visualização" className="flex gap-1">
+                  {VIEW_LABELS.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      title={v.title}
+                      aria-pressed={view === v.id}
+                      onClick={() => onViewChange(v.id)}
+                      className={cn(
+                        chip,
+                        'flex-1 border',
+                        view === v.id
+                          ? 'border-wp-core bg-wp-core text-white'
+                          : 'border-wp-gray20 text-wp-gray85 hover:bg-wp-accentLt',
+                      )}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+
+                {onCameraFollowsPartChange && (
+                  <label className="flex items-center gap-2 font-body text-xs text-wp-gray65">
+                    <input
+                      type="checkbox"
+                      checked={cameraFollowsPart}
+                      onChange={(e) => onCameraFollowsPartChange(e.target.checked)}
+                      className="accent-wp-accent"
+                    />
+                    Câmera segue a peça alterada
+                  </label>
+                )}
+
+                {view === 'cutaway' && (
+                  <label className="flex items-center gap-2 font-body text-xs text-wp-gray65">
+                    <span className="whitespace-nowrap">Corte</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={cutDepth}
+                      onChange={(e) => onCutDepthChange(Number(e.target.value))}
+                      className="h-1 flex-1 accent-wp-accent"
+                      aria-label="Profundidade do corte, em porcento"
+                    />
+                    <span className="tabular w-8 text-right text-wp-gray85">{cutDepth}%</span>
+                  </label>
+                )}
               </div>
-
-              {onCameraFollowsPartChange && (
-                <label className="flex items-center gap-2 font-body text-xs text-wp-gray65">
-                  <input
-                    type="checkbox"
-                    checked={cameraFollowsPart}
-                    onChange={(e) => onCameraFollowsPartChange(e.target.checked)}
-                    className="accent-wp-accent"
-                  />
-                  Câmera segue a peça alterada
-                </label>
-              )}
-
-              {view === 'cutaway' && (
-                <label className="flex items-center gap-2 font-body text-xs text-wp-gray65">
-                  <span className="whitespace-nowrap">Corte</span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={cutDepth}
-                    onChange={(e) => onCutDepthChange(Number(e.target.value))}
-                    className="h-1 flex-1 accent-wp-accent"
-                    aria-label="Profundidade do corte, em porcento"
-                  />
-                  <span className="tabular w-8 text-right text-wp-gray85">{cutDepth}%</span>
-                </label>
-              )}
-            </div>
-          </details>
+            )}
+          </div>
         </>
       )}
     </div>

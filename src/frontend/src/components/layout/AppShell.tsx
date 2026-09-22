@@ -53,8 +53,6 @@ export function AppShell({
   isMock,
   userDisplayName,
   onLogout,
-  onOpenThermalMap,
-  onOpenMetrics,
   sidebar,
   historySidebar,
   children,
@@ -64,10 +62,6 @@ export function AppShell({
   /** Nome do usuário autenticado (modo `api`). Ausente/`undefined` no modo `local`. */
   userDisplayName?: string
   onLogout?: () => void
-  /** Abre a aba "Mapa térmico" da área de resultados. Sem a prop, o botão não aparece. */
-  onOpenThermalMap?: () => void
-  /** Abre a aba "Métricas Estatísticas" da área de resultados. Sem a prop, o botão não aparece. */
-  onOpenMetrics?: () => void
   sidebar: ReactNode
   /** Painel opcional de consultas recentes, exibido à direita dos resultados. */
   historySidebar?: ReactNode
@@ -106,16 +100,6 @@ export function AppShell({
             </h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            {onOpenThermalMap && (
-              <Button variant="secondary" size="sm" onClick={onOpenThermalMap}>
-                Acessar Mapa térmico
-              </Button>
-            )}
-            {onOpenMetrics && (
-              <Button variant="secondary" size="sm" onClick={onOpenMetrics}>
-                Acessar Métricas
-              </Button>
-            )}
             {userDisplayName && (
               <span className="whitespace-nowrap font-body text-sm text-wp-gray65">
                 {userDisplayName}
@@ -174,7 +158,7 @@ export function AppShell({
           <div
             className={cn(
               'relative shrink-0 lg:sticky lg:top-[var(--header-h)] lg:max-h-[calc(100vh-var(--header-h)-24px)]',
-              isHistorySidebarOpen ? 'w-full lg:w-[340px]' : 'w-full lg:w-0',
+              isHistorySidebarOpen ? 'w-full lg:w-[280px]' : 'w-full lg:w-0',
             )}
           >
             <div className="flex justify-start pb-2 lg:hidden">

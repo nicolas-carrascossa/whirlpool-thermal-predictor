@@ -69,7 +69,7 @@ function ModeToggle({
     <div
       role="radiogroup"
       aria-label="Modo de cor do mapa térmico"
-      className="flex items-center gap-1 rounded-md border border-wp-gray12 bg-wp-gray05 p-0.5"
+      className="flex w-full flex-wrap items-center gap-1 rounded-md border border-wp-gray12 bg-wp-gray05 p-0.5 min-[1200px]:w-auto min-[1200px]:flex-nowrap"
     >
       {MODE_OPTIONS.map((option) => {
         const isDisabled = disabled && option.id === 'delta'
@@ -82,7 +82,7 @@ function ModeToggle({
             disabled={isDisabled}
             onClick={() => onChange(option.id)}
             className={cn(
-              'rounded-[5px] px-2.5 py-1 font-body text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60',
+              'min-w-0 flex-1 whitespace-normal rounded-[5px] px-2.5 py-1 font-body text-xs font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 min-[1200px]:flex-none min-[1200px]:whitespace-nowrap',
               mode === option.id ? 'bg-wp-core text-white' : 'text-wp-gray65 hover:text-wp-core',
             )}
           >
@@ -194,9 +194,6 @@ export function ThermalMapSlot({
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 pb-2">
         <CardTitle className="text-base">Mapa térmico</CardTitle>
-        {response && response.predictions.length > 0 && (
-          <ModeToggle mode={effectiveMode} onChange={onModeChange} disabled={isReferenceConfig} />
-        )}
       </CardHeader>
       <CardContent>
         <div data-slot="thermal-map" className="relative">
@@ -216,6 +213,8 @@ export function ThermalMapSlot({
                 onSelectSensor={onSelectSensor}
                 config={draftConfig ?? undefined}
                 highlightPart={effectiveHighlightPart}
+                stackZoneList
+                belowMap={<ModeToggle mode={effectiveMode} onChange={onModeChange} disabled={isReferenceConfig} />}
               />
             </Suspense>
           )}

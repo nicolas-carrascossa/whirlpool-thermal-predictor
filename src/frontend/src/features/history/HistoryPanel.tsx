@@ -62,7 +62,7 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
     <article className="overflow-hidden rounded-md bg-wp-core text-white shadow-sm">
       {isEditingName ? (
         <form
-          className="flex items-center gap-2 px-3 py-2"
+          className="flex flex-col gap-2 px-3 py-2"
           onSubmit={(event) => {
             event.preventDefault()
             saveName()
@@ -70,29 +70,31 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
         >
           <input
             aria-label="Nome da consulta"
-            className="min-w-0 flex-1 rounded-sm border border-white/40 bg-white px-2 py-1.5 text-sm font-semibold text-wp-gray85 outline-none focus:ring-2 focus:ring-wp-accent"
+            className="w-full rounded-sm border border-white/40 bg-white px-2 py-1.5 text-sm font-semibold text-wp-gray85 caret-wp-core outline-none focus:ring-2 focus:ring-wp-accent"
             value={draftName}
             autoFocus
             onChange={(event) => setDraftName(event.target.value)}
           />
-          <Button type="submit" variant="secondary" size="sm">
-            Salvar
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="px-2 text-white hover:bg-white/15 hover:text-white"
-            onClick={() => {
-              setDraftName(entry.name)
-              setIsEditingName(false)
-            }}
-          >
-            Cancelar
-          </Button>
+          <div className="flex justify-end gap-2">
+            <Button type="submit" variant="secondary" size="sm">
+              Salvar
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="px-2 text-white hover:bg-white/15 hover:text-white"
+              onClick={() => {
+                setDraftName(entry.name)
+                setIsEditingName(false)
+              }}
+            >
+              Cancelar
+            </Button>
+          </div>
         </form>
       ) : (
-        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3">
+        <div className="relative px-4 py-3">
           <button
             type="button"
             className="absolute inset-0 rounded-sm transition-colors hover:bg-wp-core/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-wp-accent"
@@ -102,7 +104,9 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
             aria-label={`Abrir detalhes de ${entry.name}`}
           />
           <div className="relative z-10 flex min-w-0 items-center gap-1 pointer-events-none">
-            <span className="min-w-0 truncate font-display text-sm font-bold">{entry.name}</span>
+            <span className="min-w-0 flex-1 break-words font-display text-sm font-bold leading-snug">
+              {entry.name}
+            </span>
             {isOpen && (
               <Button
                 type="button"
@@ -117,15 +121,12 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
               </Button>
             )}
           </div>
-          <time
-            dateTime={entry.createdAt}
-            className="relative z-10 row-span-2 shrink-0 pointer-events-none text-right text-[11px] leading-snug text-white/75"
-          >
-            {formatPredictionDate(entry.createdAt)}
-          </time>
-          <span className="relative z-10 pointer-events-none text-[11px] font-normal text-white/75">
-            Registro {entry.record ?? 'aguardando resultado'}
-          </span>
+          <div className="relative z-10 mt-1 flex flex-col gap-0.5 text-[11px] font-normal text-white/75">
+            <span className="break-all">Registro {entry.record ?? 'aguardando resultado'}</span>
+            <time dateTime={entry.createdAt} className="leading-snug">
+              {formatPredictionDate(entry.createdAt)}
+            </time>
+          </div>
         </div>
       )}
 

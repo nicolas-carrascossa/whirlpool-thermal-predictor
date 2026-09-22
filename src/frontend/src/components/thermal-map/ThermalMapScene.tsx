@@ -85,6 +85,8 @@ interface ThermalMapSceneProps {
   recenterToken: number
   /** Rótulos de zona visíveis (já filtrados por "Alertas / Todos / Nenhum"). */
   zoneLabels: ZoneLabelDatum[]
+  /** Exibe os textos auxiliares da cena quando o usuário habilita os rótulos. */
+  showAnnotations: boolean
   selectedKeyArea: string | null
   sensorPins: SensorPin[]
   onSelectSensor?: (tcNumber: number) => void
@@ -205,6 +207,7 @@ export function ThermalMapScene({
   cameraPreset,
   recenterToken,
   zoneLabels,
+  showAnnotations,
   selectedKeyArea,
   sensorPins,
   onSelectSensor,
@@ -355,7 +358,7 @@ export function ThermalMapScene({
       />
 
       <StoveBody topExtras={layerExtras(isTop)} />
-      <OrientationMarkers />
+      {showAnnotations && <OrientationMarkers />}
 
       {/* Baía da eletrônica sob o cooktop: peças + zonas IPC sobem juntas na vista explodida. */}
       <ExplodeLayer layer="bay">
@@ -367,7 +370,7 @@ export function ThermalMapScene({
       </ExplodeLayer>
 
       <CoilSupport />
-      <OvenGlow />
+      <OvenGlow showBadge={showAnnotations} />
 
       {layerExtras(isBody)}
       <PartChangeCallout />
