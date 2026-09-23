@@ -11,10 +11,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.2.0"
 
 Architecture = Literal["BR", "MX"]
 Reliability = Literal["interpolation", "moderate_extrapolation", "out_of_domain"]
+#: Family of model serving a key_area (v1.1). Never chosen by the client.
+AlgorithmCode = Literal["random_forest", "gradient_boosting"]
 
 
 class StrictModel(BaseModel):
@@ -61,15 +63,20 @@ class SensorPrediction(StrictModel):
     is_monitor: bool
     monitor_reference_c: float | None
     reliability: Reliability
+    #: Algorithm that produced this prediction (v1.1) — derived from key_area.
+    algorithm: AlgorithmCode
 
 
 class PredictionResponse(StrictModel):
     request_id: str
+    #: Version of the artifact SET (v1.1), not of a single predictor.
     model_version: str
     architecture: Architecture
     architecture_available: bool
     ignored_fields: list[str]
     predictions: list[SensorPrediction]
+    #: key_area -> algorithm, for the areas present in THIS response (v1.1).
+    algorithm_by_area: dict[str, AlgorithmCode]
     generated_at: str
 
 
@@ -102,6 +109,14 @@ class SensorMeta(StrictModel):
     monitor_reference_c: float | None
 
 
+class AlgorithmMeta(StrictModel):
+    code: AlgorithmCode
+    label_pt: str
+    available: bool
+    model_version: str
+    trained_at: str | None = None
+
+
 class Metadata(StrictModel):
     contract_version: str
     architectures: list[ArchitectureMeta]
@@ -109,6 +124,61 @@ class Metadata(StrictModel):
     sensors: list[SensorMeta]
     key_areas: list[KeyAreaMeta]
     reference_config: StoveConfig
+    #: Model families in the artifact set (v1.1).
+    algorithms: list[AlgorithmMeta]
+    #: Full key_area -> algorithm map (v1.1); the front-end never duplicates it.
+    area_algorithms: dict[str, AlgorithmCode]
+
+
+class ValidationRun(StrictModel):
+    """A lab run from the area's held-out test set."""
+
+    label: str
+
+
+class ValidationPoint(StrictModel):
+    """One predicted/actual pair from the test set.
+
+    These are the only real measured values the product has. A configuration
+    that never went to the lab has no "actual" to compare against — and cannot.
+
+    `tc_numbers` may hold 16 entries (the fused IGBT column), but this is still
+    ONE observation: replicating it would invent independent samples and flatten
+    the median/p90/max of the error heat map.
+    """
+
+    target: str
+    run: int
+    tc_numbers: list[int]
+    tc_name: str
+    active_limit_c: float | None
+    actual_c: float
+    predicted_c: float
+
+
+class AreaValidation(StrictModel):
+    runs: list[ValidationRun]
+    points: list[ValidationPoint]
+
+
+class AreaMetrics(StrictModel):
+    """Validation metrics of one key_area (v1.1) — `GET /api/v1/metrics`."""
+
+    key_area: str
+    algorithm: AlgorithmCode
+    mae: float
+    rmse: float
+    r2: float
+    mape_pct: float
+    within_ten_pct_rate: float
+    feature_importance: dict[str, float]
+    validation: AreaValidation
+
+
+class MetricsResponse(StrictModel):
+    model_version: str
+    areas: list[AreaMetrics]
+    generated_at: str
 
 
 # ---------------------------------------------------------------------------

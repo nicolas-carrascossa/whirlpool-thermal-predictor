@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from app.db import User
 from app.deps import current_user, predictor
 from app.predictors.base import ContractError, Predictor
-from app.schemas import Metadata, PredictionRequest, PredictionResponse
+from app.schemas import Metadata, MetricsResponse, PredictionRequest, PredictionResponse
 
 router = APIRouter(prefix="/api/v1", tags=["contrato v1"])
 
@@ -38,7 +38,50 @@ async def post_predictions(
     except ContractError as exc:
         raise HTTPException(status_code=422, detail=exc.message) from exc
     request.state.request_id = response.request_id
+    # Published for the access-log middleware, which never reads the body.
+    # `area_algorithms` is the mapping ACTUALLY applied here: the manifest may
+    # change, and then the response would no longer be reproducible from it.
+    request.state.prediction_context = {
+        "architecture": body.architecture,
+        "model_set_version": response.model_version,
+        **body.config.model_dump(),
+        "targets_json": json.dumps(raw_targets or {}, ensure_ascii=False, sort_keys=True),
+        "area_algorithms_json": json.dumps(
+            response.algorithm_by_area, ensure_ascii=False, sort_keys=True
+        ),
+        "skipped_areas_json": json.dumps(
+            getattr(engine, "skipped_areas", {}) or {}, ensure_ascii=False, sort_keys=True
+        ),
+    }
     return response
+
+
+@router.get("/metrics", response_model=MetricsResponse)
+def get_metrics(
+    key_areas: Annotated[list[str] | None, Query(description="Filtra por área.")] = None,
+    _user: User = Depends(current_user),
+    engine: Predictor = Depends(predictor),
+) -> MetricsResponse:
+    """Validation metrics per area, from the model manifest.
+
+    There is no filter by algorithm on purpose: the user reasons by area, and
+    the algorithm is a consequence of the area. But every row carries
+    `algorithm`, because comparing MAE across areas served by different models
+    demands the provenance in plain sight.
+    """
+    getter = getattr(engine, "get_metrics", None)
+    if getter is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Métricas de validação não estão disponíveis em MODEL_MODE=mock: "
+                "elas vêm do manifesto dos modelos treinados."
+            ),
+        )
+    try:
+        return getter(key_areas)
+    except ContractError as exc:
+        raise HTTPException(status_code=422, detail=exc.message) from exc
 
 
 async def _raw_body(request: Request) -> Any:

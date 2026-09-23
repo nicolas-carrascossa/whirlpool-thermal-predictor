@@ -12,15 +12,21 @@ import json
 import pytest
 
 from app.schemas import (
+    AlgorithmMeta,
+    AreaMetrics,
+    AreaValidation,
     ArchitectureMeta,
     KeyAreaMeta,
     Metadata,
+    MetricsResponse,
     PredictionRequest,
     PredictionResponse,
     PredictionTargets,
     SensorMeta,
     SensorPrediction,
     StoveConfig,
+    ValidationPoint,
+    ValidationRun,
     VariableMeta,
 )
 
@@ -28,6 +34,9 @@ from .conftest import CONTRACT_SCHEMA
 
 MODELS = {
     "StoveConfig": StoveConfig,
+    "ValidationRun": ValidationRun,
+    "ValidationPoint": ValidationPoint,
+    "AreaValidation": AreaValidation,
     "PredictionTargets": PredictionTargets,
     "PredictionRequest": PredictionRequest,
     "SensorPrediction": SensorPrediction,
@@ -36,7 +45,10 @@ MODELS = {
     "KeyAreaMeta": KeyAreaMeta,
     "ArchitectureMeta": ArchitectureMeta,
     "SensorMeta": SensorMeta,
+    "AlgorithmMeta": AlgorithmMeta,
     "Metadata": Metadata,
+    "AreaMetrics": AreaMetrics,
+    "MetricsResponse": MetricsResponse,
 }
 
 

@@ -21,13 +21,14 @@ import type { VariableMeta } from '@/contract/v1'
 import { formatPct } from '@/lib/format'
 
 import { importanceData } from './metricsModel'
-import type { FeatureImportance } from './mockMetrics'
+
 
 export default function FeatureImportanceBars({
   importance,
   variables,
 }: {
-  importance: FeatureImportance
+  /** Importância por variável; a API devolve um mapa aberto. */
+  importance: Record<string, number>
   variables: VariableMeta[] | undefined
 }) {
   const data = importanceData(importance, variables)

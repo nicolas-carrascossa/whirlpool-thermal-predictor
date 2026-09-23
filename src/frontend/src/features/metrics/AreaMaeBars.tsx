@@ -17,8 +17,10 @@ import {
 
 import { formatNumber, formatTemp } from '@/lib/format'
 
-import { kpiStatusOf, type KpiStatus } from './metricsModel'
-import type { AreaMetrics } from './mockMetrics'
+import type { AreaMetrics } from '@/contract/v1'
+import { algorithmShort } from '@/lib/algorithms'
+
+import { kpiStatusForMape, type KpiStatus } from './metricsModel'
 
 const KPI_COLOR: Record<KpiStatus, string> = {
   ok: 'var(--status-ok)',
@@ -36,10 +38,12 @@ export default function AreaMaeBars({
   selectedKeyArea: string
 }) {
   const data = areas.map((a) => ({
-    keyArea: a.keyArea,
-    label: areaLabels[a.keyArea] ?? a.keyArea,
-    mae: a.errorMetrics.mae,
-    status: kpiStatusOf(a.errorMetrics),
+    keyArea: a.key_area,
+    // O sufixo com o algoritmo mantém a procedência visível no eixo, sem
+    // depender de cor para distinguir as duas famílias de modelo.
+    label: `${areaLabels[a.key_area] ?? a.key_area} · ${algorithmShort(a.algorithm)}`,
+    mae: a.mae,
+    status: kpiStatusForMape(a.mape_pct),
   }))
   return (
     <div className="h-[260px] w-full min-w-0" role="img" aria-label="Erro absoluto médio por área">

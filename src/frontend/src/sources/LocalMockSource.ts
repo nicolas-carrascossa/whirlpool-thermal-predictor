@@ -10,6 +10,9 @@
 
 import { KEY_AREA_COPY, VARIABLE_COPY } from '@/contract/glossary_copy'
 import {
+  type AlgorithmCode,
+  type AreaValidation,
+  type MetricsResponse,
   CONTRACT_VERSION,
   ContractError,
   type Architecture,
@@ -21,11 +24,43 @@ import {
   type SensorPrediction,
   type StoveConfig,
 } from '@/contract/v1'
+import modelManifestJson from '@/data/model_manifest.json'
 import registryJson from '@/data/sensor_registry.json'
 import statsJson from '@/data/sensor_stats.json'
 import variableOptionsJson from '@/data/variable_options.json'
 
 export const MODEL_VERSION = 'mock-0.1.0'
+
+/**
+ * Manifesto dos modelos (gerado por `scripts/export_models.py`). O mock não
+ * roda modelo nenhum, mas ecoa daqui o mapeamento área → algoritmo e as
+ * métricas, para que o modo local exercite exatamente o mesmo caminho de
+ * código da API — e para que o mapa não seja escrito à mão em lugar nenhum.
+ */
+const MANIFEST = modelManifestJson as {
+  model_set_version: string
+  trained_at: string
+  area_algorithms: Record<string, AlgorithmCode>
+  algorithms: Record<string, { code: AlgorithmCode; label_pt: string; model_version: string; trained_at?: string }>
+  metrics_by_area: Record<
+    string,
+    {
+      algorithm: AlgorithmCode
+      mae: number
+      rmse: number
+      r2: number
+      mape_pct: number
+      within_ten_pct_rate: number
+      feature_importance: Record<string, number>
+      validation: AreaValidation
+    }
+  >
+}
+
+/** Algoritmo que atende a área, sempre vindo do manifesto. */
+function algorithmForArea(keyArea: string): AlgorithmCode {
+  return MANIFEST.area_algorithms[keyArea] ?? 'random_forest'
+}
 
 /** Campos aceitos no contrato mas deliberadamente fora do modelo (H2). */
 export const IGNORED_FIELDS = ['losses', 'board_position'] as const
@@ -313,6 +348,43 @@ export class LocalMockSource implements PredictionSource {
         n_sensors: SENSOR_ORDER.filter((s) => s.key_area === name).length,
       })),
       reference_config: { ...REFERENCE_CONFIG },
+      algorithms: Object.values(MANIFEST.algorithms).map((a) => ({
+        code: a.code,
+        label_pt: a.label_pt,
+        // No modo local nenhum artefato é carregado: a procedência é exibida,
+        // mas o modelo em si não está disponível.
+        available: false,
+        model_version: a.model_version,
+        trained_at: a.trained_at,
+      })),
+      area_algorithms: { ...MANIFEST.area_algorithms },
+    }
+  }
+
+  async getMetrics(areas?: string[]): Promise<MetricsResponse> {
+    const wanted = Object.keys(MANIFEST.metrics_by_area).filter(
+      (area) => !areas?.length || areas.includes(area),
+    )
+    return {
+      model_version: MANIFEST.model_set_version,
+      areas: wanted.map((keyArea) => {
+        const m = MANIFEST.metrics_by_area[keyArea]
+        return {
+          key_area: keyArea,
+          algorithm: m.algorithm,
+          mae: m.mae,
+          rmse: m.rmse,
+          r2: m.r2,
+          mape_pct: m.mape_pct,
+          within_ten_pct_rate: m.within_ten_pct_rate,
+          feature_importance: m.feature_importance,
+          // Pares previsto/real REAIS, medidos em laboratório, mesmo offline:
+          // o manifesto os carrega. O mock simula a predição de uma config
+          // nova, nunca a validação — esta não tem por que ser inventada.
+          validation: m.validation,
+        }
+      }),
+      generated_at: this.now().toISOString(),
     }
   }
 
@@ -332,6 +404,7 @@ export class LocalMockSource implements PredictionSource {
       architecture_available: req.architecture === 'BR',
       ignored_fields: [...IGNORED_FIELDS],
       predictions: [],
+      algorithm_by_area: {},
       generated_at: this.now().toISOString(),
     }
 
@@ -381,9 +454,13 @@ export class LocalMockSource implements PredictionSource {
         is_monitor: sensor.is_monitor,
         monitor_reference_c: sensor.monitor_reference_c,
         reliability,
+        algorithm: algorithmForArea(sensor.key_area),
       })
     }
 
-    return { ...base, predictions }
+    const algorithmByArea: Record<string, AlgorithmCode> = {}
+    for (const p of predictions) algorithmByArea[p.key_area] = p.algorithm
+
+    return { ...base, predictions, algorithm_by_area: algorithmByArea }
   }
 }

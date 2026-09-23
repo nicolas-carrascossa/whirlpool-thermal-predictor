@@ -57,8 +57,9 @@ Lidas de `src/backend/.env` (ou do ambiente). Ver `.env.example`.
 |---|---|---|
 | `JWT_SECRET` | `dev-secret-change-me` | Assinatura dos tokens. Troque em produção. |
 | `JWT_EXPIRES_MIN` | `480` | Validade do token, em minutos. |
-| `MODEL_MODE` | `mock` | `mock` (Fase 2) ou `real` (Fase 3 — hoje levanta `NotImplementedError`). |
-| `DATA_DIR` | `../frontend/src/data` | Pasta dos três JSONs do dataset. O back-end lê **os mesmos arquivos** do front; nada é duplicado. |
+| `MODEL_MODE` | `mock` | `mock` (demo offline da Fase 1) ou `real` (modelos treinados). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
+| `MODEL_DIR` | `<raiz>/models` | Artefatos `.joblib` + `manifest.json`, gerados por `scripts/export_models.py`. Só é lido com `MODEL_MODE=real`. |
+| `DATA_DIR` | `../frontend/src/data` | Pasta dos JSONs do dataset (e do `model_manifest.json`). O back-end lê **os mesmos arquivos** do front; nada é duplicado. |
 | `DB_PATH` | `./thermal.db` | Arquivo SQLite (usuários + `access_log`), relativo a `src/backend/`. |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:5174,http://localhost:4173` | Origens liberadas, separadas por vírgula. |
 
@@ -93,7 +94,43 @@ Invoke-RestMethod http://localhost:8000/api/v1/metadata -Headers @{Authorization
 
 Todo acesso a `/api/v1/*` — login incluído — grava uma linha em `access_log`:
 `id, username, ts_utc, method, path, request_id, status_code, duration_ms`.
+
+A rota de predições preenche ainda, na mesma linha: `architecture`,
+`model_set_version`, as 7 variáveis de configuração (uma coluna cada),
+`targets_json` (o recorte como submetido) e `area_algorithms_json` (o
+mapeamento área → algoritmo **efetivamente aplicado naquela chamada**). Como o
+mapeamento é configuração e muda com o tempo, guardá-lo por chamada é o que
+permite, meses depois, saber qual modelo produziu aquele número. Nas demais
+rotas essas colunas ficam nulas.
+
 A tela de histórico é a Fase 5; hoje a tabela pode ser lida direto do SQLite.
+
+> **Banco de desenvolvimento criado antes da v1.1.** `init_db()` roda um passo
+> de migração que adiciona as colunas novas via `ALTER TABLE` — não é preciso
+> recriar o `thermal.db`. Se ainda assim quiser começar do zero, apague o
+> arquivo (`del srcackend	hermal.db` no Windows) e suba a API de novo: os
+> usuários de demonstração são recriados.
+
+### Modelos reais (`MODEL_MODE=real`)
+
+Um único preditor carrega os 7 artefatos e roteia por `key_area`, conforme o
+`manifest.json`. Pontos que valem saber:
+
+- **O mapeamento área → algoritmo não está em código.** Vive no manifesto e é
+  servido em `Metadata.area_algorithms`; trocá-lo é reexportar, não fazer
+  deploy.
+- **Cada artefato carrega o próprio dicionário de codificação.** Random Forest
+  e Gradient Boosting foram treinados em notebooks distintos e divergem em
+  `material_coil_support`; um de-para global codificaria valores errados sem
+  erro nenhum.
+- **As grafias da API e as do treino são inversas** ("To back" × "To Back",
+  "Aluminium" × "Aluminium "). A tradução é resolvida na exportação e gravada
+  em `canonical_to_training`.
+- **Opção canônica que uma área nunca viu no treino remove aquela área da
+  resposta**, e as demais respondem. Valor fora das opções canônicas continua
+  sendo 422.
+- `scikit-learn` e `joblib` estão com versão **pinada**: o preditor avisa no
+  startup se a versão carregada divergir da registrada no manifesto.
 
 ## Testes
 
