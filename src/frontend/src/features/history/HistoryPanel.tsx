@@ -150,11 +150,16 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
             <h3 className="mb-1.5 font-body text-[11px] font-bold uppercase tracking-wide text-white/75">
               Configuração do fogão
             </h3>
-            <dl className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 gap-y-1.5 leading-snug">
-              <dt className="text-white/75">Arquitetura</dt>
-              <dd className="text-right">{entry.request.architecture}</dd>
+            <dl className="divide-y divide-white/20 leading-snug">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 py-1.5 first:pt-0 last:pb-0">
+                <dt className="text-white/75">Arquitetura</dt>
+                <dd className="text-right">{entry.request.architecture}</dd>
+              </div>
               {store.metadata?.variables.map((variable) => (
-                <div key={variable.name} className="contents">
+                <div
+                  key={variable.name}
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-3 py-1.5 first:pt-0 last:pb-0"
+                >
                   <dt className="text-white/75">{variable.label_pt}</dt>
                   <dd className="text-right">
                     {entry.request.config[variable.name as keyof StoveConfig]}
