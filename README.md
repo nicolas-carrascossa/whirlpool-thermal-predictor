@@ -74,11 +74,12 @@ cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_prepr
 - `data/dataset_com_sinteticos.csv` — as 100 runs (56 reais + 44 sintéticas);
 - `data/sintetico_rastreabilidade.csv` — de quais runs-mãe cada sintética saiu.
 
-> ⚠️ **Não treine o modelo entregue com `dataset_com_sinteticos.csv`.** A ablação da seção 7 desse
-> notebook mede o efeito: o RMSE em teste real sobe de **8,09 °C para 9,70 °C** (20% pior), e a
-> degradação é monotônica com o volume de sintético. Os arquivos existem para documentar o experimento
-> e sustentar a conclusão de que o gargalo do dataset é variável não medida, não número de runs —
-> ver `notebooks/diagnostico_dados_e_validacao.ipynb`.
+> ⚠️ **Não treine o modelo entregue com `dataset_com_sinteticos.csv`.** A avaliação válida, em
+> `notebooks/avaliacao_dados_sinteticos.ipynb` (geração dentro de cada fold, teste 100% real), testou três
+> variantes de geração em Random Forest e Gradient Boosting: **nenhuma melhorou o modelo**. Os arquivos
+> existem para documentar o experimento e sustentar a conclusão de que o gargalo do dataset é variável
+> não medida, não número de runs — ver `notebooks/diagnostico_dados_e_validacao.ipynb`.
+> Os números de RMSE da seção 7 do notebook de geração vêm de um harness com vazamento e não devem ser citados.
 
 ## 🗃 Histórico de lançamentos
 
