@@ -32,6 +32,7 @@ export function ZoneMesh({
   const meshRef = useRef<THREE.Mesh>(null!)
   const matRef = useRef<THREE.MeshStandardMaterial>(null!)
   const [isPointerOver, setPointerOver] = useState(false)
+  const [hoverEnabled, setHoverEnabled] = useState(false)
   const { view, clipPlanes } = useStove()
 
   // Cor só é atualizada quando muda (não a cada frame) — evita recriar material.
@@ -75,11 +76,19 @@ export function ZoneMesh({
       rotation={def.rotation ?? [0, 0, 0]}
       onPointerOver={(e) => {
         e.stopPropagation()
+        if (!hoverEnabled) return
+        setPointerOver(true)
+        onHoverZone(def.zoneKey)
+      }}
+      onPointerMove={(e) => {
+        e.stopPropagation()
+        setHoverEnabled(true)
         setPointerOver(true)
         onHoverZone(def.zoneKey)
       }}
       onPointerOut={(e) => {
         e.stopPropagation()
+        if (!hoverEnabled) return
         setPointerOver(false)
         onUnhoverZone(def.zoneKey)
       }}
