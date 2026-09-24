@@ -1058,30 +1058,7 @@ A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores 
 | Decision Tree | 4,72 | 8,02 | 0,156 | 6,04 | 85,5% |
 | Random Forest | 4,88 | 7,18 | **0,283** | 6,54 | 79,8% |
 
-**Pontos fortes.** O Gradient Boosting vence em quatro das cinco métricas, e o retreino mais recente do notebook — já com one-hot nas sete variáveis e a grade de hiperparâmetros da Célula 5 — ampliou essa vantagem em vez de reduzi-la. O ganho mais relevante para o parceiro é o MAE: **3,92 °C** contra 4,72 °C da árvore de decisão e 4,88 °C da floresta aleatória — uma redução de 17% a 20% no erro típico, medido na mesma unidade em que a engenharia negocia margem de projeto. O RMSE, que penaliza erros grandes de forma quadrática, cai na mesma direção (5,41 contra 8,02 e 7,18): o ganho não vem de acertar melhor o caso médio, mas de **errar menos nos casos extremos** — exatamente o comportamento desejável em um modelo cuja função é sinalizar risco de superaquecimento, já que o custo de uma previsão errada não é simétrico. Subestimar em 15 °C um componente próximo do `active_limit` libera para ensaio físico uma configuração que deveria ter sido barrada; superestimar apenas desperdiça uma checagem. Por fim, **86,4% das previsões caem dentro da margem de 10%** acordada com o parceiro, contra 79,8% do Random Forest.
-
-##### A ressalva do R², e o que ela delimita
-
-O Gradient Boosting **perde** na única métrica adimensional, e por uma margem que cresceu nesta rodada: seu R² médio caiu para **−6,594**, contra 0,156 da árvore de decisão e 0,283 do Random Forest. O número é dominado por um único setor: `mainback` sozinho tem R² de teste de **−44,78**, enquanto os outros seis variam de −0,84 (`main_vent_sys`) a **0,10** (`coil_temps`) — um patamar fraco, mas comparável ao dos outros dois modelos, não uma catástrofe generalizada.
-
-A causa de `mainback` é dimensional antes de ser algorítmica. O one-hot completo (Seção 4.3, Features de entrada) expande as sete variáveis em 27 colunas nessa área — `losses` sozinha vira 13 —, contra apenas 22 linhas de treino: há mais colunas que quase o dobro de linhas para uma árvore de boosting aprender. O sintoma aparece termopar a termopar (Célula 5): a maioria tem R² de teste catastrófico (até −167), e a média dos dez arrasta o setor inteiro para −44,78. É o mesmo mecanismo do risco R03 (Seção 4.1.5, escassez de dados), agravado pela codificação: cada categoria adicional de uma variável de alta cardinalidade como `losses` custa uma coluna inteira, e `mainback` é a área com menos linhas de treino (22) para pagar esse custo.
-
-Esse resultado não contradiz o desempenho em MAE, e a distância entre os dois é o achado central desta análise. MAE e MAPE medem a distância entre o valor previsto e o observado; o R² mede quanto da **variação** entre ensaios o modelo consegue reproduzir. Um modelo pode acertar o patamar térmico de uma área com folga e ainda assim falhar em ordenar corretamente os ensaios dentro dela — e em `mainback`, falhar de forma severa nessa segunda tarefa. É o que ocorre aqui: o Gradient Boosting acerta **onde a área opera** (3,92 °C de erro típico, o menor dos três modelos), mas **não distingue com segurança duas configurações próximas** dentro da mesma área, e em `mainback` esse limite deixou de ser uma ressalva fina para se tornar uma falha de generalização mensurável.
-
-A consequência é uma qualificação explícita do escopo de uso do modelo candidato, agora reforçada por `mainback`:
-
-- **Uso sustentado pelas métricas atuais — triagem térmica.** Estimar o patamar de temperatura esperado de uma área sob uma dada configuração e sinalizar proximidade do `active_limit`, priorizando quais ensaios físicos executar primeiro. É exatamente a dor descrita na jornada do Engenheiro de Qualidade (Seção 4.1.7), em que a fila de ensaios é hoje ordenada por experiência tácita.
-- **Uso ainda não sustentado — ranqueamento fino, e especialmente em `mainback`.** Escolher entre duas configurações candidatas com base na diferença prevista entre elas. Essa decisão continua exigindo ensaio físico em qualquer setor, e em `mainback` — onde o R² indica que o modelo não captura a variação entre ensaios de forma alguma — apresentar a predição como mais que uma estimativa de patamar seria prometer além da evidência.
-
-##### Superajuste
-
-O erro médio de treino do Gradient Boosting é de 0,94 °C contra 3,92 °C no teste, um **gap de 2,98 °C** — maior que o da árvore de decisão (2,80 °C) nesta rodada, invertendo a leitura da versão anterior deste notebook, em que o Gradient Boosting superajustava menos. A amostragem estocástica de linhas a cada estágio (`subsample = 0,8`) e a profundidade limitada a 3 níveis — hiperparâmetros escolhidos por `GridSearchCV` para a área analisada em detalhe (`Mainback`, Célula 5 de `Grad_Boosting_Regre.ipynb`), já que a busca roda de forma independente em cada uma das sete áreas — continuam sendo o mecanismo de regularização proposto por Friedman para conter a variância do *boosting*²⁸, mas não bastam para compensar o custo em dimensionalidade do one-hot completo: mais colunas por variável dão à árvore mais formas de memorizar as 22 linhas de treino de `mainback`, e o gap cresce em vez de encolher.
-
-Esse gap materializa o **risco R03** mapeado na Seção 4.1.5, e sua causa é dimensional antes de ser algorítmica: 56 ensaios, dos quais restam de 24 a 56 linhas úteis por área, e apenas 31 combinações distintas de configuração — agora fatiadas em até 27 colunas one-hot na área mais afetada. Nenhum ajuste de hiperparâmetro resolve escassez de dados — o caminho é ampliar a base de ensaios, e a recomendação ao parceiro é que os próximos sejam planejados para cobrir combinações ainda não testadas, não para repetir as já frequentes.
-
-##### O que a explicabilidade pode e não pode afirmar
-
-A Figura 19 mostra a importância média das variáveis para a área `Mainback`, com o termopar mais sensível a cada uma.
+O Gradient Boosting vence em quatro das cinco métricas (MAE, RMSE, MAPE e fração dentro de 10%), perdendo apenas no R². A interpretação completa desses números — a ressalva do R², o superajuste e a explicabilidade — está na Seção 4.4.2, ao lado da mesma leitura para o Random Forest (Seção 4.4.1). As três figuras abaixo documentam a explicabilidade do modelo: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23).
 
 <div align="center">
   <sub>Figura 19 — Explicabilidade do modelo candidato: importância das variáveis na área Mainback</sub><br>
@@ -1089,15 +1066,18 @@ A Figura 19 mostra a importância média das variáveis para a área `Mainback`,
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
 </div>
 
-O `run_case` ainda lidera, mas agora com `blower_direction` logo atrás — 0,329 contra 0,308, uma diferença de apenas 0,021, quando antes `run_case` (0,481) tinha quase o triplo da segunda colocada (`housing`, 0,152). A migração para one-hot redistribuiu o crédito preditivo entre as duas variáveis mais fortes em vez de concentrá-lo em uma só; ambas seguem coerentes com a **H3** e a **H1** (Seção 4.2.4), que já haviam identificado o modo de operação e a direção do fluxo de ar como fatores reais de elevação térmica. O detalhe que só a arquitetura multi-saída revela é *onde* cada variável pesa: `run_case` concentra 0,836 de importância no termopar `Storage Drawer (Metal Above)`, o de maior amplitude térmica da área (90,25 °C a 171,57 °C), enquanto `blower_direction` concentra 0,512 em `L2, Wire, Power Cord`. Para o parceiro, essa leitura por sensor é acionável — indica quais dois pontos instrumentar com prioridade ao validar uma mudança de modo de operação ou de direção do ventilador.
+<div align="center">
+  <sub>Figura 20 — Validação da explicabilidade com SHAP: contribuição média das variáveis na área Mainback, em °C</sub><br>
+  <img src="../assets/graficos/modelo_candidato_shap.png" alt="Gráfico de barras horizontais com a contribuição média de cada variável de configuração, em graus Celsius, segundo valores SHAP para o Gradient Boosting na área Mainback" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
 
-O gráfico, porém, **não deve ser lido como evidência de causa** — e a própria redistribuição acima é uma demonstração do porquê. A **H2** demonstrou que as sete configurações estão confundidas no desenho experimental: cada categoria de `losses` corresponde a um único valor de `deflector_hole`, uma relação de identidade, não apenas de associação. Diante de variáveis redundantes, algoritmos baseados em árvores distribuem o crédito preditivo de forma arbitrária entre elas, e a simples troca de codificação bastou para deslocar parte desse crédito de `run_case` para `blower_direction` sem que nada no fenômeno físico tenha mudado. A importância de 0,003 de `material_coil_support` indica que o modelo **não precisou** dessa variável — não que o material do suporte seja termicamente irrelevante. A leitura correta é que a figura descreve **como o modelo decide**, não **como o fogão aquece**, e que essa decisão é sensível a escolhas de pré-processamento, não só aos dados.
+<div align="center">
+  <sub>Figura 23 — Participação de cada variável na importância SHAP, por área (Gradient Boosting)</sub><br>
+  <img src="../assets/graficos/modelo_candidato_shap_por_area.png" alt="Mapa de calor mostrando a participação percentual de cada variável de configuração na importância SHAP total de cada uma das sete áreas do produto" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
 
-Vale registrar ainda uma divergência assumida em relação à H2, que recomendara retirar `losses` e `board_position` do modelo por redundância. Este candidato mantém as sete variáveis deliberadamente: com apenas 31 combinações distintas, removê-las antes de medir seu efeito eliminaria a própria evidência de que são dispensáveis. As importâncias agora medidas (0,111 e 0,040) continuam confirmando o que a H2 antecipara por análise do desenho experimental, e seguem sendo um teste objetivo pendente para a Seção 4.4 — agora com o argumento adicional de que reduzir a dimensionalidade do one-hot em `mainback` também atacaria o superajuste discutido acima.
-
-##### Síntese
-
-O Gradient Boosting sustenta-se como modelo candidato por entregar o menor erro em graus, a menor incidência de erros extremos e a maior taxa de acerto dentro da margem acordada com o parceiro — vantagem que aumentou, não diminuiu, após o retreino com one-hot e a grade de hiperparâmetros atual. Seus limites, porém, também cresceram: o R² médio caiu de fraco (0,156) para profundamente negativo (−6,594), puxado quase inteiramente por `mainback`, onde a combinação de poucos dados (22 linhas de treino) com muitas colunas one-hot (27) produz superajuste severo (gap de 2,98 °C, agora pior que o da árvore de decisão) e torna a predição dentro dessa área inadequada para qualquer uso além de estimar o patamar térmico. Fora de `mainback`, o quadro é mais próximo do que já se conhecia: R² fraco, mas na faixa dos outros modelos, e impossibilidade de atribuição causal por confundimento no desenho dos ensaios. Em termos práticos, o modelo já serve para **priorizar ensaios**, e ainda não para **substituí-los** — e em `mainback`, especificamente, nem para ranquear ensaios dentro da área. As Seções 4.4 e 4.5 retomam esse candidato para a comparação formal entre modelos e para a definição da solução final, incluindo o plano de contingência para os casos em que a previsão falhar.
 A discussão a seguir cobre os três modelos candidatos treinados para prever a temperatura de cada termopar do fogão:
 
 * Decision Tree Regressor
@@ -1108,10 +1088,6 @@ Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em fo
 
 ### 4.4. Comparação de Modelos
 
-Esta seção formaliza a comparação entre os três candidatos apresentados em 4.3 — Decision Tree, Random Forest e Gradient Boosting — segundo os três critérios que orientam essa escolha: como cada modelo foi otimizado, como se saiu nas métricas definidas em "Métricas de avaliação do modelo" (Seção 4.3) e o que cada um permite explicar sobre suas próprias previsões. A leitura detalhada de cada resultado, incluindo suas ressalvas, está na Seção 4.3.4; aqui o objetivo é consolidar os três lado a lado e declarar a escolha.
-
-##### Otimização de hiperparâmetros
-
 Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação (Seção 4.3, item a). As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
 
 | Modelo | Hiperparâmetros buscados |
@@ -1120,35 +1096,188 @@ Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada
 | Random Forest | `n_estimators`, `max_depth`, `min_samples_leaf`, `max_features` |
 | Gradient Boosting | `n_estimators`, `learning_rate`, `max_depth`, `subsample` |
 
-Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam pela mesma busca automatizada, o que satisfaz a exigência de otimização e torna a comparação de métricas, abaixo, uma comparação entre versões já ajustadas de cada algoritmo, não entre implementações ingênuas.
+Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam pela mesma busca automatizada. As subseções abaixo detalham, para cada modelo, como ele evoluiu a partir desse ponto de partida comum, quanto erra e o que a explicabilidade revela sobre suas decisões.
 
-##### Comparação de métricas
+#### 4.4.1. Random Forest
 
-A Figura 18 (Seção 4.3.4) e a tabela abaixo resumem o desempenho médio entre os sete setores, no conjunto de teste:
+A floresta aleatória (*Random Forest*, `RandomForestRegressor`) funciona como um comitê. Em vez de uma única árvore de decisão estimar sozinha a temperatura esperada, centenas de árvores são treinadas sobre recortes diferentes dos mesmos ensaios, e a previsão final é o consenso entre elas. O ganho é que os erros individuais de cada árvore tendem a se cancelar; o custo é que um comitê é mais difícil de auditar do que uma árvore isolada — por isso a explicabilidade recebe uma parte inteira mais adiante.
 
-| Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+Como nos outros dois modelos, existe uma floresta por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região a partir da configuração de montagem informada.
+
+##### Como se chegou à versão atual
+
+O modelo não nasceu pronto. Foram seis mudanças testadas uma a uma, cada uma medida isoladamente antes de ser combinada com as outras.
+
+1. **Ajuste fino dos parâmetros (tuning de hiperparâmetros, via `GridSearchCV`).** Quantas árvores usar (`n_estimators`), quão profunda cada uma pode crescer (`max_depth`), quantos ensaios exigir no mínimo em cada ramo (`min_samples_leaf`). Foram testadas quase cem combinações por região, e o ganho foi pequeno e inconstante: em várias regiões o ajuste apenas reorganizou ruído, sem melhorar a previsão de fato.
+2. **Enxugar a lista de variáveis de entrada.** A ideia era remover as duas que o modelo menos usava — a posição da placa (`board_position`) e o material do suporte da bobina (`material_coil_support`) — para simplificar. O erro piorou na maioria das regiões, e a mudança foi descartada. A lição é sobre o tamanho da base: com poucos ensaios, abrir mão de informação custa mais do que a simplificação rende.
+3. **Alinhar o critério de divisão da árvore ao erro que será cobrado.** Por padrão, a árvore decide onde dividir os ensaios minimizando o erro quadrático (`criterion="squared_error"`), enquanto o compromisso com o parceiro é medido em erro absoluto, em graus de diferença. Trocar o critério para `criterion="absolute_error"` é uma mudança de uma linha de código, e melhorou o resultado em cinco das sete regiões.
+4. **Estimador híbrido — tratar os ensaios fora da curva.** Cada árvore termina agrupando ensaios parecidos numa folha e prevendo a média do grupo. Quando um ensaio atípico cai nesse grupo, ele puxa a média para longe do que o restante indica. O estimador híbrido detecta esse caso — quando a média da folha cai fora do intervalo interquartil (IQR) dos valores de treino daquela folha — e passa a usar a mediana, que resiste a valores extremos, mantendo a média quando o grupo é bem-comportado. Foi a melhor das três opções (média, mediana, híbrido) em quatro das sete regiões, e melhor que a média pura em seis das sete.
+5. **Mudar a forma de validar o modelo (Leave-One-Group-Out, ou LOGO).** Até aqui o desempenho era medido por um corte fixo de treino/teste (*holdout*), separando 20% dos ensaios uma única vez — cerca de seis ensaios por região. Um punhado tão pequeno faz a nota final depender de sorteio. O LOGO retreina o modelo excluindo um ensaio por vez e tenta prevê-lo, repetindo o processo até que todos tenham servido de teste. Isso não muda o modelo, muda o quanto se pode confiar na medição dele.
+6. **Mudar como as variáveis de entrada são representadas (codificação one-hot em vez de ordinal).** Cada variável de entrada é uma opção de texto, e o modelo só trabalha com números. A codificação original (ordinal) numerava as opções em ordem alfabética, o que faz a árvore enxergar uma hierarquia que não existe no fogão — como se um modo de operação (`run_case`) fosse "maior" que outro. A codificação one-hot corrige isso: cada opção vira sua própria coluna binária (sim/não), sem ordem entre elas. Isso pesa mais justamente onde o modo de operação é decisivo, que é o caso das bobinas.
+
+As três últimas mudanças — estimador híbrido, validação LOGO e codificação one-hot — compõem a **versão atual**, discutida daqui em diante. As mudanças 3 e 4 (critério `absolute_error` e estimador híbrido) seguem como alternativas em aberto entre si: nenhuma das duas se mostrou superior à outra nos testes feitos até aqui, e compará-las lado a lado, já sobre a versão atual, é o próximo passo natural.
+
+##### Quanto o modelo erra
+
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. Antes delas, o que cada coluna quer dizer:
+
+- **Erro médio absoluto (MAE — Mean Absolute Error)** — de quantos graus a previsão erra, em média. É a métrica principal, por estar na mesma unidade da decisão de engenharia.
+- **Raiz do erro quadrático médio (RMSE — Root Mean Squared Error)** — semelhante ao MAE, mas penaliza erros grandes com peso maior. Quanto mais o RMSE se afasta do MAE, mais concentradas em poucos sensores estão as falhas.
+- **Coeficiente de determinação (R²)**, aqui chamado de poder de distinção — o quanto o modelo diferencia uma configuração de outra dentro da mesma região. O valor 1 é o ideal; 0 significa não fazer melhor do que sempre chutar a média histórica daquela região; abaixo de 0, pior do que isso.
+- **Erro percentual médio absoluto (MAPE — Mean Absolute Percentage Error)** e **dentro de 10%** — o erro em proporção da temperatura medida, e a fatia de previsões que cai dentro da margem acordada com o parceiro.
+
+**Versão de referência** — separação simples entre treino e teste
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
-| **Gradient Boosting** | **3,92** | **5,41** | −6,594 | **5,03** | **86,4%** |
-| Decision Tree | 4,72 | 8,02 | 0,156 | 6,04 | 85,5% |
-| Random Forest | 4,88 | 7,18 | **0,283** | 6,54 | 79,8% |
+| CT Knobs | 1,54 | 1,99 | 0,389 | 3,02 | 100,0% |
+| Main Vent Sys | 1,86 | 2,27 | 0,160 | 2,19 | 97,6% |
+| IPC Cooling | 2,51 | 3,23 | 0,106 | 4,19 | 95,8% |
+| Oven HMI | 2,63 | 3,29 | −0,256 | 4,27 | 95,8% |
+| Mainback | 3,74 | 5,94 | −5,981 | 7,07 | 90,0% |
+| IPC Comp | 5,13 | 6,41 | 0,044 | 6,54 | 75,8% |
+| Coil Temps | 8,93 | 11,04 | 0,359 | 7,14 | 72,9% |
+| **Média das sete regiões** | **3,76** | **4,88** | **−0,740** | **4,92** | **89,7%** |
 
-O Gradient Boosting vence em quatro das cinco métricas (MAE, RMSE, MAPE e fração dentro de 10%) e perde apenas no R², métrica em que o resultado é dominado por um único setor (`mainback`) com dimensionalidade desfavorável após o one-hot — o mecanismo está detalhado em "A ressalva do R²" (Seção 4.3.4), e não se repete nos outros seis setores. A Decision Tree tem o menor gap de MAE treino-teste entre os dois modelos de árvore comparáveis nesse quesito (2,80 °C, contra 2,98 °C do Gradient Boosting), mas perde em todas as métricas de erro absoluto. O Random Forest tem o melhor R², mas o pior MAE, RMSE e fração dentro de 10% dos três — o inverso do padrão do Gradient Boosting.
+**Versão atual** — valores atípicos tratados, configurações sem ordem artificial, avaliação ensaio a ensaio
 
-##### Explicabilidade
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Main Vent Sys | 1,96 | 3,24 | 0,367 | 2,35 | 95,5% |
+| Oven HMI | 2,20 | 2,80 | 0,122 | 3,75 | 96,1% |
+| CT Knobs | 2,30 | 3,05 | 0,384 | 4,53 | 89,1% |
+| Mainback | 3,30 | 5,46 | 0,512 | 5,02 | 86,6% |
+| IPC Cooling | 3,64 | 5,72 | 0,327 | 5,77 | 89,8% |
+| IPC Comp | 4,85 | 6,70 | 0,158 | 6,38 | 82,2% |
+| Coil Temps | 10,54 | 14,88 | 0,666 | 9,63 | 72,3% |
+| **Média das sete regiões** | **4,11** | **5,98** | **0,362** | **5,35** | **87,4%** |
 
-Os três algoritmos são baseados em árvores e expõem `feature_importances_` nativamente. O critério de avaliação exige explicabilidade em ao menos um modelo supervisionado; o Gradient Boosting está detalhado abaixo.
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Random_for_regre.ipynb`. As duas tabelas não são somáveis nem intercambiáveis: descrevem configurações e formas de avaliação diferentes.</sup>
 
-###### Explicabilidade — Gradient Boosting
+**Leitura.** O erro típico depende muito da região: fica entre 2 °C e 4 °C em cinco das sete, e sobe em IPC Comp, a região com mais sensores, e nas bobinas, a mais quente. Isso é esperado — uma diferença de 3 °C não significa a mesma coisa em uma região que opera perto da temperatura ambiente e em outra que ultrapassa os 150 °C. Na média, cerca de nove em cada dez previsões caem dentro da margem de 10% acordada com o parceiro. A diferença mais visível entre as duas tabelas está no poder de distinção, tratado a seguir.
 
-O Gradient Boosting tem sua explicabilidade detalhada nesta documentação (Figura 19, Seção 4.3.4). Sua arquitetura `MultiOutputRegressor` treina um regressor por termopar, o que permite uma leitura por sensor individual, além da importância média da área — granularidade que esta documentação ainda não explorou para os outros dois modelos. Para `mainback`, `run_case` (0,329) e `blower_direction` (0,308) concentram a maior parte do crédito preditivo, com o restante distribuído entre `housing`, `losses`, `deflector_hole`, `board_position` e `material_coil_support`. Como discutido em 4.3.4, essa importância mede uso preditivo do modelo, não relação causal — as sete variáveis estão confundidas no desenho experimental (H2, Seção 4.2.4), e a leitura correta é sobre como o modelo decide, não sobre como o fogão aquece.
+##### O número que parece alarmante, e o que ele quer dizer
 
-###### Explicabilidade — Random Forest
+Na versão de referência, duas regiões aparecem com poder de distinção negativo, e uma delas, Mainback, com um valor muito abaixo de zero. Lido ao pé da letra, isso diria que o modelo é pior do que simplesmente chutar sempre a média histórica da região.
 
-*(Pendente. O Random Forest também expõe `feature_importances_` nativamente — falta descrever a importância das variáveis por área e discutir a mesma ressalva de causalidade por confundimento que vale para qualquer modelo baseado em árvores, H2 na Seção 4.2.4.)*
+Não é o que acontece. O erro médio (MAE) dessa mesma região está na faixa das demais: o modelo acerta bem o patamar de temperatura. O número negativo vem de **como ele foi medido**, não do que ele aprendeu — com apenas seis ensaios reservados para teste (o corte fixo de *holdout*), um único ensaio atípico distorce a conta inteira. A versão atual confirma o diagnóstico: avaliada com o LOGO (que usa todos os ensaios como teste, um de cada vez, em vez de um corte fixo), a mesma região sai de um R² fortemente negativo para 0,51, e nenhuma das sete fica negativa.
 
-##### Modelo eleito
+Ainda assim, o recado de fundo permanece, e é o mesmo já registrado para o Gradient Boosting (Seção 4.4.2): o poder de distinção é modesto em várias regiões. O modelo é confiável para dizer **em que patamar térmico uma região vai operar**, e ainda não para **escolher com segurança entre duas configurações parecidas**. Na prática, isso o qualifica para priorizar quais ensaios físicos rodar primeiro, não para substituí-los.
 
-Pelo critério de maioria simples entre as cinco métricas (Seção 4.3.4), o **Gradient Boosting** é eleito o modelo candidato do Thermal Predictor. A escolha não é isenta de ressalvas — o R² negativo, sobretudo em `mainback`, limita seu uso a triagem de patamar térmico e ainda não a ranqueamento fino de configurações dentro de uma mesma área —, mas o conjunto de métricas de erro absoluto, a fração de previsões dentro da margem acordada e a disponibilidade de explicabilidade por sensor o tornam a opção mais alinhada ao uso pretendido pelo parceiro (Seção 4.1.7). A Seção 4.5 retoma essa escolha para a definição da solução final e do plano de contingência.
+##### Decorar não é aprender
+
+O modelo erra bem menos nos ensaios que usou para aprender do que nos que nunca viu: em Mainback, quase três vezes mais nos ensaios novos. É o sinal clássico de memorização, e ele aparece com mais força justamente nas regiões com mais sensores e maior variação de temperatura.
+
+A causa é o tamanho da base, não o algoritmo. São poucos ensaios e poucas combinações distintas de configuração — o limite já registrado como risco R02. Nenhum ajuste de parâmetro substitui novos ensaios, e a recomendação ao parceiro segue a mesma: que os próximos sejam planejados para cobrir combinações ainda não testadas, em vez de repetir as já frequentes.
+
+##### O que o modelo olha para decidir
+
+Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations), uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
+
+A **leitura global** (importância agregada das variáveis, olhando todas as previsões) resume o que mais pesa em cada região:
+
+- Nas bobinas, o modo de operação (`run_case`) domina com folga — é de longe o fator mais influente de toda a análise, cerca de cinco vezes mais forte que o segundo colocado. O resultado é coerente com a hipótese H3, que já apontava o modo de operação como fator real de elevação térmica.
+- Em Mainback e na região de HMI, quem manda é a direção do fluxo de ar do ventilador (`blower_direction`).
+- Nas demais regiões a diferença entre as variáveis é pequena, sem uma dominante clara.
+
+A **leitura local** (a decomposição de uma previsão específica) explica um caso concreto. No caso de maior erro registrado nas bobinas, o modelo estimou cerca de 14 °C a menos do que o ensaio mediu, e a decomposição aponta o modo de operação (`run_case`) e o material do suporte da bobina (`material_coil_support`) como as variáveis que puxaram a estimativa para baixo. Um detalhe técnico com consequência prática apareceu aí: a previsão padrão do modelo (`.predict()`) e o estimador híbrido chegam a valores de temperatura próximos, mas a decomposição SHAP de cada um aponta uma ordem diferente de variáveis mais influentes. Cada estimador precisa da própria explicação; não é válido explicar um e apresentar o resultado como se valesse para o outro.
+
+**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Gradient Boosting, apoiada na hipótese H2: as variáveis de entrada estão confundidas entre si nos ensaios — variar uma quase sempre implicou variar outra —, e diante de informação redundante o modelo distribui o crédito entre elas de forma arbitrária. Uma variável aparecer com peso baixo (SHAP ou `feature_importances_`) significa que o modelo **não precisou** dela para prever, não que ela seja irrelevante para o aquecimento do fogão. A leitura descreve como o modelo decide, não como o fogão aquece.
+
+##### Em resumo
+
+O Random Forest erra entre 2 °C e 4 °C na maior parte das regiões do fogão e entrega cerca de nove em cada dez previsões dentro da margem de 10% acordada com o parceiro. Seu ponto fraco é distinguir configurações parecidas dentro de uma mesma região, e a origem disso é a base de ensaios disponível, não o algoritmo.
+
+A sequência de melhorias rendeu onde podia render: o ajuste de parâmetros contribuiu pouco, mas alinhar o critério de erro, tratar os ensaios fora da curva e corrigir a forma de representar as configurações resolveram o problema de medição que fazia a região de Mainback, por exemplo, parecer um fracasso.
+
+#### 4.4.2. Gradient Boosting
+
+O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial, não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
+
+Como nos outros dois modelos, existe um conjunto de regressores por região do fogão, sete no total, e a arquitetura por termopar tem uma consequência que reaparece na explicabilidade, adiante: diferente do Random Forest, dá para saber qual variável pesa mais **para cada sensor**, não só para a região como um todo.
+
+##### Como se chegou à versão atual
+
+Diferente do Random Forest, o ajuste de hiperparâmetros por `GridSearchCV` já fazia parte do modelo desde a primeira versão — não é uma mudança desta rodada, é o ponto de partida. Quatro mudanças foram testadas depois disso:
+
+1. **Mudar como as variáveis de entrada são representadas (one-hot em vez de ordinal).** Mesma motivação do Random Forest: a codificação ordinal original numerava as categorias em ordem alfabética, criando uma hierarquia artificial entre elas — como se um modo de operação fosse "maior" que outro. Testado sob protocolo rigoroso (LOGO + intervalo de confiança de 95%, `documents/extras/hipotese_onehot.md`), o resultado foi estatisticamente neutro em todas as sete regiões — nem para melhor, nem para pior. A mudança foi adotada mesmo assim, por ser mais correta em princípio e sem custo medido.
+2. **Corrigir uma categoria mal rotulada em `material_coil_support`.** Um ensaio (Run 48) já vinha rotulado "Aluminium Plate" no dado bruto, antes de qualquer correção do grupo; foi normalizado para "Aluminium", batendo com o glossário do parceiro, que documenta só dois níveis para essa variável.
+3. **Manter as sete variáveis originais, apesar da recomendação da H2.** A H2 (Seção 4.2.4) identificou `losses` como redundante com `deflector_hole` no desenho dos ensaios. Removê-las antes de medir o efeito eliminaria a própria evidência necessária para decidir a remoção — com só 31 combinações distintas de configuração, a base ainda não permite separar "redundante no fenômeno" de "redundante só porque nunca foi ensaiado de outro jeito".
+4. **Adicionar uma validação por Leave-One-Out (LOGO), independente do corte fixo de treino/teste.** Mesma motivação do Random Forest: com só seis ensaios no corte de teste (holdout de 20%), a nota de uma região pode depender de sorteio. O LOGO usa todos os 32 ensaios de cada região como teste, um de cada vez, com hiperparâmetros fixos (`learning_rate = 0,03`, `max_depth = 3`, `subsample = 0,8`, `n_estimators = 100`) — não re-tunados por região, para isolar o efeito da validação do efeito do ajuste fino.
+
+As mudanças 1, 2 e 4 compõem a **versão atual**, discutida daqui em diante. A mudança 3 é uma decisão de manter o modelo como está, não uma mudança de fato — fica registrada porque delimita o que o modelo pode e não pode dizer sobre causa, retomado na explicabilidade, adiante. Ficou de fora da versão atual uma oitava variável (`fan_level`) com ganho estatístico validado em teste controlado, porque depende de uma reclassificação de material que o glossário do parceiro ainda não confirma — registrada como pendência para a próxima rodada de ensaios, não como parte do modelo oficial.
+
+##### Quanto o modelo erra
+
+As tabelas usam as mesmas cinco métricas definidas na Seção 4.4.1, na mesma unidade e com o mesmo agrupamento por região.
+
+**Versão de referência** — codificação ordinal
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Oven HMI | 2,06 | 2,65 | 0,172 | 3,55 | 100,0% |
+| CT Knobs | 2,47 | 3,53 | 0,182 | 5,23 | 80,3% |
+| Main Vent Sys | 3,33 | 5,25 | 0,600 | 3,92 | 89,1% |
+| IPC Comp | 4,32 | 5,03 | −0,893 | 6,17 | 88,1% |
+| IPC Cooling | 4,41 | 8,54 | 0,153 | 5,89 | 85,0% |
+| Mainback | 5,09 | 8,63 | −0,012 | 8,50 | 75,5% |
+| Coil Temps | 7,53 | 11,21 | 0,892 | 6,88 | 81,3% |
+| **Média das sete regiões** | **4,18** | **6,40** | **0,156** | **5,73** | **85,6%** |
+
+**Versão atual** — codificação one-hot, material corrigido
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Main Vent Sys | 1,74 | 2,46 | −0,840 | 2,06 | 97,6% |
+| CT Knobs | 2,02 | 2,44 | −0,112 | 4,09 | 97,2% |
+| Oven HMI | 2,09 | 3,18 | −0,167 | 3,37 | 87,5% |
+| IPC Cooling | 2,27 | 2,94 | −0,126 | 3,69 | 95,8% |
+| Mainback | 4,19 | 7,13 | −44,781 | 7,96 | 81,7% |
+| IPC Comp | 5,35 | 6,89 | −0,231 | 6,70 | 72,0% |
+| Coil Temps | 9,79 | 12,82 | 0,101 | 7,38 | 72,9% |
+| **Média das sete regiões** | **3,92** | **5,41** | **−6,594** | **5,03** | **86,4%** |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Grad_Boosting_Regre.ipynb`, Célula 9. As duas tabelas não são somáveis nem intercambiáveis: descrevem codificações diferentes das mesmas sete variáveis.</sup>
+
+**Leitura.** A troca de codificação melhorou o erro médio em quatro das cinco métricas — a mesma direção observada no Random Forest — mas piorou drasticamente o poder de distinção de uma única região, Mainback, tratado a seguir. Fora dela, o padrão por região se mantém: erro típico entre 1,7 °C e 5,4 °C, subindo para quase 10 °C em Coil Temps, a região mais quente do produto.
+
+##### O número que parece alarmante, e o que ele quer dizer
+
+O poder de distinção de Mainback na versão atual é −44,78 — não só negativo, várias vezes mais extremo que qualquer outra célula das duas tabelas, incluindo o −5,98 do Random Forest na mesma região antes do LOGO. Lido ao pé da letra, diria que o modelo é dezenas de vezes pior que chutar a média histórica da região.
+
+Não é o que acontece, e a causa aqui tem uma camada a mais além do holdout pequeno já discutido para o Random Forest: a codificação one-hot expande as sete variáveis em 27 colunas nessa região — `losses` sozinha responde por 13 —, contra só 22 linhas de treino. São mais colunas que quase o dobro de linhas para o modelo aprender, o que **piora** o problema de medição em vez de só repeti-lo. O erro médio (MAE) da mesma região, 4,19 °C, está dentro da faixa das demais — o modelo continua acertando o patamar de temperatura.
+
+A validação por LOGO (Seção 4.4.2, item 4) confirma o diagnóstico, como no Random Forest: usando os 32 ensaios como teste, um de cada vez, o poder de distinção de Mainback sobe de −44,78 para **0,41**, e a média entre as sete regiões passa de −6,59 para **0,37**, restando só IPC Comp (−0,06) ligeiramente abaixo de zero.
+
+Ainda assim, o recado de fundo é o mesmo do Random Forest: o poder de distinção é modesto mesmo sob a validação mais estável. O modelo é confiável para dizer **em que patamar térmico uma região vai operar**, e ainda não para **escolher com segurança entre duas configurações parecidas** — em Mainback, essa segunda tarefa continua sem sustentação nem sob LOGO.
+
+##### Decorar não é aprender
+
+O modelo erra bem menos nos ensaios que usou para aprender do que nos que nunca viu: na versão atual, o erro médio de treino é 0,94 °C contra 3,92 °C no teste, um gap de 2,98 °C — maior que o gap da própria versão de referência (2,15 °C) e maior que o do Decision Tree (2,80 °C, Seção 4.3.4). A mesma expansão de colunas que gera o número alarmante do item anterior também piora a memorização: mais colunas por variável dão à árvore mais formas de decorar as 22 linhas de treino de Mainback.
+
+A causa é a mesma dos outros dois modelos: tamanho da base, não o algoritmo. Nenhum ajuste de hiperparâmetro substitui novos ensaios, e a recomendação ao parceiro é a mesma — planejar os próximos ensaios para cobrir combinações ainda não testadas, não repetir as já frequentes.
+
+##### O que o modelo olha para decidir
+
+Uma previsão isolada não diz por que saiu daquele jeito. A versão atual foi analisada com SHAP, do mesmo modo que o Random Forest: o `TreeExplainer` reparte cada previsão entre as sete variáveis de entrada, de forma que a soma das partes reconstrói exatamente o valor previsto. A diferença estrutural em relação ao Random Forest é que o `MultiOutputRegressor` já treina um regressor por termopar — a leitura por sensor nasce da própria arquitetura, sem precisar do eixo extra que o SHAP monta sobre o modelo único da floresta.
+
+A **leitura global por área** (Figura 19, Seção 4.3.4, para Mainback; Figura 23, para as sete áreas) mostra que nenhuma variável decide de forma uniforme entre regiões:
+
+- Nas bobinas (Coil Temps), o modo de operação (`run_case`) domina com folga — 53% de toda a importância da região, a maior concentração do mapa inteiro, coerente com a mesma hipótese H3 que explica o domínio de `run_case` no Random Forest.
+- Em Mainback, quem lidera é a direção do fluxo de ar do ventilador (`blower_direction`, 29%) — mesma variável que domina em Mainback e HMI no Random Forest, embora ali a leitura seja por impureza (uma única importância por região) e aqui seja por SHAP, técnica diferente.
+- Em IPC Comp e Oven HMI, quem lidera é `losses` (28% e 33%).
+
+Essa alternância de qual variável decide, região por região, é a mesma leitura que a H1 (Seção 4.2.4) já fizera sobre o efeito medido nos dados — aqui reaparece também na estrutura interna do modelo, sem que essa alternância tenha sido informada ao treinamento. `board_position` e `material_coil_support` são as duas variáveis de menor participação em todas as sete áreas, sem uma única exceção.
+
+Uma segunda técnica, a importância por impureza nativa do `GradientBoostingRegressor` (Figura 19), foi comparada ao SHAP (Figura 20) só para Mainback, como checagem cruzada: as quatro variáveis líderes coincidem nas duas técnicas, mas a ordem entre as duas primeiras (`run_case` e `blower_direction`) se inverte de uma técnica para outra, e o termopar mais sensível a cada variável muda em quatro das sete — indício de que o ranking agregado de variáveis é mais estável entre técnicas do que o detalhe por sensor.
+
+**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest, apoiada na H2: as variáveis de entrada estão confundidas entre si nos ensaios, e diante de informação redundante o modelo distribui o crédito de forma arbitrária — a própria inversão de ordem entre `run_case` e `blower_direction` ao trocar de técnica de explicabilidade é uma demonstração disso. Uma variável com peso baixo (SHAP ou impureza) significa que o modelo **não precisou** dela, não que seja irrelevante para o aquecimento do fogão.
+
+##### Em resumo
+
+O Gradient Boosting erra entre 1,7 °C e 5,4 °C na maior parte das regiões, chegando a quase 10 °C em Coil Temps, e entrega cerca de 86% das previsões dentro da margem de 10% acordada com o parceiro — a maior taxa entre os três modelos. Seu ponto fraco, como nos outros dois, é distinguir configurações parecidas dentro de uma mesma região, e a base de ensaios disponível é a causa, não o algoritmo.
+
+A diferença em relação ao Random Forest é onde esse ponto fraco se concentra: a troca para one-hot, adotada por ser conceitualmente mais correta e sem custo estatístico medido em teste controlado, tem um custo real e localizado em Mainback — mais colunas para o mesmo número de linhas, que produz o superajuste mais severo do notebook e o poder de distinção mais baixo das duas tabelas. A validação por LOGO mostra que esse número é sobretudo um problema de medição, mas o superajuste em si é real e seria atacado, entre outras formas, pela mesma simplificação de variáveis (item 3 acima) que a H2 já recomendava e que o Random Forest testou e descartou por outro motivo — um teste ainda pendente para o Gradient Boosting especificamente.
 
 ### 4.5. Avaliação
 ```
@@ -1369,7 +1498,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 20 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
+  <sub>Figura 21 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -1828,15 +1957,15 @@ Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo —
 
 **e) Histograma da variável após o escalonamento**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 20.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 21.
 
 <div align="center">
-  <sub>Figura 21 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
+  <sub>Figura 22 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp_scaled.png" alt="Histograma da temperatura normalizada por key_area, distribuída ao longo de todo o intervalo de 0 a 1, sem cauda longa" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 20)**
+**Comparação com o histograma antes do escalonamento (Figura 21)**
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -1848,17 +1977,17 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-Antes do escalonamento, o histograma de `temp` (Figura 20, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
+Antes do escalonamento, o histograma de `temp` (Figura 21, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 21 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 20: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 22 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 21: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
 
-**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 20) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 21) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
 **Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
 
-Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 21 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 22 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
 
-**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 20 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 21 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
