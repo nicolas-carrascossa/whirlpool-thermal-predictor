@@ -58,6 +58,6 @@ precisão de representação.
 
 ## Arquivos
 
-- Script: `notebooks/gb_experimentos_v2_onehot_fan_E16.py`
-- Dados: `data/gb_v2_E16_oof.csv` (previsões), `data/gb_v2_E16_ic.csv` (IC por área)
+- Script: removido após a conclusão do experimento (decisão de manter ordinal já registrada acima).
+- Dados: `data/gb_v2_E16_oof.csv` (previsões), `data/gb_v2_E16_ic.csv` (IC por área) — regeneráveis pelo script original, se necessário; não versionados (`*.csv` no `.gitignore`).
 - Figura: `assets/graficos/gb_v2_E16_onehot_fan_vs_ordinal.png`
