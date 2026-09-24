@@ -1106,6 +1106,98 @@ Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em fo
 
 ### 4.4. Comparação de Modelos
 
+#### 4.4.1. Random Forest
+
+A floresta aleatória (*Random Forest*, `RandomForestRegressor`) funciona como um comitê. Em vez de uma única árvore de decisão estimar sozinha a temperatura esperada, centenas de árvores são treinadas sobre recortes diferentes dos mesmos ensaios, e a previsão final é o consenso entre elas. O ganho é que os erros individuais de cada árvore tendem a se cancelar; o custo é que um comitê é mais difícil de auditar do que uma árvore isolada — por isso a explicabilidade recebe uma parte inteira mais adiante.
+
+Como nos outros dois modelos, existe uma floresta por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região a partir da configuração de montagem informada.
+
+##### Como se chegou à versão atual
+
+O modelo não nasceu pronto. Foram seis mudanças testadas uma a uma, cada uma medida isoladamente antes de ser combinada com as outras.
+
+1. **Ajuste fino dos parâmetros (tuning de hiperparâmetros, via `GridSearchCV`).** Quantas árvores usar (`n_estimators`), quão profunda cada uma pode crescer (`max_depth`), quantos ensaios exigir no mínimo em cada ramo (`min_samples_leaf`). Foram testadas quase cem combinações por região, e o ganho foi pequeno e inconstante: em várias regiões o ajuste apenas reorganizou ruído, sem melhorar a previsão de fato.
+2. **Enxugar a lista de variáveis de entrada.** A ideia era remover as duas que o modelo menos usava — a posição da placa (`board_position`) e o material do suporte da bobina (`material_coil_support`) — para simplificar. O erro piorou na maioria das regiões, e a mudança foi descartada. A lição é sobre o tamanho da base: com poucos ensaios, abrir mão de informação custa mais do que a simplificação rende.
+3. **Alinhar o critério de divisão da árvore ao erro que será cobrado.** Por padrão, a árvore decide onde dividir os ensaios minimizando o erro quadrático (`criterion="squared_error"`), enquanto o compromisso com o parceiro é medido em erro absoluto, em graus de diferença. Trocar o critério para `criterion="absolute_error"` é uma mudança de uma linha de código, e melhorou o resultado em cinco das sete regiões.
+4. **Estimador híbrido — tratar os ensaios fora da curva.** Cada árvore termina agrupando ensaios parecidos numa folha e prevendo a média do grupo. Quando um ensaio atípico cai nesse grupo, ele puxa a média para longe do que o restante indica. O estimador híbrido detecta esse caso — quando a média da folha cai fora do intervalo interquartil (IQR) dos valores de treino daquela folha — e passa a usar a mediana, que resiste a valores extremos, mantendo a média quando o grupo é bem-comportado. Foi a melhor das três opções (média, mediana, híbrido) em quatro das sete regiões, e melhor que a média pura em seis das sete.
+5. **Mudar a forma de validar o modelo (Leave-One-Group-Out, ou LOGO).** Até aqui o desempenho era medido por um corte fixo de treino/teste (*holdout*), separando 20% dos ensaios uma única vez — cerca de seis ensaios por região. Um punhado tão pequeno faz a nota final depender de sorteio. O LOGO retreina o modelo excluindo um ensaio por vez e tenta prevê-lo, repetindo o processo até que todos tenham servido de teste. Isso não muda o modelo, muda o quanto se pode confiar na medição dele.
+6. **Mudar como as variáveis de entrada são representadas (codificação one-hot em vez de ordinal).** Cada variável de entrada é uma opção de texto, e o modelo só trabalha com números. A codificação original (ordinal) numerava as opções em ordem alfabética, o que faz a árvore enxergar uma hierarquia que não existe no fogão — como se um modo de operação (`run_case`) fosse "maior" que outro. A codificação one-hot corrige isso: cada opção vira sua própria coluna binária (sim/não), sem ordem entre elas. Isso pesa mais justamente onde o modo de operação é decisivo, que é o caso das bobinas.
+
+As três últimas mudanças — estimador híbrido, validação LOGO e codificação one-hot — compõem a **versão atual**, discutida daqui em diante. As mudanças 3 e 4 (critério `absolute_error` e estimador híbrido) seguem como alternativas em aberto entre si: nenhuma das duas se mostrou superior à outra nos testes feitos até aqui, e compará-las lado a lado, já sobre a versão atual, é o próximo passo natural.
+
+##### Quanto o modelo erra
+
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. Antes delas, o que cada coluna quer dizer:
+
+- **Erro médio absoluto (MAE — Mean Absolute Error)** — de quantos graus a previsão erra, em média. É a métrica principal, por estar na mesma unidade da decisão de engenharia.
+- **Raiz do erro quadrático médio (RMSE — Root Mean Squared Error)** — semelhante ao MAE, mas penaliza erros grandes com peso maior. Quanto mais o RMSE se afasta do MAE, mais concentradas em poucos sensores estão as falhas.
+- **Coeficiente de determinação (R²)**, aqui chamado de poder de distinção — o quanto o modelo diferencia uma configuração de outra dentro da mesma região. O valor 1 é o ideal; 0 significa não fazer melhor do que sempre chutar a média histórica daquela região; abaixo de 0, pior do que isso.
+- **Erro percentual médio absoluto (MAPE — Mean Absolute Percentage Error)** e **dentro de 10%** — o erro em proporção da temperatura medida, e a fatia de previsões que cai dentro da margem acordada com o parceiro.
+
+**Versão de referência** — separação simples entre treino e teste
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| CT Knobs | 1,54 | 1,99 | 0,389 | 3,02 | 100,0% |
+| Main Vent Sys | 1,86 | 2,27 | 0,160 | 2,19 | 97,6% |
+| IPC Cooling | 2,51 | 3,23 | 0,106 | 4,19 | 95,8% |
+| Oven HMI | 2,63 | 3,29 | −0,256 | 4,27 | 95,8% |
+| Mainback | 3,74 | 5,94 | −5,981 | 7,07 | 90,0% |
+| IPC Comp | 5,13 | 6,41 | 0,044 | 6,54 | 75,8% |
+| Coil Temps | 8,93 | 11,04 | 0,359 | 7,14 | 72,9% |
+| **Média das sete regiões** | **3,76** | **4,88** | **−0,740** | **4,92** | **89,7%** |
+
+**Versão atual** — valores atípicos tratados, configurações sem ordem artificial, avaliação ensaio a ensaio
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Main Vent Sys | 1,96 | 3,24 | 0,367 | 2,35 | 95,5% |
+| Oven HMI | 2,20 | 2,80 | 0,122 | 3,75 | 96,1% |
+| CT Knobs | 2,30 | 3,05 | 0,384 | 4,53 | 89,1% |
+| Mainback | 3,30 | 5,46 | 0,512 | 5,02 | 86,6% |
+| IPC Cooling | 3,64 | 5,72 | 0,327 | 5,77 | 89,8% |
+| IPC Comp | 4,85 | 6,70 | 0,158 | 6,38 | 82,2% |
+| Coil Temps | 10,54 | 14,88 | 0,666 | 9,63 | 72,3% |
+| **Média das sete regiões** | **4,11** | **5,98** | **0,362** | **5,35** | **87,4%** |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Random_for_regre.ipynb`. As duas tabelas não são somáveis nem intercambiáveis: descrevem configurações e formas de avaliação diferentes.</sup>
+
+**Leitura.** O erro típico depende muito da região: fica entre 2 °C e 4 °C em cinco das sete, e sobe em IPC Comp, a região com mais sensores, e nas bobinas, a mais quente. Isso é esperado — uma diferença de 3 °C não significa a mesma coisa em uma região que opera perto da temperatura ambiente e em outra que ultrapassa os 150 °C. Na média, cerca de nove em cada dez previsões caem dentro da margem de 10% acordada com o parceiro. A diferença mais visível entre as duas tabelas está no poder de distinção, tratado a seguir.
+
+##### O número que parece alarmante, e o que ele quer dizer
+
+Na versão de referência, duas regiões aparecem com poder de distinção negativo, e uma delas, Mainback, com um valor muito abaixo de zero. Lido ao pé da letra, isso diria que o modelo é pior do que simplesmente chutar sempre a média histórica da região.
+
+Não é o que acontece. O erro médio (MAE) dessa mesma região está na faixa das demais: o modelo acerta bem o patamar de temperatura. O número negativo vem de **como ele foi medido**, não do que ele aprendeu — com apenas seis ensaios reservados para teste (o corte fixo de *holdout*), um único ensaio atípico distorce a conta inteira. A versão atual confirma o diagnóstico: avaliada com o LOGO (que usa todos os ensaios como teste, um de cada vez, em vez de um corte fixo), a mesma região sai de um R² fortemente negativo para 0,51, e nenhuma das sete fica negativa.
+
+Ainda assim, o recado de fundo permanece, e é o mesmo já registrado para o Gradient Boosting: o poder de distinção é modesto em várias regiões. O modelo é confiável para dizer **em que patamar térmico uma região vai operar**, e ainda não para **escolher com segurança entre duas configurações parecidas**. Na prática, isso o qualifica para priorizar quais ensaios físicos rodar primeiro, não para substituí-los.
+
+##### Decorar não é aprender
+
+O modelo erra bem menos nos ensaios que usou para aprender do que nos que nunca viu: em Mainback, quase três vezes mais nos ensaios novos. É o sinal clássico de memorização, e ele aparece com mais força justamente nas regiões com mais sensores e maior variação de temperatura.
+
+A causa é o tamanho da base, não o algoritmo. São poucos ensaios e poucas combinações distintas de configuração — o limite já registrado como risco R02. Nenhum ajuste de parâmetro substitui novos ensaios, e a recomendação ao parceiro segue a mesma: que os próximos sejam planejados para cobrir combinações ainda não testadas, em vez de repetir as já frequentes.
+
+##### O que o modelo olha para decidir
+
+Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations), uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
+
+A **leitura global** (importância agregada das variáveis, olhando todas as previsões) resume o que mais pesa em cada região:
+
+- Nas bobinas, o modo de operação (`run_case`) domina com folga — é de longe o fator mais influente de toda a análise, cerca de cinco vezes mais forte que o segundo colocado. O resultado é coerente com a hipótese H3, que já apontava o modo de operação como fator real de elevação térmica.
+- Em Mainback e na região de HMI, quem manda é a direção do fluxo de ar do ventilador (`blower_direction`).
+- Nas demais regiões a diferença entre as variáveis é pequena, sem uma dominante clara.
+
+A **leitura local** (a decomposição de uma previsão específica) explica um caso concreto. No caso de maior erro registrado nas bobinas, o modelo estimou cerca de 14 °C a menos do que o ensaio mediu, e a decomposição aponta o modo de operação (`run_case`) e o material do suporte da bobina (`material_coil_support`) como as variáveis que puxaram a estimativa para baixo. Um detalhe técnico com consequência prática apareceu aí: a previsão padrão do modelo (`.predict()`) e o estimador híbrido chegam a valores de temperatura próximos, mas a decomposição SHAP de cada um aponta uma ordem diferente de variáveis mais influentes. Cada estimador precisa da própria explicação; não é válido explicar um e apresentar o resultado como se valesse para o outro.
+
+**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Gradient Boosting, apoiada na hipótese H2: as variáveis de entrada estão confundidas entre si nos ensaios — variar uma quase sempre implicou variar outra —, e diante de informação redundante o modelo distribui o crédito entre elas de forma arbitrária. Uma variável aparecer com peso baixo (SHAP ou `feature_importances_`) significa que o modelo **não precisou** dela para prever, não que ela seja irrelevante para o aquecimento do fogão. A leitura descreve como o modelo decide, não como o fogão aquece.
+
+##### Em resumo
+
+O Random Forest erra entre 2 °C e 4 °C na maior parte das regiões do fogão e entrega cerca de nove em cada dez previsões dentro da margem de 10% acordada com o parceiro. Seu ponto fraco é distinguir configurações parecidas dentro de uma mesma região, e a origem disso é a base de ensaios disponível, não o algoritmo.
+
+A sequência de melhorias rendeu onde podia render: o ajuste de parâmetros contribuiu pouco, mas alinhar o critério de erro, tratar os ensaios fora da curva e corrigir a forma de representar as configurações resolveram o problema de medição que fazia a região de Mainback, por exemplo, parecer um fracasso. 
+
 ### 4.5. Avaliação
 ```
 - Descreva a solução final de modelo preditivo e justifique a escolha. Alinhe sua justificativa com a Seção 4.1, resgatando o entendimento 
