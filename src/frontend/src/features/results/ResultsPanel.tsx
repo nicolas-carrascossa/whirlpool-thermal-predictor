@@ -39,6 +39,8 @@ export function groupByArea(response: PredictionResponse, metadata: Metadata | u
       group = {
         name: p.key_area,
         label_pt: labels.get(p.key_area) ?? p.key_area,
+        // Procedência vinda da própria predição (v1.1).
+        algorithm: p.algorithm,
         predictions: [],
         maxRatio: null,
         maxTemp: Number.NEGATIVE_INFINITY,
@@ -322,9 +324,13 @@ export function ResultsPanel({
           onHoverVariable={onHoverVariable}
         />
       </TabsContent>
-      {/* Dados simulados (mockMetrics.ts) — nada aqui vem da API. */}
+      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-4">
-        <MetricsPanel metadata={metadata} />
+        <MetricsPanel
+          metadata={metadata}
+          keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
+          response={response ?? undefined}
+        />
       </TabsContent>
     </Tabs>
   )

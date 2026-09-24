@@ -1,6 +1,8 @@
 /**
  * Mapa de calor do erro por área: linhas = key_areas, colunas = estatísticas
- * do erro absoluto (MAE, RMSE, mediana, p90, máximo), todas em °C. Recharts não
+ * do erro absoluto (MAE, RMSE, mediana, p90, máximo), todas em °C, calculadas
+ * dos pares previsto/real MEDIDOS em laboratório e recortados aos termopares da
+ * consulta. Recharts não
  * tem heatmap nativo, então é uma grade CSS de células coloridas pela mesma
  * escala do mapa 3D (`heatColorHex`), com a legenda compartilhada.
  *
@@ -10,12 +12,12 @@
  */
 
 import { HeatScaleLegend } from '@/components/HeatScaleLegend'
+import type { ValidationPoint } from '@/contract/v1'
 import { heatColorHex } from '@/components/thermal-map/colorScale'
 import { formatTemp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 import { ERROR_PROFILE_COLUMNS, errorProfileOf, textColorForBackground } from './metricsModel'
-import type { AreaMetrics } from './mockMetrics'
 
 export default function ErrorHeatmap({
   areas,
@@ -23,16 +25,32 @@ export default function ErrorHeatmap({
   selectedKeyArea,
   onSelectKeyArea,
 }: {
-  areas: AreaMetrics[]
+  /**
+   * Áreas do recorte com os pares previsto/real JÁ recortados aos termopares da
+   * consulta. As estatísticas são calculadas aqui, dos próprios resíduos, para
+   * o mapa responder exatamente à previsão executada — e não à área inteira.
+   */
+  areas: { keyArea: string; points: ValidationPoint[] }[]
   areaLabels: Record<string, string>
   selectedKeyArea: string
   onSelectKeyArea?: (keyArea: string) => void
 }) {
-  const rows = areas.map((a) => ({ keyArea: a.keyArea, profile: errorProfileOf(a.predictedVsActual) }))
+  const rows = areas
+    .filter((area) => area.points.length > 0)
+    .map((area) => ({ keyArea: area.keyArea, profile: errorProfileOf(area.points) }))
   const values = rows.flatMap((r) => ERROR_PROFILE_COLUMNS.map((c) => r.profile[c.key]))
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+  // Sem `values`, `Math.min(...[])` é `Infinity` e a escala de cor sai NaN.
+  const min = values.length ? Math.min(...values) : 0
+  const max = values.length ? Math.max(...values) : 0
   const span = max - min || 1
+
+  if (rows.length === 0) {
+    return (
+      <p className="py-8 text-center font-body text-sm text-wp-gray65">
+        Nenhum ensaio de teste cobre os sensores desta consulta.
+      </p>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3">

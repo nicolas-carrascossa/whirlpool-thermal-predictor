@@ -15,8 +15,10 @@ import {
 import { formatNumber, formatPct, formatRatioPct, formatTemp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-import { KPI_STATUS_LABEL_PT, kpiStatusOf, type KpiStatus } from './metricsModel'
-import type { AreaMetrics } from './mockMetrics'
+import type { AreaMetrics } from '@/contract/v1'
+import { algorithmLabel } from '@/lib/algorithms'
+
+import { KPI_STATUS_LABEL_PT, kpiStatusForMape, type KpiStatus } from './metricsModel'
 
 const ROW_CLASS: Record<KpiStatus, string> = {
   ok: '',
@@ -47,6 +49,7 @@ export function AreaErrorTable({
         <TableHeader>
           <TableRow>
             <TableHead>Área</TableHead>
+            <TableHead>Modelo</TableHead>
             <TableHead className="text-right">MAE</TableHead>
             <TableHead className="text-right">RMSE</TableHead>
             <TableHead className="text-right">R²</TableHead>
@@ -57,28 +60,33 @@ export function AreaErrorTable({
         </TableHeader>
         <TableBody>
           {areas.map((area) => {
-            const m = area.errorMetrics
-            const status = kpiStatusOf(m)
-            const selected = area.keyArea === selectedKeyArea
+            const status = kpiStatusForMape(area.mape_pct)
+            const selected = area.key_area === selectedKeyArea
             return (
               <TableRow
-                key={area.keyArea}
-                data-key-area={area.keyArea}
+                key={area.key_area}
+                data-key-area={area.key_area}
                 data-kpi-status={status}
+                data-algorithm={area.algorithm}
                 aria-selected={selected}
-                onClick={() => onSelectKeyArea?.(area.keyArea)}
+                onClick={() => onSelectKeyArea?.(area.key_area)}
                 className={cn(ROW_CLASS[status], onSelectKeyArea && 'cursor-pointer', selected && 'font-semibold')}
               >
                 <TableCell className={cn(selected && 'text-wp-core')}>
-                  {areaLabels[area.keyArea] ?? area.keyArea}
+                  {areaLabels[area.key_area] ?? area.key_area}
                 </TableCell>
-                <TableCell className="tabular text-right">{formatTemp(m.mae)}</TableCell>
-                <TableCell className="tabular text-right">{formatTemp(m.rmse)}</TableCell>
-                <TableCell className="tabular text-right">{formatNumber(m.r2, 2)}</TableCell>
+                {/* Procedência por rótulo textual, não por cor: a saturação da
+                    paleta é reservada ao dado térmico. */}
+                <TableCell className="whitespace-nowrap text-xs text-wp-gray65">
+                  {algorithmLabel(area.algorithm)}
+                </TableCell>
+                <TableCell className="tabular text-right">{formatTemp(area.mae)}</TableCell>
+                <TableCell className="tabular text-right">{formatTemp(area.rmse)}</TableCell>
+                <TableCell className="tabular text-right">{formatNumber(area.r2, 2)}</TableCell>
                 <TableCell className={cn('tabular text-right', status !== 'ok' && STATUS_TEXT_CLASS[status])}>
-                  {formatPct(m.mapePct)}
+                  {formatPct(area.mape_pct)}
                 </TableCell>
-                <TableCell className="tabular text-right">{formatRatioPct(m.withinTenPctRate, 0)}</TableCell>
+                <TableCell className="tabular text-right">{formatRatioPct(area.within_ten_pct_rate, 0)}</TableCell>
                 <TableCell className={cn('text-xs font-semibold', STATUS_TEXT_CLASS[status])}>
                   {KPI_STATUS_LABEL_PT[status]}
                 </TableCell>

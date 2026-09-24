@@ -1,9 +1,10 @@
 /**
  * Importância das 7 variáveis de configuração para a área selecionada, em
- * barras horizontais ordenadas da maior para a menor. As duas variáveis fora
- * do modelo (`losses`, `board_position` — H2) aparecem zeradas, em cinza, com
- * o mesmo rótulo do painel de configuração: mostrar a ausência de efeito é o
- * ponto, não escondê-las.
+ * barras horizontais ordenadas da maior para a menor. Uma variável que o
+ * modelo no ar não usa aparece zerada, em cinza, com o mesmo rótulo do painel
+ * de configuração: mostrar a ausência de efeito é o ponto, não escondê-la.
+ * Quem decide isso é `VariableMeta.used_by_model`, vindo do back-end — este
+ * componente não sabe, e não deve saber, o nome de nenhuma variável.
  */
 
 import {
@@ -21,13 +22,14 @@ import type { VariableMeta } from '@/contract/v1'
 import { formatPct } from '@/lib/format'
 
 import { importanceData } from './metricsModel'
-import type { FeatureImportance } from './mockMetrics'
+
 
 export default function FeatureImportanceBars({
   importance,
   variables,
 }: {
-  importance: FeatureImportance
+  /** Importância por variável; a API devolve um mapa aberto. */
+  importance: Record<string, number>
   variables: VariableMeta[] | undefined
 }) {
   const data = importanceData(importance, variables)

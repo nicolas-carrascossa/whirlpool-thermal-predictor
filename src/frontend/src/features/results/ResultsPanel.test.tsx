@@ -1,12 +1,13 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { ContractError } from '@/contract/v1'
 import { ResultsPanel, groupByArea } from '@/features/results/ResultsPanel'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE, FIXTURE_RESPONSE_MX } from '@/test/fixtures'
+import { renderWithQuery } from '@/test/queryWrapper'
 
 function renderPanel(props: Partial<React.ComponentProps<typeof ResultsPanel>> = {}) {
-  return render(
+  return renderWithQuery(
     <ResultsPanel
       metadata={FIXTURE_METADATA}
       response={FIXTURE_RESPONSE}
@@ -53,13 +54,13 @@ describe('ResultsPanel', () => {
     expect(screen.getByText('Sensores previstos')).toBeInTheDocument()
   })
 
-  it('monta as métricas estatísticas (simuladas) ao entrar na aba "Métricas Estatísticas"', () => {
+  it('monta as métricas estatísticas ao entrar na aba "Métricas Estatísticas"', async () => {
     renderPanel()
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Métricas Estatísticas' }))
     expect(screen.getByRole('tab', { name: 'Métricas Estatísticas' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('note')).toHaveTextContent(/simulad/i)
-    expect(screen.getByLabelText('Área do modelo')).toBeInTheDocument()
     expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
+    // As métricas vêm do `PredictionSource` (v1.1): a aba carrega de forma assíncrona.
+    expect(await screen.findByLabelText('Área do modelo')).toBeInTheDocument()
   })
 
   it('monta o mapa térmico ao entrar na aba "Mapa térmico"', () => {

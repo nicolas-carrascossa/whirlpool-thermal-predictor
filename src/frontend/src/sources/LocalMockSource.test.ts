@@ -76,7 +76,7 @@ describe('contrato', () => {
   it('metadata valida contra o schema e descreve 7 variáveis, 7 áreas e 77 sensores', async () => {
     const meta = await source.getMetadata()
     expect(validateMetadata(meta), JSON.stringify(validateMetadata.errors)).toBe(true)
-    expect(meta.contract_version).toBe('1.0.0')
+    expect(meta.contract_version).toBe('1.2.0')
     expect(meta.variables).toHaveLength(7)
     expect(meta.key_areas).toHaveLength(7)
     expect(meta.sensors).toHaveLength(77)

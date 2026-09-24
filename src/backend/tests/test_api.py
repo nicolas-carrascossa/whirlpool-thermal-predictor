@@ -109,7 +109,7 @@ def test_metadata_shape(client, auth) -> None:
     meta = response.json()
     METADATA_VALIDATOR.validate(meta)
 
-    assert meta["contract_version"] == "1.0.0"
+    assert meta["contract_version"] == "1.2.0"
     assert len(meta["variables"]) == 7
     assert len(meta["sensors"]) == 77
     assert len(meta["key_areas"]) == 7
@@ -238,6 +238,44 @@ def test_access_log_records_api_calls(client, auth, reference_config) -> None:
     assert last.method == "POST"
     assert last.duration_ms >= 0
     assert last.ts_utc is not None
+
+
+def test_access_log_records_the_submitted_config_and_model_set(
+    client, auth, reference_config
+) -> None:
+    """Rastreabilidade: daqui a meses, com o mapeamento já alterado, é preciso
+    saber qual configuração foi pedida e qual conjunto de modelos respondeu."""
+    import json as _json
+
+    body = {
+        "architecture": "BR",
+        "config": reference_config,
+        "targets": {"key_areas": ["Oven HMI"]},
+    }
+    response = client.post("/api/v1/predictions", headers=auth, json=body)
+    assert response.status_code == 200
+
+    with Session(get_engine()) as session:
+        rows = session.exec(select(AccessLog)).all()
+    last = [r for r in rows if r.path == "/api/v1/predictions" and r.status_code == 200][-1]
+
+    assert last.architecture == "BR"
+    assert last.model_set_version == response.json()["model_version"]
+    for field, value in reference_config.items():
+        assert getattr(last, field) == value, field
+    assert _json.loads(last.targets_json) == {"key_areas": ["Oven HMI"]}
+    # Mapeamento efetivamente aplicado nesta chamada.
+    assert _json.loads(last.area_algorithms_json) == response.json()["algorithm_by_area"]
+
+
+def test_access_log_leaves_model_columns_null_outside_predictions(client, auth) -> None:
+    client.get("/api/v1/metadata", headers=auth)
+    with Session(get_engine()) as session:
+        rows = session.exec(select(AccessLog)).all()
+    last = [r for r in rows if r.path == "/api/v1/metadata"][-1]
+    assert last.architecture is None
+    assert last.model_set_version is None
+    assert last.targets_json is None
 
     # /health is public and must not be logged.
     assert all(not r.path.startswith("/health") for r in rows)

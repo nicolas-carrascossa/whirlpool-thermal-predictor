@@ -13,6 +13,7 @@ import { AuthError } from '@/contract/errors'
 import {
   ContractError,
   type Metadata,
+  type MetricsResponse,
   type PredictionRequest,
   type PredictionResponse,
   type PredictionSource,
@@ -78,6 +79,15 @@ export class ApiSource implements PredictionSource {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
+    })
+  }
+
+  async getMetrics(areas?: string[]): Promise<MetricsResponse> {
+    const query = (areas ?? [])
+      .map((area) => `key_areas=${encodeURIComponent(area)}`)
+      .join('&')
+    return this.request<MetricsResponse>(`/metrics${query ? `?${query}` : ''}`, {
+      method: 'GET',
     })
   }
 }

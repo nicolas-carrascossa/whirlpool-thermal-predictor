@@ -29,7 +29,15 @@ class Settings(BaseSettings):
     jwt_expires_min: int = 480
 
     # --- predictor ----------------------------------------------------------
+    #: `mock` (offline demo, Fase 1) or `real` (trained artifacts, Fase 3).
+    #: This is the ONLY operating switch — the algorithm of each area comes
+    #: from the manifest, never from a request or another setting.
     model_mode: str = "mock"
+
+    #: Directory with one artifact per (algorithm x key_area) plus
+    #: `manifest.json`, produced by `scripts/export_models.py`. Only read when
+    #: `model_mode == "real"`.
+    model_dir: Path = REPO_ROOT / "models"
 
     # --- data ---------------------------------------------------------------
     #: Directory holding sensor_registry.json / sensor_stats.json /
@@ -43,7 +51,7 @@ class Settings(BaseSettings):
     # --- http ---------------------------------------------------------------
     cors_origins: str = "http://localhost:5173,http://localhost:5174,http://localhost:4173"
 
-    @field_validator("data_dir", "db_path")
+    @field_validator("data_dir", "db_path", "model_dir")
     @classmethod
     def _resolve(cls, value: Path) -> Path:
         return value if value.is_absolute() else (BACKEND_DIR / value).resolve()

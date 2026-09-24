@@ -29,6 +29,7 @@ function sensor(
     is_monitor: active_limit_c === null,
     monitor_reference_c: null,
     reliability: 'interpolation',
+  algorithm: 'random_forest',
   }
 }
 
