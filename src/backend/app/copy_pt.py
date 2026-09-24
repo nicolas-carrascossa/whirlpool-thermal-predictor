@@ -28,12 +28,12 @@ VARIABLE_COPY: dict[str, dict[str, str]] = {
         "help_pt": "Material da peça que sustenta a resistência: alumínio, chapa de alumínio ou plástico. O material muda a condução de calor para os componentes vizinhos — o plástico isola e faz a própria região da resistência trabalhar mais quente, enquanto a chapa de alumínio espalha melhor o calor."
     },
     "losses": {
-        "label_pt": "Perfil de perdas (não usado pelo modelo)",
-        "help_pt": "Perfil de dissipação térmica (em W) assumido na simulação, calculado por analistas diferentes e para ordens de montagem diferentes. No conjunto de 56 ensaios cada categoria de perdas corresponde a um único valor de \"Furo do defletor\" (H2), ou seja, é redundante com ele. Fica disponível como informação de rastreabilidade do ensaio, mas não entra no modelo e não altera a predição."
+        "label_pt": "Perfil de perdas",
+        "help_pt": "Perfil de dissipação térmica (em W) assumido na simulação, calculado por analistas diferentes e para ordens de montagem diferentes. Os modelos treinados USAM esta variável e, em \"Resfriamento da eletrônica\" e \"Compartimento da eletrônica de potência\", ela é a de maior importância. Leia esse peso com cautela: no conjunto de 56 ensaios cada categoria de perdas corresponde a um único valor de \"Furo do defletor\" (H2), então parte do efeito atribuído a ela pode na verdade ser do defletor."
     },
     "board_position": {
-        "label_pt": "Posição da placa (não usada pelo modelo)",
-        "help_pt": "Posição da placa eletrônica no produto (centro ou direita). No desenho dos ensaios essa variável está confundida com as demais (H2): não existe par de ensaios que a isole, então qualquer efeito atribuído a ela seria efeito de outras mudanças. Registrada para rastreabilidade, mas não entra no modelo e não altera a predição."
+        "label_pt": "Posição da placa",
+        "help_pt": "Posição da placa eletrônica no produto (centro ou direita). Os modelos treinados USAM esta variável, com peso baixo na maioria das áreas e maior em \"Painel traseiro\". No desenho dos ensaios ela está confundida com as demais (H2): não existe par de ensaios que a isole, então o efeito medido pode ser de outras mudanças que variaram junto com ela."
     }
 }
 

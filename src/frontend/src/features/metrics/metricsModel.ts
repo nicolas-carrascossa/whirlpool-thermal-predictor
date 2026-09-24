@@ -25,9 +25,6 @@ export const CONFIG_VARIABLES: (keyof StoveConfig)[] = [
   'material_coil_support',
 ]
 
-/** Variáveis excluídas pela H2 — importância obrigatoriamente 0. */
-export const VARIABLES_NOT_USED_BY_MODEL: (keyof StoveConfig)[] = ['losses', 'board_position']
-
 /** KPI do projeto: erro percentual máximo aceito (MAPE, em %). */
 export const KPI_MAPE_LIMIT_PCT = 10
 /** Faixa de atenção: a partir daqui a área está perto de estourar o KPI. */

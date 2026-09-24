@@ -52,8 +52,6 @@ from app.copy_pt import KEY_AREA_COPY, VARIABLE_COPY
 from app.data import (
     ALGORITHM_LABELS,
     CONFIG_FIELDS,
-    IGNORED_FIELDS,
-    MODEL_FIELDS,
     Dataset,
     load_dataset,
 )
@@ -107,7 +105,34 @@ class RealPredictor:
         self._areas: dict[str, dict[str, Any]] = self.manifest.get("areas", {})
         #: Loaded artifacts, memoised: 7 models is too much to reload per call.
         self._models: dict[str, Any] = {}
+        self._used_variables = self._variables_used_by_models()
         self._warn_on_sklearn_mismatch()
+
+    def _variables_used_by_models(self) -> set[str]:
+        """Variables the ARTIFACTS actually use — read, never assumed.
+
+        `IGNORED_FIELDS` records hypothesis H2, which excluded `losses` and
+        `board_position` from the Fase 1 MOCK. The trained models are a
+        different story: `export_models.py` fits all 7 columns, and in
+        `IPC Cooling` and `IPC Comp` `losses` is the single most important
+        variable (0.49 and 0.40 of the importance). Reusing the mock's constant
+        here made the interface label as "informativo — não usado pelo modelo"
+        exactly the variable that dominates two areas' predictions, and made
+        `compute_reliability` call two different configurations identical.
+
+        A variable counts as used when at least one area's model splits on it
+        (importance > 0). Zero importance everywhere means no output depends on
+        it, which is the honest definition of ignored — and it re-derives
+        itself at each export instead of drifting from the artifacts.
+        """
+        trained = set(self.manifest.get("variables") or CONFIG_FIELDS)
+        used = {
+            variable
+            for entry in self._areas.values()
+            for variable, importance in (entry.get("feature_importance") or {}).items()
+            if importance > 0
+        }
+        return used & trained
 
     # --- manifest ----------------------------------------------------------
 
@@ -223,9 +248,14 @@ class RealPredictor:
         if not train_configs:
             return "out_of_domain"
         trained = self._to_training(key_area, config)
-        best = len(MODEL_FIELDS)
+        # Sobre as variaveis que os modelos USAM, nao sobre as 5 da H2: com 5,
+        # duas configuracoes que diferem so em `losses` eram classificadas como
+        # "interpolacao" (combinacao vista no treino) embora o modelo devolva
+        # numeros diferentes para elas.
+        fields = sorted(self._used_variables)
+        best = len(fields)
         for run in train_configs:
-            distance = sum(1 for field in MODEL_FIELDS if run.get(field) != trained[field])
+            distance = sum(1 for field in fields if run.get(field) != trained[field])
             best = min(best, distance)
             if best == 0:
                 break
@@ -291,7 +321,7 @@ class RealPredictor:
                     label_pt=VARIABLE_COPY.get(name, {}).get("label_pt", name),
                     help_pt=VARIABLE_COPY.get(name, {}).get("help_pt", ""),
                     options=self.dataset.options_for(name),
-                    used_by_model=name not in IGNORED_FIELDS,
+                    used_by_model=name in self._used_variables,
                 )
                 for name in CONFIG_FIELDS
             ],
@@ -414,7 +444,9 @@ class RealPredictor:
             model_version=self.model_version,
             architecture=req.architecture,
             architecture_available=available,
-            ignored_fields=list(IGNORED_FIELDS),
+            # Derivado dos artefatos, nao da constante da H2: hoje os 7
+            # modelos usam as 7 variaveis, entao a lista sai vazia.
+            ignored_fields=[f for f in CONFIG_FIELDS if f not in self._used_variables],
             predictions=[],
             algorithm_by_area={},
             generated_at=_iso_utc(self.now()),

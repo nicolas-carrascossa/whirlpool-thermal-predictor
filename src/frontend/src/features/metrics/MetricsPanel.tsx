@@ -198,8 +198,8 @@ export function MetricsPanel({
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Importância das variáveis — {selectedLabel}</CardTitle>
             <CardDescription>
-              Quanto cada variável de configuração pesa no modelo desta área. As duas fora do modelo (H2)
-              aparecem zeradas.
+              Quanto cada variável de configuração pesa no modelo desta área. Variável que este modelo não
+              usa aparece zerada e em cinza.
             </CardDescription>
           </CardHeader>
           <CardContent>

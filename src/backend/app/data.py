@@ -27,7 +27,10 @@ CONFIG_FIELDS: tuple[str, ...] = (
     "material_coil_support",
 )
 
-#: The 5 variables the model (mock and real) actually uses.
+#: The 5 variables the MOCK uses (H2). The trained models use all 7 — see
+#: `RealPredictor._variables_used_by_models`, which reads that from the
+#: manifest instead of assuming it. Do not reuse these two constants for the
+#: real predictor: they describe the Fase 1 mock, not the artifacts.
 MODEL_FIELDS: tuple[str, ...] = (
     "blower_direction",
     "housing",
@@ -36,7 +39,7 @@ MODEL_FIELDS: tuple[str, ...] = (
     "material_coil_support",
 )
 
-#: Accepted by the contract but deliberately outside the model (H2).
+#: Accepted by the contract but outside the MOCK's model (H2). See above.
 IGNORED_FIELDS: tuple[str, ...] = ("losses", "board_position")
 
 #: Fallback used only when `model_manifest.json` is absent (fresh clone before

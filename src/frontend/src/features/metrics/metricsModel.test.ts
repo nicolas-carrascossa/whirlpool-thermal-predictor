@@ -24,7 +24,6 @@ import {
   scopeToPrediction,
   statusForPoint,
   textColorForBackground,
-  VARIABLES_NOT_USED_BY_MODEL,
 } from './metricsModel'
 
 function point(over: Partial<ValidationPoint> = {}): ValidationPoint {
@@ -153,8 +152,10 @@ describe('importância das variáveis', () => {
       expect(data[i - 1].importance).toBeGreaterThanOrEqual(data[i].importance)
     }
     expect(data[0].label).toBe('Modo de operação')
+    // Quem não é usada vem de `used_by_model` na metadata (a fixture simula o
+    // mock da Fase 1), nunca de uma lista fixa no front.
     const notUsed = data.filter((d) => !d.usedByModel).map((d) => d.name).sort()
-    expect(notUsed).toEqual([...VARIABLES_NOT_USED_BY_MODEL].sort())
+    expect(notUsed).toEqual(['board_position', 'losses'])
     for (const d of data) expect(d.note).toBe(d.usedByModel ? '' : NOT_USED_LABEL_PT)
   })
 })

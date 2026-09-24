@@ -252,6 +252,56 @@ def test_run_config_stays_in_the_manifest(engine, manifest) -> None:
     assert not hasattr(run, "config")
 
 
+def test_every_trained_variable_is_declared_as_used(engine, config) -> None:
+    """A interface não pode chamar de "informativa" uma variável que o modelo usa.
+
+    `IGNORED_FIELDS` registra a H2, que tirou `losses` e `board_position` do
+    MOCK da Fase 1. Os modelos treinados usam as 7 colunas — e em `IPC Cooling`
+    e `IPC Comp` `losses` é a variável MAIS importante. Enquanto o preditor real
+    lia aquela constante, o painel marcava as duas com "informativo — não usado
+    pelo modelo" e a resposta as listava em `ignored_fields`.
+    """
+    metadata = engine.get_metadata()
+    assert len(metadata.variables) == 7
+    unused = [v.name for v in metadata.variables if not v.used_by_model]
+    assert unused == [], f"declaradas como não usadas, mas treinadas: {unused}"
+
+    response = engine.predict(PredictionRequest(architecture="BR", config=config))
+    assert response.ignored_fields == []
+
+
+def test_losses_and_board_position_really_move_the_prediction(engine, config) -> None:
+    """Prova de substância, não de rótulo: trocá-las muda os números."""
+    baseline = {
+        p.tc_number: p.temp_c
+        for p in engine.predict(PredictionRequest(architecture="BR", config=config)).predictions
+    }
+    for variable in ("losses", "board_position"):
+        options = [o for o in engine.dataset.options_for(variable) if o != config[variable]]
+        changed = 0
+        for option in options:
+            altered = engine.predict(
+                PredictionRequest(architecture="BR", config=dict(config, **{variable: option}))
+            )
+            changed = max(
+                changed,
+                sum(1 for p in altered.predictions if baseline.get(p.tc_number) != p.temp_c),
+            )
+        assert changed > 0, f"{variable} não alterou nenhuma predição"
+
+
+def test_reliability_counts_every_variable_the_models_use(engine, config) -> None:
+    """Config que difere só em `losses` não é a mesma do treino.
+
+    Com a distância de Hamming medida sobre as 5 variáveis da H2, ela era
+    classificada como `interpolation` — o rótulo de maior confiança — para uma
+    combinação que o modelo nunca viu.
+    """
+    assert engine.compute_reliability("IPC Cooling", config) == "interpolation"
+    other = next(o for o in engine.dataset.options_for("losses") if o != config["losses"])
+    assert engine.compute_reliability("IPC Cooling", dict(config, losses=other)) != "interpolation"
+
+
 def test_metrics_reject_unknown_area(engine) -> None:
     with pytest.raises(ContractError):
         engine.get_metrics(["Área Inexistente"])

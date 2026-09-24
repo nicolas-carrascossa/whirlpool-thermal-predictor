@@ -1,9 +1,10 @@
 /**
  * Importância das 7 variáveis de configuração para a área selecionada, em
- * barras horizontais ordenadas da maior para a menor. As duas variáveis fora
- * do modelo (`losses`, `board_position` — H2) aparecem zeradas, em cinza, com
- * o mesmo rótulo do painel de configuração: mostrar a ausência de efeito é o
- * ponto, não escondê-las.
+ * barras horizontais ordenadas da maior para a menor. Uma variável que o
+ * modelo no ar não usa aparece zerada, em cinza, com o mesmo rótulo do painel
+ * de configuração: mostrar a ausência de efeito é o ponto, não escondê-la.
+ * Quem decide isso é `VariableMeta.used_by_model`, vindo do back-end — este
+ * componente não sabe, e não deve saber, o nome de nenhuma variável.
  */
 
 import {

@@ -366,7 +366,7 @@
       "type": "object"
     },
     "Reliability": {
-      "description": "Confiabilidade da estimativa, por distância de Hamming entre a configuração consultada e as combinações presentes no conjunto de treino, considerando apenas as 5 variáveis usadas pelo modelo.\n- `interpolation`: combinação existe no treino (distância 0).\n- `moderate_extrapolation`: exatamente 1 variável diferente.\n- `out_of_domain`: 2 ou mais variáveis diferentes.",
+      "description": "Confiabilidade da estimativa, por distância de Hamming entre a configuração consultada e as combinações presentes no conjunto de treino, considerando as variáveis que o modelo no ar usa — 5 no mock da Fase 1 (H2), as 7 nos modelos treinados. Medir sobre menos variáveis do que o modelo usa faz duas entradas distintas parecerem a mesma e devolve o rótulo de maior confiança para uma combinação inédita.\n- `interpolation`: combinação existe no treino (distância 0).\n- `moderate_extrapolation`: exatamente 1 variável diferente.\n- `out_of_domain`: 2 ou mais variáveis diferentes.",
       "enum": [
         "interpolation",
         "moderate_extrapolation",
@@ -499,7 +499,7 @@
           "type": "string"
         },
         "board_position": {
-          "description": "Posição da placa eletrônica. Ignorada pelo modelo (H2).",
+          "description": "Posição da placa eletrônica.",
           "type": "string"
         },
         "deflector_hole": {
@@ -511,7 +511,7 @@
           "type": "string"
         },
         "losses": {
-          "description": "Perfil de perdas térmicas assumido na simulação. Ignorado pelo modelo (H2).",
+          "description": "Perfil de perdas térmicas assumido na simulação.",
           "type": "string"
         },
         "material_coil_support": {
@@ -615,7 +615,7 @@
           "type": "array"
         },
         "used_by_model": {
-          "description": "`false` para `losses` e `board_position` (excluídos pela H2).",
+          "description": "Se o modelo que respondeu usa esta variável. **Não é constante**: depende do preditor no ar. O mock da Fase 1 exclui `losses` e `board_position` (H2), mas os modelos treinados usam as 7 — e em `IPC Cooling` e `IPC Comp` `losses` é a variável mais importante. A interface tem de ler este campo, nunca uma lista fixa.",
           "type": "boolean"
         }
       },

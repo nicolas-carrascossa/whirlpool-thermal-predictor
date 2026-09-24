@@ -35,11 +35,11 @@ export interface StoveConfig {
   blower_direction: string
   /** Estado da carcaça da eletrônica. */
   housing: string
-  /** Posição da placa eletrônica. Ignorada pelo modelo (H2). */
+  /** Posição da placa eletrônica. */
   board_position: string
   /** Modo de operação simulado. */
   run_case: string
-  /** Perfil de perdas térmicas assumido na simulação. Ignorado pelo modelo (H2). */
+  /** Perfil de perdas térmicas assumido na simulação. */
   losses: string
   /** Furo do defletor de ar. */
   deflector_hole: string
@@ -63,8 +63,11 @@ export interface PredictionRequest {
 
 /**
  * Confiabilidade da estimativa, por distância de Hamming entre a configuração
- * consultada e as combinações presentes no conjunto de treino, considerando
- * apenas as 5 variáveis usadas pelo modelo.
+ * consultada e as combinações presentes no conjunto de treino, considerando as
+ * variáveis que o modelo no ar usa — 5 no mock da Fase 1 (H2), as 7 nos modelos
+ * treinados. Medir sobre menos variáveis do que o modelo usa faz duas entradas
+ * distintas parecerem a mesma e devolve o rótulo de maior confiança para uma
+ * combinação inédita.
  * - `interpolation`: combinação existe no treino (distância 0).
  * - `moderate_extrapolation`: exatamente 1 variável diferente.
  * - `out_of_domain`: 2 ou mais variáveis diferentes.
@@ -136,7 +139,13 @@ export interface VariableMeta {
   label_pt: string
   help_pt: string
   options: string[]
-  /** `false` para `losses` e `board_position` (excluídos pela H2). */
+  /**
+   * Se o modelo que respondeu usa esta variável. **Não é constante**: depende
+   * do preditor no ar. O mock da Fase 1 exclui `losses` e `board_position`
+   * (H2), mas os modelos treinados usam as 7 — e em `IPC Cooling` e
+   * `IPC Comp` `losses` é a variável mais importante. A interface tem de ler
+   * este campo, nunca uma lista fixa.
+   */
   used_by_model: boolean
 }
 
