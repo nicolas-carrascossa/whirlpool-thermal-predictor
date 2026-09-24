@@ -1,0 +1,307 @@
+{
+  "A33/Bellatrix Microchip": {
+    "area": "Oven HMI",
+    "q": 0.95,
+    "margem_c": 3.96
+  },
+  "A33/Bellatrix Thermistor": {
+    "area": "Oven HMI",
+    "q": 0.95,
+    "margem_c": 3.96
+  },
+  "A33/Bellatrix UI LCD Screen": {
+    "area": "Oven HMI",
+    "q": 0.95,
+    "margem_c": 3.97
+  },
+  "A33/Bellatrix UI Wifi": {
+    "area": "Oven HMI",
+    "q": 0.95,
+    "margem_c": 5.04
+  },
+  "AC Blower HES Connector": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 7.75
+  },
+  "AC Blower Housing": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 10.01
+  },
+  "AC Blower Inlet Avg": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 5.27
+  },
+  "AC Blower Inlet Max": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 7.19
+  },
+  "AC Blower Windings": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 3.56
+  },
+  "ACU Ambient (Hill Only) Top": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 16.71
+  },
+  "ACU K8 Housing / Double Line Break": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 7.2
+  },
+  "Aluminium Plate  RR": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 11.0
+  },
+  "Aluminium Plate FL": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 26.27
+  },
+  "Aluminium Plate FR": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 22.27
+  },
+  "Aluminium Plate RL": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 21.27
+  },
+  "Ambient Below Terminal Block": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 9.88
+  },
+  "Ambient Between Left Encoders": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 4.45
+  },
+  "Ambient Between Right Encoders": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 3.12
+  },
+  "Beatrice Micro": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 15.17
+  },
+  "Bridge": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.22
+  },
+  "CMC 1": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 9.91
+  },
+  "CMC 2": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 11.14
+  },
+  "Coil  RR": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 5.93
+  },
+  "Coil FL": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 23.89
+  },
+  "Coil FR": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 15.44
+  },
+  "Coil RL": {
+    "area": "Coil Temps",
+    "q": 0.95,
+    "margem_c": 25.1
+  },
+  "Convect Motor Winding": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 8.92
+  },
+  "DCBUS Cap 1": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.4
+  },
+  "DCBUS Cap 2": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 8.23
+  },
+  "DCBUS Cap 3": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 11.31
+  },
+  "DCBUS Cap 4": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.81
+  },
+  "DMC": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 8.41
+  },
+  "Door Lock Microswitch Body": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 6.25
+  },
+  "Door Lock Motor Ambient 1/2\" Below": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 4.31
+  },
+  "Heat Sink (Point/Probe)": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 5.19
+  },
+  "Hot Surface Indicator Body": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 4.74
+  },
+  "IGBT": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 8.28
+  },
+  "IPC Blower (Air Outlet Temp)": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 6.53
+  },
+  "IPC Blower Housing": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 5.47
+  },
+  "IPC Horizontal Duct Oulet (Inlet IPC Fan)": {
+    "area": "IPC Cooling",
+    "q": 0.95,
+    "margem_c": 5.54
+  },
+  "IPC Housing Outlet": {
+    "area": "IPC Cooling",
+    "q": 0.95,
+    "margem_c": 7.15
+  },
+  "IPC Housing Surface": {
+    "area": "IPC Cooling",
+    "q": 0.95,
+    "margem_c": 4.68
+  },
+  "IPC Vertical Duct Inlet (Bottom)": {
+    "area": "IPC Cooling",
+    "q": 0.95,
+    "margem_c": 3.6
+  },
+  "L2, Wire, Power Cord": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 10.35
+  },
+  "Left Center Encoder": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 6.79
+  },
+  "Left Encoder": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 4.77
+  },
+  "Micro (Below Board)": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 7.2
+  },
+  "Power On Indicator Body": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 4.63
+  },
+  "Reso Cap 1": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 9.25
+  },
+  "Reso Cap 2": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.2
+  },
+  "Reso Cap 3": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 8.95
+  },
+  "Reso Cap 4": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.61
+  },
+  "Reso Cap 5": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 11.02
+  },
+  "Reso Cap 6": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 11.58
+  },
+  "Reso Cap 7": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 11.56
+  },
+  "Reso Cap 8": {
+    "area": "IPC Comp",
+    "q": 0.95,
+    "margem_c": 10.72
+  },
+  "Right Center Encoder": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 4.21
+  },
+  "Right Encoder": {
+    "area": "CT Knobs",
+    "q": 0.95,
+    "margem_c": 5.08
+  },
+  "Storage Drawer (Metal Above)": {
+    "area": "Mainback",
+    "q": 0.95,
+    "margem_c": 5.32
+  },
+  "Top Duct Inlet": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 2.1
+  },
+  "Turbo Duct / AC Blower Outlet": {
+    "area": "Main Vent Sys",
+    "q": 0.95,
+    "margem_c": 2.3
+  }
+}
