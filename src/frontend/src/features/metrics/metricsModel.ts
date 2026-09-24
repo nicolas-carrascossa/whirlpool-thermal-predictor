@@ -6,24 +6,36 @@
  */
 
 import { hexToRgb } from '@/components/thermal-map/colorScale'
-import type { SensorPrediction, StoveConfig, VariableMeta } from '@/contract/v1'
+import type {
+  SensorPrediction,
+  StoveConfig,
+  ValidationPoint,
+  VariableMeta,
+} from '@/contract/v1'
 import { statusOf, type SensorStatus } from '@/lib/status'
 
-import {
-  CONFIG_VARIABLES,
-  KPI_MAPE_LIMIT_PCT,
-  KPI_MAPE_WARN_PCT,
-  type ErrorMetrics,
-  type FeatureImportance,
-  type PredictedVsActualPoint,
-} from './mockMetrics'
+/** As 7 variáveis de configuração, na ordem do formulário. */
+export const CONFIG_VARIABLES: (keyof StoveConfig)[] = [
+  'blower_direction',
+  'housing',
+  'board_position',
+  'run_case',
+  'losses',
+  'deflector_hole',
+  'material_coil_support',
+]
+
+/** KPI do projeto: erro percentual máximo aceito (MAPE, em %). */
+export const KPI_MAPE_LIMIT_PCT = 10
+/** Faixa de atenção: a partir daqui a área está perto de estourar o KPI. */
+export const KPI_MAPE_WARN_PCT = 8
 
 export type KpiStatus = 'ok' | 'warn' | 'danger'
 
-/** Situação da área frente ao KPI de erro ≤ 10 %. */
-export function kpiStatusOf(metrics: ErrorMetrics): KpiStatus {
-  if (metrics.mapePct > KPI_MAPE_LIMIT_PCT) return 'danger'
-  if (metrics.mapePct > KPI_MAPE_WARN_PCT) return 'warn'
+/** Situação da área frente ao KPI de erro ≤ 10 %, a partir do MAPE cru. */
+export function kpiStatusForMape(mapePct: number): KpiStatus {
+  if (mapePct > KPI_MAPE_LIMIT_PCT) return 'danger'
+  if (mapePct > KPI_MAPE_WARN_PCT) return 'warn'
   return 'ok'
 }
 
@@ -54,8 +66,8 @@ function quantile(sorted: number[], q: number): number {
 }
 
 /** Perfil do erro absoluto (°C) calculado dos próprios pares previsto/real. */
-export function errorProfileOf(points: PredictedVsActualPoint[]): ErrorProfile {
-  const abs = points.map((p) => Math.abs(p.predicted - p.actual)).sort((a, b) => a - b)
+export function errorProfileOf(points: ValidationPoint[]): ErrorProfile {
+  const abs = points.map((p) => Math.abs(p.predicted_c - p.actual_c)).sort((a, b) => a - b)
   const n = abs.length
   const mae = n ? abs.reduce((s, e) => s + e, 0) / n : Number.NaN
   const rmse = n ? Math.sqrt(abs.reduce((s, e) => s + e * e, 0) / n) : Number.NaN
@@ -73,9 +85,9 @@ export function errorProfileOf(points: PredictedVsActualPoint[]): ErrorProfile {
  * valor em X e Y, com folga de 5 % e arredondado a múltiplos de 10 °C, para a
  * reta y = x cortar o gráfico na diagonal exata.
  */
-export function equalAxisDomain(points: PredictedVsActualPoint[]): [number, number] {
+export function equalAxisDomain(points: ValidationPoint[]): [number, number] {
   if (points.length === 0) return [0, 100]
-  const values = points.flatMap((p) => [p.actual, p.predicted])
+  const values = points.flatMap((p) => [p.actual_c, p.predicted_c])
   const min = Math.min(...values)
   const max = Math.max(...values)
   const pad = (max - min) * 0.05
@@ -86,23 +98,81 @@ export function equalAxisDomain(points: PredictedVsActualPoint[]): [number, numb
  * Status de um par pela mesma regra do resto da app (`statusOf`): a temperatura
  * PREVISTA é comparada ao limite do sensor. Sem limite, é `monitor`.
  */
-export function statusForPoint(point: PredictedVsActualPoint): SensorStatus {
-  const limit = point.activeLimitC
+export function statusForPoint(point: ValidationPoint): SensorStatus {
+  const limit = point.active_limit_c
   const prediction: SensorPrediction = {
-    tc_number: point.tcNumber,
-    tc_name: point.tcName,
+    tc_number: point.tc_numbers[0] ?? 0,
+    tc_name: point.tc_name,
     key_area: '',
-    temp_c: point.predicted,
+    temp_c: point.predicted_c,
     error_margin_c: 0,
     error_margin_pct: 0,
     active_limit_c: limit,
-    exceeds_limit: limit !== null && point.predicted > limit,
-    limit_ratio: limit !== null && limit > 0 ? point.predicted / limit : null,
+    exceeds_limit: limit !== null && point.predicted_c > limit,
+    limit_ratio: limit !== null && limit > 0 ? point.predicted_c / limit : null,
     is_monitor: limit === null,
     monitor_reference_c: null,
     reliability: 'interpolation',
+    // Objeto sintético só para reaproveitar `statusOf`: o algoritmo não entra
+    // na regra de status, e esta função não conhece a área do ponto.
+    algorithm: 'random_forest',
   }
   return statusOf(prediction)
+}
+
+/**
+ * Recorta os pares de validação aos termopares que a consulta realmente
+ * devolveu. Sem isso, a dispersão de uma consulta de 4 sensores mostraria os
+ * 10 da área — números reais, mas respondendo a outra pergunta.
+ *
+ * Um ponto entra se QUALQUER termopar que ele cobre está no recorte: a coluna
+ * fundida do IGBT cobre 16, e pedir um deles é pedir aquela coluna.
+ */
+export function scopeToPrediction(
+  points: ValidationPoint[],
+  tcNumbers: Set<number> | undefined,
+): ValidationPoint[] {
+  if (!tcNumbers?.size) return points
+  return points.filter((p) => p.tc_numbers.some((n) => tcNumbers.has(n)))
+}
+
+/**
+ * Índice do ensaio de teste cuja configuração é a que o usuário acabou de
+ * consultar — ou `null` quando a consulta não corresponde a nenhum ensaio.
+ *
+ * A identificação é por IGUALDADE NUMÉRICA, não por comparação de configuração:
+ * mesmo modelo e mesma entrada produzem exatamente a mesma saída, então um
+ * ensaio cujos `predicted_c` batem, sensor a sensor, com a predição exibida é o
+ * mesmo ponto no espaço de configuração. Isso evita duplicar no front a
+ * tradução entre a grafia canônica do contrato e a grafia de treino, que é
+ * justamente onde essa comparação erraria em silêncio.
+ *
+ * Exige que TODOS os pontos do ensaio batam. Um único sensor coincidir por
+ * acaso é plausível; a área inteira coincidir sem ser a mesma entrada, não.
+ */
+export function executedRunIndex(
+  points: ValidationPoint[],
+  predictedByTc: Map<number, number>,
+): number | null {
+  if (predictedByTc.size === 0) return null
+  const byRun = new Map<number, ValidationPoint[]>()
+  for (const point of points) {
+    const list = byRun.get(point.run)
+    if (list) list.push(point)
+    else byRun.set(point.run, [point])
+  }
+  for (const [run, runPoints] of byRun) {
+    const comparable = runPoints.filter((p) =>
+      p.tc_numbers.some((n) => predictedByTc.has(n)),
+    )
+    if (comparable.length === 0) continue
+    const allMatch = comparable.every((p) => {
+      const tc = p.tc_numbers.find((n) => predictedByTc.has(n))
+      return tc !== undefined && predictedByTc.get(tc) === p.predicted_c
+    })
+    if (allMatch) return run
+  }
+  return null
 }
 
 /** Luminância relativa (WCAG) de uma cor `#rrggbb`. */
@@ -132,17 +202,17 @@ export interface ImportanceDatum {
 }
 
 export function importanceData(
-  importance: FeatureImportance,
+  importance: Record<string, number>,
   variables: VariableMeta[] | undefined,
 ): ImportanceDatum[] {
   const meta = new Map((variables ?? []).map((v) => [v.name, v]))
   return CONFIG_VARIABLES.map((name) => {
     const v = meta.get(name)
-    const usedByModel = v?.used_by_model ?? importance[name] > 0
+    const usedByModel = v?.used_by_model ?? (importance[name] ?? 0) > 0
     return {
       name,
       label: v?.label_pt ?? name,
-      importance: importance[name],
+      importance: importance[name] ?? 0,
       usedByModel,
       note: usedByModel ? '' : NOT_USED_LABEL_PT,
     }

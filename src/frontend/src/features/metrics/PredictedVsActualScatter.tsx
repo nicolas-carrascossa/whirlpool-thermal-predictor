@@ -24,8 +24,9 @@ import {
 import { formatNumber, formatTemp } from '@/lib/format'
 import { STATUS_COLOR, type SensorStatus } from '@/lib/status'
 
+import type { ValidationPoint, ValidationRun } from '@/contract/v1'
+
 import { equalAxisDomain, statusForPoint } from './metricsModel'
-import type { PredictedVsActualPoint } from './mockMetrics'
 
 type ScatterShape = 'circle' | 'triangle' | 'diamond' | 'square'
 
@@ -36,8 +37,11 @@ const SERIES: { status: SensorStatus; label: string; shape: ScatterShape }[] = [
   { status: 'monitor', label: 'Monitor (sem limite)', shape: 'square' },
 ]
 
-interface ScatterDatum extends PredictedVsActualPoint {
+interface ScatterDatum extends ValidationPoint {
   error: number
+  runLabel: string
+  /** Ponto do ensaio cuja configuração é a que o usuário acabou de consultar. */
+  executed: boolean
 }
 
 function TooltipContent({ active, payload }: { active?: boolean; payload?: { payload: ScatterDatum }[] }) {
@@ -46,13 +50,16 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: { pay
   const sign = d.error > 0 ? '+' : ''
   return (
     <div className="rounded-md border border-wp-gray12 bg-white px-3 py-2 font-body text-xs text-wp-gray85 shadow-sm">
-      <p className="font-semibold">{d.tcName}</p>
-      <p className="text-wp-gray65">{d.run}</p>
+      <p className="font-semibold">{d.tc_name}</p>
+      <p className="text-wp-gray65">{d.runLabel}</p>
+      {d.executed ? (
+        <p className="font-semibold text-wp-core">Ensaio da configuração consultada</p>
+      ) : null}
       <dl className="tabular mt-1 grid grid-cols-[auto_auto] gap-x-3">
         <dt className="text-wp-gray65">Real</dt>
-        <dd>{formatTemp(d.actual)}</dd>
+        <dd>{formatTemp(d.actual_c)}</dd>
         <dt className="text-wp-gray65">Previsto</dt>
-        <dd>{formatTemp(d.predicted)}</dd>
+        <dd>{formatTemp(d.predicted_c)}</dd>
         <dt className="text-wp-gray65">Erro</dt>
         <dd>
           {sign}
@@ -63,13 +70,35 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: { pay
   )
 }
 
-export default function PredictedVsActualScatter({ points }: { points: PredictedVsActualPoint[] }) {
+export default function PredictedVsActualScatter({
+  points,
+  runs,
+  executedRun,
+}: {
+  points: ValidationPoint[]
+  runs: ValidationRun[]
+  /** Índice do ensaio equivalente à consulta, ou `null` se ela é inédita. */
+  executedRun: number | null
+}) {
   const domain = equalAxisDomain(points)
   const byStatus = new Map<SensorStatus, ScatterDatum[]>()
+  const executed: ScatterDatum[] = []
   for (const p of points) {
+    const datum: ScatterDatum = {
+      ...p,
+      error: p.predicted_c - p.actual_c,
+      runLabel: runs[p.run]?.label ?? `Ensaio ${p.run + 1}`,
+      executed: p.run === executedRun,
+    }
+    // Os pontos da consulta saem da série por status e ganham a sua: são a
+    // única leitura da tela em que o "real" é o real DESTA configuração.
+    if (datum.executed) {
+      executed.push(datum)
+      continue
+    }
     const status = statusForPoint(p)
     const list = byStatus.get(status) ?? []
-    list.push({ ...p, error: p.predicted - p.actual })
+    list.push(datum)
     byStatus.set(status, list)
   }
   const tick = { fontSize: 10, fill: 'var(--wp-gray-65)' }
@@ -81,7 +110,7 @@ export default function PredictedVsActualScatter({ points }: { points: Predicted
           <CartesianGrid stroke="var(--wp-gray-12)" strokeDasharray="2 4" />
           <XAxis
             type="number"
-            dataKey="actual"
+            dataKey="actual_c"
             name="Real"
             domain={domain}
             tick={tick}
@@ -92,7 +121,7 @@ export default function PredictedVsActualScatter({ points }: { points: Predicted
           />
           <YAxis
             type="number"
-            dataKey="predicted"
+            dataKey="predicted_c"
             name="Previsto"
             domain={domain}
             width={44}
@@ -132,6 +161,17 @@ export default function PredictedVsActualScatter({ points }: { points: Predicted
               />
             )
           })}
+          {executed.length ? (
+            <Scatter
+              name="Configuração consultada"
+              data={executed}
+              fill="var(--wp-core)"
+              stroke="var(--wp-white)"
+              strokeWidth={1.5}
+              shape="star"
+              isAnimationActive={false}
+            />
+          ) : null}
         </ScatterChart>
       </ResponsiveContainer>
     </div>

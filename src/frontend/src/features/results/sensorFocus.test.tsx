@@ -8,12 +8,13 @@
  * percorre, sem precisar de canvas.
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ThermalMap3DProps } from '@/components/thermal-map/ThermalMap3D'
 import { ResultsPanel } from '@/features/results/ResultsPanel'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE } from '@/test/fixtures'
+import { renderWithQuery } from '@/test/queryWrapper'
 
 vi.mock('@/components/thermal-map/ThermalMap3D', () => ({
   ThermalMap3D: (props: ThermalMap3DProps) => (
@@ -28,7 +29,7 @@ describe('pino de sensor → linha da tabela', () => {
     const scrollIntoView = vi.fn()
     Element.prototype.scrollIntoView = scrollIntoView
 
-    const { container } = render(
+    const { container } = renderWithQuery(
       <ResultsPanel
         metadata={FIXTURE_METADATA}
         response={FIXTURE_RESPONSE}

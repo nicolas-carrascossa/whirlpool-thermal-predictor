@@ -1,3 +1,5 @@
+import { algorithmLabel } from '@/lib/algorithms'
+import type { AlgorithmCode } from '@/contract/v1'
 import { Canvas } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
@@ -67,7 +69,16 @@ export interface ThermalMap3DProps {
   className?: string
 }
 
-function TooltipCard({ agg, value }: { agg: ZoneAggregate; value: string }) {
+function TooltipCard({
+  agg,
+  value,
+  algorithm,
+}: {
+  agg: ZoneAggregate
+  value: string
+  /** Modelo que atendeu a área; ausente quando a zona está fora do recorte. */
+  algorithm?: AlgorithmCode
+}) {
   return (
     <div className="whitespace-nowrap rounded-md border border-wp-gray20 bg-white px-3 py-2 shadow-md">
       <p className="font-display text-sm font-semibold text-wp-gray85">{agg.label}</p>
@@ -78,6 +89,9 @@ function TooltipCard({ agg, value }: { agg: ZoneAggregate; value: string }) {
             {agg.n} sensor{agg.n === 1 ? '' : 'es'} · {agg.min !== null ? formatTempPt(agg.min) : '—'}–
             {agg.max !== null ? formatTempPt(agg.max) : '—'}
           </p>
+          {algorithm && (
+            <p className="text-xs text-wp-gray45">modelo: {algorithmLabel(algorithm)}</p>
+          )}
         </>
       ) : (
         <p className="text-xs text-wp-gray45">sem sensores selecionados</p>
@@ -273,10 +287,22 @@ export function ThermalMap3D({
     onSelectKeyArea(selectedKeyArea === key ? null : key)
   }
 
+  /**
+   * Algoritmo por área, sempre derivado das predições recebidas: uma zona fora
+   * do recorte não tem procedência porque não tem dado.
+   */
+  const algorithmByArea = useMemo(() => {
+    const map = new Map<string, AlgorithmCode>()
+    for (const p of predictions) map.set(p.key_area, p.algorithm)
+    return map
+  }, [predictions])
+
   function tooltipFor(zoneKey: string) {
     const agg = aggByKey.get(zoneKey)
     if (!agg) return null
-    return <TooltipCard agg={agg} value={valueFor(agg)} />
+    return (
+      <TooltipCard agg={agg} value={valueFor(agg)} algorithm={algorithmByArea.get(zoneKey)} />
+    )
   }
 
   return (

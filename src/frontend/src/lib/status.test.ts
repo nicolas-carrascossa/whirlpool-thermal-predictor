@@ -17,6 +17,7 @@ function pred(partial: Partial<SensorPrediction>): SensorPrediction {
     is_monitor: false,
     monitor_reference_c: null,
     reliability: 'interpolation',
+  algorithm: 'random_forest',
     ...partial,
   }
 }

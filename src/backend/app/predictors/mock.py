@@ -19,9 +19,17 @@ from datetime import datetime, timezone
 from typing import Any, Callable
 
 from app.copy_pt import KEY_AREA_COPY, VARIABLE_COPY
-from app.data import CONFIG_FIELDS, IGNORED_FIELDS, MODEL_FIELDS, Dataset, load_dataset
+from app.data import (
+    ALGORITHM_LABELS,
+    CONFIG_FIELDS,
+    IGNORED_FIELDS,
+    MODEL_FIELDS,
+    Dataset,
+    load_dataset,
+)
 from app.predictors.base import ContractError
 from app.schemas import (
+    AlgorithmMeta,
     CONTRACT_VERSION,
     ArchitectureMeta,
     KeyAreaMeta,
@@ -289,7 +297,26 @@ class MockPredictor:
                 for name in self.dataset.key_areas
             ],
             reference_config=StoveConfig(**self.reference_config),
+            algorithms=self._algorithm_metas(),
+            area_algorithms=dict(self.dataset.area_algorithms),
         )
+
+    def _algorithm_metas(self) -> list[AlgorithmMeta]:
+        """Algorithm metas from the manifest; `available=False` in mock mode,
+        since no real artifact is loaded."""
+        metas: list[AlgorithmMeta] = []
+        for code, label in ALGORITHM_LABELS.items():
+            entry = self.dataset.algorithms.get(code, {})
+            metas.append(
+                AlgorithmMeta(
+                    code=code,  # type: ignore[arg-type]
+                    label_pt=entry.get("label_pt", label),
+                    available=False,
+                    model_version=entry.get("model_version", MODEL_VERSION),
+                    trained_at=entry.get("trained_at"),
+                )
+            )
+        return metas
 
     # --- prediction --------------------------------------------------------
 
@@ -316,6 +343,7 @@ class MockPredictor:
             architecture_available=available,
             ignored_fields=list(IGNORED_FIELDS),
             predictions=[],
+            algorithm_by_area={},
             generated_at=_iso_utc(self.now()),
         )
         if not available:
@@ -373,10 +401,16 @@ class MockPredictor:
                     is_monitor=sensor["is_monitor"],
                     monitor_reference_c=sensor["monitor_reference_c"],
                     reliability=reliability,
+                    # The mock has no two models: it echoes the manifest mapping,
+                    # so the interface exercises the same code path as `real`.
+                    algorithm=self.dataset.algorithm_for(sensor["key_area"]),  # type: ignore[arg-type]
                 )
             )
 
         base.predictions = predictions
+        base.algorithm_by_area = {
+            p.key_area: p.algorithm for p in predictions
+        }
         return base
 
 

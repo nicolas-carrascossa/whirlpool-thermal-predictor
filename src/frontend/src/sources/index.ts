@@ -1,8 +1,15 @@
 /**
  * Seleção da fonte de dados por variável de ambiente.
- * `VITE_DATA_SOURCE=local` (padrão) roda tudo no navegador; `api` usa
- * `ApiSource` (Fase 2), contra o back-end FastAPI — o front não muda, só
- * esta fábrica.
+ *
+ * `VITE_DATA_SOURCE=api` é o **padrão do projeto** (Fase 3): a interface fala
+ * com o FastAPI de `src/backend`, que responde com os modelos treinados quando
+ * sobe com `MODEL_MODE=real`. `local` volta ao `LocalMockSource`, que roda
+ * inteiramente no navegador, sem back-end e sem login — é a demo offline da
+ * Fase 1, preservada.
+ *
+ * O padrão vive aqui, e não só no `.env`: o `.env` é ignorado pelo git, então
+ * um clone novo herdaria o mock sem perceber — e dado de mock parecendo
+ * predição real é exatamente o erro que não pode acontecer.
  */
 
 import type { PredictionSource } from '@/contract/v1'
@@ -19,7 +26,7 @@ let cached: PredictionSource | null = null
 
 export function getPredictionSource(): PredictionSource {
   if (cached) return cached
-  const name = (import.meta.env.VITE_DATA_SOURCE ?? 'local') as DataSourceName
+  const name = (import.meta.env.VITE_DATA_SOURCE ?? 'api') as DataSourceName
   if (name === 'api') {
     cached = new ApiSource()
     return cached

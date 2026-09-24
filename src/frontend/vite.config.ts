@@ -30,5 +30,13 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
+    // O padrão do app é `api` (modelos reais), mas teste não fala com rede:
+    // aqui a fonte é sempre o mock local, determinístico e offline. Quem
+    // precisa exercitar o `ApiSource` mocka o `fetch` no próprio teste.
+    env: { VITE_DATA_SOURCE: 'local' },
+    // Precisa ficar ACIMA do `asyncUtilTimeout` de 5 s do setup: se os dois
+    // forem iguais, um `waitFor` lento consome todo o orçamento e o teste morre
+    // por timeout genérico, sem a mensagem que diz o que não apareceu na tela.
+    testTimeout: 15_000,
   },
 })
