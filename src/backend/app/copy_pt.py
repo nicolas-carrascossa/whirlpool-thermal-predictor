@@ -39,31 +39,31 @@ VARIABLE_COPY: dict[str, dict[str, str]] = {
 
 KEY_AREA_COPY: dict[str, dict[str, str]] = {
     "Mainback": {
-        "label_pt": "Painel traseiro",
+        "label_pt": "Mainback",
         "help_pt": "Região do painel traseiro do fogão, onde ficam componentes como a trava da porta e o motor de convecção. Recebe boa parte do calor quando o blower sopra para trás."
     },
     "Coil Temps": {
-        "label_pt": "Resistências",
+        "label_pt": "Coil Temps",
         "help_pt": "Sensores nas resistências e no seu suporte. É a área mais quente do produto e a mais sensível ao material do suporte da resistência."
     },
     "Main Vent Sys": {
-        "label_pt": "Ventilação principal",
+        "label_pt": "Main Vent Sys",
         "help_pt": "Sistema de ventilação principal, por onde o ar quente deixa o produto. Aparece com frequência como a área que recebe o calor retirado das outras quando uma configuração muda (H1)."
     },
     "IPC Comp": {
-        "label_pt": "Compartimento da eletrônica de potência",
+        "label_pt": "IPC Comp",
         "help_pt": "Compartimento que abriga a eletrônica de potência (IGBTs, placa de controle). Concentra a maior parte das leituras da base e é a área mais afetada pelo estado da carcaça."
     },
     "IPC Cooling": {
-        "label_pt": "Resfriamento da eletrônica",
+        "label_pt": "IPC Cooling",
         "help_pt": "Caminho de resfriamento da eletrônica de potência: dutos, saídas de ar e o blower que serve o compartimento. Responde diretamente à direção do blower e ao furo do defletor."
     },
     "Oven HMI": {
-        "label_pt": "Interface do forno",
+        "label_pt": "Oven HMI",
         "help_pt": "Interface de usuário do forno (display e comandos). Área de contato com o usuário, com limites relativamente baixos apesar de temperaturas moderadas."
     },
     "CT Knobs": {
-        "label_pt": "Botões do cooktop",
+        "label_pt": "CT Knobs",
         "help_pt": "Botões e hastes de comando do cooktop. É a região mais fria do produto, mas também de contato direto com o usuário, o que a torna crítica em conforto e segurança."
     }
 }
