@@ -159,7 +159,7 @@ def test_material_is_consistent_across_every_area(engine, config, manifest) -> N
     """"Aluminium Plate" é normalizado para "Aluminium" nos 7 modelos.
 
     O glossário do parceiro documenta só 2 níveis e o valor aparece em 1 run de
-    56 (ver `documents/hipotese_material_sem_correcao_E17.md`). Antes desta
+    56 (ver `documents/extras/hipotese_material_sem_correcao_E17.md`). Antes desta
     normalização, escolhê-lo fazia 4 áreas tratarem como Aluminium, 2 usarem
     uma categoria treinada com um único run, e `IPC Comp` sumir da resposta.
     """
