@@ -1055,10 +1055,10 @@ A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores 
 | Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
 | **Gradient Boosting** | **3,92** | **5,41** | −6,594 | **5,03** | **86,4%** |
-| Decision Tree | 4,72 | 8,02 | 0,156 | 6,04 | 85,5% |
+| Decision Tree | 4,42 | 5,62 | −2,693 | 5,52 | 80,8% |
 | Random Forest | 4,88 | 7,18 | **0,283** | 6,54 | 79,8% |
 
-O Gradient Boosting vence em quatro das cinco métricas (MAE, RMSE, MAPE e fração dentro de 10%), perdendo apenas no R². A interpretação completa desses números — a ressalva do R², o superajuste e a explicabilidade — está na Seção 4.4.2, ao lado da mesma leitura para o Random Forest (Seção 4.4.1). As três figuras abaixo documentam a explicabilidade do modelo: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23).
+O Gradient Boosting vence em quatro das cinco métricas (MAE, RMSE, MAPE e fração dentro de 10%), perdendo apenas no R². A interpretação completa desses números — a ressalva do R², o superajuste e a explicabilidade — está na Seção 4.4.3, ao lado da mesma leitura para o Random Forest (Seção 4.4.2) e para o Decision Tree (Seção 4.4.1). As três figuras abaixo documentam a explicabilidade do modelo: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23).
 
 <div align="center">
   <sub>Figura 19 — Explicabilidade do modelo candidato: importância das variáveis na área Mainback</sub><br>
@@ -1092,7 +1092,7 @@ Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada
 
 | Modelo | Hiperparâmetros buscados |
 |---|---|
-| Decision Tree | `max_depth` (2, 3, 5, 8, sem limite), `min_samples_split`, `min_samples_leaf`, `max_features` |
+| Decision Tree | `max_depth` (1, 2, 3), `min_samples_split` (4, 6, 8), `min_samples_leaf` (2, 3, 4), com a regra do 1 erro-padrão |
 | Random Forest | `n_estimators`, `max_depth`, `min_samples_leaf`, `max_features` |
 | Gradient Boosting | `n_estimators`, `learning_rate`, `max_depth`, `subsample` |
 
@@ -1104,7 +1104,7 @@ A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato 
 
 Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. A base é a mesma da Seção 4.3, com semente 42 e divisão 70/20/10, implementada com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb). Após a unificação das réplicas (ensaios com configuração idêntica têm as leituras substituídas pela média), cada região tem **19 configurações únicas**: 13 linhas para treino, 4 para teste e 2 para verificação. Esse tamanho condiciona a leitura de todos os resultados abaixo.
 
-As mudanças feitas nesta sprint estão registradas no notebook a partir da **Seção 10** ("Decision Tree vs. baseline 'média do termopar'") até o final (Seção 18). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, leitura das regras da árvore e avaliação estatística por termopar e por setor — já existiam antes desta sprint.
+As mudanças feitas nesta sprint estão registradas no notebook a partir da **Seção 10** ("Decision Tree vs. baseline 'média do termopar'") até o final (Seção 17). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, leitura das regras da árvore e avaliação estatística por termopar e por setor — já existiam antes desta sprint.
 
 ##### Como se chegou à versão atual
 
@@ -1114,7 +1114,10 @@ O modelo não nasceu pronto. Como no Random Forest, cada mudança foi testada is
 2. **Mudar como as variáveis de entrada são representadas (codificação one-hot em vez de ordinal).** Mesma motivação do Random Forest: a codificação ordinal numera as opções em ordem alfabética, e a árvore passa a enxergar uma hierarquia inexistente entre, por exemplo, modos de operação. Com a one-hot, cada opção vira uma coluna sim/não. Foi a única mudança com ganho de erro estatisticamente significativo: o erro fora do treino caiu de 5,94 para 5,45 °C (−0,49 °C; p = 0,028) e o gap, de 1,98 para 1,70 °C. Variantes que mexiam em `deflector_hole` (removê-la, agrupar categorias raras ou agrupar por família) não superaram a one-hot completa.
 3. **Regra do 1 erro-padrão.** Em vez de ficar com a combinação de menor erro na validação cruzada — que, com ~13 linhas, muitas vezes premia sorte —, a árvore final é a **mais simples** cujo erro está a até um erro-padrão da melhor (menor profundidade, depois folhas maiores). Reduziu o erro fora do treino de 5,54 para 5,38 °C (p = 0,018) e o gap de 1,82 para 1,41 °C (p < 0,001). Variantes testadas e não adotadas: padronizar os alvos, encolher as previsões para a média, combinar as duas e treinar uma árvore por termopar, que perdeu a leitura numa única árvore por região sem ganho relevante de erro.
 
-As três mudanças compõem a **versão atual**, discutida daqui em diante. As medidas valem para a base atual, de 19 linhas por região; se os dados mudarem, os experimentos precisam ser refeitos. O experimento 1 foi feito ainda com codificação ordinal, e o 3 já parte da one-hot.
+4. **Mudar a forma de validar o modelo (Leave-One-Group-Out, ou LOGO).** Mesma motivação do Random Forest: o corte fixo deixa só 4 ensaios de teste por região, e a nota final depende de sorteio. Como as réplicas já foram unificadas, cada linha é uma configuração única, e o LOGO equivale na prática a um Leave-One-Out: cada uma das 19 linhas é prevista por uma árvore treinada com as outras 18. Os hiperparâmetros de cada região são os da busca acima, sem refazer o ajuste a cada rodada, para isolar o efeito da validação do efeito do ajuste fino. Como esses hiperparâmetros foram escolhidos com as linhas de treino da semente 42, e o LOGO reutiliza essas linhas como teste, a medida é levemente otimista. Isso não muda o modelo, muda o quanto se pode confiar na medição dele.
+5. **Alinhar o critério de divisão ao erro cobrado, e tratar os ensaios fora da curva.** As duas alternativas do Random Forest foram testadas sob o mesmo LOGO: o critério `absolute_error`, que divide os ensaios minimizando o erro absoluto e faz cada folha prever a **mediana**, e o estimador híbrido, que usa a mediana só quando a média da folha cai fora do intervalo interquartil (IQR) dos valores de treino. O resultado está em "Média, mediana ou híbrido", adiante.
+
+As três primeiras mudanças compõem a **versão atual**, discutida daqui em diante; a quarta muda a medição, e a quinta segue como alternativa em aberto. As medidas valem para a base atual, de 19 linhas por região; se os dados mudarem, os experimentos precisam ser refeitos. O experimento 1 foi feito ainda com codificação ordinal, e o 3 já parte da one-hot.
 
 <div align="center">
   <sub>Figura 28 — Experimentos de redução de superajuste do Decision Tree</sub><br>
@@ -1159,21 +1162,65 @@ As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de ref
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Decision_tree_regre.ipynb` (Seções 9 e 13). A fração dentro de 10% não foi calculada para a versão de referência. As duas tabelas não são somáveis nem intercambiáveis: descrevem configurações diferentes da mesma árvore.</sup>
 
+**Versão atual, avaliada ensaio a ensaio** — LOGO, cada uma das 19 linhas por região como teste, uma de cada vez
+
+| Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Oven HMI | 1,96 | 2,44 | −0,284 | 3,43 | 97,4% |
+| Main Vent Sys | 2,52 | 4,13 | −0,040 | 3,19 | 93,7% |
+| CT Knobs | 2,52 | 3,22 | −0,374 | 5,14 | 84,2% |
+| IPC Cooling | 3,43 | 4,28 | −0,266 | 5,70 | 80,3% |
+| Mainback | 4,72 | 7,18 | −0,278 | 7,14 | 77,9% |
+| IPC Comp | 4,93 | 6,35 | −0,280 | 6,64 | 81,6% |
+| Coil Temps | 15,52 | 24,46 | 0,158 | 16,16 | 59,2% |
+| **Média das sete regiões** | **5,09** | **7,44** | **−0,195** | **6,77** | **82,0%** |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Decision_tree_regre.ipynb` (Seção 17). Hiperparâmetros fixos por região, iguais aos da busca; ver a ressalva de otimismo em "Como se chegou à versão atual", item 4.</sup>
+
 <div align="center">
   <sub>Figura 24 — Erro no teste antes e depois da otimização de hiperparâmetros, por setor</sub><br>
   <img src="../assets/graficos/dt_antes_depois_tuning.png" alt="Painéis de barras comparando MAE, MSE, RMSE, R² e MAPE do Decision Tree antes e depois do GridSearchCV em cada setor, com o valor de cada barra anotado" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (semente 42). O painel de R² usa escala logarítmica simétrica.</sup>
 </div>
 
-**Leitura.** O erro típico fica entre 2 °C e 3 °C em quatro das sete regiões e sobe em Mainback, IPC Comp e, sobretudo, nas bobinas, a região mais quente. Na média, oito em cada dez previsões caem dentro da margem de 10% acordada com o parceiro — a menor taxa entre os três modelos. Com a semente 42, o erro médio da versão atual (4,42 °C) é até **um pouco maior** que o da referência (4,20 °C): quatro das sete regiões pioraram no teste (Mainback, Main Vent Sys, IPC Comp e Coil Temps) e apenas CT Knobs, IPC Cooling e Oven HMI melhoraram. Isso não invalida as mudanças, porque elas foram escolhidas pelo erro em ensaios não vistos e pelo gap, medidos ao longo de dezenas de sementes, e não por essa única divisão de 4 linhas por região (ver "Robustez à semente"). Mas mostra que, com uma base tão pequena, o resultado de uma divisão isolada diz pouco.
+**Leitura.** O erro típico fica entre 2 °C e 3 °C em quatro das sete regiões e sobe em Mainback, IPC Comp e, sobretudo, nas bobinas, a região mais quente. Na média, oito em cada dez previsões caem dentro da margem de 10% acordada com o parceiro — a menor taxa entre os três modelos. Com a semente 42, o erro médio da versão atual (4,42 °C) é até **um pouco maior** que o da referência (4,20 °C): quatro das sete regiões pioraram no teste (Mainback, Main Vent Sys, IPC Comp e Coil Temps) e apenas CT Knobs, IPC Cooling e Oven HMI melhoraram. Isso não invalida as mudanças, porque elas foram escolhidas pelo erro em ensaios não vistos e pelo gap, medidos ao longo de dezenas de sementes, e não por essa única divisão de 4 linhas por região (ver "Robustez à semente"). Mas mostra que, com uma base tão pequena, o resultado de uma divisão isolada diz pouco. A avaliação ensaio a ensaio confirma: com todas as linhas como teste, o erro médio sobe para 5,09 °C, puxado por Coil Temps (15,52 °C, contra 9,68 °C na divisão da semente 42), enquanto as demais regiões ficam entre 2 °C e 5 °C.
 
 ##### O número que parece alarmante, e o que ele quer dizer
 
-O poder de distinção é negativo nas sete regiões, nas duas versões, e chega a −7,31 em Coil Temps. Lido ao pé da letra, isso diria que a árvore é pior do que chutar sempre a média da região.
+No corte fixo, o poder de distinção é negativo nas sete regiões, nas duas versões, e chega a −7,31 em Coil Temps. Lido ao pé da letra, isso diria que a árvore é pior do que chutar sempre a média da região.
 
-Aqui o diagnóstico é mais duro do que o do Random Forest, e vale separar duas causas. A primeira é de **medição**: com apenas 4 ensaios de teste por região, o R² usa como referência a média desses mesmos 4 ensaios, e um ensaio atípico distorce a conta inteira, enquanto o erro médio (MAE) segue na faixa das demais regiões — o modelo acerta o patamar de temperatura. A segunda é de **modelo**, e não desaparece com uma medição melhor: ao longo de 217 casos (31 sementes × 7 regiões), o R² da árvore é positivo em só 5,5% deles, e a comparação pareada com o baseline, que sempre prevê a média do treino de cada sensor, dá R² mediano de −1,07 para a árvore contra −0,86 para o baseline (p < 0,001). O baseline também é negativo, então parte do problema é da referência; mas a árvore não explica mais variação do que a média histórica da região.
+Aqui, como no Random Forest, boa parte do número vem de **como ele foi medido**: com apenas 4 ensaios de teste por região, o R² usa como referência a média desses mesmos 4 ensaios, e um ensaio atípico distorce a conta inteira, enquanto o erro médio (MAE) segue na faixa das demais regiões. A avaliação ensaio a ensaio (LOGO) confirma o diagnóstico: o poder de distinção médio passa de −2,69 para −0,20, e Coil Temps, a pior região no corte fixo, sai de −7,31 para **0,16**, o único valor positivo das sete.
+
+Mas o diagnóstico é mais duro do que no Random Forest, porque **o R² continua negativo em seis das sete regiões**, mesmo sob LOGO. A comparação com o baseline, que sempre prevê a média do treino de cada sensor, mostra por quê: no LOGO, o R² do baseline é −0,114 em todas as regiões, e o da árvore (−0,195 em média) fica abaixo. Ao longo de 217 casos (31 sementes × 7 regiões), o R² da árvore é positivo em só 5,5% deles, e o R² mediano é −1,07 contra −0,86 do baseline (p < 0,001). O baseline também é negativo, então parte do problema é da referência; mas a árvore não explica mais variação do que a média histórica da região.
 
 O recado, portanto, é mais restrito do que no Random Forest: a árvore serve para dizer **em que patamar térmico uma região vai operar**, e não para escolher entre configurações parecidas.
+
+##### Média, mediana ou híbrido
+
+Sob o mesmo LOGO, foram comparados quatro estimadores, com os hiperparâmetros da versão atual: a **média** (a folha prevê a média), a **mediana** (`criterion="absolute_error"`), o **híbrido** (mediana quando a média cai fora do IQR da folha) e o **baseline** da média do treino.
+
+| Região | Média | Mediana | Híbrido | Baseline |
+|---|---|---|---|---|
+| Oven HMI | 1,96 | 1,93 | 1,97 | 1,87 |
+| Main Vent Sys | 2,52 | 2,54 | 2,52 | 2,79 |
+| CT Knobs | 2,52 | 2,43 | 2,53 | 2,35 |
+| IPC Cooling | 3,43 | 3,10 | 3,40 | 3,14 |
+| Mainback | 4,72 | 3,49 | 4,59 | 4,25 |
+| IPC Comp | 4,93 | 4,75 | 4,83 | 4,36 |
+| Coil Temps | 15,52 | 15,27 | 15,29 | 22,59 |
+| **Média das sete regiões** | **5,09** | **4,79** | **5,02** | **5,90** |
+
+<sup>Erro médio no LOGO, em °C. Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Decision_tree_regre.ipynb` (Seção 17).</sup>
+
+<div align="center">
+  <sub>Figura 29 — Erro médio no LOGO por região e estimador do Decision Tree</sub><br>
+  <img src="../assets/graficos/dt_logo_estimadores.png" alt="Barras agrupadas do MAE no LOGO em cada região para os estimadores média, mediana, híbrido e baseline do Decision Tree" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (Seção 17).</sup>
+</div>
+
+A **mediana** foi o melhor dos três estimadores em seis das sete regiões e reduz o erro médio de 5,09 para 4,79 °C (−6%), com o maior ganho em Mainback (4,72 para 3,49 °C). É o resultado esperado: o critério de erro absoluto é o mesmo que o compromisso com o parceiro cobra, e a mediana resiste aos ensaios atípicos. O **híbrido** rende pouco (5,02 °C): a regra do IQR precisa de folhas com mais linhas para disparar, e a árvore escolhida tem duas folhas com poucas linhas cada, ao contrário de uma floresta, que a aplica em centenas de árvores e tira a média. Com a mediana, a árvore passa a superar o baseline em quatro das sete regiões (contra duas com a média), mas a fração dentro de 10% (83,6%) fica no mesmo patamar do baseline (83,8%).
+
+Como no Random Forest, a mediana e o híbrido seguem como **alternativas em aberto**, e não como a versão atual: a medida de 19 linhas por região não é forte o bastante para trocar o modelo, e o `absolute_error` é o candidato natural para a próxima rodada.
 
 ##### Robustez à semente
 
@@ -1226,7 +1273,7 @@ Diferente das florestas e do boosting, a árvore dispensa técnica adicional de 
 
 O Decision Tree erra entre 2 °C e 3 °C em quatro das sete regiões, entre 5 °C e 6 °C em duas e quase 10 °C em Coil Temps, e entrega cerca de oito em cada dez previsões dentro da margem de 10% acordada com o parceiro — a menor taxa entre os três modelos, com MAPE médio de 6,9% entre sementes. É o candidato de leitura mais direta e, com a grade restrita, o menos propenso a decorar os ensaios.
 
-Seus limites vêm da base de 19 linhas por região: o desempenho depende da divisão dos dados, o R² é negativo em quase todos os casos e, no agregado, a árvore não se distingue do baseline da média (p = 0,19), com vantagem consistente apenas em `coil_temps` e `mainback`. Isso sustenta seu uso para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline.
+Seus limites vêm da base de 19 linhas por região: o desempenho depende da divisão dos dados, o R² é negativo em quase todos os casos, mesmo sob a avaliação ensaio a ensaio e, no agregado, a árvore não se distingue do baseline da média (p = 0,19), com vantagem consistente apenas em `coil_temps` e `mainback`. Trocar a média pela mediana (`absolute_error`) reduz o erro médio de 5,09 para 4,79 °C no LOGO e é a alternativa mais promissora. Isso sustenta o uso da árvore para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline.
 
 #### 4.4.2. Random Forest
 
