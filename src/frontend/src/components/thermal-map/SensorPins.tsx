@@ -83,6 +83,7 @@ function Pin({
   onSelectSensor?: (tcNumber: number) => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const [hoverEnabled, setHoverEnabled] = useState(false)
   const status = statusOf(pin.sensor)
   const color = PIN_COLOR[status]
 
@@ -94,10 +95,17 @@ function Pin({
         userData={{ tcNumber: pin.sensor.tc_number }}
         onPointerOver={(e) => {
           e.stopPropagation()
+          if (!hoverEnabled) return
+          setHovered(true)
+        }}
+        onPointerMove={(e) => {
+          e.stopPropagation()
+          setHoverEnabled(true)
           setHovered(true)
         }}
         onPointerOut={(e) => {
           e.stopPropagation()
+          if (!hoverEnabled) return
           setHovered(false)
         }}
         onClick={(e) => {

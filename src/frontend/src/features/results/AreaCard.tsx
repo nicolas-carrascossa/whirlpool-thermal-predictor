@@ -178,7 +178,7 @@ export function AreaCard({ group, focus }: { group: AreaGroup; focus?: SensorFoc
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="responsive-sensor-table">
             <Table>
               <TableHeader>
                 <TableRow>

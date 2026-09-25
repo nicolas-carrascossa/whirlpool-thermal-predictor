@@ -153,7 +153,7 @@ export function AppShell({
             )}
           />
         </div>
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="dashboard-results min-w-0 flex-1">{children}</main>
         {historySidebar && (
           <div
             className={cn(
