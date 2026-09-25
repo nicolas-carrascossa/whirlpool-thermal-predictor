@@ -1104,6 +1104,8 @@ A floresta aleatória (*Random Forest*, `RandomForestRegressor`) funciona como u
 
 Como nos outros dois modelos, existe uma floresta por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região a partir da configuração de montagem informada.
 
+As mudanças feitas nesta sprint estão registradas em [`notebooks/Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) a partir da **Seção 10** ("Tuning de hiperparâmetros por Grid Search") até o final do notebook (Seção 23 e Conclusão). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, avaliação estatística por termopar, métricas do modelo candidato e sobreajuste em lote — já existiam antes desta sprint.
+
 ##### Como se chegou à versão atual
 
 O modelo não nasceu pronto. Foram seis mudanças testadas uma a uma, cada uma medida isoladamente antes de ser combinada com as outras.
@@ -1283,6 +1285,8 @@ A diferença em relação ao Random Forest é onde esse ponto fraco se concentra
 
 O Decision Tree Regressor é o candidato mais interpretável: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁹. Como nos demais candidatos, há uma árvore multi-output por `key_area` (sete modelos), treinada com a mesma base, a semente 42 e a divisão 70/20/10 da Seção 4.3, e implementada com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb). Após a unificação das réplicas (ensaios com configuração idêntica têm as leituras substituídas pela média), cada setor tem **19 configurações únicas**, a partir de 38 a 39 ensaios: 13 linhas para treino, 4 para teste e 2 para verificação. Esse tamanho condiciona a leitura de todos os resultados abaixo.
 
+As mudanças feitas nesta sprint estão registradas no notebook a partir da **Seção 10** ("Decision Tree vs. baseline 'média do termopar'") até o final (Seção 18). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, leitura das regras da árvore e avaliação estatística por termopar e por setor — já existiam antes desta sprint.
+
 ##### Métricas
 
 Seguem a Seção 4.3: MAE (principal, em °C), RMSE e R², sempre sobre o conjunto de teste. Como complemento, reporta-se a fração das previsões dentro da margem de 10% acordada com o parceiro; o MAPE aparece apenas como apoio a essa leitura, com a ressalva sobre a escala Celsius feita na Seção 4.3.
@@ -1380,6 +1384,71 @@ Como a H2 (Seção 4.2.4) mostrou que as sete configurações estão confundidas
 ##### Síntese
 
 Com hiperparâmetros otimizados por `GridSearchCV`, o Decision Tree tem MAPE médio de 7,2% entre sementes, abaixo da margem de 10%, e é o candidato de leitura mais direta. Seus limites decorrem da base de 19 linhas por setor: o desempenho depende da divisão dos dados; com a semente 42, o MAE de treino fica em média 1,62 °C abaixo do de teste (em `ipc_cooling`, o MAE de treino é zero, pois cada folha memoriza uma linha); e, no agregado, ele não se distingue do baseline da média, com vantagem consistente apenas em `coil_temps` e `mainback`. Isso sustenta seu uso para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline.
+
+#### 4.4.4. Comparação entre os candidatos e escolha do algoritmo por região
+
+As três partes anteriores avaliaram cada algoritmo isoladamente. Esta reúne os três lado a lado e registra a decisão que decorre da comparação — entre Random Forest e Gradient Boosting, os dois candidatos com desempenho próximo o bastante para justificar a escolha por região; o Decision Tree fica de fora do comparativo numérico direto, pelo motivo explicado adiante.
+
+##### Por que não um único algoritmo para o produto inteiro
+
+A Seção 4.3 já estabeleceu que existe **um modelo por região**, porque as sete regiões correspondem a regimes térmicos distintos — a amplitude de temperatura varia em mais de oito vezes entre a região mais fria e a mais quente, e a hipótese H1 mostrou que uma mesma alteração de montagem aquece uma região e esfria outra. Uma vez aceito que cada região tem o próprio modelo, escolher um único algoritmo para todas as sete deixa de ser uma exigência técnica e passa a ser apenas um hábito.
+
+##### Por que o Decision Tree fica fora da tabela
+
+Random Forest e Gradient Boosting, adiante, superam esse mesmo baseline com folga em praticamente todas as regiões. Por isso o Decision Tree não entra como terceiro candidato à produção; seu valor é de leitura direta das regras, "Explicabilidade", não de desempenho preditivo.
+
+##### A comparação, região a região
+
+Os dois candidatos são comparados sob o mesmo protocolo — codificação one-hot e validação LOGO (Leave-One-Group-Out, equivalente a Leave-One-Out nesta base de 32 configurações por região) —, a validação oficial adotada em ambas as seções anteriores por ser a mais estável com poucos ensaios. Uma diferença de configuração permanece entre os dois candidatos: o Random Forest usa o estimador híbrido (mediana nas folhas fora do intervalo interquartil, média nas demais; o Gradient Boosting usa sempre a previsão padrão, com hiperparâmetros fixos entre regiões, sem retunagem por fold nesta rodada — nos dois casos, a melhor versão de cada algoritmo medida até aqui, não duas configurações espelhadas ponto a ponto.
+
+| Região | MAE RF (°C) | MAE GB (°C) | R² RF | R² GB | Escolhido |
+|---|---|---|---|---|---|
+| Main Vent Sys | **1,96** | 2,07 | 0,367 | **0,591** | **Gradient Boosting** |
+| CT Knobs | 2,30 | **2,20** | **0,384** | 0,397 | Gradient Boosting |
+| Oven HMI | **2,20** | 2,17 | **0,122** | 0,074 | **Random Forest** |
+| Mainback | **3,30** | 3,44 | **0,512** | 0,410 | Random Forest |
+| IPC Cooling | **3,64** | 3,84 | 0,327 | **0,391** | **Gradient Boosting** |
+| IPC Comp | **4,85** | 5,01 | **0,158** | −0,056 | Random Forest |
+| Coil Temps | 10,54 | **9,55** | 0,666 | **0,785** | Gradient Boosting |
+| **Média das sete regiões** | **4,11** | 4,04 | 0,362 | **0,370** | — |
+
+<sup>Fonte: Elaborado pelos autores (2026)</sup>
+
+##### O critério de decisão
+
+Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² pesa mais quando sua diferença relativa entre os dois candidatos é grande — porque é a métrica que informa se o modelo distingue configurações dentro da região, e não só acerta o patamar médio —, e o MAE decide quando a diferença de R² é pequena.
+
+- **Mainback e IPC Comp** — o Random Forest vence em MAE e em R² nas duas, sem ambiguidade. Em IPC Comp a diferença é qualitativa: R² positivo (0,158) contra negativo (−0,056), a única região em que o Gradient Boosting fica abaixo do baseline da média sob LOGO.
+- **Coil Temps** — o Gradient Boosting vence nas duas métricas (9,55 contra 10,54 °C; R² 0,785 contra 0,666), com a maior margem de MAE da tabela. É a região mais quente e de maior amplitude térmica, a única em que o boosting tem sinal suficiente para levar vantagem clara.
+- **Main Vent Sys** — o MAE favorece o Random Forest por margem estreita, mas o R² do Gradient Boosting é 0,224 mais alto, o maior salto de poder de distinção do comparativo depois de Coil Temps.
+- **IPC Cooling** — o mesmo padrão, em menor escala: MAE ligeiramente melhor no Random Forest, mas R² 0,064 maior no Gradient Boosting.
+- **Oven HMI** — a diferença de MAE é de 0,03 °C, dentro do ruído; o R² favorece o Random Forest. Sem margem de MAE que justifique ir contra o R², prevalece o R². 
+- **CT Knobs** — o Gradient Boosting vence em MAE por margem pequena, e o R² está praticamente empatado. Sem sinal forte de nenhum dos dois lados, fica registrado como Gradient Boosting pela margem de MAE, mas como a divisão mais fraca do comparativo.
+
+##### O que este comparativo ainda não resolve
+
+**A base continua pequena.** Mesmo sob LOGO, que usa as 32 configurações de cada região como teste, são 32 — não 320. As margens de Oven HMI (0,03 °C) e CT Knobs (0,10 °C) são pequenas demais para sustentar decisão de roteamento sozinhas; as de Main Vent Sys, Mainback, IPC Cooling, IPC Comp e Coil Temps, todas acima de 0,14 °C, têm mais sustentação. 
+
+##### A decisão registrada
+
+O roteamento por região adotado em produção é o seguinte, e vive em um único lugar no repositório — o mapa `AREA_ALGORITHMS` em [`scripts/export_models.py`](../scripts/export_models.py), que o grava no manifesto consumido pelo back-end e pelo front-end. Nem a API nem o dashboard reescrevem esse mapa à mão; ambos leem do manifesto, de modo que a decisão documentada aqui e o modelo que efetivamente responde a uma requisição não podem divergir.
+
+| Região | Algoritmo em produção | Artefato |
+|---|---|---|
+| Main Vent Sys | Gradient Boosting | `gradient_boosting__main_vent_sys.joblib` |
+| CT Knobs | Gradient Boosting | `gradient_boosting__ct_knobs.joblib` |
+| Oven HMI | Gradient Boosting | `gradient_boosting__oven_hmi.joblib` |
+| Coil Temps | Gradient Boosting | `gradient_boosting__coil_temps.joblib` |
+| Mainback | Random Forest | `random_forest__mainback.joblib` |
+| IPC Comp | Random Forest | `random_forest__ipc_comp.joblib` |
+| IPC Cooling | Random Forest | `random_forest__ipc_cooling.joblib` |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `models/manifest.json`.</sup>
+
+
+##### Em resumo
+
+O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT Knobs, IPC Cooling, Coil Temps) e **três para Random Forest** (Oven HMI, Mainback, IPC Comp), com o R² decidindo Main Vent Sys e Oven HMI. Random Forest e Gradient Boosting são os dois candidatos viáveis para produção; o Decision Tree fica de fora por não superar o baseline de forma consistente.
 
 ### 4.5. Avaliação
 ```

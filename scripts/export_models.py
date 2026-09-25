@@ -26,7 +26,7 @@ plausivel e errado, sem erro nenhum:
    Sobre `material_coil_support`: os notebooks divergiam — o de Gradient
    Boosting normalizava "Aluminium Plate" -> "Aluminium ", o de Random Forest
    nao. A normalizacao agora e aplicada NOS DOIS, seguindo a decisao registrada
-   em `documents/hipotese_material_sem_correcao_E17.md` (o glossario oficial do
+   em `documents/extras/hipotese_material_sem_correcao_E17.md` (o glossario oficial do
    parceiro documenta so 2 niveis; "Aluminium Plate" aparece em 1 run de 56 e
    nao tem confirmacao fisica). Sem isso, escolher esse valor fazia 4 areas
    tratarem como Aluminium, 2 usarem uma categoria treinada com um unico run e
