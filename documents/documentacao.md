@@ -1040,7 +1040,7 @@ em variação relativa, sem converter um no outro.
 
 #### 4.3.4. Análise e interpretação dos resultados do modelo candidato
 
-O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regressor** multi-saída, treinado em sete instâncias independentes — uma por `key_area`. Sua arquitetura e seus hiperparâmetros estão implementados nas Seções 1 a 8 de [`notebooks/Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb); esta subseção interpreta **o que suas métricas significam** para o uso pretendido pelo parceiro, e onde estão os limites do que ele pode sustentar. A consolidação das métricas dos três modelos está na Seção 9 do mesmo notebook.
+O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regressor** multi-saída, treinado em sete instâncias independentes — uma por `key_area`. Sua arquitetura e seus hiperparâmetros estão implementados nas Seções 1 a 8 de [`notebooks/Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb); esta subseção interpreta **o que suas métricas significam** para o uso pretendido pelo parceiro, e onde estão os limites do que ele pode sustentar. A consolidação das métricas dos três modelos está na Seção 9 do mesmo notebook, que reporta os resultados sob o corte fixo de treino/teste; o comparativo sob a validação LOGO, que fundamenta a escolha por região, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb).
 
 ##### Desempenho comparado
 
@@ -1088,6 +1088,8 @@ Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em fo
 
 ### 4.4. Comparação de Modelos
 
+A comparação entre os três candidatos está consolidada em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), que recalcula todas as métricas desta seção no mesmo processo, a partir das mesmas planilhas. Os notebooks por algoritmo seguem como referência do histórico de experimentos de cada modelo; o comparativo abaixo e o roteamento por região da Seção 4.4.4 vêm do notebook consolidado.
+
 Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação (Seção 4.3, item a). As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
 
 | Modelo | Hiperparâmetros buscados |
@@ -1100,7 +1102,7 @@ Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam p
 
 #### 4.4.1. Decision Tree Regressor
 
-A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁹. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
+A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁸. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
 
 Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. A base é a mesma da Seção 4.3, com semente 42 e divisão 70/20/10, implementada com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb). Após a unificação das réplicas (ensaios com configuração idêntica têm as leituras substituídas pela média), cada região tem **19 configurações únicas**: 13 linhas para treino, 4 para teste e 2 para verificação. Esse tamanho condiciona a leitura de todos os resultados abaixo.
 
@@ -1108,7 +1110,7 @@ As mudanças feitas nesta sprint estão registradas no notebook a partir da **Se
 
 ##### Como se chegou à versão atual
 
-O modelo não nasceu pronto. Como no Random Forest, cada mudança foi testada isoladamente contra uma referência, mas com o protocolo do notebook (Seção 16): 30 sementes (20 no último experimento) sobre as sete regiões, mesma divisão para todas as variantes e comparação pareada pelo teste de Wilcoxon³¹, **sem correção para múltiplas comparações**. O critério é o erro em ensaios que a árvore não viu (teste e verificação) e o **gap**, isto é, quanto esse erro excede o erro de treino, a medida direta de memorização.
+O modelo não nasceu pronto. Como no Random Forest, cada mudança foi testada isoladamente contra uma referência, mas com o protocolo do notebook (Seção 16): 30 sementes (20 no último experimento) sobre as sete regiões, mesma divisão para todas as variantes e comparação pareada pelo teste de Wilcoxon²⁹, **sem correção para múltiplas comparações**. O critério é o erro em ensaios que a árvore não viu (teste e verificação) e o **gap**, isto é, quanto esse erro excede o erro de treino, a medida direta de memorização.
 
 1. **Conter a complexidade (grade restrita e validação cruzada repetida, via `GridSearchCV`).** A grade inicial deixava a árvore crescer até `max_depth = 8`, com 13 folhas para 13 linhas de treino — cada folha memorizava um ensaio. A grade atual busca `max_depth` em 1, 2 e 3, `min_samples_leaf` em 2, 3 e 4 e `min_samples_split` em 4, 6 e 8 (27 combinações, com o MAE como critério), e a validação cruzada passou a ser repetida cinco vezes, porque com ~13 linhas de treino uma validação simples tem folds de ~4 linhas e a escolha vira sorteio. O gap médio caiu de 3,47 para 2,06 °C, ao custo de um erro fora do treino ligeiramente maior (5,67 para 6,00 °C). Como o espaço é pequeno, a busca exaustiva é viável e dispensa a amostragem aleatória (`RandomizedSearchCV`), vantajosa sobretudo em espaços grandes³⁰. Ficaram de fora da grade `max_features` (sortear 2 ou 3 de 7 variáveis é ruído numa árvore única), `criterion` (efeito marginal com tão poucas linhas) e a poda por custo-complexidade `ccp_alpha`, que na validação cruzada escolhia podar a árvore até uma folha única, equivalente a prever a média e só "eliminar" o superajuste porque o modelo deixa de usar as variáveis. Profundidades fixas (2 ou 3) e o tronco de uma divisão só (`max_depth = 1`) também foram testados e não superaram a grade adotada em erro.
 2. **Mudar como as variáveis de entrada são representadas (codificação one-hot em vez de ordinal).** Mesma motivação do Random Forest: a codificação ordinal numera as opções em ordem alfabética, e a árvore passa a enxergar uma hierarquia inexistente entre, por exemplo, modos de operação. Com a one-hot, cada opção vira uma coluna sim/não. Foi a única mudança com ganho de erro estatisticamente significativo: o erro fora do treino caiu de 5,94 para 5,45 °C (−0,49 °C; p = 0,028) e o gap, de 1,98 para 1,70 °C. Variantes que mexiam em `deflector_hole` (removê-la, agrupar categorias raras ou agrupar por família) não superaram a one-hot completa.
@@ -1226,7 +1228,7 @@ Diferente das florestas e do boosting, a árvore dispensa técnica adicional de 
 
 O Decision Tree erra entre 2 °C e 3 °C em quatro das sete regiões, entre 5 °C e 6 °C em duas e quase 10 °C em Coil Temps, e entrega cerca de oito em cada dez previsões dentro da margem de 10% acordada com o parceiro — a menor taxa entre os três modelos, com MAPE médio de 6,9% entre sementes. É o candidato de leitura mais direta e, com a grade restrita, o menos propenso a decorar os ensaios.
 
-Seus limites vêm da base de 19 linhas por região: o desempenho depende da divisão dos dados, o R² é negativo em quase todos os casos e, no agregado, a árvore não se distingue do baseline da média (p = 0,19), com vantagem consistente apenas em `coil_temps` e `mainback`. Isso sustenta seu uso para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline.
+Seus limites vêm da base de 19 linhas por região: o desempenho depende da divisão dos dados, o R² é negativo em quase todos os casos e, no agregado, a árvore não se distingue do baseline da média (p = 0,19), com vantagem consistente apenas em `coil_temps` e `mainback`. Isso sustenta seu uso para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline. Sob a validação LOGO usada no comparativo entre os três candidatos ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 4.4.4), o quadro é mais favorável: a árvore supera o baseline em 4 das 7 regiões — os dois resultados não são incompatíveis, pois usam protocolos de validação diferentes (holdout com múltiplas sementes aqui, Leave-One-Group-Out lá).
 
 #### 4.4.2. Random Forest
 
@@ -1299,7 +1301,7 @@ A causa é o tamanho da base, não o algoritmo. São poucos ensaios e poucas com
 
 ##### O que o modelo olha para decidir
 
-Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations), uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
+Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations)³¹, uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
 
 A **leitura global** (importância agregada das variáveis, olhando todas as previsões) resume o que mais pesa em cada região:
 
@@ -1319,7 +1321,7 @@ A sequência de melhorias rendeu onde podia render: o ajuste de parâmetros cont
 
 #### 4.4.3. Gradient Boosting
 
-O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial, não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
+O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial³², não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
 
 Como nos outros dois modelos, existe um conjunto de regressores por região do fogão, sete no total, e a arquitetura por termopar tem uma consequência que reaparece na explicabilidade, adiante: diferente do Random Forest, dá para saber qual variável pesa mais **para cada sensor**, não só para a região como um todo.
 
@@ -1416,24 +1418,28 @@ A Seção 4.3 já estabeleceu que existe **um modelo por região**, porque as se
 
 ##### Por que o Decision Tree fica fora da tabela
 
-Random Forest e Gradient Boosting, adiante, superam esse mesmo baseline com folga em praticamente todas as regiões. Por isso o Decision Tree não entra como terceiro candidato à produção; seu valor é de leitura direta das regras, "Explicabilidade", não de desempenho preditivo.
+O Decision Tree fica atrás dos outros dois em todas as métricas médias. Sob a mesma validação LOGO aplicada aos demais candidatos, ele supera o baseline da média em **4 das 7 regiões**, contra **7 de 7** do Random Forest e do Gradient Boosting, e seu R² médio (0,06) fica próximo do piso. Vale registrar que, no notebook consolidado, a árvore recebeu uma **vantagem** sobre os outros dois — seus hiperparâmetros foram buscados sobre todas as configurações da região, inclusive as que depois serviriam de teste — e ainda assim ficou atrás, o que reforça a conclusão.
+
+Por isso o Decision Tree não entra como terceiro candidato à produção; seu valor está na leitura direta das regras (Seção 4.4.1, "Explicabilidade"), não no desempenho preditivo.
 
 ##### A comparação, região a região
 
-Os dois candidatos são comparados sob o mesmo protocolo — codificação one-hot e validação LOGO (Leave-One-Group-Out, equivalente a Leave-One-Out nesta base de 32 configurações por região) —, a validação oficial adotada em ambas as seções anteriores por ser a mais estável com poucos ensaios. Uma diferença de configuração permanece entre os dois candidatos: o Random Forest usa o estimador híbrido (mediana nas folhas fora do intervalo interquartil, média nas demais; o Gradient Boosting usa sempre a previsão padrão, com hiperparâmetros fixos entre regiões, sem retunagem por fold nesta rodada — nos dois casos, a melhor versão de cada algoritmo medida até aqui, não duas configurações espelhadas ponto a ponto.
+Os dois candidatos são comparados sob o mesmo protocolo — codificação one-hot e validação LOGO (Leave-One-Group-Out, equivalente a Leave-One-Out nesta base de 32 configurações por região) —, a validação oficial adotada em ambas as seções anteriores por ser a mais estável com poucos ensaios. Uma diferença de configuração permanece entre os dois candidatos: o Random Forest usa o estimador híbrido (mediana nas folhas fora do intervalo interquartil, média nas demais), enquanto o Gradient Boosting usa sempre a previsão padrão, com hiperparâmetros fixos entre regiões e sem retunagem por fold nesta rodada. Em ambos os casos trata-se da melhor versão de cada algoritmo medida até aqui, e não de duas configurações espelhadas ponto a ponto.
 
 | Região | MAE RF (°C) | MAE GB (°C) | R² RF | R² GB | Escolhido |
 |---|---|---|---|---|---|
-| Main Vent Sys | **1,96** | 2,07 | 0,367 | **0,591** | **Gradient Boosting** |
-| CT Knobs | 2,30 | **2,20** | **0,384** | 0,397 | Gradient Boosting |
-| Oven HMI | **2,20** | 2,17 | **0,122** | 0,074 | **Random Forest** |
+| Main Vent Sys | **1,96** | 2,07 | 0,367 | **0,591** | Gradient Boosting |
+| CT Knobs | 2,30 | **2,20** | 0,384 | **0,397** | Gradient Boosting |
+| Oven HMI | 2,20 | **2,17** | **0,122** | 0,074 | Gradient Boosting |
 | Mainback | **3,30** | 3,44 | **0,512** | 0,410 | Random Forest |
-| IPC Cooling | **3,64** | 3,84 | 0,327 | **0,391** | **Gradient Boosting** |
+| IPC Cooling | **3,64** | 3,84 | 0,327 | **0,391** | Random Forest |
 | IPC Comp | **4,85** | 5,01 | **0,158** | −0,056 | Random Forest |
 | Coil Temps | 10,54 | **9,55** | 0,666 | **0,785** | Gradient Boosting |
-| **Média das sete regiões** | **4,11** | 4,04 | 0,362 | **0,370** | — |
+| **Média das sete regiões** | 4,11 | **4,04** | 0,362 | **0,370** | — |
 
-<sup>Fonte: Elaborado pelos autores (2026)</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir da validação LOGO de `notebooks/Random_for_regre.ipynb` (Seção 21) e `notebooks/Grad_Boosting_Regre.ipynb` (Seção 8). O negrito marca o melhor valor entre os dois candidatos em cada métrica.</sup>
+
+**Uma ressalva sobre a comparação do R².** Os dois notebooks de origem agregam o R² dos sensores de formas diferentes: o Random Forest reporta a **média** entre termopares, o Gradient Boosting a **mediana**. Como cada região tem de 4 a 22 sensores e alguns são mal medidos, os dois critérios divergem — a mediana é mais alta justamente quando um sensor ruim puxa a média para baixo. As colunas de R² acima, portanto, não são estritamente comparáveis entre si. O notebook consolidado ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 3) mede o tamanho desse efeito e reavalia os três algoritmos sob uma convenção única. As colunas de MAE, que não dependem dessa escolha, não são afetadas.
 
 ##### O critério de decisão
 
@@ -1442,9 +1448,9 @@ Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² pesa mais qu
 - **Mainback e IPC Comp** — o Random Forest vence em MAE e em R² nas duas, sem ambiguidade. Em IPC Comp a diferença é qualitativa: R² positivo (0,158) contra negativo (−0,056), a única região em que o Gradient Boosting fica abaixo do baseline da média sob LOGO.
 - **Coil Temps** — o Gradient Boosting vence nas duas métricas (9,55 contra 10,54 °C; R² 0,785 contra 0,666), com a maior margem de MAE da tabela. É a região mais quente e de maior amplitude térmica, a única em que o boosting tem sinal suficiente para levar vantagem clara.
 - **Main Vent Sys** — o MAE favorece o Random Forest por margem estreita, mas o R² do Gradient Boosting é 0,224 mais alto, o maior salto de poder de distinção do comparativo depois de Coil Temps.
-- **IPC Cooling** — o mesmo padrão, em menor escala: MAE ligeiramente melhor no Random Forest, mas R² 0,064 maior no Gradient Boosting.
-- **Oven HMI** — a diferença de MAE é de 0,03 °C, dentro do ruído; o R² favorece o Random Forest. Sem margem de MAE que justifique ir contra o R², prevalece o R². 
-- **CT Knobs** — o Gradient Boosting vence em MAE por margem pequena, e o R² está praticamente empatado. Sem sinal forte de nenhum dos dois lados, fica registrado como Gradient Boosting pela margem de MAE, mas como a divisão mais fraca do comparativo.
+- **IPC Cooling** — as duas métricas discordam por margens estreitas: MAE 0,20 °C melhor no Random Forest, R² 0,064 maior no Gradient Boosting. Prevaleceu o Random Forest, e o recomputo sob agregação única (a seguir) reforça essa escolha, invertendo também o sinal do R².
+- **Oven HMI** — as duas margens são mínimas: 0,03 °C no MAE, a favor do Gradient Boosting, e 0,048 no R², a favor do Random Forest. É a região em que o comparativo menos separa os candidatos, e a escolha registrada (Gradient Boosting) se apoia menos em vantagem medida do que na ausência de diferença relevante entre os dois — leitura confirmada pelo teste de sensibilidade do notebook consolidado.
+- **CT Knobs** — o Gradient Boosting leva as duas métricas, mas por margens mínimas (0,10 °C no MAE e 0,013 no R²). A escolha fica registrada como Gradient Boosting por concordância entre as duas, e não por força do sinal: é a divisão mais fraca do comparativo.
 
 ##### O que este comparativo ainda não resolve
 
@@ -1469,7 +1475,9 @@ O roteamento por região adotado em produção é o seguinte, e vive em um únic
 
 ##### Em resumo
 
-O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT Knobs, IPC Cooling, Coil Temps) e **três para Random Forest** (Oven HMI, Mainback, IPC Comp), com o R² decidindo Main Vent Sys e Oven HMI. Random Forest e Gradient Boosting são os dois candidatos viáveis para produção; o Decision Tree fica de fora por não superar o baseline de forma consistente.
+O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT Knobs, Oven HMI, Coil Temps) e **três para Random Forest** (Mainback, IPC Comp, IPC Cooling), como registrado no mapa `AREA_ALGORITHMS`. Random Forest e Gradient Boosting são os dois candidatos viáveis para produção; o Decision Tree fica de fora por ficar atrás dos dois em todas as métricas médias.
+
+O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)) concorda com esse roteamento em seis das sete regiões. A exceção é **CT Knobs**, em que o Random Forest passa a liderar as duas métricas por margem mínima (0,06 °C no MAE). A região segue com Gradient Boosting em produção: a diferença está muito abaixo do que a base de 32 configurações distingue de forma confiável, e trocar o algoritmo exigiria reexportar os artefatos sem ganho perceptível — o erro típico da região é de cerca de 2 °C. Fica registrado como ponto a reavaliar quando houver ensaios novos.
 
 ### 4.5. Avaliação
 ```
@@ -1595,7 +1603,11 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 25. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
 26. PEDREGOSA, F. et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research, v. 12, p. 2825-2830, 2011. Disponível em: https://jmlr.org/papers/v12/pedregosa11a.html. Acesso em: 11 set. 2026.
 27. CHAI, T.; DRAXLER, R. R. Root mean square error (RMSE) or mean absolute error (MAE)? – Arguments against avoiding RMSE in the literature. Geoscientific Model Development, v. 7, p. 1247-1250, 2014. Disponível em: https://gmd.copernicus.org/articles/7/1247/2014/. Acesso em: 11 set. 2026.
-28. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
+28. BREIMAN, Leo; FRIEDMAN, Jerome H.; OLSHEN, Richard A.; STONE, Charles J. *Classification and regression trees.* Belmont: Wadsworth International Group, 1984.
+29. WILCOXON, Frank. *Individual comparisons by ranking methods.* Biometrics Bulletin, v. 1, n. 6, p. 80-83, 1945.
+30. BERGSTRA, James; BENGIO, Yoshua. *Random search for hyper-parameter optimization.* Journal of Machine Learning Research, v. 13, p. 281-305, 2012. Disponível em: https://jmlr.org/papers/v13/bergstra12a.html. Acesso em: 25 set. 2026.
+31. LUNDBERG, Scott M.; LEE, Su-In. *A unified approach to interpreting model predictions.* In: CONFERENCE ON NEURAL INFORMATION PROCESSING SYSTEMS (NIPS), 31., 2017, Long Beach. Advances in Neural Information Processing Systems 30. Red Hook: Curran Associates, 2017. p. 4765-4774. Disponível em: https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions. Acesso em: 25 set. 2026.
+32. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
 
 ## <a name="attachments"></a>Anexos
 
