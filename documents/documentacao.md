@@ -1045,30 +1045,35 @@ definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
 critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
 em variação relativa, sem converter um no outro.
 
-#### 4.3.4. Análise e interpretação dos resultados do modelo candidato
+#### 4.3.4. Análise e interpretação dos resultados dos modelos candidatos
 
-O primeiro modelo candidato do Thermal Predictor é um **Gradient Boosting Regressor** multi-saída, treinado em sete instâncias independentes — uma por `key_area`. Sua arquitetura e seus hiperparâmetros estão implementados nas Seções 1 a 8 de [`notebooks/Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb); esta subseção interpreta **o que suas métricas significam** para o uso pretendido pelo parceiro, e onde estão os limites do que ele pode sustentar. A consolidação das métricas dos três modelos está na Seção 9 do mesmo notebook, que reporta os resultados sob o corte fixo de treino/teste; o comparativo sob a validação LOGO, que fundamenta a escolha por região, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb).
+O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb). Esta subseção resume o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
 
 ##### Desempenho comparado
 
-A Figura 18 e a tabela abaixo trazem as métricas médias entre os sete setores no conjunto de teste, para os três algoritmos avaliados pelo grupo. A comparação é direta porque os três notebooks partem da mesma base, com a mesma semente (42) e a mesma divisão 70/20/10, apenas o algoritmo varia. O R² de cada setor, nessa média, já é a mediana entre os termopares daquele setor  a mesma agregação descrita em "Métricas de avaliação do modelo", acima, e não a média simples sobre todos os termopares do produto.
+A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação: LOGO (Leave-One-Group-Out), em que cada uma das 32 configurações de uma região serve de teste uma vez, treinando com as outras 31. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3, "Métricas de avaliação do modelo").
 
 <div align="center">
-  <sub>Figura 18 — Comparativo de métricas entre os modelos candidatos no conjunto de teste</sub><br>
-  <img src="../assets/graficos/modelo_candidato_comparativo.png" alt="Painéis comparando MAE, RMSE, R², MAPE e fração dentro de 10% entre Gradient Boosting, Decision Tree e Random Forest, e gráfico de MAE por setor" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir dos notebooks de modelagem.</sup>
+  <sub>Figura 18 — Comparativo entre os modelos candidatos e o baseline sob validação LOGO, por região</sub><br>
+  <img src="../assets/graficos/comparacao_modelos_logo.png" alt="Dois painéis de barras por região: à esquerda, o MAE de Random Forest, Gradient Boosting e Decision Tree com o baseline da média marcado por um traço preto; à direita, o R² de cada modelo, mediana entre sensores" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/comparacao_modelos.ipynb (Seção 5).</sup>
 </div>
 
-| Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+| Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | Dentro de 10% ↑ | Regiões em que supera o baseline (MAE) |
 |---|---|---|---|---|---|
-| **Gradient Boosting** | **3,92** | **5,41** | −6,594 | **5,03** | **86,4%** |
-| Decision Tree | 4,72 | 8,02 | 0,156 | 6,04 | 85,5% |
-| Random Forest | 4,88 | 7,18 | **0,283** | 6,54 | 79,8% |
+| **Random Forest** | **4,08** | **5,79** | **0,412** | **87,6%** | 7 de 7 |
+| Gradient Boosting | 4,12 | 5,89 | 0,368 | 86,9% | 7 de 7 |
+| Decision Tree | 5,14 | 6,80 | 0,060 | 82,3% | 4 de 7 |
+| Baseline (média do treino) | 6,55 | 9,49 | −0,066 | 75,9% | — |
 
-O Gradient Boosting vence em quatro das cinco métricas (MAE, RMSE, MAPE e fração dentro de 10%), perdendo apenas no R². A interpretação completa desses números — a ressalva do R², o superajuste e a explicabilidade — está na Seção 4.4.2, ao lado da mesma leitura para o Random Forest (Seção 4.4.1). As três figuras abaixo documentam a explicabilidade do modelo: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23).
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/comparacao_modelos.ipynb` (Seção 5). Média entre as sete regiões; em cada região, mediana entre termopares.</sup>
+
+Random Forest e Gradient Boosting ficam praticamente empatados na média, e ambos superam o baseline nas sete regiões: a diferença de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). O Decision Tree fica atrás em todas as métricas e supera o baseline em só quatro regiões. Como o empate na média esconde diferenças região a região, não há um único vencedor: a Seção 4.4.4 escolhe o algoritmo de cada região. Em todos os casos, o R² modesto mostra que os modelos acertam bem o patamar térmico de cada região, mas ainda não distinguem com segurança duas configurações parecidas.
+
+As três figuras abaixo documentam a explicabilidade do Gradient Boosting, geradas na Seção 9 de `Grad_Boosting_Regre.ipynb`: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23). A interpretação está na Seção 4.4.3; a explicabilidade do Random Forest e do Decision Tree, nas Seções 4.4.2 e 4.4.1.
 
 <div align="center">
-  <sub>Figura 19 — Explicabilidade do modelo candidato: importância das variáveis na área Mainback</sub><br>
+  <sub>Figura 19 — Explicabilidade do Gradient Boosting: importância das variáveis na área Mainback</sub><br>
   <img src="../assets/graficos/modelo_candidato_explicabilidade.png" alt="Gráfico de barras horizontais com a importância média de cada variável de configuração para o Gradient Boosting na área Mainback, indicando o termopar mais sensível a cada variável" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
 </div>
