@@ -1456,18 +1456,18 @@ Os dois candidatos são comparados sob o mesmo protocolo — codificação one-h
 
 ##### O critério de decisão
 
-Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² pesa mais quando sua diferença relativa entre os dois candidatos é grande — porque é a métrica que informa se o modelo distingue configurações dentro da região, e não só acerta o patamar médio —, e o MAE decide quando a diferença de R² é pequena.
+Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide quando a diferença entre os dois candidatos é de pelo menos **0,05** — porque é a métrica que informa se o modelo distingue configurações dentro da região, e não só acerta o patamar médio —, e o MAE decide abaixo disso. É o mesmo limiar que [`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 5) aplica em código, junto com um teste de quanto a escolha de cada região depende desse valor.
 
-- **Mainback e IPC Comp** — o Random Forest vence em MAE e em R² nas duas, sem ambiguidade. Em IPC Comp a diferença é qualitativa: R² positivo (0,158) contra negativo (−0,056), a única região em que o Gradient Boosting fica abaixo do baseline da média sob LOGO.
+- **Mainback e IPC Comp** — o Random Forest vence em MAE e em R² nas duas, sem ambiguidade. Em IPC Comp a diferença é qualitativa: R² positivo (0,158) contra negativo (−0,056), a única região em que o R² do Gradient Boosting é negativo, isto é, pior que prever a média dos próprios ensaios.
 - **Coil Temps** — o Gradient Boosting vence nas duas métricas (9,55 contra 10,54 °C; R² 0,785 contra 0,666), com a maior margem de MAE da tabela. É a região mais quente e de maior amplitude térmica, a única em que o boosting tem sinal suficiente para levar vantagem clara.
-- **Main Vent Sys** — o MAE favorece o Random Forest por margem estreita, mas o R² do Gradient Boosting é 0,224 mais alto, o maior salto de poder de distinção do comparativo depois de Coil Temps.
-- **IPC Cooling** — as duas métricas discordam por margens estreitas: MAE 0,20 °C melhor no Random Forest, R² 0,064 maior no Gradient Boosting. Prevaleceu o Random Forest, e o recomputo sob agregação única (a seguir) reforça essa escolha, invertendo também o sinal do R².
-- **Oven HMI** — as duas margens são mínimas: 0,03 °C no MAE, a favor do Gradient Boosting, e 0,048 no R², a favor do Random Forest. É a região em que o comparativo menos separa os candidatos, e a escolha registrada (Gradient Boosting) se apoia menos em vantagem medida do que na ausência de diferença relevante entre os dois — leitura confirmada pelo teste de sensibilidade do notebook consolidado.
+- **Main Vent Sys** — o MAE favorece o Random Forest por margem estreita (0,11 °C), mas o R² do Gradient Boosting é 0,224 mais alto, acima do limiar e o maior salto de poder de distinção do comparativo.
+- **IPC Cooling** — as duas métricas discordam: MAE 0,20 °C melhor no Random Forest, R² 0,064 maior no Gradient Boosting. Aplicado a esta tabela, o limiar daria a região ao Gradient Boosting; a escolha registrada é o Random Forest porque essa vantagem de R² vem da diferença de agregação entre os notebooks de origem (ressalva acima). No recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)), é o Random Forest que tem o R² maior, com margem acima do limiar, e as duas métricas passam a concordar.
+- **Oven HMI** — as duas margens são mínimas: 0,03 °C no MAE, a favor do Gradient Boosting, e 0,048 no R², a favor do Random Forest. Como a diferença de R² fica abaixo do limiar, o MAE decide, e a escolha é o Gradient Boosting. É a região em que o comparativo menos separa os candidatos: a escolha se apoia menos em vantagem medida do que na ausência de diferença relevante entre os dois — leitura confirmada pelo teste de sensibilidade do notebook consolidado.
 - **CT Knobs** — o Gradient Boosting leva as duas métricas, mas por margens mínimas (0,10 °C no MAE e 0,013 no R²). A escolha fica registrada como Gradient Boosting por concordância entre as duas, e não por força do sinal: é a divisão mais fraca do comparativo.
 
 ##### O que este comparativo ainda não resolve
 
-**A base continua pequena.** Mesmo sob LOGO, que usa as 32 configurações de cada região como teste, são 32 — não 320. As margens de Oven HMI (0,03 °C) e CT Knobs (0,10 °C) são pequenas demais para sustentar decisão de roteamento sozinhas; as de Main Vent Sys, Mainback, IPC Cooling, IPC Comp e Coil Temps, todas acima de 0,14 °C, têm mais sustentação. 
+**A base continua pequena.** Mesmo sob LOGO, que usa as 32 configurações de cada região como teste, são 32 — não 320. As margens de MAE de Oven HMI (0,03 °C), CT Knobs (0,10 °C) e Main Vent Sys (0,11 °C) são pequenas demais para sustentar decisão de roteamento sozinhas — em Main Vent Sys a escolha se apoia no R², não no MAE; as de Mainback (0,14 °C), IPC Comp (0,16 °C), IPC Cooling (0,20 °C) e Coil Temps (0,99 °C) têm mais sustentação.
 
 ##### A decisão registrada
 
