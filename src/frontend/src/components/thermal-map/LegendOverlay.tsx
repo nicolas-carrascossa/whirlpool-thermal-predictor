@@ -5,8 +5,11 @@
  * motivo do `<MapToolbar>`: não precisa girar com a câmera.
  */
 
+import { useState } from 'react'
+
 import { formatTempPt } from './aggregate'
 import type { LegendModel } from './legendModel'
+import { CollapseToggle } from './CollapseToggle'
 
 function StatusRows({ model }: { model: Extract<LegendModel, { mode: 'status' }> }) {
   return (
@@ -65,15 +68,22 @@ function DeltaBar({ model }: { model: Extract<LegendModel, { mode: 'delta' }> })
 }
 
 export function LegendOverlay({ model }: { model: LegendModel }) {
+  const [expanded, setExpanded] = useState(false)
+
   return (
     <div
       role="group"
       aria-label="Legenda do mapa térmico"
-      className="pointer-events-none absolute bottom-3 right-3 z-10 rounded-md border border-wp-gray12 bg-white/95 px-2.5 py-2 font-body text-[12px] shadow-sm backdrop-blur"
+      className="absolute bottom-3 right-3 z-10 rounded-md border border-wp-gray12 bg-white/95 px-2.5 py-2 font-body text-[12px] shadow-sm backdrop-blur"
     >
-      {model.mode === 'status' && <StatusRows model={model} />}
-      {model.mode === 'absolute' && <AbsoluteBar model={model} />}
-      {model.mode === 'delta' && <DeltaBar model={model} />}
+      <CollapseToggle label="Legenda" expanded={expanded} onClick={() => setExpanded(!expanded)} />
+      {expanded && (
+        <div className="mt-1">
+          {model.mode === 'status' && <StatusRows model={model} />}
+          {model.mode === 'absolute' && <AbsoluteBar model={model} />}
+          {model.mode === 'delta' && <DeltaBar model={model} />}
+        </div>
+      )}
     </div>
   )
 }

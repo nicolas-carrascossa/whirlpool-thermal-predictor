@@ -1,6 +1,17 @@
 /** Fixtures mínimas do contrato v1 para os testes de interface. */
 
-import type { Metadata, PredictionResponse, SensorPrediction } from '@/contract/v1'
+import type { AlgorithmCode, Metadata, PredictionResponse, SensorPrediction } from '@/contract/v1'
+
+/**
+ * Mapa área → algoritmo das 3 áreas da fixture, espelhando `area_algorithms`
+ * do metadata. Fixture de teste é o único lugar onde ele aparece escrito: os
+ * componentes leem sempre do metadata ou da resposta.
+ */
+export const FIXTURE_AREA_ALGORITHMS: Record<string, AlgorithmCode> = {
+  'IPC Comp': 'random_forest',
+  'CT Knobs': 'gradient_boosting',
+  'Main Vent Sys': 'gradient_boosting',
+}
 
 export const FIXTURE_METADATA: Metadata = {
   contract_version: '1.0.0',
@@ -28,6 +39,21 @@ export const FIXTURE_METADATA: Metadata = {
     { name: 'CT Knobs', label_pt: 'Botões do cooktop', n_sensors: 1 },
     { name: 'Main Vent Sys', label_pt: 'Ventilação principal', n_sensors: 1 },
   ],
+  algorithms: [
+    {
+      code: 'random_forest',
+      label_pt: 'Random Forest',
+      available: true,
+      model_version: 'random_forest-1.0.0',
+    },
+    {
+      code: 'gradient_boosting',
+      label_pt: 'Gradient Boosting',
+      available: true,
+      model_version: 'gradient_boosting-1.0.0',
+    },
+  ],
+  area_algorithms: FIXTURE_AREA_ALGORITHMS,
   reference_config: {
     blower_direction: 'To front',
     housing: 'Closed',
@@ -50,6 +76,8 @@ function sensor(partial: Partial<SensorPrediction> & Pick<SensorPrediction, 'tc_
     is_monitor: limit === null,
     monitor_reference_c: null,
     reliability: 'interpolation',
+    // Procedência (v1.1): a fixture segue o mesmo mapa das áreas reais.
+    algorithm: FIXTURE_AREA_ALGORITHMS[partial.key_area] ?? 'random_forest',
     ...partial,
   }
 }
@@ -65,6 +93,7 @@ export const FIXTURE_RESPONSE: PredictionResponse = {
   architecture_available: true,
   ignored_fields: ['losses', 'board_position'],
   generated_at: '2026-09-10T12:00:00.000Z',
+  algorithm_by_area: FIXTURE_AREA_ALGORITHMS,
   predictions: [
     sensor({ tc_number: 3, tc_name: 'Knob 1', key_area: 'CT Knobs', temp_c: 42, active_limit_c: 60 }),
     sensor({ tc_number: 2, tc_name: 'CMC 1', key_area: 'IPC Comp', temp_c: 83.4, active_limit_c: 90 }),

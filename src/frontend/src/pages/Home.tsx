@@ -4,29 +4,24 @@
  * origem é o mock local ou a API da Fase 2.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { OctagonAlert } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { Card, CardContent } from '@/components/ui/card'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import type { ArchitectureMeta } from '@/contract/v1'
 import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
+import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
-import { ResultsPanel } from '@/features/results/ResultsPanel'
+import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
 import {
   useMetadataQuery,
   usePredictionQuery,
   useReferencePredictionQuery,
 } from '@/hooks/useThermalQueries'
-
-const FALLBACK_ARCHITECTURES: ArchitectureMeta[] = [
-  { code: 'BR', available: true, label_pt: 'Brasil' },
-  { code: 'MX', available: false, label_pt: 'Sem dados de treino para a arquitetura México' },
-]
 
 function HomeContent() {
   const store = useConfigStore()
@@ -47,21 +42,31 @@ function HomeContent() {
   const auth = useAuth()
   const navigate = useNavigate()
 
+  // Aba ativa da área de resultados; vive aqui porque o botão que abre o mapa
+  // fica na barra superior (AppShell) e as abas ficam no ResultsPanel.
+  const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
+
   useEffect(() => {
     if (apiMode && auth.sessionExpired) {
       navigate('/login', { replace: true })
     }
   }, [apiMode, auth.sessionExpired, navigate])
 
+  // O identificador da consulta é gerado pela fonte de predição. Assim que a
+  // resposta atual chega, ele é associado ao snapshot salvo ao clicar em
+  // "Prever"; `isPlaceholderData` evita usar a resposta da consulta anterior.
+  useEffect(() => {
+    if (!store.request || !prediction.data || prediction.isPlaceholderData) return
+    store.recordHistoryPrediction(store.request, prediction.data)
+  }, [prediction.data, prediction.isPlaceholderData, store])
+
   return (
     <AppShell
-      architectures={store.metadata?.architectures ?? FALLBACK_ARCHITECTURES}
-      architecture={store.architecture}
-      onArchitectureChange={store.setArchitecture}
       isMock={isMock}
       userDisplayName={apiMode ? auth.user?.display_name : undefined}
       onLogout={apiMode ? auth.logout : undefined}
       sidebar={<ConfigPanel />}
+      historySidebar={<HistoryPanel />}
     >
       {apiMode && auth.sessionExpired && (
         <div
@@ -86,6 +91,8 @@ function HomeContent() {
         hoveredVariable={store.hoveredVariable}
         highlightPart={store.highlightPart}
         onHoverVariable={store.setHoveredVariable}
+        activeTab={resultsTab}
+        onTabChange={setResultsTab}
       />
     </AppShell>
   )

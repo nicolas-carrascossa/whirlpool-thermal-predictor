@@ -49,6 +49,9 @@ export function PartGroup({ partId, children, tooltipAt = [0, 0, 0], interactive
 
   const group = useRef<THREE.Group>(null!)
   const [hovered, setHovered] = useState(false)
+  // O raycaster pode emitir `pointerover` ao montar o Canvas se o cursor já
+  // estiver sobre uma peça. Tooltips só são habilitados após movimento real.
+  const [hoverEnabled, setHoverEnabled] = useState(false)
   const pulse = useRef(0)
   const active = useRef(false)
 
@@ -129,6 +132,17 @@ export function PartGroup({ partId, children, tooltipAt = [0, 0, 0], interactive
         interactive
           ? (e) => {
               e.stopPropagation()
+              if (!hoverEnabled) return
+              setHovered(true)
+              onHoverPart(partId)
+            }
+          : undefined
+      }
+      onPointerMove={
+        interactive
+          ? (e) => {
+              e.stopPropagation()
+              setHoverEnabled(true)
               setHovered(true)
               onHoverPart(partId)
             }
@@ -138,6 +152,7 @@ export function PartGroup({ partId, children, tooltipAt = [0, 0, 0], interactive
         interactive
           ? (e) => {
               e.stopPropagation()
+              if (!hoverEnabled) return
               setHovered(false)
               onHoverPart(null)
             }

@@ -1,0 +1,16 @@
+{
+  "name": "g03",
+  "private": true,
+  "description": "Atalhos da raiz do repositorio. O projeto npm de verdade e src/frontend; estes scripts apenas delegam para la via --prefix, para que `npm run dev` funcione de qualquer lugar do repo em vez de falhar com ENOENT na raiz.",
+  "scripts": {
+    "dev": "npm --prefix src/frontend run dev",
+    "dev:api": "npm --prefix src/frontend run dev:api",
+    "build": "npm --prefix src/frontend run build",
+    "build:api": "npm --prefix src/frontend run build:api",
+    "preview": "npm --prefix src/frontend run preview",
+    "test": "npm --prefix src/frontend run test",
+    "lint": "npm --prefix src/frontend run lint",
+    "contract:schema": "npm --prefix src/frontend run contract:schema",
+    "install:frontend": "npm --prefix src/frontend install"
+  }
+}

@@ -64,6 +64,23 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 2. Faça upload de `data/dataset_bruto.csv` mantendo a mesma estrutura de pastas (`data/` um nível acima de `notebooks/`), ou ajuste os caminhos `../data/...` das células para onde você subiu o arquivo.
 3. Rode todas as células em ordem (Ambiente de execução > Executar tudo).
 
+**Geração de runs sintéticas (K-means):**
+
+`notebooks/geracao_dados_sinteticos_kmeans.ipynb` agrupa as 56 runs reais por assinatura térmica,
+sorteia 44 configurações de hardware inéditas e gera o perfil de cada uma interpolando runs reais do
+cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_preprocessado.csv`:
+
+- `data/dataset_sintetico.csv` — só as 44 runs sintéticas;
+- `data/dataset_com_sinteticos.csv` — as 100 runs (56 reais + 44 sintéticas);
+- `data/sintetico_rastreabilidade.csv` — de quais runs-mãe cada sintética saiu.
+
+> ⚠️ **Não treine o modelo entregue com `dataset_com_sinteticos.csv`.** A avaliação válida, em
+> `notebooks/avaliacao_dados_sinteticos.ipynb` (geração dentro de cada fold, teste 100% real), testou três
+> variantes de geração em Random Forest e Gradient Boosting: **nenhuma melhorou o modelo**. Os arquivos
+> existem para documentar o experimento e sustentar a conclusão de que o gargalo do dataset é variável
+> não medida, não número de runs — ver `notebooks/diagnostico_dados_e_validacao.ipynb`.
+> Os números de RMSE da seção 7 do notebook de geração vêm de um harness com vazamento e não devem ser citados.
+
 ## 🗃 Histórico de lançamentos
 
 * 1.0.0 - 11/10/2024

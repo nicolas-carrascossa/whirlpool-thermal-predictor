@@ -7,13 +7,14 @@ import type { SensorPrediction, StoveConfig } from '@/contract/v1'
 
 import type { ZoneAggregate } from './aggregate'
 import { cutZForDepth, DEFAULT_CUT_DEPTH } from './cutPlane'
+import { framingBoundsFor } from './explode'
+import { ExplodeLayer } from './ExplodeLayer'
 import { cameraPlacementForBounds, type CameraPlacement, type FitOptions } from './fitCamera'
 import { C } from './materials'
 import { OrientationMarkers, PartChangeCallout } from './SceneAnnotations'
 import { Blower } from './parts/Blower'
 import { CoilSupport } from './parts/CoilSupport'
 import { ControlBoard } from './parts/ControlBoard'
-import { CooktopLoad } from './parts/CooktopLoad'
 import { DeflectorPlate } from './parts/DeflectorPlate'
 import { HousingLid } from './parts/HousingLid'
 import { OvenGlow } from './parts/OvenGlow'
@@ -23,16 +24,16 @@ import { StoveProvider, type OpeningState, type StoveView } from './StoveContext
 import { FLOOR_Y, StoveBody } from './StoveBody'
 import { ZoneCallout } from './ZoneCallout'
 import type { ZoneStatus } from './zoneStatus'
-import { CONSOLE_BOUNDS, FACADE_ZONE_KEYS, STOVE_BOUNDS, ZONE_MESHES, type Bounds } from './zoneGeometry'
+import { BAY_ZONE_KEYS, CONSOLE_BOUNDS, STOVE_BOUNDS, TOP_ZONE_KEYS, ZONE_MESHES, type Bounds } from './zoneGeometry'
 import { ZoneMesh } from './ZoneMesh'
 
 export type CameraPreset = 'front' | 'back' | 'console' | 'iso'
 
 /**
  * Caixa usada para enquadrar (Fase 1d, etapa A). É a do fogão fechado
- * **acrescida** do espaço que as aberturas ocupam (tampa do console levantada,
- * porta do forno abaixada): assim o enquadramento não salta a cada toggle e o
- * fogão inteiro — pés e backsplash incluídos — cabe com folga.
+ * **acrescida** do espaço que as aberturas ocupam (cooktop levantado, porta
+ * do forno abaixada): assim o enquadramento não salta a cada toggle e o fogão
+ * inteiro — pés e faixa do console incluídos — cabe com folga.
  */
 export const FRAMING_BOUNDS: Bounds = {
   min: [STOVE_BOUNDS.min[0], STOVE_BOUNDS.min[1], STOVE_BOUNDS.min[2]],
@@ -71,6 +72,8 @@ interface ThermalMapSceneProps {
   tooltipFor: (zoneKey: string) => React.ReactNode
   view: StoveView
   cutDepth: number
+  /** Afastamento das camadas na vista explodida, 0–100 %. */
+  explodeAmount: number
   config: StoveConfig
   openings: OpeningState
   highlightPart: PartId | null
@@ -82,6 +85,8 @@ interface ThermalMapSceneProps {
   recenterToken: number
   /** Rótulos de zona visíveis (já filtrados por "Alertas / Todos / Nenhum"). */
   zoneLabels: ZoneLabelDatum[]
+  /** Exibe os textos auxiliares da cena quando o usuário habilita os rótulos. */
+  showAnnotations: boolean
   selectedKeyArea: string | null
   sensorPins: SensorPin[]
   onSelectSensor?: (tcNumber: number) => void
@@ -93,7 +98,11 @@ interface ControlsLike {
 }
 
 /** Enquadramento do preset atual para o tamanho de viewport corrente. */
-function placementFor(preset: CameraPreset, camera: THREE.PerspectiveCamera): CameraPlacement {
+function placementFor(
+  preset: CameraPreset,
+  camera: THREE.PerspectiveCamera,
+  explodeAmount: number,
+): CameraPlacement {
   const p = CAMERA_PRESETS[preset]
   const options: FitOptions = {
     azimuthDeg: p.azimuthDeg,
@@ -102,7 +111,8 @@ function placementFor(preset: CameraPreset, camera: THREE.PerspectiveCamera): Ca
     fovDeg: camera.fov,
     aspect: camera.aspect,
   }
-  return cameraPlacementForBounds(p.bounds.min, p.bounds.max, options)
+  const bounds = framingBoundsFor(p.bounds, explodeAmount)
+  return cameraPlacementForBounds(bounds.min, bounds.max, options)
 }
 
 /**
@@ -113,10 +123,13 @@ function CameraRig({
   preset,
   recenterToken,
   interrupted,
+  explodeAmount,
 }: {
   preset: CameraPreset
   recenterToken: number
   interrupted: boolean
+  /** Afastamento efetivo da vista explodida (0 quando desligada). */
+  explodeAmount: number
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   const controls = useThree((s) => s.controls) as unknown as ControlsLike | null
@@ -125,9 +138,15 @@ function CameraRig({
   const wantTarget = useRef(new THREE.Vector3())
   const animating = useRef(true)
   const first = useRef(true)
+  // Lido na hora do enquadramento, sem entrar nas dependências: arrastar o
+  // slider não deve reenquadrar a cada tick — só preset/recentralizar/resize.
+  const explodeRef = useRef(explodeAmount)
+  useEffect(() => {
+    explodeRef.current = explodeAmount
+  }, [explodeAmount])
 
   useEffect(() => {
-    const placement = placementFor(preset, camera)
+    const placement = placementFor(preset, camera, explodeRef.current)
     wantPos.current.set(...placement.position)
     wantTarget.current.set(...placement.target)
     animating.current = true
@@ -178,6 +197,7 @@ export function ThermalMapScene({
   tooltipFor,
   view,
   cutDepth,
+  explodeAmount,
   config,
   openings,
   highlightPart,
@@ -187,6 +207,7 @@ export function ThermalMapScene({
   cameraPreset,
   recenterToken,
   zoneLabels,
+  showAnnotations,
   selectedKeyArea,
   sensorPins,
   onSelectSensor,
@@ -222,6 +243,7 @@ export function ThermalMapScene({
       view,
       clipPlanes,
       cutDepth,
+      explodeAmount,
       config,
       parts,
       openings,
@@ -234,6 +256,7 @@ export function ThermalMapScene({
       view,
       clipPlanes,
       cutDepth,
+      explodeAmount,
       config,
       parts,
       openings,
@@ -272,25 +295,35 @@ export function ThermalMapScene({
     />
   )
 
-  const isFacade = (key: string) => FACADE_ZONE_KEYS.has(key)
+  const isTop = (key: string) => TOP_ZONE_KEYS.has(key)
+  const isBay = (key: string) => BAY_ZONE_KEYS.has(key)
+  const isBody = (key: string) => !isTop(key) && !isBay(key)
 
-  // Tudo que pertence à fachada do console entra no mesmo `<Openable>` da
-  // tampa (via `consoleExtras`), para subir junto com ela sem dessincronizar.
-  const consoleExtras = (
+  // Zonas, rótulos e pinos de cada camada animada entram no mesmo grupo da
+  // peça — o `<Openable>`/camada do cooktop (via `topExtras`) ou a camada da
+  // baía — para subir junto com ela sem dessincronizar.
+  const layerExtras = (belongs: (key: string) => boolean) => (
     <>
-      {ZONE_MESHES.map((def, i) => (isFacade(def.zoneKey) ? zoneNodes[i] : null))}
-      {zoneLabels.filter((z) => isFacade(z.zoneKey)).map(calloutFor)}
+      {ZONE_MESHES.map((def, i) => (belongs(def.zoneKey) ? zoneNodes[i] : null))}
+      {zoneLabels.filter((z) => belongs(z.zoneKey)).map(calloutFor)}
       <SensorPins
-        pins={sensorPins.filter((p) => isFacade(p.sensor.key_area))}
+        pins={sensorPins.filter((p) => belongs(p.sensor.key_area))}
         onSelectSensor={onSelectSensor}
       />
     </>
   )
 
+  const effectiveExplode = openings.explode ? explodeAmount : 0
+
   return (
     <StoveProvider value={ctx}>
       <ClippingSetup enabled={view === 'cutaway'} />
-      <CameraRig preset={cameraPreset} recenterToken={recenterToken} interrupted={userInteracted} />
+      <CameraRig
+        preset={cameraPreset}
+        recenterToken={recenterToken}
+        interrupted={userInteracted}
+        explodeAmount={effectiveExplode}
+      />
       <OrbitControls
         makeDefault
         enablePan={false}
@@ -324,23 +357,22 @@ export function ThermalMapScene({
         resolution={512}
       />
 
-      <StoveBody consoleExtras={consoleExtras} />
-      <OrientationMarkers />
+      <StoveBody topExtras={layerExtras(isTop)} />
+      {showAnnotations && <OrientationMarkers />}
 
-      <HousingLid />
-      <ControlBoard />
-      <Blower />
-      <DeflectorPlate />
+      {/* Baía da eletrônica sob o cooktop: peças + zonas IPC sobem juntas na vista explodida. */}
+      <ExplodeLayer layer="bay">
+        <HousingLid />
+        <ControlBoard />
+        <Blower />
+        <DeflectorPlate />
+        {layerExtras(isBay)}
+      </ExplodeLayer>
+
       <CoilSupport />
-      <CooktopLoad />
-      <OvenGlow />
+      <OvenGlow showBadge={showAnnotations} />
 
-      {ZONE_MESHES.map((def, i) => (isFacade(def.zoneKey) ? null : zoneNodes[i]))}
-      {zoneLabels.filter((z) => !isFacade(z.zoneKey)).map(calloutFor)}
-      <SensorPins
-        pins={sensorPins.filter((p) => !isFacade(p.sensor.key_area))}
-        onSelectSensor={onSelectSensor}
-      />
+      {layerExtras(isBody)}
       <PartChangeCallout />
     </StoveProvider>
   )

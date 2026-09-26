@@ -16,6 +16,7 @@ function sensor(overrides: Partial<SensorPrediction> & { key_area: string; temp_
     is_monitor: false,
     monitor_reference_c: null,
     reliability: 'interpolation',
+  algorithm: 'random_forest',
     ...overrides,
   }
 }

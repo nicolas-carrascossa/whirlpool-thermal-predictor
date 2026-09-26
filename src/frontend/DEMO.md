@@ -227,7 +227,8 @@ uvicorn app.main:app --reload   # http://localhost:8000
 
 # Terminal 2 — front-end em modo api
 cd src/frontend
-npm run dev:api      # lê .env.api (VITE_DATA_SOURCE=api, VITE_API_BASE_URL=http://localhost:8000)
+npm run dev          # padrão do projeto: VITE_DATA_SOURCE=api (modelos reais)
+npm run dev:api      # o mesmo, lendo .env.api explicitamente
 ```
 
 `npm run build:api` gera o build de produção apontando para a API (mesmas
@@ -245,5 +246,16 @@ Diferenças visíveis em modo `api`:
 - Um 401 no meio da sessão (token expirado) mostra o aviso "Sessão expirada
   — entre novamente" e volta para `/login`.
 
-O modo `local` (`npm run dev` / `npm run build`) nunca pede login — a Fase 1
+> **Padrão mudou na Fase 3.** `VITE_DATA_SOURCE` agora vale `api` por padrão
+> (definido em `src/sources/index.ts`, não só no `.env`, que é ignorado pelo
+> git). Para a demo offline, copie `.env.local.example` para `.env.local`
+> — ele tem precedência sobre o `.env` e devolve `VITE_DATA_SOURCE=local`.
+> O back-end precisa estar no ar em modo `real` para as predições virem dos
+> modelos treinados:
+>
+> ```bash
+> MODEL_MODE=real python -m uvicorn app.main:app --port 8000
+> ```
+
+O modo `local` nunca pede login — a Fase 1
 continua demonstrável offline.

@@ -16,7 +16,7 @@ const BACK_Z = CAVITY.zCenter - CAVITY.d / 2
  * com intensidade proporcional ao setpoint do `run_case`
  * (Pyro 400 °C forte, Broil 280 °C médio).
  */
-export function OvenGlow() {
+export function OvenGlow({ showBadge = true }: { showBadge?: boolean }) {
   const { parts, reducedMotion, config } = useStove()
   const mat = useRef<THREE.MeshStandardMaterial>(null!)
   const light = useRef<THREE.PointLight>(null!)
@@ -56,19 +56,21 @@ export function OvenGlow() {
       />
 
       {/* selo do forno junto à porta: a informação que o brilho antes tentava dar */}
-      <Html
-        position={[0, 7.6, BODY_FRONT + 1.6]}
-        center
-        zIndexRange={[8, 0]}
-        style={{ pointerEvents: 'none' }}
-      >
-        <div
-          data-testid="oven-badge"
-          className="tabular whitespace-nowrap rounded-full border border-wp-gray12 bg-white/95 px-2.5 py-1 font-body text-[11px] font-semibold text-wp-gray85 shadow-sm"
+      {showBadge && (
+        <Html
+          position={[0, 7.6, BODY_FRONT + 1.6]}
+          center
+          zIndexRange={[8, 0]}
+          style={{ pointerEvents: 'none' }}
         >
-          {ovenBadgeText(config)}
-        </div>
-      </Html>
+          <div
+            data-testid="oven-badge"
+            className="tabular whitespace-nowrap rounded-full border border-wp-gray12 bg-white/95 px-2.5 py-1 font-body text-[11px] font-semibold text-wp-gray85 shadow-sm"
+          >
+            {ovenBadgeText(config)}
+          </div>
+        </Html>
+      )}
     </PartGroup>
   )
 }

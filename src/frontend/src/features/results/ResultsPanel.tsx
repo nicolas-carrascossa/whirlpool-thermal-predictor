@@ -2,12 +2,18 @@
  * Coluna de resultados: agrupa a resposta por área, ordena pelas áreas mais
  * críticas e cuida dos estados de vazio, carregamento, erro e arquitetura
  * indisponível.
+ *
+ * O mapa térmico 3D fica numa aba própria ("Mapa térmico"), separada da lista
+ * de resultados, para a leitura principal ficar mais enxuta. A aba ativa pode
+ * ser controlada de fora (`activeTab`/`onTabChange`) — é assim que o botão
+ * "Acessar Mapa térmico" da barra superior chega até aqui.
  */
 
 import { useCallback, useMemo, useState } from 'react'
 import { OctagonAlert, SlidersHorizontal, X } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { PartId } from '@/components/thermal-map/parts'
 import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import {
@@ -20,6 +26,7 @@ import {
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
+import { MetricsPanel } from '@/features/metrics/MetricsPanel'
 import { ratioOf } from '@/lib/status'
 
 export function groupByArea(response: PredictionResponse, metadata: Metadata | undefined): AreaGroup[] {
@@ -32,6 +39,8 @@ export function groupByArea(response: PredictionResponse, metadata: Metadata | u
       group = {
         name: p.key_area,
         label_pt: labels.get(p.key_area) ?? p.key_area,
+        // Procedência vinda da própria predição (v1.1).
+        algorithm: p.algorithm,
         predictions: [],
         maxRatio: null,
         maxTemp: Number.NEGATIVE_INFINITY,
@@ -110,6 +119,9 @@ function ResultsSkeleton() {
   )
 }
 
+/** Abas da área de resultados. */
+export type ResultsTab = 'resultados' | 'mapa' | 'metricas'
+
 export function ResultsPanel({
   metadata,
   response,
@@ -125,6 +137,8 @@ export function ResultsPanel({
   hoveredVariable = null,
   highlightPart = null,
   onHoverVariable,
+  activeTab,
+  onTabChange,
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
@@ -142,11 +156,24 @@ export function ResultsPanel({
   hoveredVariable?: keyof StoveConfig | null
   highlightPart?: PartId | null
   onHoverVariable?: (field: keyof StoveConfig | null) => void
+  /** Aba ativa. Sem a prop, o painel controla a aba sozinho (começa em "resultados"). */
+  activeTab?: ResultsTab
+  onTabChange?: (tab: ResultsTab) => void
 }) {
   // Etapa B: "Status (limite)" é o modo padrão — a pergunta do engenheiro é
   // onde o limite estoura, não onde está mais quente.
   const [mapMode, setMapMode] = useState<MapColorMode>('status')
   const [sensorFocus, setSensorFocus] = useState<(SensorFocus & { area: string }) | null>(null)
+  // Aba controlada de fora quando `activeTab` vem por prop; senão, estado local.
+  const [internalTab, setInternalTab] = useState<ResultsTab>('resultados')
+  const tab = activeTab ?? internalTab
+  const setTab = useCallback(
+    (next: ResultsTab) => {
+      setInternalTab(next)
+      onTabChange?.(next)
+    },
+    [onTabChange],
+  )
   const submittedConfig = request?.config ?? null
   const isPreview =
     !!draftConfig && !!submittedConfig && JSON.stringify(draftConfig) !== JSON.stringify(submittedConfig)
@@ -158,8 +185,8 @@ export function ResultsPanel({
 
   /**
    * Clique num pino de sensor no mapa 3D: garante que a área esteja visível
-   * (o filtro de área é limpo se esconderia a linha) e pede ao `AreaCard` que
-   * role e destaque a linha correspondente.
+   * (o filtro de área é limpo se esconderia a linha), volta para a aba de
+   * resultados e pede ao `AreaCard` que role e destaque a linha correspondente.
    */
   const handleSelectSensor = useCallback(
     (tcNumber: number) => {
@@ -167,8 +194,9 @@ export function ResultsPanel({
       if (!prediction) return
       if (selectedKeyArea && selectedKeyArea !== prediction.key_area) onSelectKeyArea?.(null)
       setSensorFocus({ tcNumber, area: prediction.key_area, token: Date.now() })
+      setTab('resultados')
     },
-    [response, selectedKeyArea, onSelectKeyArea],
+    [response, selectedKeyArea, onSelectKeyArea, setTab],
   )
 
   const visibleGroups = selectedKeyArea
@@ -267,24 +295,43 @@ export function ResultsPanel({
   })()
 
   return (
-    <div className="flex flex-col gap-4">
-      <ThermalMapSlot
-        metadata={metadata}
-        response={response}
-        referenceResponse={referenceResponse}
-        isReferenceConfig={isReferenceConfig}
-        mode={mapMode}
-        onModeChange={setMapMode}
-        selectedKeyArea={selectedKeyArea}
-        onSelectKeyArea={onSelectKeyArea ?? (() => {})}
-        onSelectSensor={handleSelectSensor}
-        draftConfig={draftConfig}
-        submittedConfig={submittedConfig}
-        highlightPart={highlightPart}
-        hoveredVariable={hoveredVariable}
-        onHoverVariable={onHoverVariable}
-      />
-      {body}
-    </div>
+    <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
+      <TabsList aria-label="Seções dos resultados">
+        <TabsTrigger value="resultados">Resultados</TabsTrigger>
+        <TabsTrigger value="mapa">Mapa térmico</TabsTrigger>
+        <TabsTrigger value="metricas">Métricas Estatísticas</TabsTrigger>
+      </TabsList>
+      <TabsContent value="resultados" className="mt-4 flex flex-col gap-4">
+        {body}
+      </TabsContent>
+      {/* A aba inativa é desmontada pelo Radix: o canvas WebGL (frameloop
+          "always") não fica renderizando escondido. */}
+      <TabsContent value="mapa" className="mt-4">
+        <ThermalMapSlot
+          metadata={metadata}
+          response={response}
+          referenceResponse={referenceResponse}
+          isReferenceConfig={isReferenceConfig}
+          mode={mapMode}
+          onModeChange={setMapMode}
+          selectedKeyArea={selectedKeyArea}
+          onSelectKeyArea={onSelectKeyArea ?? (() => {})}
+          onSelectSensor={handleSelectSensor}
+          draftConfig={draftConfig}
+          submittedConfig={submittedConfig}
+          highlightPart={highlightPart}
+          hoveredVariable={hoveredVariable}
+          onHoverVariable={onHoverVariable}
+        />
+      </TabsContent>
+      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
+      <TabsContent value="metricas" className="mt-4">
+        <MetricsPanel
+          metadata={metadata}
+          keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
+          response={response ?? undefined}
+        />
+      </TabsContent>
+    </Tabs>
   )
 }

@@ -4,6 +4,8 @@
  * temp/limite, de modo que o pior caso da área é sempre a primeira linha.
  */
 
+import { algorithmLabel } from '@/lib/algorithms'
+import type { AlgorithmCode } from '@/contract/v1'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
@@ -29,6 +31,8 @@ const AreaBars = lazy(() => import('./AreaBars'))
 export interface AreaGroup {
   name: string
   label_pt: string
+  /** Algoritmo que atendeu a área — vem da resposta, nunca de mapa local. */
+  algorithm?: AlgorithmCode
   predictions: SensorPrediction[]
   /** Maior razão temp/limite da área; `null` quando só há sensores de monitoramento. */
   maxRatio: number | null
@@ -117,6 +121,15 @@ export function AreaCard({ group, focus }: { group: AreaGroup; focus?: SensorFoc
         <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="font-display text-base font-semibold text-wp-core">
             {group.label_pt}
+            {group.algorithm && (
+              <Badge
+                variant="outline"
+                className="ml-2 whitespace-nowrap font-normal"
+                title={`Modelo que atendeu esta área: ${algorithmLabel(group.algorithm)}`}
+              >
+                {algorithmLabel(group.algorithm)}
+              </Badge>
+            )}
           </span>
           <span className="text-xs text-wp-gray65">
             {group.predictions.length} sensor{group.predictions.length === 1 ? '' : 'es'}
@@ -165,7 +178,7 @@ export function AreaCard({ group, focus }: { group: AreaGroup; focus?: SensorFoc
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="responsive-sensor-table">
             <Table>
               <TableHeader>
                 <TableRow>

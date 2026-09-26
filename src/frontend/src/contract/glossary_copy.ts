@@ -39,51 +39,51 @@ export const VARIABLE_COPY: Record<string, CopyEntry> = {
       'Material da peça que sustenta a resistência: alumínio, chapa de alumínio ou plástico. O material muda a condução de calor para os componentes vizinhos — o plástico isola e faz a própria região da resistência trabalhar mais quente, enquanto a chapa de alumínio espalha melhor o calor.',
   },
   losses: {
-    label_pt: 'Perfil de perdas (não usado pelo modelo)',
+    label_pt: 'Perfil de perdas',
     help_pt:
-      'Perfil de dissipação térmica (em W) assumido na simulação, calculado por analistas diferentes e para ordens de montagem diferentes. No conjunto de 56 ensaios cada categoria de perdas corresponde a um único valor de "Furo do defletor" (H2), ou seja, é redundante com ele. Fica disponível como informação de rastreabilidade do ensaio, mas não entra no modelo e não altera a predição.',
+      'Perfil de dissipação térmica (em W) assumido na simulação, calculado por analistas diferentes e para ordens de montagem diferentes. Os modelos treinados USAM esta variável e, em "Resfriamento da eletrônica" e "Compartimento da eletrônica de potência", ela é a de maior importância. Leia esse peso com cautela: no conjunto de 56 ensaios cada categoria de perdas corresponde a um único valor de "Furo do defletor" (H2), então parte do efeito atribuído a ela pode na verdade ser do defletor.',
   },
   board_position: {
-    label_pt: 'Posição da placa (não usada pelo modelo)',
+    label_pt: 'Posição da placa',
     help_pt:
-      'Posição da placa eletrônica no produto (centro ou direita). No desenho dos ensaios essa variável está confundida com as demais (H2): não existe par de ensaios que a isole, então qualquer efeito atribuído a ela seria efeito de outras mudanças. Registrada para rastreabilidade, mas não entra no modelo e não altera a predição.',
+      'Posição da placa eletrônica no produto (centro ou direita). Os modelos treinados USAM esta variável, com peso baixo na maioria das áreas e maior em "Painel traseiro". No desenho dos ensaios ela está confundida com as demais (H2): não existe par de ensaios que a isole, então o efeito medido pode ser de outras mudanças que variaram junto com ela.',
   },
 }
 
 /** Chave = valor de `key_area` no dataset. */
 export const KEY_AREA_COPY: Record<string, CopyEntry> = {
   Mainback: {
-    label_pt: 'Painel traseiro',
+    label_pt: 'Mainback',
     help_pt:
       'Região do painel traseiro do fogão, onde ficam componentes como a trava da porta e o motor de convecção. Recebe boa parte do calor quando o blower sopra para trás.',
   },
   'Coil Temps': {
-    label_pt: 'Resistências',
+    label_pt: 'Coil Temps',
     help_pt:
       'Sensores nas resistências e no seu suporte. É a área mais quente do produto e a mais sensível ao material do suporte da resistência.',
   },
   'Main Vent Sys': {
-    label_pt: 'Ventilação principal',
+    label_pt: 'Main Vent Sys',
     help_pt:
       'Sistema de ventilação principal, por onde o ar quente deixa o produto. Aparece com frequência como a área que recebe o calor retirado das outras quando uma configuração muda (H1).',
   },
   'IPC Comp': {
-    label_pt: 'Compartimento da eletrônica de potência',
+    label_pt: 'IPC Comp',
     help_pt:
       'Compartimento que abriga a eletrônica de potência (IGBTs, placa de controle). Concentra a maior parte das leituras da base e é a área mais afetada pelo estado da carcaça.',
   },
   'IPC Cooling': {
-    label_pt: 'Resfriamento da eletrônica',
+    label_pt: 'IPC Cooling',
     help_pt:
       'Caminho de resfriamento da eletrônica de potência: dutos, saídas de ar e o blower que serve o compartimento. Responde diretamente à direção do blower e ao furo do defletor.',
   },
   'Oven HMI': {
-    label_pt: 'Interface do forno',
+    label_pt: 'Oven HMI',
     help_pt:
       'Interface de usuário do forno (display e comandos). Área de contato com o usuário, com limites relativamente baixos apesar de temperaturas moderadas.',
   },
   'CT Knobs': {
-    label_pt: 'Botões do cooktop',
+    label_pt: 'CT Knobs',
     help_pt:
       'Botões e hastes de comando do cooktop. É a região mais fria do produto, mas também de contato direto com o usuário, o que a torna crítica em conforto e segurança.',
   },

@@ -1,5 +1,7 @@
+import { algorithmLabel } from '@/lib/algorithms'
+import type { AlgorithmCode } from '@/contract/v1'
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 
 import type { SensorPrediction, StoveConfig } from '@/contract/v1'
@@ -10,10 +12,12 @@ import { cn } from '@/lib/utils'
 import { absoluteRange, aggregateByKeyArea, formatTempPt, maxAbsDelta, type ZoneAggregate } from './aggregate'
 import { cameraForPart } from './cameraForPart'
 import { divergentColorForDelta, heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
+import { CollapseToggle } from './CollapseToggle'
 import { ConfigSummaryOverlay } from './ConfigSummaryOverlay'
 import { DEFAULT_CUT_DEPTH } from './cutPlane'
 import { legendModel, type MapColorMode } from './legendModel'
 import { LegendOverlay } from './LegendOverlay'
+import { DEFAULT_EXPLODE_AMOUNT } from './explode'
 import { MapToolbar } from './MapToolbar'
 import { FALLBACK_CONFIG, type PartId } from './parts'
 import { buildSensorPins } from './SensorPins'
@@ -58,10 +62,23 @@ export interface ThermalMap3DProps {
   cameraPreset?: CameraPreset
   /** Peça que deve pulsar em `--wp-accent` (~1 s) — usado ao mudar um select. */
   highlightPart?: PartId | null
+  /** Empilha a lista de áreas abaixo do mapa em vez de exibi-la à direita. */
+  stackZoneList?: boolean
+  /** Conteúdo exibido entre o mapa e a lista de áreas quando ela está empilhada. */
+  belowMap?: ReactNode
   className?: string
 }
 
-function TooltipCard({ agg, value }: { agg: ZoneAggregate; value: string }) {
+function TooltipCard({
+  agg,
+  value,
+  algorithm,
+}: {
+  agg: ZoneAggregate
+  value: string
+  /** Modelo que atendeu a área; ausente quando a zona está fora do recorte. */
+  algorithm?: AlgorithmCode
+}) {
   return (
     <div className="whitespace-nowrap rounded-md border border-wp-gray20 bg-white px-3 py-2 shadow-md">
       <p className="font-display text-sm font-semibold text-wp-gray85">{agg.label}</p>
@@ -72,6 +89,9 @@ function TooltipCard({ agg, value }: { agg: ZoneAggregate; value: string }) {
             {agg.n} sensor{agg.n === 1 ? '' : 'es'} · {agg.min !== null ? formatTempPt(agg.min) : '—'}–
             {agg.max !== null ? formatTempPt(agg.max) : '—'}
           </p>
+          {algorithm && (
+            <p className="text-xs text-wp-gray45">modelo: {algorithmLabel(algorithm)}</p>
+          )}
         </>
       ) : (
         <p className="text-xs text-wp-gray45">sem sensores selecionados</p>
@@ -97,6 +117,8 @@ export function ThermalMap3D({
   onLabelModeChange,
   cameraPreset,
   highlightPart = null,
+  stackZoneList = false,
+  belowMap,
   className,
 }: ThermalMap3DProps) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
@@ -104,10 +126,12 @@ export function ThermalMap3D({
   const [internalView, setInternalView] = useState<StoveView>('solid')
   const [internalCamera, setInternalCamera] = useState<CameraPreset>('iso')
   const [internalOpenings, setInternalOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
-  const [internalLabelMode, setInternalLabelMode] = useState<LabelMode>('alerts')
+  const [internalLabelMode, setInternalLabelMode] = useState<LabelMode>('none')
   const [cutDepth, setCutDepth] = useState(DEFAULT_CUT_DEPTH)
+  const [explodeAmount, setExplodeAmount] = useState(DEFAULT_EXPLODE_AMOUNT)
   const [recenterToken, setRecenterToken] = useState(0)
   const [cameraFollowsPart, setCameraFollowsPart] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
   const prefersReducedMotion = usePrefersReducedMotion()
   const lastFollowedPart = useRef<PartId | null>(null)
 
@@ -168,6 +192,17 @@ export function ThermalMap3D({
   useEffect(() => {
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
+
+  // Ligar/desligar a vista explodida muda a altura do fogão: reenquadra uma
+  // vez no toggle (o slider em si não reenquadra — ver `CameraRig`).
+  const explodeOn = effectiveOpenings.explode
+  const previousExplode = useRef(explodeOn)
+  useEffect(() => {
+    if (previousExplode.current !== explodeOn) {
+      previousExplode.current = explodeOn
+      setRecenterToken((n) => n + 1)
+    }
+  }, [explodeOn])
 
   const aggregates = useMemo(
     () => aggregateByKeyArea(predictions, keyAreaLabels, mode === 'delta' ? referencePredictions : undefined),
@@ -252,15 +287,32 @@ export function ThermalMap3D({
     onSelectKeyArea(selectedKeyArea === key ? null : key)
   }
 
+  /**
+   * Algoritmo por área, sempre derivado das predições recebidas: uma zona fora
+   * do recorte não tem procedência porque não tem dado.
+   */
+  const algorithmByArea = useMemo(() => {
+    const map = new Map<string, AlgorithmCode>()
+    for (const p of predictions) map.set(p.key_area, p.algorithm)
+    return map
+  }, [predictions])
+
   function tooltipFor(zoneKey: string) {
     const agg = aggByKey.get(zoneKey)
     if (!agg) return null
-    return <TooltipCard agg={agg} value={valueFor(agg)} />
+    return (
+      <TooltipCard agg={agg} value={valueFor(agg)} algorithm={algorithmByArea.get(zoneKey)} />
+    )
   }
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>
-      <div className="grid gap-4 min-[900px]:grid-cols-[1fr_280px]">
+      <div
+        className={cn(
+          'grid gap-4',
+          !stackZoneList && 'min-[900px]:grid-cols-[1fr_280px]',
+        )}
+      >
         <Card
           className="relative overflow-hidden bg-wp-gray05"
           style={{ aspectRatio: '4 / 3', minHeight: 460 }}
@@ -294,6 +346,7 @@ export function ThermalMap3D({
                 tooltipFor={tooltipFor}
                 view={effectiveView}
                 cutDepth={cutDepth}
+                explodeAmount={explodeAmount}
                 config={effectiveConfig}
                 openings={effectiveOpenings}
                 highlightPart={highlightPart}
@@ -303,6 +356,7 @@ export function ThermalMap3D({
                 cameraPreset={effectiveCamera}
                 recenterToken={recenterToken}
                 zoneLabels={zoneLabels}
+                showAnnotations={effectiveLabelMode !== 'none'}
                 selectedKeyArea={selectedKeyArea}
                 sensorPins={sensorPins}
                 onSelectSensor={onSelectSensor}
@@ -319,6 +373,8 @@ export function ThermalMap3D({
             onViewChange={handleViewChange}
             cutDepth={cutDepth}
             onCutDepthChange={setCutDepth}
+            explodeAmount={explodeAmount}
+            onExplodeAmountChange={setExplodeAmount}
             cameraPreset={effectiveCamera}
             onCameraPresetChange={setInternalCamera}
             onRecenter={() => setRecenterToken((n) => n + 1)}
@@ -329,11 +385,18 @@ export function ThermalMap3D({
           <ConfigSummaryOverlay config={effectiveConfig} highlightPart={highlightPart} />
           <LegendOverlay model={legend} />
 
-          <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap font-body text-xs text-wp-gray45">
-            Arraste para girar · scroll para zoom
-            {hoveredPart ? ' · peça em foco' : ''}
+          <div className="absolute bottom-3 left-3 z-10 rounded-md border border-wp-gray12 bg-white/90 px-2 py-1 font-body text-[11px] text-wp-gray65 shadow-sm backdrop-blur">
+            <CollapseToggle label="Ajuda" expanded={helpOpen} onClick={() => setHelpOpen(!helpOpen)} />
+            {helpOpen && (
+              <p className="mt-1 whitespace-nowrap">
+                Arraste para girar · scroll para zoom
+                {hoveredPart ? ' · peça em foco' : ''}
+              </p>
+            )}
           </div>
         </Card>
+
+        {stackZoneList && belowMap}
 
         <div className="flex flex-col gap-2">
           <ZoneListPanel

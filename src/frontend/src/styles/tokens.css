@@ -20,4 +20,6 @@
   --font-display:   'Nunito Sans', 'Noto Sans', system-ui, sans-serif;
   --font-body:      'Open Sans', 'Noto Sans', system-ui, sans-serif;
   --font-mono:      'Noto Sans Mono', ui-monospace, Consolas, monospace;
+  /* layout */
+  --header-h:       73px; /* fallback até o AppShell medir a altura real do header via ResizeObserver */
 }

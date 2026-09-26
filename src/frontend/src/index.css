@@ -1,3 +1,13 @@
+/* Fontes hospedadas localmente (@fontsource) — sem dependência de rede externa
+   (Google Fonts), cujo fallback (`system-ui`) tem métricas variáveis entre
+   máquinas e causava quebra de linha inconsistente nos rótulos do formulário. */
+@import '@fontsource/nunito-sans/300.css';
+@import '@fontsource/nunito-sans/700.css';
+@import '@fontsource/open-sans/400.css';
+@import '@fontsource/open-sans/600.css';
+@import '@fontsource/noto-sans-mono/400.css';
+@import '@fontsource/noto-sans-mono/600.css';
+
 @import './styles/tokens.css';
 
 @tailwind base;
@@ -58,4 +68,77 @@
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* O conteúdo central encolhe quando os dois painéis laterais estão abertos.
+   A consulta é feita sobre esse espaço disponível, não sobre a janela inteira. */
+.dashboard-results {
+  container: dashboard-results / inline-size;
+}
+
+@container dashboard-results (max-width: 960px) {
+  .responsive-sensor-table > div {
+    overflow-x: clip;
+  }
+
+  /* A estrutura continua sendo uma tabela: as sete colunas só ficam mais
+     densas e permitem quebra de linha dentro da própria célula. */
+  .responsive-sensor-table table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.75rem;
+  }
+
+  .responsive-sensor-table th,
+  .responsive-sensor-table td {
+    min-width: 0;
+    padding: 0.5rem 0.375rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+
+  .responsive-sensor-table th {
+    height: auto;
+    font-size: 0.625rem;
+    line-height: 1.2;
+  }
+
+  .responsive-sensor-table th:nth-child(1) { width: 21%; }
+  .responsive-sensor-table th:nth-child(2) { width: 12%; }
+  .responsive-sensor-table th:nth-child(3) { width: 16%; }
+  .responsive-sensor-table th:nth-child(4) { width: 11%; }
+  .responsive-sensor-table th:nth-child(5) { width: 15%; }
+  .responsive-sensor-table th:nth-child(6) { width: 12%; }
+  .responsive-sensor-table th:nth-child(7) { width: 13%; }
+
+  .responsive-sensor-table td > div {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* O selo de confiabilidade tem nomes mais longos que os demais indicadores.
+     Um badge menor evita que “Interpolação” quebre letra a letra. */
+  .responsive-sensor-table td:last-child > div {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.5625rem;
+    line-height: 1.2;
+  }
+}
+
+@container dashboard-results (max-width: 600px) {
+  .responsive-sensor-table table {
+    font-size: 0.625rem;
+  }
+
+  /* Em larguras muito estreitas, prioriza Confiabilidade para o selo continuar
+     legível, sem remover nem empilhar qualquer coluna da tabela. */
+  .responsive-sensor-table th:nth-child(1) { width: 20%; }
+  .responsive-sensor-table th:nth-child(2) { width: 10%; }
+  .responsive-sensor-table th:nth-child(3) { width: 14%; }
+  .responsive-sensor-table th:nth-child(4) { width: 8%; }
+  .responsive-sensor-table th:nth-child(5) { width: 13%; }
+  .responsive-sensor-table th:nth-child(6) { width: 12%; }
+  .responsive-sensor-table th:nth-child(7) { width: 23%; }
 }

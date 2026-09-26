@@ -18,7 +18,8 @@ import * as THREE from 'three'
 import { damp, useStove, type OpeningState } from './StoveContext'
 import { BODY, BODY_FRONT } from './zoneGeometry'
 
-export type OpeningKind = keyof OpeningState
+/** Aberturas físicas (com transformação); `explode` é da `<ExplodeLayer>`, não daqui. */
+export type OpeningKind = Exclude<keyof OpeningState, 'explode'>
 
 /** Quanto a tampa do console sobe quando aberta, em unidades de cena. */
 export const CONSOLE_LIFT = 6
@@ -27,7 +28,7 @@ export const REAR_SLIDE = 9
 /** Ângulo da porta do forno aberta (~80°). */
 export const OVEN_DOOR_ANGLE = (80 * Math.PI) / 180
 /** Y da dobradiça inferior da porta do forno. */
-export const DOOR_HINGE_Y = -BODY.h / 2 + 1.3
+export const DOOR_HINGE_Y = -BODY.h / 2 + 4.6   // era + 1.3
 
 interface OpeningTransform {
   /** Ponto em torno do qual a peça gira (e origem do deslocamento). */

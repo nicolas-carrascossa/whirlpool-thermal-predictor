@@ -83,7 +83,7 @@ export const LABEL_MODE_LABEL_PT: Record<LabelMode, string> = {
 
 /**
  * Quais zonas mostram rótulo:
- * - `alerts` (padrão): as em atenção/excesso **mais** a zona selecionada;
+ * - `alerts`: as em atenção/excesso **mais** a zona selecionada;
  * - `all`: todas as zonas com geometria;
  * - `none`: nenhuma (nem a selecionada).
  */

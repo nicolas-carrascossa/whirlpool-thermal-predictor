@@ -1,12 +1,13 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { ContractError } from '@/contract/v1'
 import { ResultsPanel, groupByArea } from '@/features/results/ResultsPanel'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE, FIXTURE_RESPONSE_MX } from '@/test/fixtures'
+import { renderWithQuery } from '@/test/queryWrapper'
 
 function renderPanel(props: Partial<React.ComponentProps<typeof ResultsPanel>> = {}) {
-  return render(
+  return renderWithQuery(
     <ResultsPanel
       metadata={FIXTURE_METADATA}
       response={FIXTURE_RESPONSE}
@@ -42,10 +43,42 @@ describe('groupByArea', () => {
 })
 
 describe('ResultsPanel', () => {
-  it('reserva o espaço do mapa térmico 3D', () => {
+  it('abre com a aba de resultados e deixa o mapa térmico numa aba própria', () => {
     const { container } = renderPanel()
+    expect(screen.getByRole('tab', { name: 'Resultados' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Mapa térmico' })).toHaveAttribute('aria-selected', 'false')
+    expect(screen.getByRole('tab', { name: 'Métricas Estatísticas' })).toHaveAttribute('aria-selected', 'false')
+    // As abas inativas ficam desmontadas: nem o mapa 3D nem as métricas pagam custo escondidos.
+    expect(container.querySelector('[data-slot="thermal-map"]')).not.toBeInTheDocument()
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+    expect(screen.getByText('Sensores previstos')).toBeInTheDocument()
+  })
+
+  it('monta as métricas estatísticas ao entrar na aba "Métricas Estatísticas"', async () => {
+    renderPanel()
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Métricas Estatísticas' }))
+    expect(screen.getByRole('tab', { name: 'Métricas Estatísticas' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
+    // As métricas vêm do `PredictionSource` (v1.1): a aba carrega de forma assíncrona.
+    expect(await screen.findByLabelText('Área do modelo')).toBeInTheDocument()
+  })
+
+  it('monta o mapa térmico ao entrar na aba "Mapa térmico"', () => {
+    const { container } = renderPanel()
+    // O Radix ativa a aba no mousedown (não no click).
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Mapa térmico' }))
     expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
-    expect(screen.getByText('Mapa térmico')).toBeInTheDocument()
+    expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
+  })
+
+  it('respeita a aba controlada de fora e avisa a troca', () => {
+    let changed: string | undefined
+    const { container } = renderPanel({ activeTab: 'mapa', onTabChange: (tab) => (changed = tab) })
+    expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Resultados' }))
+    expect(changed).toBe('resultados')
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Métricas Estatísticas' }))
+    expect(changed).toBe('metricas')
   })
 
   it('resume a consulta com as contagens e o pior sensor', () => {

@@ -15,7 +15,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const frontendRoot = resolve(here, '..')
 const repoRoot = resolve(frontendRoot, '../..')
 
-const ROOT_TYPES = ['PredictionRequest', 'PredictionResponse', 'Metadata']
+const ROOT_TYPES = ['PredictionRequest', 'PredictionResponse', 'Metadata', 'MetricsResponse']
 
 const generator = createGenerator({
   path: resolve(frontendRoot, 'src/contract/v1.ts'),
