@@ -54,11 +54,16 @@ Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de p
 - Manter a temperatura prevista pelo modelo dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico³³, garantindo que a validação térmica acelerada não comprometa a confiabilidade exigida para certificação e aprovação de projeto.
 
 ### 2.2 Proposta de solução
-```
-Descreva resumidamente sua proposta de modelo preditivo e como esse modelo pretende resolver o problema, atendendo os objetivos.
 
-Remova este bloco ao final
-```
+O **Thermal Predictor** aprende, a partir do histórico de ensaios já realizados pelo Dataset de testes CFDs, a relação entre a forma como o fogão é montado e a temperatura que cada sensor atinge. O engenheiro informa uma configuração de montagem (direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, sem construir um protótipo nem rodar uma simulação CFD completa.
+
+Não se trata de um único modelo para o fogão inteiro. O equipamento foi dividido nas **sete regiões** monitoradas pelos ensaios (Mainback, Coil Temps, IPC Comp, IPC Cooling, Main Vent Sys, CT Knobs e Oven HMI), cada uma com seu próprio modelo, porque elas se comportam de maneiras muito diferentes: a região mais quente varia em uma faixa de temperatura mais de oito vezes maior que a mais fria. Dos três algoritmos testados, dois ficaram em produção, cada um nas regiões em que se saiu melhor: **Random Forest** em três delas e **Gradient Boosting** nas outras quatro, ambos baseados em árvores de decisão, o que permite explicar quais características da montagem mais pesaram em cada previsão. O modelo é o mesmo para Brasil e México; o que muda entre os dois países são apenas os limites de temperatura aceitáveis com os quais a previsão é comparada.
+
+A entrega é um **sistema único e inteiramente open source**: um núcleo preditivo em Python, que reúne pré-processamento, modelos treinados e rotina de predição, exposto por uma API que também alimenta o **dashboard interativo**. Nele, o usuário escolhe a configuração, o país e as regiões de interesse, e recebe a temperatura estimada, a margem de erro, o limite de engenharia aplicável e um indicador de confiabilidade que avisa quando a configuração consultada está fora do que já foi ensaiado. A equipe de Engenharia pode chamar o mesmo núcleo diretamente para prever vários cenários de uma vez ou retreinar os modelos com novos ensaios, sempre com o resultado idêntico ao da tela, sem custo de licenciamento.
+
+Os resultados obtidos até aqui, detalhados nas Seções 4 e 5, sustentam essa proposta: avaliados sob o mesmo protocolo, os modelos erram em média cerca de **4 °C** (≈5% da temperatura medida) e mantêm **87%** das previsões dentro da margem de 10% acordada com o parceiro. Esse número ainda está abaixo dos 100% perseguidos pela meta de confiabilidade da Seção 2.1, mas já é muito acima do baseline (76% dentro da margem, erro de 6,55 °C), evidência de que o modelo aprendeu a reagir à montagem, e não apenas a decorar o patamar térmico de cada região. O retreinamento contínuo previsto no software é o mecanismo para fechar essa distância à medida que novos ensaios forem incorporados.
+
+Cada elemento da proposta atende a um dos objetivos da Seção 2.1: a predição em segundos, no lugar da simulação CFD completa, é o que viabiliza o ganho de até 90% de eficiência no ciclo de validação térmica e sustenta a redução de até 30% no tempo total de desenvolvimento; eliminar a necessidade de protótipo físico a cada configuração testada é o que permite a redução de 25% nos gastos operacionais; e a margem de erro reportada acima mede o progresso, ainda parcial, em direção à meta de confiabilidade de erro máximo de 10%.
 
 ### 2.3 Justificativa
 ```
