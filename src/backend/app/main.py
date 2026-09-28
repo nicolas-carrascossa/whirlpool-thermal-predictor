@@ -42,6 +42,9 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
+        # Qualquer porta de localhost (ver `Settings.cors_origin_regex`). Sem
+        # isto, o Vite migrando de porta vira erro de CORS na cara do usuário.
+        allow_origin_regex=settings.cors_origin_regex or None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

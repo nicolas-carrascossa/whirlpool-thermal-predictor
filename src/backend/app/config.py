@@ -54,7 +54,24 @@ class Settings(BaseSettings):
     db_path: Path = Path("./thermal.db")
 
     # --- http ---------------------------------------------------------------
-    cors_origins: str = "http://localhost:5173,http://localhost:5174,http://localhost:4173"
+    #: Origens exatas liberadas, separadas por vírgula. Continua existindo para
+    #: quem quiser fixar uma lista fechada (`CORS_ORIGINS=...`).
+    cors_origins: str = "http://localhost:5173,http://localhost:4173"
+
+    #: Origens liberadas por expressão regular, somadas à lista acima.
+    #:
+    #: O padrão libera QUALQUER porta de localhost porque este produto roda
+    #: apenas na máquina local, sem deploy (ver `REFACTORING_AGENT_GUIDE.md`,
+    #: regra 11). Prender a allowlist a portas fixas criava uma falha silenciosa:
+    #: bastava a 5173 estar ocupada para o Vite subir na 5175, o navegador
+    #: bloquear a chamada por CORS e a tela mostrar "Não foi possível contactar
+    #: a API" — mensagem que não menciona CORS e manda o usuário procurar no
+    #: lugar errado.
+    #:
+    #: O escopo continua estreito: `fullmatch` contra localhost/127.0.0.1, então
+    #: `http://localhost.exemplo.com` NÃO casa. Esvazie (`CORS_ORIGIN_REGEX=`)
+    #: para voltar a valer só a lista exata.
+    cors_origin_regex: str = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
 
     @field_validator("data_dir", "db_path", "model_dir")
     @classmethod

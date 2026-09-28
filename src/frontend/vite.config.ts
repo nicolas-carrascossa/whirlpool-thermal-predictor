@@ -17,6 +17,20 @@ export default defineConfig({
       '@data': path.resolve(import.meta.dirname, '../backend/data'),
     },
   },
+  server: {
+    // Porta FIXA, e falha se estiver ocupada. Sem `strictPort`, o Vite migra
+    // silenciosamente para 5174, 5175... e o back-end passa a recusar a origem
+    // por CORS — o que chega na tela como "Não foi possível contactar a API",
+    // uma mensagem que não aponta para a causa. É melhor não subir e dizer
+    // "porta 5173 ocupada" do que subir numa porta que não vai funcionar.
+    port: 5173,
+    strictPort: true,
+  },
+  preview: {
+    // Mesmo motivo do `server` acima, para `npm run preview`.
+    port: 4173,
+    strictPort: true,
+  },
   build: {
     // vendor-three (three.js + @react-three) é grande mas lazy — só carrega
     // quando o card do mapa 3D é exibido, então não pesa no chunk inicial.
