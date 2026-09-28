@@ -44,12 +44,12 @@ Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diret
 
 **Objetivo geral**
 
-Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de piso, hoje dependente da construção de protótipos físicos e de testes destrutivos, sem perda de confiabilidade sobre o comportamento térmico previsto, de modo que a Divisão de Fogões da Whirlpool consiga acompanhar o ritmo de renovação de portfólio exigido pela concorrência e pelas mudanças de comportamento do consumidor descritas na Seção 4.1.1.
+Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de piso, hoje dependente da construção de protótipos físicos e de testes destrutivos, sem perda de confiabilidade sobre o comportamento térmico previsto, de modo que a Divisão de Fogões da Whirlpool consiga acompanhar o ritmo de renovação de portfólio exigido pela concorrência e pelas mudanças de comportamento do consumidor.
 
 **Objetivos específicos**
 
 - Reduzir em até 30% o tempo total de desenvolvimento de um novo fogão de piso, do início do projeto ao lançamento³³.
-- Elevar a eficiência de tempo do ciclo de validação térmica (simulação CFD e ensaio físico) em até 90% em relação ao processo tradicional³³. Essa é a etapa de maior peso sobre o lead time de desenvolvimento (W1, Seção 4.1.2).
+- Elevar a eficiência de tempo do ciclo de validação térmica (simulação CFD e ensaio físico) em até 90% em relação ao processo tradicional³³. Essa é a etapa de maior peso sobre o lead time de desenvolvimento.
 - Reduzir em 25% os gastos operacionais com protótipos físicos e testes destrutivos³³, incluindo material, fabricação e o uso de malha, HPC e especialista dedicado por rodada de validação.
 - Manter a temperatura prevista pelo modelo dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico³³, garantindo que a validação térmica acelerada não comprometa a confiabilidade exigida para certificação e aprovação de projeto.
 
