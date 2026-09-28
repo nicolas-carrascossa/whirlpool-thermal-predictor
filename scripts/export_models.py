@@ -64,9 +64,12 @@ from sklearn.multioutput import MultiOutputRegressor
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO_ROOT / "data"
 MODEL_DIR = REPO_ROOT / "models"
-FRONTEND_DATA_DIR = REPO_ROOT / "src" / "frontend" / "src" / "data"
-REGISTRY_PATH = FRONTEND_DATA_DIR / "sensor_registry.json"
-VARIABLE_OPTIONS_PATH = FRONTEND_DATA_DIR / "variable_options.json"
+# Catalogo servido pela API. O manifesto recortado tambem e escrito aqui: o
+# front-end o consome pela API em runtime e so o importa em build/teste, para
+# alimentar o `LocalMockSource`.
+BACKEND_DATA_DIR = REPO_ROOT / "src" / "backend" / "data"
+REGISTRY_PATH = BACKEND_DATA_DIR / "sensor_registry.json"
+VARIABLE_OPTIONS_PATH = BACKEND_DATA_DIR / "variable_options.json"
 
 #: Versao do CONJUNTO de artefatos. Sobe a cada reexportacao que mude numeros.
 MODEL_SET_VERSION = "models-1.0.0"
@@ -481,9 +484,9 @@ def main() -> None:
     parser.add_argument("--model-dir", type=Path, default=MODEL_DIR)
     parser.add_argument("--version", default=MODEL_SET_VERSION)
     parser.add_argument(
-        "--skip-frontend",
+        "--skip-catalog",
         action="store_true",
-        help="nao regravar src/frontend/src/data/model_manifest.json",
+        help="nao regravar src/backend/data/model_manifest.json",
     )
     args = parser.parse_args()
 
@@ -566,7 +569,7 @@ def main() -> None:
     write_json(manifest, args.model_dir / "manifest.json")
     print(f"\nmanifesto: {args.model_dir / 'manifest.json'}")
 
-    if not args.skip_frontend:
+    if not args.skip_catalog:
         # Recorte do manifesto para o mock local: sem artefato, sem dicionario
         # de codificacao (o mock nao roda modelo), so o que a interface precisa.
         front = {
@@ -594,8 +597,8 @@ def main() -> None:
                 for area, data in areas.items()
             },
         }
-        write_json(front, FRONTEND_DATA_DIR / "model_manifest.json")
-        print(f"front-end:  {FRONTEND_DATA_DIR / 'model_manifest.json'}")
+        write_json(front, BACKEND_DATA_DIR / "model_manifest.json")
+        print(f"catalogo:   {BACKEND_DATA_DIR / 'model_manifest.json'}")
 
 
 if __name__ == "__main__":

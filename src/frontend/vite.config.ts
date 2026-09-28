@@ -9,6 +9,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
+      // Dados de catálogo (sensores, opções de variável, manifesto de modelos)
+      // pertencem ao back-end, que os serve por HTTP — ver
+      // `src/backend/app/config.py`. O front-end só os importa em build/teste
+      // para alimentar o `LocalMockSource`, que é a demo offline e o dublê dos
+      // testes. Nenhum componente lê daqui: em runtime tudo vem da API.
+      '@data': path.resolve(import.meta.dirname, '../backend/data'),
     },
   },
   build: {

@@ -1,5 +1,14 @@
 # Plano de Construção do Front-end — Thermal Predictor (v2)
 
+> ⚠️ **Documento histórico — parcialmente superado em 27/09/2026.** As fases e
+> os critérios de aceite descritos aqui foram executados e continuam valendo
+> como registro de *como* o front-end foi construído. O que **não** vale mais
+> são as referências a Docker e `docker compose` (fases 4 e 5): o projeto passou
+> a rodar exclusivamente em local, sem containers e sem deploy, e todos os
+> arquivos de Docker foram removidos do repositório. Ver
+> [`../arquitetura_atual_diagnostico.md`](../arquitetura_atual_diagnostico.md),
+> seção 7, e o `REFACTORING_AGENT_GUIDE.md` na raiz.
+
 > Plano de execução em fases. Cada fase é uma unidade autônoma para uma sessão do Claude Code: tem **pré-requisitos**, **tarefas**, **ponto de parada** com critérios verificáveis e **comando de verificação**. Executor único: Claude Code (não há divisão de equipe). Revisado em 10/09/2026 com base no brief, na vistoria do repositório, no style guide oficial da Whirlpool (style.whirlpoolcorp.com) e no código-fonte do protótipo 3D.
 
 ## 0. Decisões fechadas

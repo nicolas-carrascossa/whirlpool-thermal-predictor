@@ -53,5 +53,10 @@ describe('pino de sensor → linha da tabela', () => {
     expect(scrollIntoView.mock.calls[0][0]).toMatchObject({ block: 'center' })
 
     await waitFor(() => expect(row()).not.toHaveAttribute('data-flash'), { timeout: 3000 })
-  }, 10000)
+    // Sem timeout próprio: este teste usa timers reais e espera o destaque de
+    // ~1,5 s expirar, então precisa de mais folga que o padrão do Vitest — e
+    // quem define essa folga é `testTimeout` no vite.config.ts. Um valor fixo
+    // aqui SOBRESCREVE o global e volta a estourar sob carga, que foi
+    // exatamente o que acontecia com os 10 s que ficavam nesta linha.
+  })
 })

@@ -1,6 +1,6 @@
 """Gera o registro de sensores, as opcoes de variaveis e as estatisticas de
 temperatura a partir de `data/dataset_pre_processado.csv`, para consumo do
-front-end (`src/frontend/src/data/*.json`).
+API (`src/backend/data/*.json`), que os serve por HTTP.
 
 Reproduz a normalizacao de grafia aplicada nos notebooks
 `notebooks/tratamento_final_dos_dados.ipynb` e
@@ -41,7 +41,9 @@ import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATASET_PATH = REPO_ROOT / "data" / "dataset_pre_processado.csv"
-OUTPUT_DIR = REPO_ROOT / "src" / "frontend" / "src" / "data"
+# Os dados de catalogo pertencem ao back-end, que os le em runtime
+# (`src/backend/app/config.py`). O front-end os recebe pela API.
+OUTPUT_DIR = REPO_ROOT / "src" / "backend" / "data"
 
 VARIABLE_ORDER = [
     "blower_direction",

@@ -13,7 +13,7 @@ import { join, resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import manifest from '@/data/model_manifest.json'
+import manifest from '@data/model_manifest.json'
 import { LocalMockSource } from '@/sources/LocalMockSource'
 
 const SRC = resolve(process.cwd(), 'src')

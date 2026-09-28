@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { StoveConfig } from '@/contract/v1'
-import variableOptions from '@/data/variable_options.json'
+import variableOptions from '@data/variable_options.json'
 
 import {
   BOARD_RIGHT_OFFSET_X,
