@@ -6,8 +6,8 @@ import addFormats from 'ajv-formats'
 import { describe, expect, it } from 'vitest'
 
 import { ContractError, type PredictionResponse, type StoveConfig } from '@/contract/v1'
-import registryJson from '@/data/sensor_registry.json'
-import variableOptionsJson from '@/data/variable_options.json'
+import registryJson from '@data/sensor_registry.json'
+import variableOptionsJson from '@data/variable_options.json'
 
 import {
   CONFIG_FIELDS,

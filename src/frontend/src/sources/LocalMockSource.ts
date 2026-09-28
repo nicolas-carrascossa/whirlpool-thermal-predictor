@@ -24,10 +24,10 @@ import {
   type SensorPrediction,
   type StoveConfig,
 } from '@/contract/v1'
-import modelManifestJson from '@/data/model_manifest.json'
-import registryJson from '@/data/sensor_registry.json'
-import statsJson from '@/data/sensor_stats.json'
-import variableOptionsJson from '@/data/variable_options.json'
+import modelManifestJson from '@data/model_manifest.json'
+import registryJson from '@data/sensor_registry.json'
+import statsJson from '@data/sensor_stats.json'
+import variableOptionsJson from '@data/variable_options.json'
 
 export const MODEL_VERSION = 'mock-0.1.0'
 

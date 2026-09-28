@@ -48,11 +48,44 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>notebooks</b>: todos os Jupyter Notebooks criados para desenvolvimento do projeto.
 
-- <b>dashboard</b>: aplicação web em Streamlit (Thermal Predictor) para consulta das temperaturas estimadas por sensor. Instruções de execução e de integração com o modelo em <a href="dashboard/README.md">dashboard/README.md</a>.
+- <b>src</b>: a aplicação. <b>src/backend</b> é a API em FastAPI, que carrega os modelos treinados de <code>models/</code> e serve as predições; <b>src/frontend</b> é a interface em React que consome essa API. Execução em <a href="#-execução-dos-projetos">Execução dos projetos</a>, abaixo.
+
+- <b>models</b>: os artefatos treinados (um por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. Gerados por <code>scripts/export_models.py</code>.
+
+- <b>scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>) e treino/exportação dos modelos (<code>export_models.py</code>).
 
 ## 💻 Execução dos projetos
 
-**Localmente (VS Code):**
+O projeto roda **inteiramente na máquina local** — não há deploy, containers
+nem Docker. São dois processos: a API e a interface.
+
+### A aplicação (API + interface)
+
+Pré-requisitos: Python 3.12+ e Node 20+.
+
+```bash
+# 1. dependências
+pip install -r src/backend/requirements.txt
+npm run install:frontend
+
+# 2. API (terminal 1) — MODEL_MODE=real usa os modelos treinados de models/
+cd src/backend
+MODEL_MODE=real python -m uvicorn app.main:app --port 8000
+
+# 3. interface (terminal 2)
+npm run dev
+```
+
+A interface sobe em `http://localhost:5173` e fala com a API em
+`http://localhost:8000` (configurável em `src/frontend/.env`). O login padrão
+de desenvolvimento está em `src/backend/README.md`.
+
+Sem `MODEL_MODE=real` a API responde com o preditor mock determinístico, útil
+para desenvolver a interface sem os artefatos treinados. O que está na tela
+diz qual dos dois respondeu — veja a versão do conjunto de modelos no rodapé
+dos resultados.
+
+### Os notebooks (pesquisa e treino)
 
 1. Instale as dependências: `pip install -r requirements.txt`.
 2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
