@@ -1506,11 +1506,31 @@ Remova este bloco ao final
 ```
 
 ## <a name="c5"></a>5. Conclusões e Recomendações
-```
-Escreva, de forma resumida, sobre os principais resultados do seu projeto e faça recomendações formais ao seu parceiro de negócios em relação ao uso desse modelo. Você pode aproveitar este espaço para comentar sobre possíveis materiais extras, como um manual de usuário mais detalhado na seção “Anexos”. Não se esqueça também das pessoas que serão potencialmente afetadas pelas decisões do modelo preditivo e elabore recomendações que ajudem seu parceiro a tratá-las de maneira estratégica e ética. 
 
-Remova este bloco ao final
-```
+
+### 5.1. Principais resultados
+
+O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem do fogão com erro típico entre 1,76 °C e 10,64 °C, conforme a região, por meio de sete modelos independentes um por `key_area`, como estabelecido na Seção 4.3, repartidos entre **Gradient Boosting**, em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, e **Random Forest**, em Mainback, IPC Comp e IPC Cooling.
+
+| `key_area` | Algoritmo em produção | MAE (°C) | RMSE (°C) | R² (adimensional) | n (configurações de teste) |
+|---|---|---|---|---|---|
+| Main Vent Sys | Gradient Boosting | 1,76 | 3,13 | 0,591 | 32 |
+| CT Knobs | Gradient Boosting | 2,08 | 2,94 | 0,397 | 32 |
+| Oven HMI | Gradient Boosting | 2,19 | 2,80 | 0,074 | 32 |
+| Mainback | Random Forest | 3,43 | 5,37 | 0,512 | 32 |
+| IPC Cooling | Random Forest | 3,82 | 5,53 | 0,483 | 32 |
+| IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
+| Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
+
+O modelo erra menos em Main Vent Sys (1,76 °C) e mais em Coil Temps (10,64 °C), a região de maior patamar térmico da base a mesma ordem de grandeza separa as duas regiões nas temperaturas medidas, de modo que o erro maior acompanha o nível de temperatura, e não uma falha específica de ajuste. Contra o baseline que prevê a média do treino, os sete modelos reduzem o MAE em todas as sete regiões: a redução vai de 10,2% em Oven HMI (2,19 °C contra 2,44 °C) e 10,9% em IPC Comp (4,76 °C contra 5,34 °C) a 43,6% em Mainback (3,43 °C contra 6,08 °C) e 48,6% em Coil Temps (10,64 °C contra 20,70 °C). Na média das sete regiões, o MAE cai de 6,55 °C para 4,10 °C, uma redução de 37,5%. O R² acompanha essa leitura de forma desigual: chega a 0,785 em Coil Temps e a 0,591 em Main Vent Sys, mas fica em 0,161 em IPC Comp e 0,074 em Oven HMI, regiões em que o modelo acerta o patamar térmico sem distinguir com segurança duas configurações próximas.
+
+A razão RMSE/MAE indica onde os erros grandes se concentram. Ela é mais alta em **Main Vent Sys** (1,78), justamente a região de menor MAE: o erro típico é pequeno, mas algumas configurações concentram desvios bem acima dele. **Mainback** vem em seguida (1,57). Nas demais regiões a razão fica entre 1,28 e 1,45, compatível com erros distribuídos de forma mais homogênea entre as configurações.
+
+Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1.
+
+<sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`.</sup>
 
 ## <a name="c6"></a>6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo
 
