@@ -1,12 +1,5 @@
 # Documentação Modelo Preditivo - Inteli
 
-```
-INSTRUÇÕES GERAIS (remova este trecho ao final)
-
-Você deve editar este documento utilizando notação markdown - siga as convenções neste link 
-https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-```
-
 ## Whirlpool Thermal Predictor
 
 ### FOG - A predição que nasce da névoa dos dados do Dataset
@@ -582,7 +575,7 @@ O mapa de jornada completo, com todas as fases, ações, pensamentos, emoções 
 
 **Beatriz (Designer UX/UI):** Beatriz não usa o dashboard para gerar previsões, mas para evoluí-lo: cruza feedback qualitativo das demais equipes com telemetria de uso para diagnosticar problemas de hierarquia de informação e ambiguidade nos estados do modelo (interpolação, extrapolação, fora de domínio; R04), redesenha as telas priorizadas e valida com testes de usabilidade se engenheiros e profissionais de marketing conseguem interpretar previsão, margem de erro e confiabilidade sem explicação adicional. A oportunidade central é um painel de métricas de adoção pós-lançamento (acesso por Key Area, tempo de permanência, dúvidas recorrentes), que fecha o ciclo de melhoria contínua da interface de volta ao diagnóstico.
 
-#### 4.1.8 Política de Privacidade
+#### 4.1.8. Política de Privacidade
 
 Projeto Thermal Predictor
 
@@ -874,7 +867,7 @@ Para a modelagem (Seção 4.3), isso indica que a interação entre housing e a 
 
 O Thermal Predictor é um modelo supervisionado: a variável a ser prevista (temperatura de cada termopar) é conhecida no histórico de ensaios, o que permite treinar o modelo por aprendizado supervisionado sobre esses exemplos rotulados.
 
-**a) Organização dos dados**
+#### 4.3.1. Organização dos dados
 
 Antes do treinamento, as sete variáveis de configuração de entrada são codificadas ordinalmente: cada categoria de uma variável recebe um número inteiro (0, 1, 2...) em ordem alfabética. Essa codificação não atribui significado ao valor numérico em si, o que não é um problema para um modelo baseado em árvores como o `RandomForestRegressor`: a árvore aprende limiares de decisão sobre esse número, não uma relação linear com ele. A justificativa da escolha de cada uma das sete features está detalhada em Features de entrada, abaixo.
 
@@ -882,7 +875,7 @@ Os dados de cada `key_area` são então divididos em três conjuntos disjuntos: 
 
 Dentro do conjunto de treino, os hiperparâmetros do modelo (número de árvores, profundidade máxima, mínimo de amostras por folha, número de features consideradas em cada divisão) são escolhidos por validação cruzada via `GridSearchCV`: o treino é dividido internamente em partições, o modelo é treinado e avaliado em cada combinação de hiperparâmetros da grade, e a combinação com melhor erro médio absoluto (MAE) entre as partições é escolhida. Esse processo nunca toca os dados de teste ou verificação. O número de partições é reduzido automaticamente quando o conjunto de treino de uma `key_area` é pequeno demais para o número de partições padrão.
 
-**b) Modelagem para o problema**
+#### 4.3.2. Modelagem para o problema
 
 **Enquadramento do problema**
 
@@ -964,7 +957,7 @@ atribui a cada categoria um inteiro sequencial em ordem alfabética; optou-se pe
 forma ordinal porque modelos baseados em árvores aprendem limiares sobre o valor
 codificado, sem pressupor ordem entre os códigos.
 
-#### Métricas de avaliação do modelo
+#### 4.3.3. Métricas de avaliação do modelo
 
 A avaliação do Thermal Predictor responde a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
@@ -1062,7 +1055,7 @@ O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saí
 
 ##### Desempenho comparado
 
-A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação: LOGO (Leave-One-Group-Out), em que cada uma das 32 configurações de uma região serve de teste uma vez, treinando com as outras 31. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3, "Métricas de avaliação do modelo").
+A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação: LOGO (Leave-One-Group-Out), em que cada uma das 32 configurações de uma região serve de teste uma vez, treinando com as outras 31. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3.3).
 
 <div align="center">
   <sub>Figura 18 — Comparativo entre os modelos candidatos e o baseline sob validação LOGO, por região</sub><br>
@@ -1113,7 +1106,7 @@ Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em fo
 
 A comparação entre os três candidatos está consolidada em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), que recalcula todas as métricas desta seção no mesmo processo, a partir das mesmas planilhas. Os notebooks por algoritmo seguem como referência do histórico de experimentos de cada modelo; o comparativo abaixo e o roteamento por região da Seção 4.4.4 vêm do notebook consolidado.
 
-Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação (Seção 4.3, item a). As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
+Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação (Seção 4.3.1). As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
 
 | Modelo | Hiperparâmetros buscados |
 |---|---|
@@ -2427,7 +2420,7 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 
 **Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
 
-Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3, item a), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
+Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3.1), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
 A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item e) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
 
