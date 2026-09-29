@@ -7,7 +7,9 @@
  *
  * Nada aqui é simulado (v1.2). A dispersão e o mapa de calor liam pares
  * previsto/real sintéticos porque o endpoint não os entregava; agora entrega, e
- * eles são os valores MEDIDOS em laboratório no conjunto de teste de cada área.
+ * eles são os valores MEDIDOS em laboratório, cada um comparado à previsão de
+ * um modelo que não viu aquela configuração (validação LOGO, uma configuração
+ * por vez).
  *
  * Dois recortes tornam os quatro cartões relativos à previsão executada:
  * - por área, pelo parâmetro da consulta de métricas;
@@ -167,7 +169,7 @@ export function MetricsPanel({
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Previsto vs. real — {selectedLabel}</CardTitle>
             <CardDescription>
-              Cada ponto é uma leitura medida em laboratório no conjunto de teste, restrita aos sensores desta
+              Cada ponto é uma leitura medida em laboratório, prevista por um modelo que não viu aquela configuração (validação ensaio a ensaio), restrita aos sensores desta
               consulta. A reta tracejada é y = x: acima dela o modelo superestimou, abaixo subestimou.
               {executedRun !== null ? (
                 <>
@@ -217,7 +219,7 @@ export function MetricsPanel({
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Mapa de calor do erro por área</CardTitle>
           <CardDescription>
-            Estatísticas do erro absoluto (°C) medido no conjunto de teste, restritas aos sensores desta
+            Estatísticas do erro absoluto (°C) medido na validação ensaio a ensaio, restritas aos sensores desta
             consulta, na mesma escala de cor do mapa 3D. Clique numa área para selecioná-la.
           </CardDescription>
         </CardHeader>

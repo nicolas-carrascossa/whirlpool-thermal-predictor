@@ -89,7 +89,7 @@ def test_sensor_slice_is_more_specific_than_area(engine, config) -> None:
 
 def test_empty_targets_returns_every_modelled_sensor(engine, config) -> None:
     response = engine.predict(PredictionRequest(architecture="BR", config=config))
-    assert len(response.predictions) == 74  # 77 - Oven RTD - 2 sem cobertura
+    assert len(response.predictions) == 76  # 77 - Oven RTD (fora da base de treino)
 
 
 def test_igbts_share_the_consolidated_value(engine, config) -> None:
@@ -131,16 +131,24 @@ def test_canonical_option_unknown_to_one_area_skips_only_that_area(engine, confi
 
 
 def test_each_area_carries_its_own_encoding(manifest) -> None:
-    """The dictionary is per artifact, never global.
+    """The one-hot columns are per artifact, never global.
 
-    A global de-para is unsafe by construction: one algorithm collapsing a
-    category is enough for the codes to stop matching, and the error comes out
-    as a plausible number with no exception at all. Each area therefore ships
-    its own `encoding` and its own canonical -> training table.
+    One extra category in an area shifts every column after it, and the error
+    comes out as a plausible number with no exception at all. Each area
+    therefore ships its own categories, its own ordered `feature_columns` and
+    its own canonical -> training table.
     """
     for area, entry in manifest["areas"].items():
         assert entry["encoding"], area
         assert entry["canonical_to_training"], area
+        # As colunas sao exatamente uma por (variavel, categoria), na ordem das
+        # variaveis do manifesto — o formato que o artefato foi treinado a ler.
+        expected = [
+            [variable, category]
+            for variable in manifest["variables"]
+            for category in entry["encoding"][variable]
+        ]
+        assert entry["feature_columns"] == expected, area
         # Toda categoria de treino tem de ser alcançável por alguma opção
         # canônica; senão o modelo tem um nível que a interface não sabe pedir.
         #
@@ -158,13 +166,17 @@ def test_each_area_carries_its_own_encoding(manifest) -> None:
 def test_material_is_consistent_across_every_area(engine, config, manifest) -> None:
     """"Aluminium Plate" é normalizado para "Aluminium" nos 7 modelos.
 
+    Os espaços sobrando do dado bruto ("Aluminium ", "Plastic ") são removidos
+    antes da correção de grafia; na ordem inversa, "Aluminium " e "Aluminium"
+    viravam duas colunas one-hot para o mesmo material.
+
     O glossário do parceiro documenta só 2 níveis e o valor aparece em 1 run de
     56 (ver `documents/extras/hipotese_material_sem_correcao_E17.md`). Antes desta
     normalização, escolhê-lo fazia 4 áreas tratarem como Aluminium, 2 usarem
     uma categoria treinada com um único run, e `IPC Comp` sumir da resposta.
     """
     for entry in manifest["areas"].values():
-        assert set(entry["encoding"]["material_coil_support"]) == {"Aluminium ", "Plastic "}
+        assert set(entry["encoding"]["material_coil_support"]) == {"Aluminium", "Plastic"}
 
     aluminium = engine.predict(
         PredictionRequest(architecture="BR", config=dict(config, material_coil_support="Aluminium"))
@@ -200,11 +212,16 @@ def test_metrics_carry_the_algorithm_of_each_area(engine, manifest) -> None:
 
 
 def test_metrics_carry_the_measured_pairs_of_each_area(engine, manifest) -> None:
-    """A dispersão e o mapa de calor leem daqui; antes liam dado simulado."""
+    """A dispersão e o mapa de calor leem daqui; antes liam dado simulado.
+
+    Com a validação LOGO, todo ensaio da área serve de teste uma vez: há um
+    conjunto de pares por configuração, não só pelos ensaios de um holdout.
+    """
     metrics = engine.get_metrics()
     for row in metrics.areas:
         entry = manifest["areas"][row.key_area]
-        n_runs = entry["metrics"]["n_test"]
+        n_runs = entry["metrics"]["n_rows"]
+        assert n_runs == len(entry["train_configs"]), row.key_area
         assert len(row.validation.runs) == n_runs, row.key_area
         # Um ponto por (ensaio, coluna-alvo) — nem mais, nem menos.
         assert len(row.validation.points) == n_runs * len(entry["targets"]), row.key_area

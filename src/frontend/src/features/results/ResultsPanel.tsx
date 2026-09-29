@@ -324,7 +324,7 @@ export function ResultsPanel({
           onHoverVariable={onHoverVariable}
         />
       </TabsContent>
-      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
+      {/* Métricas reais da validação LOGO, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-4">
         <MetricsPanel
           metadata={metadata}
