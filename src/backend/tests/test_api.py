@@ -118,10 +118,8 @@ def test_metadata_shape(client, auth) -> None:
         {"code": "BR", "available": True, "label_pt": "Brasil"},
         {"code": "MX", "available": False, "label_pt": "México (sem dados de treino)"},
     ]
-    assert sorted(v["name"] for v in meta["variables"] if not v["used_by_model"]) == [
-        "board_position",
-        "losses",
-    ]
+    # Os 7 modelos treinados usam as 7 variáveis (H2 valia só para o mock).
+    assert all(v["used_by_model"] for v in meta["variables"])
     assert all(v["label_pt"] and len(v["help_pt"]) > 20 for v in meta["variables"])
 
 
@@ -138,10 +136,11 @@ def test_prediction_happy_path(client, auth, reference_config) -> None:
     body = response.json()
     RESPONSE_VALIDATOR.validate(body)
 
-    assert len(body["predictions"]) == 77
-    assert body["model_version"] == "mock-0.1.0"
+    # 77 termopares - Oven RTD (sem modelo) - 2 sensores sem cobertura.
+    assert len(body["predictions"]) == 74
+    assert body["model_version"] == "models-1.0.0"
     assert body["architecture_available"] is True
-    assert body["ignored_fields"] == ["losses", "board_position"]
+    assert body["ignored_fields"] == []
     assert response.headers["X-Request-Id"] == body["request_id"]
     assert all(p["reliability"] == "interpolation" for p in body["predictions"])
 

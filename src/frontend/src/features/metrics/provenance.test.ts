@@ -14,7 +14,6 @@ import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import manifest from '@data/model_manifest.json'
-import { LocalMockSource } from '@/sources/LocalMockSource'
 
 const SRC = resolve(process.cwd(), 'src')
 
@@ -36,14 +35,12 @@ function sourceFiles(dir: string): string[] {
 
 /**
  * Arquivos autorizados a nomear um algoritmo junto de uma área: o contrato
- * (que define o enum), a tabela de rótulos, o mock local (substituto do
- * back-end, que lê o mapa do manifesto), o modelo de métricas (objeto
+ * (que define o enum), a tabela de rótulos, o modelo de métricas (objeto
  * sintético) e a fixture de teste.
  */
 const ALLOWED = [
   join('src', 'contract', 'v1.ts'),
   join('src', 'lib', 'algorithms.ts'),
-  join('src', 'sources', 'LocalMockSource.ts'),
   join('src', 'features', 'metrics', 'metricsModel.ts'),
   // Fixture de teste: precisa de um mapa fixo para as 3 áreas que simula.
   join('src', 'test', 'fixtures.ts'),
@@ -65,28 +62,5 @@ describe('procedência do modelo', () => {
       }
     }
     expect(offenders).toEqual([])
-  })
-
-  it('o mock ecoa o mapa do manifesto, sem inventar o seu', async () => {
-    const metadata = await new LocalMockSource().getMetadata()
-    expect(metadata.area_algorithms).toEqual(manifest.area_algorithms)
-    expect(Object.keys(metadata.area_algorithms)).toHaveLength(7)
-  })
-
-  it('cada predição do mock carrega o algoritmo da sua área', async () => {
-    const source = new LocalMockSource()
-    const metadata = await source.getMetadata()
-    const response = await source.predict({
-      architecture: 'BR',
-      config: metadata.reference_config,
-    })
-    expect(response.predictions.length).toBeGreaterThan(0)
-    for (const prediction of response.predictions) {
-      expect(prediction.algorithm).toBe(metadata.area_algorithms[prediction.key_area])
-    }
-    // O mapa de conveniência tem de concordar com as predições.
-    for (const [area, algorithm] of Object.entries(response.algorithm_by_area)) {
-      expect(algorithm).toBe(metadata.area_algorithms[area])
-    }
   })
 })

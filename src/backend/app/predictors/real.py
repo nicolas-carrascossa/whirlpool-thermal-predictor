@@ -1,8 +1,8 @@
 """Real predictor: one trained model per `key_area`, routed by the manifest.
 
-Implements the same `Predictor` protocol as `MockPredictor`, so the API layer
-does not know which one is answering — `MODEL_MODE` is the only switch, and
-`mock.py` stays untouched so the offline demo of Fase 1 keeps working.
+Implements the `Predictor` protocol (`app/predictors/base.py`) — the single
+seam the API layer talks to. It is the only predictor: the offline mock demo
+of Fases 0/1 was retired once the trained artifacts took over.
 
 Routing. Each area is served by a fixed algorithm, chosen by the performance it
 showed in that area. **The mapping is not hardcoded here**: it lives in
@@ -56,7 +56,7 @@ from app.data import (
     load_dataset,
 )
 from app.predictors.base import ContractError
-from app.predictors.mock import canonical_config_key, js_json_stringify, round2
+from app.predictors.codec import canonical_config_key, fnv1a, js_json_stringify, round2
 from app.schemas import (
     CONTRACT_VERSION,
     AlgorithmMeta,
@@ -430,8 +430,6 @@ class RealPredictor:
         # `request_id` hashes the body exactly as it arrived, plus the model set
         # version: reprocessing with new artifacts yields a different id.
         targets_json = js_json_stringify(raw_targets if raw_targets is not None else {})
-        from app.predictors.mock import fnv1a
-
         request_hash = fnv1a(
             f"{req.architecture}|{canonical_config_key(config)}|{targets_json}"
             f"|{self.model_version}"

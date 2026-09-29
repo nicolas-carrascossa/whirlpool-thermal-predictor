@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol, runtime_checkable
 
-from app.schemas import Metadata, PredictionRequest, PredictionResponse
+from app.schemas import Metadata, MetricsResponse, PredictionRequest, PredictionResponse
 
 
 class ContractError(Exception):
@@ -23,7 +23,9 @@ class ContractError(Exception):
 
 @runtime_checkable
 class Predictor(Protocol):
-    """Every predictor (mock now, real RandomForest in Fase 3) implements this."""
+    """The seam between the API and the model. `RealPredictor` is the only
+    implementation; the protocol stays the boundary so the routers never
+    import it directly."""
 
     model_version: str
 
@@ -40,4 +42,8 @@ class Predictor(Protocol):
         body: `request_id` hashes its serialization, so key order matters and
         must not be normalized by Pydantic.
         """
+        ...
+
+    def get_metrics(self, key_areas: list[str] | None = None) -> MetricsResponse:
+        """Validation metrics per area, from the model manifest."""
         ...

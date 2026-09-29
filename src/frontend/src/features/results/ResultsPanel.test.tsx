@@ -1,10 +1,41 @@
 import { fireEvent, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import type { AreaMetrics, MetricsResponse } from '@/contract/v1'
 import { ContractError } from '@/contract/v1'
 import { ResultsPanel, groupByArea } from '@/features/results/ResultsPanel'
-import { FIXTURE_METADATA, FIXTURE_RESPONSE, FIXTURE_RESPONSE_MX } from '@/test/fixtures'
+import { FIXTURE_AREA_ALGORITHMS, FIXTURE_METADATA, FIXTURE_RESPONSE, FIXTURE_RESPONSE_MX } from '@/test/fixtures'
 import { renderWithQuery } from '@/test/queryWrapper'
+
+const IMPORTANCE = {
+  blower_direction: 0.2,
+  housing: 0.3,
+  board_position: 0,
+  run_case: 0.4,
+  losses: 0,
+  deflector_hole: 0.05,
+  material_coil_support: 0.05,
+}
+
+/** Aba "Métricas Estatísticas": a fonte de dados é sempre a API (ApiSource). */
+const getMetrics = vi.fn<() => Promise<MetricsResponse>>().mockResolvedValue({
+  model_version: 'models-1.0.0',
+  areas: FIXTURE_METADATA.key_areas.map(
+    (a): AreaMetrics => ({
+      key_area: a.name,
+      algorithm: FIXTURE_AREA_ALGORITHMS[a.name] ?? 'random_forest',
+      mae: 4.5,
+      rmse: 6.1,
+      r2: 0.42,
+      mape_pct: 4,
+      within_ten_pct_rate: 0.83,
+      feature_importance: IMPORTANCE,
+      validation: { runs: [], points: [] },
+    }),
+  ),
+  generated_at: '2026-01-01T00:00:00.000Z',
+})
+vi.mock('@/sources', () => ({ getPredictionSource: () => ({ getMetrics }) }))
 
 function renderPanel(props: Partial<React.ComponentProps<typeof ResultsPanel>> = {}) {
   return renderWithQuery(

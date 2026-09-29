@@ -69,17 +69,8 @@ def get_metrics(
     `algorithm`, because comparing MAE across areas served by different models
     demands the provenance in plain sight.
     """
-    getter = getattr(engine, "get_metrics", None)
-    if getter is None:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Métricas de validação não estão disponíveis em MODEL_MODE=mock: "
-                "elas vêm do manifesto dos modelos treinados."
-            ),
-        )
     try:
-        return getter(key_areas)
+        return engine.get_metrics(key_areas)
     except ContractError as exc:
         raise HTTPException(status_code=422, detail=exc.message) from exc
 

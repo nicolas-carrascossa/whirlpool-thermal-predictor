@@ -59,6 +59,7 @@ Do not re-propose these. The repository reflects them.
 | The API owns its runtime catalog; it no longer reads `src/frontend/src/data/` | Applied — data moved to `src/backend/data/` |
 | Orphaned files removed (`data/margens_por_sensor*.json`, Vite starter assets) | Applied |
 | Root README points at the real product and documents the local run | Applied |
+| The offline mock predictor (front `LocalMockSource`, back `MockPredictor`, `MODEL_MODE`/`VITE_DATA_SOURCE`) is removed; the front always talks to the API and the API always answers with `RealPredictor` | Applied 29/09/2026 — see below |
 
 ### The Streamlit waiver (explicit, granted)
 
@@ -87,18 +88,36 @@ and an exploded view. Region severity in React lives in
 `visibleLabelZones`). This remains a standing product requirement of the React
 map, not a migration debt: see rule 10.
 
-### The offline mock: kept, but bounded
+### The offline mock: removed (explicit, granted)
 
-`src/frontend/src/sources/LocalMockSource.ts` stays, for two reasons: it is the
-deterministic, offline test double the whole front-end suite runs against
-(`VITE_DATA_SOURCE=local` in `vite.config.ts`), and it is the demo that works
-with no API running. Its constraints are non-negotiable:
+The previous revision of this guide treated the offline mock
+(`src/frontend/src/sources/LocalMockSource.ts`, `src/backend/app/predictors/mock.py`,
+`MODEL_MODE`, `VITE_DATA_SOURCE`) as kept and non-negotiable, for two reasons:
+it was the deterministic, offline test double the front-end suite ran against,
+and it was a demo that worked with no API running. **That trade-off was
+revisited on 29/09/2026**, on explicit instruction to remove the mocked-model
+selection and have the front-end talk directly to the back-end with the real,
+trained models.
 
-- It must **never** be the default data source. `src/frontend/src/sources/index.ts`
-  defaults to `api` in code, not only in `.env`.
-- It imports the catalog from `@data/*`, an alias to `src/backend/data/` — the
-  API's own files. It must never get its own copy of that data.
-- Its output must never be presented as a real model result.
+What this means going forward:
+
+- There is exactly **one** data source in the front-end (`ApiSource`,
+  `src/frontend/src/sources/index.ts`) and exactly **one** predictor in the
+  back-end (`RealPredictor`, `src/backend/app/predictors/`). Do not reintroduce
+  a second one, an env-var switch between them, or a "demo without API" mode.
+- The front-end test suite now exercises components either through fixtures
+  (`src/frontend/src/test/fixtures.ts`) or by mocking `@/sources`/`fetch`
+  per test file — it no longer relies on an offline mock source running for
+  free. Follow that pattern for new tests instead of resurrecting a shared
+  fake predictor.
+- JS-parity primitives that `RealPredictor` still needs (FNV-1a hash,
+  `Math.round` semantics, the canonical config key) were kept, extracted into
+  `src/backend/app/predictors/codec.py`. Do not treat that module as "the mock
+  coming back" — it has no predictor logic, only the shared hashing/rounding
+  used by `request_id`.
+- The API requires trained artifacts (`models/manifest.json` + `.joblib`,
+  produced by `scripts/export_models.py`) to start at all; there is no
+  fallback predictor for a fresh clone without them.
 
 ## Current-state facts
 
@@ -106,15 +125,12 @@ with no API running. Its constraints are non-negotiable:
 - `src/frontend/` is the React/Vite product. It uses `ApiSource` to call
   `/api/v1/*`, React Query for server data, and a lazy-loaded R3F/Three.js
   thermal map.
-- `src/backend/` is the FastAPI service. It serves mock or real model
-  predictions, authentication, metadata, metrics, and SQLite audit records, and
-  owns the catalog in `src/backend/data/`.
+- `src/backend/` is the FastAPI service. It serves real model predictions
+  (`RealPredictor`, the only predictor), authentication, metadata, metrics, and
+  SQLite audit records, and owns the catalog in `src/backend/data/`.
 - The API v1 contract is still represented more than once: front-end
-  TypeScript (source), generated JSON Schema, hand-written Pydantic DTOs, and
-  the two mock predictors. This is the main duplication left to resolve.
-- `src/backend/app/predictors/mock.py` is a Python port of
-  `LocalMockSource.ts`, kept in step by a parity fixture. This duplication is
-  intentional only for the demo/test path and must not be expanded.
+  TypeScript (source), generated JSON Schema, and hand-written Pydantic DTOs.
+  This is the main duplication left to resolve.
 - `scripts/build_registry.py` and `scripts/export_models.py` duplicate parts of
   preprocessing/model logic that also exists in notebooks.
 
@@ -163,9 +179,9 @@ directory, because there is no infrastructure to configure.
 
 1. **One API, API-only production client.** FastAPI is the only supported
    server API. In the path a real user takes, the browser must not load model
-   artifacts, manifests, training statistics or prediction logic, and must not
-   choose between a local mock and an HTTP source by accident. The bounded
-   exception for the test double is described above and is build/test only.
+   artifacts, manifests, training statistics or prediction logic. There is no
+   mock/local data source to choose between anymore — `ApiSource` is the only
+   `PredictionSource` (see "The offline mock: removed", above).
 2. **One prediction request per user action.** A click on "Prever" must issue
    one request to the canonical prediction operation. Today the front-end
    separately requests the submitted configuration and the reference
@@ -190,9 +206,10 @@ directory, because there is no infrastructure to configure.
    malformed manifests and unknown area-to-model mappings must fail at startup
    or produce an explicit typed error. Never default an unknown area to an
    algorithm.
-8. **Demo is explicit.** The mock source stays opt-in and visibly labelled. It
-   must never become the default by omission — the code default, not only
-   `.env`, decides this.
+8. **No reintroduced mock.** Do not add back a mock/local prediction source, a
+   second predictor in the back-end, or an env-var switch between real and
+   simulated data. If a demo-without-API need resurfaces, get explicit product
+   approval first, the same way the mock's removal itself was approved.
 9. **Keep business safety semantics.** The UI must continue to expose model
    version, confidence/reliability, error margin, active limit, and whether a
    limit is exceeded. A refactor must not turn an engineering decision aid into
@@ -243,8 +260,9 @@ rework in one change set.
   diagnosis; the legacy dashboard disposition is settled.
 - The root README no longer points contributors at the Streamlit dashboard and
   documents the two-process local run.
-- The offline mock decision is settled: kept as demo and test double, never the
-  default.
+- The offline mock decision was revisited 29/09/2026: it is removed, not kept.
+  `ApiSource`/`RealPredictor` are the only source and predictor — see "The
+  offline mock: removed" above.
 
 ### Phase 1 — Quarantine legacy code and generated output ✅ done
 
@@ -369,7 +387,6 @@ model bundle and pass every test with one documented command sequence.
 
 - Fix the backend test fixture so its database/temp path is configurable. It
   currently assumes a user temp directory.
-- Do not weaken the mock parity tolerance to conceal behaviour drift.
 - Retain tests for schema/version compatibility, model routing by area,
   canonical-option validation, reliability, audit provenance and unavailable
   architectures.
@@ -429,7 +446,7 @@ The refactor is complete only when all of these are true:
 - Do not delete the notebooks, models, data files or documents in the same
   change that introduces a new runtime boundary.
 - Do not expose the model selection algorithm as a client request parameter.
-- Do not make browser-local mock output look like real model output.
+- Do not reintroduce a browser-local mock/simulated prediction source.
 - Do not give the web client its own copy of the API's catalog data.
 - Do not silently repair bad model manifests or fallback to another area model.
 - Do not copy training data, model manifests or domain glossary text into a

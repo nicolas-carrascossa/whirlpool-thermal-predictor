@@ -288,7 +288,7 @@ export class ContractError extends Error {
   }
 }
 
-/** Interface de acesso a dados: `LocalMockSource` (Fase 1) e `ApiSource` (Fase 2). */
+/** Interface de acesso a dados, implementada por `ApiSource`. */
 export interface PredictionSource {
   getMetadata(): Promise<Metadata>
   predict(req: PredictionRequest): Promise<PredictionResponse>

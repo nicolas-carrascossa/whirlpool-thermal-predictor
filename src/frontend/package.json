@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "vite --mode api",
     "build": "tsc -b && vite build",
-    "build:api": "tsc -b && vite build --mode api",
     "test": "vitest run",
     "lint": "oxlint",
     "preview": "vite preview",

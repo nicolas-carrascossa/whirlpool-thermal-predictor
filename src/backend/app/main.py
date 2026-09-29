@@ -1,4 +1,4 @@
-"""Thermal Predictor API — Fase 2 (contrato v1 servido pelo preditor mock)."""
+"""Thermal Predictor API — contrato v1 servido pelos modelos treinados."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.db import init_db
 from app.middleware import AccessLogMiddleware
+from app.predictors import get_predictor
 from app.routers import auth, predictions
 from app.schemas import CONTRACT_VERSION
 
@@ -60,7 +61,7 @@ def create_app() -> FastAPI:
         return {
             "status": "ok",
             "contract_version": CONTRACT_VERSION,
-            "model_mode": settings.model_mode,
+            "model_version": get_predictor().model_version,
         }
 
     @app.exception_handler(RequestValidationError)

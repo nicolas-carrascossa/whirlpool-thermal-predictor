@@ -1,4 +1,4 @@
-"""Real predictor (MODEL_MODE=real): routing, slicing, dictionaries and log.
+"""Real predictor: routing, slicing, dictionaries and log.
 
 These tests need the artifacts produced by `scripts/export_models.py`; without
 `models/manifest.json` the whole module is skipped, so a fresh clone does not

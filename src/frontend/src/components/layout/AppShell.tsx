@@ -50,16 +50,13 @@ function SidebarToggle({
 }
 
 export function AppShell({
-  isMock,
   userDisplayName,
   onLogout,
   sidebar,
   historySidebar,
   children,
 }: {
-  /** Modo `local` (mock). Hoje só afeta a nota do rodapé. */
-  isMock: boolean
-  /** Nome do usuário autenticado (modo `api`). Ausente/`undefined` no modo `local`. */
+  /** Nome do usuário autenticado. */
   userDisplayName?: string
   onLogout?: () => void
   sidebar: ReactNode
@@ -199,7 +196,6 @@ export function AppShell({
       <footer className="border-t border-wp-gray12 px-6 py-3">
         <p className="mx-auto max-w-[1600px] font-mono text-[11px] text-wp-gray45">
           Geometria 3D ilustrativa — não é CAD
-          {isMock && ' · Dados de demonstração (mock local)'}
         </p>
       </footer>
     </div>

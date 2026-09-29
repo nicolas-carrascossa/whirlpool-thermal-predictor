@@ -33,21 +33,13 @@ describe('RequireAuth', () => {
     clearSession()
   })
 
-  it('passa direto em modo local, mesmo sem sessão', () => {
-    vi.stubEnv('VITE_DATA_SOURCE', 'local')
-    renderApp()
-    expect(screen.getByText('Conteúdo protegido')).toBeInTheDocument()
-  })
-
-  it('redireciona para /login em modo api sem sessão', () => {
-    vi.stubEnv('VITE_DATA_SOURCE', 'api')
+  it('redireciona para /login sem sessão', () => {
     renderApp()
     expect(screen.getByText('Tela de login')).toBeInTheDocument()
     expect(screen.queryByText('Conteúdo protegido')).not.toBeInTheDocument()
   })
 
-  it('renderiza o conteúdo em modo api com sessão válida', async () => {
-    vi.stubEnv('VITE_DATA_SOURCE', 'api')
+  it('renderiza o conteúdo com sessão válida', async () => {
     setSession({
       token: 'tok-1',
       expiresAt: Date.now() + 60_000,

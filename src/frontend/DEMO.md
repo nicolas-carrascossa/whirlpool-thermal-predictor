@@ -1,7 +1,16 @@
 # Roteiro de demonstração — Thermal Predictor (Fase 1, checkpoint 1b)
 
-Este roteiro roda **inteiramente offline**, sem servidor Python nem API: o
-`LocalMockSource` embutido no bundle estático é a única fonte de dados.
+> **Nota (Fase 3).** O `LocalMockSource` citado abaixo foi retirado do
+> projeto: a interface fala sempre com o back-end FastAPI (`src/backend`),
+> que responde com os modelos treinados. Os números registrados neste roteiro
+> vieram de uma execução do preditor mock e **não são reproduzidos pelos
+> modelos reais** (contagens, razões e deltas mudam); o passo a passo da
+> interface continua válido. Para rodar o roteiro hoje, suba a API primeiro
+> — ver [`iniciar_front.md`](../../iniciar_front.md).
+
+Este roteiro descrevia originalmente uma demo **inteiramente offline**, sem
+servidor Python: o `LocalMockSource` embutido no bundle estático era a única
+fonte de dados.
 
 ## Como gerar e servir o build
 
@@ -213,49 +222,31 @@ três quadros do roteiro (verificados visualmente na mesma sessão, em
    com "Abrir forno" ativado, mostrando o suporte da resistência com o
    callout temporário "Suporte da resistência → Plastic".
 
-## Modo API (Fase 2)
+## Modo API (Fase 2/3)
 
-A partir da Fase 2 existe uma segunda forma de rodar o front, contra o
-back-end FastAPI em `src/backend` (que ainda serve o mesmo mock — os números
-do roteiro acima devem bater exatamente). O modo `local` (seções acima)
-continua funcionando sem nenhuma mudança — é o que a Fase 1 exige.
+O front fala sempre com o back-end FastAPI em `src/backend`, que serve os
+modelos treinados.
 
 ```bash
 # Terminal 1 — back-end (ver src/backend para detalhes)
 cd src/backend
 uvicorn app.main:app --reload   # http://localhost:8000
 
-# Terminal 2 — front-end em modo api
+# Terminal 2 — front-end
 cd src/frontend
-npm run dev          # padrão do projeto: VITE_DATA_SOURCE=api (modelos reais)
-npm run dev:api      # o mesmo, lendo .env.api explicitamente
+npm run dev          # http://localhost:5173
 ```
 
-`npm run build:api` gera o build de produção apontando para a API (mesmas
-variáveis de `.env.api`).
+`npm run build` gera o build de produção com as mesmas variáveis de `.env`
+(`VITE_API_BASE_URL`).
 
-Diferenças visíveis em modo `api`:
+Diferenças em relação ao roteiro offline original:
 - A tela abre em `/login` (usuários seed: `engenheiro` / `thermal2026` ou
   `admin` / `admin2026`); a sessão fica em `sessionStorage` e expira com o
   token.
-- A pílula "dados de demonstração (mock)" da barra superior some; em seu
-  lugar aparece o nome do usuário autenticado e o botão "Sair".
+- A barra superior mostra o nome do usuário autenticado e o botão "Sair".
 - Se a API cair ou não responder, o painel de resultados mostra o erro do
   contrato com a dica "Verifique se a API está em execução em
   VITE_API_BASE_URL".
 - Um 401 no meio da sessão (token expirado) mostra o aviso "Sessão expirada
   — entre novamente" e volta para `/login`.
-
-> **Padrão mudou na Fase 3.** `VITE_DATA_SOURCE` agora vale `api` por padrão
-> (definido em `src/sources/index.ts`, não só no `.env`, que é ignorado pelo
-> git). Para a demo offline, copie `.env.local.example` para `.env.local`
-> — ele tem precedência sobre o `.env` e devolve `VITE_DATA_SOURCE=local`.
-> O back-end precisa estar no ar em modo `real` para as predições virem dos
-> modelos treinados:
->
-> ```bash
-> MODEL_MODE=real python -m uvicorn app.main:app --port 8000
-> ```
-
-O modo `local` nunca pede login — a Fase 1
-continua demonstrável offline.

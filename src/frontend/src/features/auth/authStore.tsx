@@ -1,6 +1,6 @@
 /**
- * Casca React sobre `tokenStore`. Só é montada em `VITE_DATA_SOURCE=api`
- * (ver `RequireAuth`/`App.tsx`) — no modo `local` a Fase 1 continua sem login.
+ * Casca React sobre `tokenStore`. Envolve toda a aplicação (`App.tsx`); a
+ * sessão é exigida por `RequireAuth` nas rotas protegidas.
  */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'

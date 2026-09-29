@@ -14,7 +14,6 @@ REPO_ROOT = BACKEND_DIR.parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 CONTRACT_SCHEMA = REPO_ROOT / "contracts" / "api_v1.schema.json"
-PARITY_FIXTURE = REPO_ROOT / "contracts" / "fixtures" / "mock_parity_v1.json"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -23,7 +22,6 @@ def _test_env(tmp_path_factory: pytest.TempPathFactory) -> Iterator[None]:
     db_path = tmp_path_factory.mktemp("db") / "test.db"
     os.environ["DB_PATH"] = str(db_path)
     os.environ["JWT_SECRET"] = "test-secret-" + "0" * 32
-    os.environ["MODEL_MODE"] = "mock"
 
     from app.config import get_settings
 

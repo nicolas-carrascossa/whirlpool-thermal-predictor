@@ -1,7 +1,6 @@
 /**
- * Guarda de rota. Fora do modo `api` (Fase 1, `VITE_DATA_SOURCE=local`) é um
- * passthrough — a demo offline continua sem login. Em modo `api`, redireciona
- * para `/login` preservando a rota de origem em `state.from`.
+ * Guarda de rota: redireciona para `/login` preservando a rota de origem em
+ * `state.from` enquanto não houver sessão válida.
  */
 
 import type { ReactNode } from 'react'
@@ -9,16 +8,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/authStore'
 
-export function isApiMode(): boolean {
-  return (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
-}
-
 export function RequireAuth({ children }: { children: ReactNode }) {
-  if (!isApiMode()) return <>{children}</>
-  return <RequireAuthApiMode>{children}</RequireAuthApiMode>
-}
-
-function RequireAuthApiMode({ children }: { children: ReactNode }) {
   const { user, isValidating } = useAuth()
   const location = useLocation()
 

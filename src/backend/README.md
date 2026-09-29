@@ -1,8 +1,8 @@
-# Back-end — Thermal Predictor (Fase 2)
+# Back-end — Thermal Predictor
 
-API FastAPI que serve o **contrato v1** (`contracts/api_v1.schema.json`) com o
-preditor **mock** portado do front-end, mais autenticação JWT e registro de
-acessos. O modelo real entra na Fase 3 atrás da mesma interface.
+API FastAPI que serve o **contrato v1** (`contracts/api_v1.schema.json`) com os
+modelos treinados (`app/predictors/real.py`), mais autenticação JWT e registro
+de acessos.
 
 ## Sumário
 
@@ -11,7 +11,6 @@ acessos. O modelo real entra na Fase 3 atrás da mesma interface.
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Endpoints](#endpoints)
 - [Testes](#testes)
-- [Paridade com o mock do navegador](#paridade-com-o-mock-do-navegador)
 - [Estrutura](#estrutura)
 
 ## Como rodar
@@ -37,8 +36,8 @@ src/backend/requirements.txt && cd src/backend && uvicorn app.main:app --reload 
 Na primeira execução o banco SQLite é criado e os dois usuários de demonstração
 são semeados automaticamente (senhas com hash bcrypt — nunca em texto puro).
 
-Para o front-end falar com esta API, rode-o com `VITE_DATA_SOURCE=api` e
-`VITE_API_BASE_URL=http://localhost:8000`.
+O front-end fala com esta API por padrão; confirme `VITE_API_BASE_URL` em
+`src/frontend/.env` se a porta for diferente de `http://localhost:8000`.
 
 ## Usuários de demonstração
 
@@ -57,8 +56,7 @@ Lidas de `src/backend/.env` (ou do ambiente). Ver `.env.example`.
 |---|---|---|
 | `JWT_SECRET` | `dev-secret-change-me` | Assinatura dos tokens. Troque em produção. |
 | `JWT_EXPIRES_MIN` | `480` | Validade do token, em minutos. |
-| `MODEL_MODE` | `mock` | `mock` (demo offline da Fase 1) ou `real` (modelos treinados). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
-| `MODEL_DIR` | `<raiz>/models` | Artefatos `.joblib` + `manifest.json`, gerados por `scripts/export_models.py`. Só é lido com `MODEL_MODE=real`. |
+| `MODEL_DIR` | `<raiz>/models` | Artefatos `.joblib` + `manifest.json`, gerados por `scripts/export_models.py`. O algoritmo de cada área vem do manifesto, nunca da requisição. |
 | `DATA_DIR` | `../frontend/src/data` | Pasta dos JSONs do dataset (e do `model_manifest.json`). O back-end lê **os mesmos arquivos** do front; nada é duplicado. |
 | `DB_PATH` | `./thermal.db` | Arquivo SQLite (usuários + `access_log`), relativo a `src/backend/`. |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:5174,http://localhost:4173` | Origens liberadas, separadas por vírgula. |
@@ -67,7 +65,7 @@ Lidas de `src/backend/.env` (ou do ambiente). Ver `.env.example`.
 
 | Método | Rota | Auth | Descrição |
 |---|---|---|---|
-| `GET` | `/health` | pública | Liveness + `contract_version` + `model_mode`. |
+| `GET` | `/health` | pública | Liveness + `contract_version` + `model_version`. |
 | `POST` | `/api/v1/auth/login` | pública | Formulário OAuth2 (`application/x-www-form-urlencoded`) com `username` e `password` → `{access_token, token_type, expires_in, user}`. Credenciais erradas → `401 {"detail": "Usuário ou senha inválidos"}`. |
 | `GET` | `/api/v1/auth/me` | Bearer | Usuário do token. |
 | `GET` | `/api/v1/metadata` | Bearer | 7 variáveis (com textos pt-BR), 77 sensores, 7 áreas, arquiteturas e a configuração de referência. |
@@ -111,7 +109,7 @@ A tela de histórico é a Fase 5; hoje a tabela pode ser lida direto do SQLite.
 > arquivo (`del srcackend	hermal.db` no Windows) e suba a API de novo: os
 > usuários de demonstração são recriados.
 
-### Modelos reais (`MODEL_MODE=real`)
+### Modelos reais
 
 Um único preditor carrega os 7 artefatos e roteia por `key_area`, conforme o
 `manifest.json`. Pontos que valem saber:
@@ -141,27 +139,9 @@ Um único preditor carrega os 7 artefatos e roteia por `key_area`, conforme o
 Cobrem: `/health`, login ok/falha, 401 sem token, formato do metadata,
 predição validada contra o JSON Schema do contrato, opção inválida → 422,
 MX indisponível, escrita no `access_log`, ausência de drift entre os modelos
-Pydantic e `contracts/api_v1.schema.json`, e a paridade com o mock do front.
-
-## Paridade com o mock do navegador
-
-`app/predictors/mock.py` é um port exato de
-`src/frontend/src/sources/LocalMockSource.ts`: mesmo FNV-1a de 32 bits, mesmo
-PRNG mulberry32 (com a aritmética de 32 bits sem sinal e a semântica de
-`Math.imul` reproduzidas) e o mesmo arredondamento `Math.round(v*100)/100`.
-
-A fixture de comparação é gerada pelo front e versionada em
-`contracts/fixtures/mock_parity_v1.json` (25 configurações determinísticas):
-
-```powershell
-cd src\frontend
-$env:EXPORT_PARITY='1'; npx vitest run src/sources/exportParityFixture.test.ts
-```
-
-`tests/test_parity.py` exige igualdade com tolerância `1e-6` nos campos
-numéricos e igualdade exata em textos, booleanos, `request_id`,
-`ignored_fields`, `architecture_available` e `model_version`. Se falhar, o erro
-está no port em Python — não afrouxe a tolerância nem edite o mock TypeScript.
+Pydantic e `contracts/api_v1.schema.json`, e o roteamento/predição dos modelos
+treinados (`tests/test_real_predictor.py`, pulado se `models/manifest.json`
+não existir — rode `python scripts/export_models.py`).
 
 ## Estrutura
 
@@ -175,11 +155,11 @@ src/backend/
 │   ├── deps.py            # dependências (auth, preditor)
 │   ├── main.py            # app, CORS, /health, tratamento de erros
 │   ├── middleware.py      # access_log + X-Request-Id
-│   ├── predictors/        # base.py (Protocol), mock.py, seleção por MODEL_MODE
+│   ├── predictors/        # base.py (Protocol), codec.py, real.py
 │   ├── routers/           # auth.py, predictions.py
 │   ├── schemas.py         # espelho do contrato v1
 │   └── security.py        # bcrypt + JWT
-└── tests/                 # pytest (api, drift de schema, paridade)
+└── tests/                 # pytest (api, drift de schema, preditor real)
 ```
 
 > Nota: o `passlib` 1.7.4 é incompatível com o `bcrypt` 5.x instalado neste

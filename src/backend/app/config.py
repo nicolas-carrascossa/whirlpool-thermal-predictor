@@ -34,14 +34,8 @@ class Settings(BaseSettings):
     jwt_expires_min: int = 480
 
     # --- predictor ----------------------------------------------------------
-    #: `mock` (offline demo, Fase 1) or `real` (trained artifacts, Fase 3).
-    #: This is the ONLY operating switch — the algorithm of each area comes
-    #: from the manifest, never from a request or another setting.
-    model_mode: str = "mock"
-
     #: Directory with one artifact per (algorithm x key_area) plus
-    #: `manifest.json`, produced by `scripts/export_models.py`. Only read when
-    #: `model_mode == "real"`.
+    #: `manifest.json`, produced by `scripts/export_models.py`.
     model_dir: Path = REPO_ROOT / "models"
 
     # --- data ---------------------------------------------------------------

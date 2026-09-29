@@ -1,7 +1,6 @@
 /**
  * Tela principal do Thermal Predictor: configurar → prever → ler resultados.
- * Toda a leitura de dados passa por `PredictionSource`; nada aqui sabe se a
- * origem é o mock local ou a API da Fase 2.
+ * Toda a leitura de dados passa por `PredictionSource` (`ApiSource`).
  */
 
 import { useEffect, useState } from 'react'
@@ -15,7 +14,6 @@ import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
-import { isApiMode } from '@/features/auth/RequireAuth'
 import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
 import {
   useMetadataQuery,
@@ -30,15 +28,11 @@ function HomeContent() {
     store.request,
     store.metadata?.reference_config,
   )
-  const apiMode = isApiMode()
-  const isMock = !apiMode
   const isReferenceConfig =
     !!store.config &&
     !!store.metadata &&
     JSON.stringify(store.config) === JSON.stringify(store.metadata.reference_config)
 
-  // `AuthProvider` envolve toda a aplicação (ver App.tsx), então o hook é
-  // sempre seguro de chamar; seus valores só importam em modo `api`.
   const auth = useAuth()
   const navigate = useNavigate()
 
@@ -47,10 +41,10 @@ function HomeContent() {
   const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
 
   useEffect(() => {
-    if (apiMode && auth.sessionExpired) {
+    if (auth.sessionExpired) {
       navigate('/login', { replace: true })
     }
-  }, [apiMode, auth.sessionExpired, navigate])
+  }, [auth.sessionExpired, navigate])
 
   // O identificador da consulta é gerado pela fonte de predição. Assim que a
   // resposta atual chega, ele é associado ao snapshot salvo ao clicar em
@@ -62,13 +56,12 @@ function HomeContent() {
 
   return (
     <AppShell
-      isMock={isMock}
-      userDisplayName={apiMode ? auth.user?.display_name : undefined}
-      onLogout={apiMode ? auth.logout : undefined}
+      userDisplayName={auth.user?.display_name}
+      onLogout={auth.logout}
       sidebar={<ConfigPanel />}
       historySidebar={<HistoryPanel />}
     >
-      {apiMode && auth.sessionExpired && (
+      {auth.sessionExpired && (
         <div
           role="alert"
           className="mb-4 rounded-md border border-status-warn bg-orange-50 px-4 py-3 font-body text-sm text-wp-gray85"
