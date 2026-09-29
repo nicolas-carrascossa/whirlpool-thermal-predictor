@@ -4,7 +4,7 @@
 <a href= "https://www.inteli.edu.br/"><img src="assets/inteli.png" alt="Inteli - Instituto de Tecnologia e Liderança" border="0"></a>
 </p>
 
-# FOG
+# FOG — Whirlpool Thermal Predictor
 
 ## Equipe FOG
 
