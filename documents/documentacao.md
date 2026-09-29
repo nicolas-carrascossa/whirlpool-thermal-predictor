@@ -8,21 +8,49 @@
 
 
 ## Sumário
-[1. Introdução](#c1)
 
-[2. Objetivos e Justificativa](#c2)
-
-[3. Metodologia](#c3)
-
-[4. Desenvolvimento e Resultados](#c4)
-
-[5. Conclusões e Recomendações](#c5)
-
-[6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
-
-[7. Referências](#c7)
-
-[Anexos](#attachments)
+- [1. Introdução](#c1)
+- [2. Objetivos e Justificativa](#c2)
+  - [2.1. Objetivos](#c2_1)
+  - [2.2. Proposta de solução](#c2_2)
+  - [2.3. Justificativa](#c2_3)
+- [3. Metodologia](#c3)
+- [4. Desenvolvimento e Resultados](#c4)
+  - [4.1. Compreensão do Problema](#c4_1)
+    - [4.1.1. Contexto da indústria](#c4_1_1)
+    - [4.1.2. Análise SWOT](#c4_1_2)
+    - [4.1.3. Planejamento Geral da Solução](#c4_1_3)
+    - [4.1.4. Value Proposition Canvas](#c4_1_4)
+    - [4.1.5. Matriz de Riscos](#c4_1_5)
+    - [4.1.6. Personas](#c4_1_6)
+    - [4.1.7. Jornadas do Usuário](#c4_1_7)
+    - [4.1.8. Política de Privacidade](#c4_1_8)
+  - [4.2. Compreensão dos Dados](#c4_2)
+    - [4.2.1. Exploração de dados](#c4_2_1)
+    - [4.2.2. Pré-processamento dos dados](#c4_2_2)
+    - [4.2.3. Processamento final dos dados](#c4_2_3)
+    - [4.2.4. Hipóteses](#c4_2_4)
+  - [4.3. Preparação dos Dados e Modelagem](#c4_3)
+    - [4.3.1. Organização dos dados](#c4_3_1)
+    - [4.3.2. Modelagem para o problema](#c4_3_2)
+    - [4.3.3. Métricas de avaliação do modelo](#c4_3_3)
+    - [4.3.4. Análise e interpretação dos resultados dos modelos candidatos](#c4_3_4)
+  - [4.4. Comparação de Modelos](#c4_4)
+    - [4.4.1. Decision Tree Regressor](#c4_4_1)
+    - [4.4.2. Random Forest](#c4_4_2)
+    - [4.4.3. Gradient Boosting](#c4_4_3)
+    - [4.4.4. Comparação entre os candidatos e escolha do algoritmo por região](#c4_4_4)
+  - [4.5. Avaliação](#c4_5)
+- [5. Conclusões e Recomendações](#c5)
+- [6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
+  - [6.1. Requisitos funcionais](#c6_1)
+    - [6.1.1. Requisitos funcionais do dashboard](#c6_1_1)
+    - [6.1.2. Requisitos funcionais do software preditivo](#c6_1_2)
+  - [6.2. Regras de negócio](#c6_2)
+    - [6.2.1. Regras de negócio do dashboard](#c6_2_1)
+    - [6.2.2. Regras de negócio do software preditivo](#c6_2_2)
+- [7. Referências](#c7)
+- [Anexos](#attachments)
 
 
 ## <a name="c1"></a>1. Introdução
@@ -33,7 +61,7 @@ Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diret
 
 
 ## <a name="c2"></a>2. Objetivos e Justificativa
-### 2.1 Objetivos
+### <a name="c2_1"></a>2.1. Objetivos
 
 **Objetivo geral**
 
@@ -46,7 +74,7 @@ Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de p
 - Reduzir em 25% os gastos operacionais com protótipos físicos e testes destrutivos³³, incluindo material, fabricação e o uso de malha, HPC e especialista dedicado por rodada de validação.
 - Manter a temperatura prevista pelo modelo dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico³³, garantindo que a validação térmica acelerada não comprometa a confiabilidade exigida para certificação e aprovação de projeto.
 
-### 2.2 Proposta de solução
+### <a name="c2_2"></a>2.2. Proposta de solução
 
 O **Thermal Predictor** aprende, a partir do histórico de ensaios já realizados pelo Dataset de testes CFDs, a relação entre a forma como o fogão é montado e a temperatura que cada sensor atinge. O engenheiro informa uma configuração de montagem (direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, sem construir um protótipo nem rodar uma simulação CFD completa.
 
@@ -58,7 +86,7 @@ Os resultados obtidos até aqui, detalhados nas Seções 4 e 5, sustentam essa p
 
 Cada elemento da proposta atende a um dos objetivos da Seção 2.1: a predição em segundos, no lugar da simulação CFD completa, é o que viabiliza o ganho de até 90% de eficiência no ciclo de validação térmica e sustenta a redução de até 30% no tempo total de desenvolvimento; eliminar a necessidade de protótipo físico a cada configuração testada é o que permite a redução de 25% nos gastos operacionais; e a margem de erro reportada acima mede o progresso, ainda parcial, em direção à meta de confiabilidade de erro máximo de 10%.
 
-### 2.3 Justificativa
+### <a name="c2_3"></a>2.3. Justificativa
 ```
 Faça uma breve defesa de sua proposta de solução, escreva sobre seus potenciais, seus benefícios e como ela se diferencia.
 
@@ -78,8 +106,8 @@ A metodologia consiste em seis fases, que embora normalmente sigam uma sequênci
 
 
 ## <a name="c4"></a>4. Desenvolvimento e Resultados
-### 4.1. Compreensão do Problema
-#### 4.1.1. Contexto da indústria
+### <a name="c4_1"></a>4.1. Compreensão do Problema
+#### <a name="c4_1_1"></a>4.1.1. Contexto da indústria
 
 O setor de linha branca no Brasil e no México é dominado por um pequeno grupo de fabricantes multinacionais que competem simultaneamente em escala industrial, penetração de marca e velocidade de lançamento de produto. Nesse cenário, a Divisão de Fogões da Whirlpool, parceira direta deste projeto, atua como unidade de engenharia e P&D responsável pelo desenvolvimento de fogões de piso (freestanding) para as arquiteturas de produto do Brasil e do México, sob o guarda-chuva comercial da Whirlpool Latin America e das marcas Brastemp, Consul e KitchenAid.
 
@@ -149,7 +177,7 @@ Duas forças têm implicação mais direta sobre o Thermal Predictor. Da segunda
 
 Em conjunto, essas duas forças convertem a leitura setorial em justificativa direta de negócio para o projeto: o Thermal Predictor não responde apenas a uma dor operacional interna de lead time e custo de prototipagem, mas a uma pressão estrutural de mercado que torna a velocidade de validação térmica um fator de competitividade. Reduzir a dependência de ciclos físicos de teste é, neste contexto, condição para que a Whirlpool consiga acompanhar o ritmo de transição de portfólio já imposto pela concorrência e pelo comportamento do consumidor.
 
-#### 4.1.2. Análise SWOT
+#### <a name="c4_1_2"></a>4.1.2. Análise SWOT
 
 ##### Escopo e critério de classificação
 
@@ -214,7 +242,7 @@ O gargalo de custo e lentidão do ciclo de simulação térmica (W1) coincide co
 Os fatores internos relativos a dados e à concentração de conhecimento foram inferidos a partir do material disponibilizado e da interação com o parceiro, não de auditoria formal, e carecem de validação com o time de engenharia. A seleção de fatores reflete o recorte declarado: elementos de alto impacto corporativo sem conexão com a etapa de simulação térmica foram deliberadamente excluídos. Os dados externos referem-se ao período até meados de 2026, e o setor é sensível a juros, câmbio e política comercial, de modo que a análise deve ser revisitada ao longo do projeto.
 
 
-#### 4.1.3. Planejamento Geral da Solução
+#### <a name="c4_1_3"></a>4.1.3. Planejamento Geral da Solução
  
 A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 39 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e material do suporte da bobina, e acompanhada da leitura de temperatura de 78 sensores/termopares, distribuídos entre as seis áreas-chave do equipamento identificadas no dicionário de dados: Mainback, bobinas, sistemas de ventilação, componentes do IPC, comandos do cooktop (CT Knobs) e região de HMI. Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
  
@@ -228,7 +256,7 @@ Os principais benefícios esperados são a redução do tempo de desenvolvimento
  
 Como critério de sucesso, o modelo deverá prever a temperatura com margem de erro máxima de 10% e apresentar uma eficiência de tempo pelo menos 90% maior do que a simulação numérica tradicional. Por se tratar de uma prova de conceito (PoC), o sucesso desta primeira etapa também será avaliado pela validação consistente do modelo nos sensores e áreas priorizadas em conjunto com o parceiro, e não necessariamente pela cobertura de todos os 78 sensores monitorados.
 
-#### 4.1.4. Value Proposition Canvas
+#### <a name="c4_1_4"></a>4.1.4. Value Proposition Canvas
 
 <div align="center">
   <sub>Figura 2 — Canvas de Proposta de Valor da Whirlpool</sub><br>
@@ -263,7 +291,7 @@ O bloco distingue-se dos aliviadores por descrever a dor sob a perspectiva do cl
 A tarefa relacionada à precisão térmica dentro da margem de 10% é o item de maior relevância em todo o canvas, pois corresponde ao critério que determinará, de forma mensurável, o sucesso ou insucesso da solução desenvolvida. Da mesma forma, é imprescindível olhar que diversas simulações são feitas em aplicativos licenciados e fisicamente, mas que ainda não são reaproveitadas para previsões de futuras combinações.
 
 
-#### 4.1.5. Matriz de Riscos
+#### <a name="c4_1_5"></a>4.1.5. Matriz de Riscos
 
 A Matriz de Riscos é uma ferramenta que auxilia na identificação, análise e priorização dos principais riscos de um projeto, permitindo uma gestão mais estratégica e preventiva. Ela organiza os riscos com base em critérios como probabilidade de ocorrência e impacto, possibilitando classificá-los e definir planos de resposta adequados. No contexto deste projeto, a matriz de riscos foi utilizada para mapear ameaças e oportunidades relacionadas ao desenvolvimento do Thermal Predictor, modelo de Machine Learning para previsão da temperatura de fogões de piso (Freestanding) da Whirlpool nas arquiteturas do Brasil e do México. Entre os riscos mapeados, destacam-se a possível desorganização dos dados históricos de simulações numéricas (CFD) e testes físicos, que pode atrasar a construção da Prova de Conceito, e a disponibilidade limitada da equipe interna de CFD da Whirlpool no primeiro semestre de 2026, o que pode gerar gargalos na fase de validação dos modelos. O mapeamento desses riscos permite à equipe antecipar problemas críticos e tomar decisões mais seguras ao longo do desenvolvimento do projeto, contribuindo para o cumprimento das metas de acurácia (margem de erro ≤ 10%) e eficiência de tempo definidas com o parceiro.
 
@@ -345,7 +373,7 @@ Trata-se de uma oportunidade de natureza de qualidade de dados. Sua probabilidad
 
 Trata-se de uma oportunidade de natureza organizacional. Sua probabilidade de ocorrência foi estimada em 50%, pois o tratamento conjunto das bases das duas regiões exigirá, de qualquer forma, conciliar nomenclaturas de termopares, definições de Key Area e critérios de limite, restando incerta apenas a validação do resultado pelas duas unidades. O impacto foi classificado como alto porque uma nomenclatura comum permite comparar diretamente o desempenho térmico das arquiteturas das duas regiões, comparação atualmente dificultada por divergências terminológicas, e não apenas por diferenças construtivas reais. A combinação desses fatores resulta em uma classificação geral alta. Como essa conciliação é condição técnica prévia à modelagem conjunta, o trabalho será realizado de todo modo, restando incerta apenas sua adoção formal pela organização. Como plano de ação, a equipe consolidará em documento único a correspondência entre as nomenclaturas das duas unidades, distinguindo o que é divergência meramente terminológica do que reflete diferença construtiva efetiva, e o submeterá às equipes de engenharia de ambas as regiões. Caso o mapeamento seja validado sem divergências pendentes pelas duas equipes, será proposto à Whirlpool como padrão de referência para o registro de simulações futuras.
 
-#### 4.1.6. Personas
+#### <a name="c4_1_6"></a>4.1.6. Personas
 
 As personas são representações fictícias dos diferentes perfis de usuários e pessoas
 impactadas por uma solução. Elas funcionam como um guia para lembrar para quem o
@@ -430,7 +458,7 @@ Esta persona foi escolhida por representar o profissional que define a arquitetu
 Hoje, cada alteração de arquitetura proposta por Rafael exige uma nova rodada de simulação de CFD, processo que leva dias e restringe o número de alternativas que ele consegue explorar antes de congelar o design. Sua necessidade é estimar o efeito térmico de uma mudança de geometria ou de arranjo ainda na concepção, comparando múltiplas arquiteturas em paralelo e sabendo em quais Key Areas o risco se concentra. No dia a dia, ele usa o dashboard para varrer configurações candidatas logo no início do projeto, observando a margem de erro e o indicador de confiabilidade (Seção 4.1.5, R04) para distinguir os casos em que a previsão é interpolação daqueles em que o design é inédito e ainda exige validação por simulação completa.
 Diferente de Estela e João, que consultam a previsão para aprovar ou reprovar uma escolha já feita, Rafael atua um passo antes: ele usa a previsão para gerar e descartar alternativas de projeto, no momento em que mudar o produto ainda é barato. É a persona que desloca o ganho do Thermal Predictor da etapa de validação para a etapa de concepção, evitando que decisões de arquitetura tomadas no início se revelem termicamente inviáveis apenas ao final do ciclo de desenvolvimento.
 
-#### 4.1.7. Jornadas do Usuário
+#### <a name="c4_1_7"></a>4.1.7. Jornadas do Usuário
 
 Um mapa de jornada do usuário representa, em uma linha do tempo, as ações, pensamentos e emoções de uma persona ao buscar um objetivo, evidenciando onde surgem dúvida, confiança e decisão ao longo da experiência, e não apenas o funcionamento técnico do sistema. Essa ferramenta é especialmente relevante para o Thermal Predictor porque a solução não devolve uma resposta definitiva, e sim uma previsão de aprendizado de máquina com margem de erro e indicador de confiabilidade (Seção 4.1.5, R04). O valor do produto depende de como cada persona interpreta essa previsão e a converte em uma decisão real de engenharia, e o mapa torna esse processo de interpretação e decisão explícito, permitindo identificar onde a solução pode reduzir incerteza e apoiar decisões mais rápidas e seguras, sem tratar a previsão do modelo como verdade absoluta.
 
@@ -575,7 +603,7 @@ O mapa de jornada completo, com todas as fases, ações, pensamentos, emoções 
 
 **Beatriz (Designer UX/UI):** Beatriz não usa o dashboard para gerar previsões, mas para evoluí-lo: cruza feedback qualitativo das demais equipes com telemetria de uso para diagnosticar problemas de hierarquia de informação e ambiguidade nos estados do modelo (interpolação, extrapolação, fora de domínio; R04), redesenha as telas priorizadas e valida com testes de usabilidade se engenheiros e profissionais de marketing conseguem interpretar previsão, margem de erro e confiabilidade sem explicação adicional. A oportunidade central é um painel de métricas de adoção pós-lançamento (acesso por Key Area, tempo de permanência, dúvidas recorrentes), que fecha o ciclo de melhoria contínua da interface de volta ao diagnóstico.
 
-#### 4.1.8. Política de Privacidade
+#### <a name="c4_1_8"></a>4.1.8. Política de Privacidade
 
 Projeto Thermal Predictor
 
@@ -627,9 +655,9 @@ Nome: Felipe Sodré Pessôa
 
 E-mail: felipe.pessoa@sou.inteli.edu.br
 
-### 4.2. Compreensão dos Dados
+### <a name="c4_2"></a>4.2. Compreensão dos Dados
 
-#### 4.2.1. Exploração de dados
+#### <a name="c4_2_1"></a>4.2.1. Exploração de dados
 
 ##### Classificação das colunas
 
@@ -764,7 +792,7 @@ Sensores com suporte de bobina em `Aluminium` excedem o `active_limit` em 8,4% d
 
 Cada ponto é uma leitura de sensor; a linha tracejada marca `temp = active_limit`. Excluídas as leituras sem `active_limit` registrado e o placeholder `active_limit = 1000` (sensores sem limite definido, Seção 4.2.1), restam 3.707 leituras com limite físico válido; dessas, 309 (8,3%) ficam acima da diagonal, ou seja, excedem o limite de engenharia do próprio sensor — a maior concentração de excedências ocorre nos sensores com limite de 150 °C, componente central da ressalva metodológica tratada na Seção 4.2.2.
 
-#### 4.2.2. Pré-processamento dos dados
+#### <a name="c4_2_2"></a>4.2.2. Pré-processamento dos dados
 
 O pré-processamento dos dados foi realizado para organizar a base, tratar valores ausentes e registrar inconsistências sem alterar informações que podem representar comportamentos reais dos testes. As etapas foram conduzidas sobre o arquivo `dataset_pre_processado.csv`, gerado na reestruturação da planilha original, mantendo uma linha por combinação entre Run e TC. Implementação completa na Seção 2 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
@@ -783,7 +811,7 @@ Também foram documentados **dados confusos ou insuficientes**:
 
 Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
 
-#### 4.2.3. Processamento final dos dados
+#### <a name="c4_2_3"></a>4.2.3. Processamento final dos dados
 
 Nesta nova etapa de limpeza dos dados, a equipe consolidou um conjunto de ajustes voltados a simplificar a identificação dos registros e a reorganizar a base por área do produto. Em primeiro lugar, foram removidas as colunas “tc_id” e “tc_number”, que atuavam como identificadores redundantes do sensor: como ambas cumpriam a mesma função de rótulo já desempenhada por “tc_name”, sem agregar informação adicional e sem possuir significado quantitativo, sua manutenção apenas aumentava a redundância da base sem trazer ganho analítico. A partir dessa mudança, a identificação de cada termopar passa a ser feita exclusivamente pelo “tc_name”, simplificando o esquema de colunas sem perda de rastreabilidade.
 
@@ -793,7 +821,7 @@ Dentro de cada uma dessas sete tabelas, a coluna “tc_name” foi mantida como 
 
 Nessa tabela larga, cada linha passa a representar uma combinação das variáveis de configuração (“VAR.CONFIG”: `housing`, `blower_direction`, `deflector_hole`, `material_coil_support`, `run_case`, `losses` e `board_position`), e cada coluna de termopar guarda a temperatura observada para aquela combinação. Para o treino do modelo, essa tabela larga é achatada em uma tabela longa auxiliar com três colunas — “tc_name”, “VAR.CONFIG” e “TEMP” —, deixando explícita a relação `(tc_name) x (VAR.CONFIG) → TEMP`: a temperatura é o alvo, determinado pela combinação entre o termopar e a configuração testada. A coluna “active_limit” acompanha essa mesma chave (termopar x configuração), servindo de referência para calcular o quanto cada leitura se aproxima ou ultrapassa o limite de engenharia do sensor correspondente. Na modelagem (Seção 4.3), essa estrutura se traduz em um problema de regressão multi-saída: o vetor das sete variáveis de configuração (x₁, ..., x₇) é usado para prever simultaneamente o vetor de temperaturas de todos os termopares da área (y₁, ..., yₙ).
 
-#### 4.2.4. Hipóteses
+#### <a name="c4_2_4"></a>4.2.4. Hipóteses
 
 Hipóteses em um projeto de análise preditiva de dados são extremamente importantes, porque definem as premissas e expectativas que vão guiar todo o processo de pré-processamento, engenharia de features e construção do modelo. Assim, essa etapa garante que as variáveis selecionadas, as métricas de avaliação e as decisões de modelagem estejam alinhadas aos objetivos definidos junto ao parceiro na Seção 4.1.
 
@@ -863,11 +891,11 @@ A ressalva é o tamanho da amostra: com apenas 56 leituras (28 por grupo), os te
 
 Para a modelagem (Seção 4.3), isso indica que a interação entre housing e a posição do componente deve ser considerada: o efeito da carcaça sobre a temperatura não é uniforme nem segue a intuição de "fechado aquece". Como nas demais hipóteses, housing está confundido com outras configurações no desenho dos ensaios, de modo que o resultado identifica uma associação, não uma causa isolada.
 
-### 4.3. Preparação dos Dados e Modelagem
+### <a name="c4_3"></a>4.3. Preparação dos Dados e Modelagem
 
 O Thermal Predictor é um modelo supervisionado: a variável a ser prevista (temperatura de cada termopar) é conhecida no histórico de ensaios, o que permite treinar o modelo por aprendizado supervisionado sobre esses exemplos rotulados.
 
-#### 4.3.1. Organização dos dados
+#### <a name="c4_3_1"></a>4.3.1. Organização dos dados
 
 Antes do treinamento, as sete variáveis de configuração de entrada são codificadas ordinalmente: cada categoria de uma variável recebe um número inteiro (0, 1, 2...) em ordem alfabética. Essa codificação não atribui significado ao valor numérico em si, o que não é um problema para um modelo baseado em árvores como o `RandomForestRegressor`: a árvore aprende limiares de decisão sobre esse número, não uma relação linear com ele. A justificativa da escolha de cada uma das sete features está detalhada em Features de entrada, abaixo.
 
@@ -875,7 +903,7 @@ Os dados de cada `key_area` são então divididos em três conjuntos disjuntos: 
 
 Dentro do conjunto de treino, os hiperparâmetros do modelo (número de árvores, profundidade máxima, mínimo de amostras por folha, número de features consideradas em cada divisão) são escolhidos por validação cruzada via `GridSearchCV`: o treino é dividido internamente em partições, o modelo é treinado e avaliado em cada combinação de hiperparâmetros da grade, e a combinação com melhor erro médio absoluto (MAE) entre as partições é escolhida. Esse processo nunca toca os dados de teste ou verificação. O número de partições é reduzido automaticamente quando o conjunto de treino de uma `key_area` é pequeno demais para o número de partições padrão.
 
-#### 4.3.2. Modelagem para o problema
+#### <a name="c4_3_2"></a>4.3.2. Modelagem para o problema
 
 **Enquadramento do problema**
 
@@ -957,7 +985,7 @@ atribui a cada categoria um inteiro sequencial em ordem alfabética; optou-se pe
 forma ordinal porque modelos baseados em árvores aprendem limiares sobre o valor
 codificado, sem pressupor ordem entre os códigos.
 
-#### 4.3.3. Métricas de avaliação do modelo
+#### <a name="c4_3_3"></a>4.3.3. Métricas de avaliação do modelo
 
 A avaliação do Thermal Predictor responde a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
@@ -1049,7 +1077,7 @@ definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
 critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
 em variação relativa, sem converter um no outro.
 
-#### 4.3.4. Análise e interpretação dos resultados dos modelos candidatos
+#### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
 
 O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb). Esta subseção resume o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
 
@@ -1102,7 +1130,7 @@ A discussão a seguir cobre os três modelos candidatos treinados para prever a 
 
 Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em formato wide geradas anteriormente, uma por key_area, com uma linha por run e uma coluna por termopar, partindo das mesmas sete variáveis de configuração como entrada e da mesma divisão entre treino e teste. Cada modelo estima simultaneamente as temperaturas de todos os termopares de uma área a partir dessa configuração, seguindo a estrutura multi-saída já definida. As próximas partes trazem, para cada algoritmo, as métricas alcançadas e a leitura dos resultados obtidos.
 
-### 4.4. Comparação de Modelos
+### <a name="c4_4"></a>4.4. Comparação de Modelos
 
 A comparação entre os três candidatos está consolidada em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), que recalcula todas as métricas desta seção no mesmo processo, a partir das mesmas planilhas. Os notebooks por algoritmo seguem como referência do histórico de experimentos de cada modelo; o comparativo abaixo e o roteamento por região da Seção 4.4.4 vêm do notebook consolidado.
 
@@ -1116,7 +1144,7 @@ Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada
 
 Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam pela mesma busca automatizada. As subseções abaixo detalham, para cada modelo, como ele evoluiu a partir desse ponto de partida comum, quanto erra e o que a explicabilidade revela sobre suas decisões.
 
-#### 4.4.1. Decision Tree Regressor
+#### <a name="c4_4_1"></a>4.4.1. Decision Tree Regressor
 
 A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁸. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
 
@@ -1246,7 +1274,7 @@ O Decision Tree erra entre 2 °C e 3 °C em quatro das sete regiões, entre 5 °
 
 Seus limites vêm da base de 19 linhas por região: o desempenho depende da divisão dos dados, o R² é negativo em quase todos os casos e, no agregado, a árvore não se distingue do baseline da média (p = 0,19), com vantagem consistente apenas em `coil_temps` e `mainback`. Isso sustenta seu uso para triagem do patamar térmico, não para substituir ensaios. A comparação com Random Forest e Gradient Boosting deve usar as mesmas sementes e o mesmo baseline. Sob a validação LOGO usada no comparativo entre os três candidatos ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 4.4.4), o quadro é mais favorável: a árvore supera o baseline nas 7 regiões — os dois resultados não são incompatíveis, pois usam protocolos de validação diferentes (holdout com múltiplas sementes aqui, Leave-One-Group-Out lá).
 
-#### 4.4.2. Random Forest
+#### <a name="c4_4_2"></a>4.4.2. Random Forest
 
 A floresta aleatória (*Random Forest*, `RandomForestRegressor`) funciona como um comitê. Em vez de uma única árvore de decisão estimar sozinha a temperatura esperada, centenas de árvores são treinadas sobre recortes diferentes dos mesmos ensaios, e a previsão final é o consenso entre elas. O ganho é que os erros individuais de cada árvore tendem a se cancelar; o custo é que um comitê é mais difícil de auditar do que uma árvore isolada — por isso a explicabilidade recebe uma parte inteira mais adiante.
 
@@ -1335,7 +1363,7 @@ O Random Forest erra entre 2 °C e 4 °C na maior parte das regiões do fogão e
 
 A sequência de melhorias rendeu onde podia render: o ajuste de parâmetros contribuiu pouco, mas alinhar o critério de erro, tratar os ensaios fora da curva e corrigir a forma de representar as configurações resolveram o problema de medição que fazia a região de Mainback, por exemplo, parecer um fracasso.
 
-#### 4.4.3. Gradient Boosting
+#### <a name="c4_4_3"></a>4.4.3. Gradient Boosting
 
 O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial³², não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
 
@@ -1425,7 +1453,7 @@ Sob a avaliação oficial (LOGO), o Gradient Boosting erra entre 2,1 °C e 5,0 �
 
 Os hiperparâmetros oficiais, definidos nos testes do grupo, foram confirmados por busca em grade avaliada pelo próprio LOGO: ficam entre os três melhores de 24 combinações, a 0,05 °C da primeira. O número mais alarmante das tabelas, o R² de −7,10 em Mainback no holdout, é um problema de medição — quatro sensores quase constantes nos seis ensaios de teste — e desaparece sob LOGO. O superajuste, por outro lado, é real, sobretudo em Coil Temps e Mainback, e seria atacado, entre outras formas, pela mesma simplificação de variáveis (item 3 acima) que a H2 já recomendava e que o Random Forest testou e descartou por outro motivo — um teste ainda pendente para o Gradient Boosting especificamente.
 
-#### 4.4.4. Comparação entre os candidatos e escolha do algoritmo por região
+#### <a name="c4_4_4"></a>4.4.4. Comparação entre os candidatos e escolha do algoritmo por região
 
 As três partes anteriores avaliaram cada algoritmo isoladamente. Esta reúne os três lado a lado e registra a decisão que decorre da comparação — entre Random Forest e Gradient Boosting, os dois candidatos com desempenho próximo o bastante para justificar a escolha por região; o Decision Tree fica de fora do comparativo numérico direto, pelo motivo explicado adiante.
 
@@ -1498,7 +1526,7 @@ O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT 
 
 O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)) concorda com esse roteamento em seis das sete regiões. A exceção é **CT Knobs**, em que o Random Forest passa a liderar as duas métricas por margem mínima (0,06 °C no MAE). A região segue com Gradient Boosting em produção: a diferença está muito abaixo do que a base de 32 configurações distingue de forma confiável, e trocar o algoritmo exigiria reexportar os artefatos sem ganho perceptível — o erro típico da região é de cerca de 2 °C. Fica registrado como ponto a reavaliar quando houver ensaios novos.
 
-### 4.5. Avaliação
+### <a name="c4_5"></a>4.5. Avaliação
 ```
 - Descreva a solução final de modelo preditivo e justifique a escolha. Alinhe sua justificativa com a Seção 4.1, resgatando o entendimento 
   do negócio e das personas, explicando de que formas seu modelo atende os requisitos e definições. 
@@ -1524,9 +1552,9 @@ Essa divisão define duas formas distintas de acesso ao modelo. Pelo dashboard, 
 
 Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. A arquitetura de implementação, o layout das telas e a escolha das bibliotecas serão definidos nas etapas seguintes do projeto.
 
-### 6.1. Requisitos funcionais
+### <a name="c6_1"></a>6.1. Requisitos funcionais
 
-#### 6.1.1. Requisitos funcionais do dashboard
+#### <a name="c6_1_1"></a>6.1.1. Requisitos funcionais do dashboard
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -1542,7 +1570,7 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF10 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
 | RF11 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
 
-#### 6.1.2. Requisitos funcionais do software preditivo
+#### <a name="c6_1_2"></a>6.1.2. Requisitos funcionais do software preditivo
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -1554,11 +1582,11 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF17| Permitir a predição em lote, a partir de um conjunto de configurações fornecido pelo usuário. | Média |
 | RF18| Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, para acompanhar sua evolução entre versões. | Média |
 
-### 6.2. Regras de negócio
+### <a name="c6_2"></a>6.2. Regras de negócio
 
 Enquanto os requisitos funcionais descrevem o que a solução deve permitir que o usuário faça, as regras de negócio descrevem as condições, restrições e critérios que governam como essas ações são executadas e validadas. Cada regra está associada ao(s) requisito(s) funcional(is) que ela restringe ou complementa.
 
-#### 6.2.1. Regras de negócio do dashboard
+#### <a name="c6_2_1"></a>6.2.1. Regras de negócio do dashboard
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
@@ -1577,7 +1605,7 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 | RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário, data e horário, de modo a permitir auditoria de uso. | RF06, RF10 |
 | RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade, nunca apenas o valor bruto da predição. | RF04, RF05, RF07, RF11 |
 
-#### 6.2.2. Regras de negócio do software preditivo
+#### <a name="c6_2_2"></a>6.2.2. Regras de negócio do software preditivo
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
