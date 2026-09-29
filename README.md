@@ -22,7 +22,7 @@
 - <a href="https://www.linkedin.com/in/fabiocassiosouza/">Fabio Cassio</a>
 ### Instrutores
 - <a href="https://www.linkedin.com/in/roberto-c%C3%A2ndido-450582a0/">Roberto Cândido</a>
-- <a href="https://www.linkedin.com/in/roberto-c%C3%A2ndido-450582a0/">Egon Daxbacher</a> 
+- <a href="https://www.linkedin.com/in/egondaxbacher/">Egon Daxbacher</a> 
 - <a href="https://www.linkedin.com/in/geraldo-magela-severino-vasconcelos-22b1b220/">Geraldo Vasconcelos</a> 
 - <a href="https://www.linkedin.com/in/heloisacandello/">Heloisa Candello</a>
 - <a href="https://www.linkedin.com/in/laizaribeiro/">Laíza Ribeiro</a> 
