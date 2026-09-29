@@ -685,7 +685,7 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 - `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
 - `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
 - `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
-- `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.3).
+- `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.4).
 
 
 ##### Estatística descritiva das colunas
@@ -766,7 +766,7 @@ Além das tabelas de estatística descritiva, foram produzidos gráficos para in
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-`key_area` é a variável que mais separa os patamares de temperatura: a mediana varia de 47,1 °C em `CT Knobs` a 123,8 °C em `Coil Temps`, e `Mainback` concentra a maior parte dos valores extremos acima de 200 °C — coerente com o papel dessa região como destino do calor redistribuído, discutido na H1 (Seção 4.2.3).
+`key_area` é a variável que mais separa os patamares de temperatura: a mediana varia de 47,1 °C em `CT Knobs` a 123,8 °C em `Coil Temps`, e `Mainback` concentra a maior parte dos valores extremos acima de 200 °C — coerente com o papel dessa região como destino do calor redistribuído, discutido na H1 (Seção 4.2.4).
 
 <div align="center">
   <sub>Figura 13 — Temperatura média por housing e direção do blower</sub><br>
@@ -774,7 +774,7 @@ Além das tabelas de estatística descritiva, foram produzidos gráficos para in
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-As duas configurações interagem: com o housing `Closed`, o blower para trás (`To back`, 81,5 °C) aquece um pouco mais que para frente (`To front`, 79,8 °C); com o housing `Open`, essa ordem se inverte (86,2 °C para frente contra 83,4 °C para trás). Nenhuma combinação isolada é a mais fria em todas as áreas, o que antecipa o resultado da H2 (Seção 4.2.3): as configurações não têm efeito independente entre si.
+As duas configurações interagem: com o housing `Closed`, o blower para trás (`To back`, 81,5 °C) aquece um pouco mais que para frente (`To front`, 79,8 °C); com o housing `Open`, essa ordem se inverte (86,2 °C para frente contra 83,4 °C para trás). Nenhuma combinação isolada é a mais fria em todas as áreas, o que antecipa o resultado da H2 (Seção 4.2.4): as configurações não têm efeito independente entre si.
 
 <div align="center">
   <sub>Figura 14 — Taxa de excedência do limite por material do suporte da bobina</sub><br>
@@ -832,11 +832,8 @@ O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os 
 | # | Hipótese | Resultado |
 |---|---|---|
 | **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
-
 | **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
-
 | **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
-
 | **H4** | A carcaça aberta eleva a temperatura do IGBT 1: com o housing aberto, o componente opera ~9,6 °C mais quente que fechado, o contrário do esperado. | Confirmada |
 
 ##### H1 — Configurações redistribuem calor, não o eliminam
@@ -1465,7 +1462,7 @@ A Seção 4.3 já estabeleceu que existe **um modelo por região**, porque as se
 
 O Decision Tree fica atrás dos outros dois em todas as métricas médias, mas supera o baseline nas **7 de 7** regiões — o mesmo placar do Random Forest e do Gradient Boosting —, e seu R² médio (0,15) fica bem abaixo dos outros dois. Vale registrar que, no notebook consolidado, a árvore recebeu uma **vantagem** sobre os outros dois — seus hiperparâmetros foram buscados sobre todas as configurações da região, inclusive as que depois serviriam de teste — e ainda assim ficou atrás, o que reforça a conclusão.
 
-Por isso o Decision Tree não entra como terceiro candidato à produção; seu valor está na leitura direta das regras (Seção 4.4.1, "Explicabilidade"), não no desempenho preditivo.
+Por isso o Decision Tree não entra como terceiro candidato à produção; seu valor está na leitura direta das regras (Seção 4.4.1, "O que o modelo olha para decidir"), não no desempenho preditivo.
 
 ##### A comparação, região a região
 
@@ -2290,7 +2287,7 @@ Congelar os parâmetros no treino produz **27 observações (1,8% do conjunto de
 1. **Persistir os sete pares $(\min_k, \max_k)$ junto ao artefato do modelo**, exatamente como o item c) já recomenda para a transformação inversa — não como metadado documental, mas como parte do contrato de inferência: o mesmo `key_area` sempre usa o mesmo par, em treino, validação e produção.
 2. **Ajustar os parâmetros exclusivamente sobre o conjunto de treino**, nunca sobre validação, teste ou a base completa — o padrão `fit` (só treino) e `transform` (treino, validação, teste e produção) do próprio `MinMaxScaler` do scikit-learn já impõe essa separação quando usado corretamente por `key_area`.
 3. **Monitorar em produção a fração de leituras que caem fora de [0, 1]** por região, com a tabela deste item como linha de base (0,0% a 10,0%, dependendo da região). Um aumento sustentado nessa fração é sinal de *drift*: a distribuição de temperatura real se afastando da distribuição observada no treino, o que este próprio anexo já demonstrou ser plausível (item f.3 da subseção de normalidade, sobre a tendência de a campanha ficar mais extrema ao longo do tempo).
-4. **Decidir e documentar o tratamento de valores fora do intervalo antes da consolidação do pipeline** — recortar em [0, 1] (com o custo de erro sistemático quantificado acima), permitir extrapolação sem recorte, ou tratar como excedência de `active_limit` (Seção 4.2.3) — em vez de deixar essa escolha implícita no comportamento padrão da biblioteca utilizada.
+4. **Decidir e documentar o tratamento de valores fora do intervalo antes da consolidação do pipeline** — recortar em [0, 1] (com o custo de erro sistemático quantificado acima), permitir extrapolação sem recorte, ou tratar como excedência de `active_limit` (Seção 4.2.4) — em vez de deixar essa escolha implícita no comportamento padrão da biblioteca utilizada.
 
 **Código utilizado (Python):**
 
