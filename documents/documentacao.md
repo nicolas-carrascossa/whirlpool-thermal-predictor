@@ -41,6 +41,10 @@
     - [4.4.3. Gradient Boosting](#c4_4_3)
     - [4.4.4. Comparação entre os candidatos e escolha do algoritmo por região](#c4_4_4)
   - [4.5. Avaliação](#c4_5)
+    - [4.5.1. Solução final](#c4_5_1)
+    - [4.5.2. Plano de contingência](#c4_5_2)
+    - [4.5.3. Explicabilidade](#c4_5_3)
+    - [4.5.4. Verificação das hipóteses](#c4_5_4)
 - [5. Conclusões e Recomendações](#c5)
 - [6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
   - [6.1. Requisitos funcionais](#c6_1)
@@ -1529,15 +1533,84 @@ O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT 
 O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)) concorda com esse roteamento em seis das sete regiões. A exceção é **CT Knobs**, em que o Random Forest passa a liderar as duas métricas por margem mínima (0,06 °C no MAE). A região segue com Gradient Boosting em produção: a diferença está muito abaixo do que a base de 32 configurações distingue de forma confiável, e trocar o algoritmo exigiria reexportar os artefatos sem ganho perceptível — o erro típico da região é de cerca de 2 °C. Fica registrado como ponto a reavaliar quando houver ensaios novos.
 
 ### <a name="c4_5"></a>4.5. Avaliação
-```
-- Descreva a solução final de modelo preditivo e justifique a escolha. Alinhe sua justificativa com a Seção 4.1, resgatando o entendimento 
-  do negócio e das personas, explicando de que formas seu modelo atende os requisitos e definições. 
-- Descreva também um plano de contingência para os casos em que o modelo falhar em suas predições.
-- Além disso, discuta sobre a explicabilidade do modelo (se aplicável) e realize a verificação de aceitação ou refutação das hipóteses.
-- Se aplicável, utilize equações, tabelas e gráficos de visualização de dados para melhor ilustrar seus argumentos. 
 
-Remova este bloco ao final
-```
+#### <a name="c4_5_1"></a>4.5.1. Solução final
+
+A solução final do Thermal Predictor é um **conjunto de sete modelos de regressão multi-saída, um por região do fogão**, cada um treinado com o algoritmo que teve o melhor desempenho naquela região: **Gradient Boosting** em Main Vent Sys, CT Knobs, Oven HMI e Coil Temps, e **Random Forest** em Mainback, IPC Comp e IPC Cooling. O roteamento e os artefatos estão descritos na Seção 4.4.4 e registrados em `models/manifest.json`. Os sete modelos recebem as mesmas sete variáveis de configuração de montagem e devolvem, de uma vez, a temperatura de todos os termopares da região.
+
+A tabela abaixo reúne o desempenho da solução final sob a validação oficial (LOGO), região a região, com o algoritmo escolhido para cada uma.
+
+| Região | Algoritmo | MAE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+|---|---|---|---|---|---|
+| Main Vent Sys | Gradient Boosting | 2,07 | 0,591 | 2,48 | 94,2% |
+| Oven HMI | Gradient Boosting | 2,17 | 0,074 | 3,70 | 96,1% |
+| CT Knobs | Gradient Boosting | 2,20 | 0,397 | 4,35 | 89,1% |
+| Mainback | Random Forest | 3,30 | 0,512 | 5,02 | 86,6% |
+| IPC Cooling | Random Forest | 3,64 | 0,327 | 5,77 | 89,8% |
+| IPC Comp | Random Forest | 4,85 | 0,158 | 6,38 | 82,2% |
+| Coil Temps | Gradient Boosting | 9,55 | 0,785 | 8,56 | 77,0% |
+| **Média das sete regiões** | — | **3,97** | — | **5,18** | **87,9%** |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das versões atuais das Seções 4.4.2 (Random Forest, `notebooks/Random_for_regre.ipynb`, Seção 21) e 4.4.3 (Gradient Boosting, `notebooks/Grad_Boosting_Regre.ipynb`, Seção 8). O R² não é promediado porque os dois notebooks o agregam de formas diferentes (média e mediana entre termopares), como explicado na Seção 4.4.4.</sup>
+
+**Uma ressalva sobre os artefatos exportados.** A tabela mede a melhor versão de cada algoritmo nos notebooks, com codificação one-hot e, no Random Forest, o estimador híbrido. Os artefatos que a API carrega hoje são gerados por `scripts/export_models.py`, que segue o roteamento acima, mas ainda usa codificação ordinal e hiperparâmetros escolhidos por busca em grade em cada região. Alinhar o script de exportação às versões avaliadas aqui é um ajuste pendente, e só depois dele os números da tabela passam a descrever exatamente o modelo em uso.
+
+**Por que esta solução.** A escolha decorre de três achados das etapas anteriores:
+
+1. **As regiões são regimes térmicos distintos.** A H1 mostrou que a mesma alteração de montagem aquece uma região e resfria outra, e a amplitude de temperatura varia mais de oito vezes entre a região mais fria e a mais quente. Um modelo único estimaria um efeito médio que não descreveria nenhuma delas.
+2. **Random Forest e Gradient Boosting empatam na média, mas não em cada região.** A diferença média de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). Escolher o melhor por região aproveita as vantagens locais sem custo de manutenção relevante, já que os dois algoritmos são da mesma família (comitês de árvores) e usam o mesmo pré-processamento.
+3. **O Decision Tree fica fora da produção.** É o candidato de leitura mais direta, mas fica atrás dos outros dois em todas as métricas médias (Seção 4.4.4).
+
+**Aderência ao negócio e às personas (Seção 4.1).** A solução foi desenhada para o uso definido no planejamento (Seção 4.1.3): uma ferramenta de **triagem** que antecipa o resultado térmico de uma configuração antes da simulação CFD completa ou do protótipo físico.
+
+- **João (Engenheiro de Qualidade)** precisa saber, para várias configurações, se um componente ultrapassa o limite térmico, com uma margem de erro clara. Cada previsão vem com a margem de erro do próprio termopar (o MAE medido para aquele sensor), o limite de engenharia e o destaque quando o limite é excedido.
+- **Rafael (Engenheiro de Produtos)** quer comparar alternativas ainda na concepção. A previsão sai em segundos, e o indicador de confiabilidade separa as combinações já ensaiadas das inéditas.
+- **Estela (Engenheira de Materiais)** quer comparar materiais sem novo protótipo. O modelo atende essa necessidade só em parte: a única variável de material na base é `material_coil_support`, com dois níveis documentados, e ela tem baixa participação na importância do modelo em cinco das sete regiões. Comparar espessuras ou novos materiais exige ensaios que a base ainda não contém.
+- **Geraldo (Especialista de Marketing)** ganha acesso antecipado ao comportamento térmico esperado, desde que trate a previsão como estimativa e não como resultado de validação.
+- **Beatriz (Designer UX/UI)** precisava de uma interface que comunicasse previsão, margem e confiabilidade sem ambiguidade. O dashboard agrupa os resultados por Key Area, exibe os três estados de confiabilidade com textos e cores próprios.
+
+**Critério de sucesso.** O critério acordado com o parceiro é um erro máximo de 10% (Seção 4.1.3). Sob a validação mais rigorosa disponível, **87,9% das previsões** ficam dentro dessa margem, e o MAPE médio fica abaixo de 10% em todas as sete regiões. O critério, portanto, é **atingido em parte**: Coil Temps (77,0%) e IPC Comp (82,2%) são as regiões mais distantes da meta. Mesmo assim, a solução supera com folga o baseline que ignora a configuração e prevê sempre a média do treino (6,55 °C de erro e 75,9% dentro da margem, Seção 4.3.4). O ganho de eficiência de tempo frente à simulação CFD (meta de 90%) é evidente pela ordem de grandeza (segundos contra horas), mas não foi cronometrado em um ciclo real de projeto, e essa medição fica como validação a ser feita com o parceiro.
+
+**O que o modelo ainda não faz.** O R² modesto em várias regiões (0,07 em Oven HMI e 0,16 em IPC Comp) mostra que os modelos acertam bem o **patamar térmico** de cada região, mas ainda não distinguem com segurança duas configurações parecidas. A causa é a base: são 32 configurações distintas por região, com as variáveis confundidas entre si (H2). Por isso a solução é indicada para **priorizar** ensaios, e não para substituí-los.
+
+#### <a name="c4_5_2"></a>4.5.2. Plano de contingência
+
+O modelo pode falhar de três formas: errar sem dar sinal, ser consultado fora do que conhece ou ficar indisponível. O plano abaixo trata cada caso e se apoia nos riscos mapeados na Seção 4.1.5.
+
+| Situação | Como é detectada | Resposta |
+|---|---|---|
+| Consulta fora das combinações ensaiadas | Classificação automática de confiabilidade (interpolação, extrapolação moderada ou fora de domínio), pela distância entre a configuração consultada e as configurações de treino da região | Em extrapolação moderada, tratar o valor como indicativo e confirmar por CFD os casos próximos do limite. Fora de domínio, não usar a previsão para decisão de projeto e seguir para a simulação CFD completa (R04). O dashboard ainda exibe o valor, com alerta; a supressão exigida pela RN08 está pendente. |
+| Previsão próxima do limite de engenharia | Temperatura prevista somada à margem de erro do termopar atinge ou passa o limite | Tratar como excedente e encaminhar a configuração para simulação completa ou teste físico. Nenhuma configuração é aprovada só porque a previsão ficou logo abaixo do limite. |
+| Região com erro mais alto | Métricas por região (Coil Temps com MAE de 9,55 °C; IPC Comp com 82,2% dentro da margem) | Usar as previsões dessas regiões apenas para triagem e manter a validação por CFD ou ensaio antes de qualquer decisão. |
+| Divergência entre previsão e novo ensaio | Comparação de cada nova simulação ou teste físico com a previsão feita para a mesma configuração | Registrar a divergência. Se ela passar de três desvios-padrão, submeter a configuração à equipe de CFD para verificar se há variável não medida ou erro no ensaio (oportunidade R07). Incorporar os novos ensaios e retreinar (RF16). |
+| Nova versão do modelo pior que a anterior | Métricas recalculadas sobre o mesmo conjunto de referência a cada retreinamento (RN21, RN22) | Manter em produção a versão anterior, identificada pelo `model_set_version` do manifesto, até a nova versão superar a atual. |
+| Dashboard ou API indisponível | Falha de acesso | O processo atual de simulação CFD e teste físico continua válido e é o caminho padrão. O Thermal Predictor acelera a triagem, mas nunca é a única barreira antes da certificação. |
+
+A regra que atravessa todas as linhas é a mesma: o modelo estima a saída da simulação CFD, não a medição física (R05), e **nenhum produto é liberado com base apenas na previsão**.
+
+#### <a name="c4_5_3"></a>4.5.3. Explicabilidade
+
+Os três candidatos foram analisados quanto ao que pesa em suas decisões (Seções 4.4.1 a 4.4.3). Para os dois algoritmos em produção, a análise usou SHAP³¹ com o `TreeExplainer`, que reparte cada previsão entre as sete variáveis de entrada.
+
+- **Coil Temps:** o modo de operação (`run_case`) domina com folga, com 53% da importância da região no Gradient Boosting. Esse padrão aparece também no Random Forest.
+- **Mainback e Oven HMI:** quem lidera é a direção do fluxo de ar do ventilador (`blower_direction`), nos dois algoritmos.
+- **IPC Comp:** nenhuma variável domina; `losses`, `deflector_hole` e `run_case` dividem a importância em partes quase iguais.
+- **Variáveis menos usadas:** `board_position` e `material_coil_support` têm a menor participação em cinco das sete regiões.
+
+A importância por impureza, nativa dos modelos, confirma o grupo de variáveis líderes, mas troca a ordem entre as duas primeiras em Mainback. Isso indica que o ranking agregado é mais estável que o detalhe por sensor.
+
+**Limite da explicação.** Como as variáveis estão confundidas no desenho dos ensaios (H2), o modelo distribui o crédito entre variáveis redundantes de forma arbitrária. As explicações descrevem **como o modelo decide**, não **como o fogão aquece**, e não devem ser apresentadas como relação de causa entre um componente e a temperatura.
+
+#### <a name="c4_5_4"></a>4.5.4. Verificação das hipóteses
+
+As quatro hipóteses da Seção 4.2.4 foram confirmadas na análise exploratória. A tabela abaixo verifica se o comportamento dos modelos também as sustenta.
+
+| Hipótese | Resultado na análise exploratória | O que os modelos mostram | Situação |
+|---|---|---|---|
+| **H1** — O efeito de uma configuração muda de sinal conforme a área | Confirmada | A variável que lidera muda de região para região (`run_case` em Coil Temps, `blower_direction` em Mainback e Oven HMI, empate em IPC Comp), sem que essa alternância tenha sido informada ao treinamento | **Aceita** e reforçada; sustenta a decisão de um modelo por região |
+| **H2** — As configurações não são independentes entre si | Confirmada | As técnicas de explicabilidade trocam a ordem das variáveis líderes, sinal de crédito repartido entre variáveis redundantes | **Aceita**; limita a leitura causal das explicações e motiva a recomendação de novos ensaios planejados |
+| **H3** — O modo de operação eleva a temperatura, como fator secundário | Confirmada (efeito real, cerca de 1,6% da variância total) | `run_case` é a variável mais importante em Coil Temps, CT Knobs e Main Vent Sys, mas não em todas as regiões | **Aceita**; o efeito é secundário no produto inteiro e dominante em regiões específicas |
+| **H4** — A carcaça aberta aquece o IGBT 1 | Confirmada (+9,6 °C com a carcaça aberta) | Em IPC Comp, região do IGBT 1, `housing` não está entre as variáveis líderes; o efeito observado nos dados não aparece isolado no modelo | **Aceita** nos dados, **não reforçada** pelo modelo, coerente com a confusão entre variáveis apontada pela H2 |
 
 ## <a name="c5"></a>5. Conclusões e Recomendações
 ```
