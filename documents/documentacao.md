@@ -87,11 +87,16 @@ Os resultados obtidos até aqui, detalhados nas Seções 4 e 5, sustentam essa p
 Cada elemento da proposta atende a um dos objetivos da Seção 2.1: a predição em segundos, no lugar da simulação CFD completa, é o que viabiliza o ganho de até 90% de eficiência no ciclo de validação térmica e sustenta a redução de até 30% no tempo total de desenvolvimento; eliminar a necessidade de protótipo físico a cada configuração testada é o que permite a redução de 25% nos gastos operacionais; e a margem de erro reportada acima mede o progresso, ainda parcial, em direção à meta de confiabilidade de erro máximo de 10%.
 
 ### <a name="c2_3"></a>2.3. Justificativa
-```
-Faça uma breve defesa de sua proposta de solução, escreva sobre seus potenciais, seus benefícios e como ela se diferencia.
 
-Remova este bloco ao final
-```
+**Potencial.** Hoje, cada configuração de fogão que a Engenharia quer avaliar custa uma simulação CFD completa, que leva horas e depende de software licenciado, malha, HPC e de um especialista, ou um protótipo físico seguido de teste destrutivo. O Thermal Predictor responde à mesma pergunta em frações de segundo. Essa diferença de escala muda o tipo de trabalho possível: em vez de simular poucas alternativas escolhidas de antemão, o engenheiro pode varrer dezenas de combinações numa única sessão e reservar a simulação completa e o ensaio físico para os casos realmente críticos (oportunidade R01, Seção 4.1.5). A literatura de desenvolvimento de produto aponta o mesmo caminho: substituir ciclos físicos por modelos digitais já reduziu prazos de desenvolvimento em até 50% para alguns usuários¹⁹, e a velocidade de lançamento está associada positivamente ao sucesso de novos produtos²⁰.
+
+**Benefícios.** A solução ataca diretamente os três objetivos de negócio da Seção 2.1: encurta o ciclo de validação térmica, reduz o número de protótipos construídos só para serem descartados e mede, a cada versão, quanto falta para a meta de erro máximo de 10%. Há ainda dois benefícios que não dependem de a meta de precisão ser atingida por completo. O primeiro é a base histórica de ensaios tratada, documentada e versionada, que antes não existia nesse formato e passa a ser um acervo reutilizável (oportunidade R02). O segundo é a priorização dos ensaios físicos: ordenar configurações por risco térmico é tarefa mais simples do que acertar a temperatura exata, e o modelo já acerta bem o patamar térmico de cada região (Seção 4.4). Por ser inteiramente open source, a solução também não acrescenta custo de licenciamento.
+
+**Diferenciação.** O Thermal Predictor não substitui o CFD; ele aprende com o próprio histórico de simulações e ensaios da Whirlpool, que hoje fica arquivado e não é reaproveitado para prever combinações futuras. Três escolhas de projeto o distinguem de um modelo genérico de regressão:
+
+- **Um modelo por região do fogão.** As sete regiões têm regimes térmicos distintos (a hipótese H1 mostrou que a mesma alteração aquece uma área e resfria outra). Por isso, cada região tem o algoritmo que se saiu melhor nela, Random Forest ou Gradient Boosting (Seção 4.4.4).
+- **Previsões auditáveis.** Cada previsão vem com margem de erro e limite de engenharia, e o dashboard mostra quais variáveis de montagem mais pesam em cada região. Nos notebooks, essa leitura foi validada com SHAP³¹. Engenheiros tendem a rejeitar números que não conseguem auditar (risco R08).
+- **Honestidade sobre o próprio domínio.** O sistema compara cada consulta com as configurações já ensaiadas e a classifica como interpolação, extrapolação moderada ou fora de domínio. Cada estado aparece na tela com um alerta proporcional (risco R04). Isso impede que uma previsão sobre um projeto inédito pareça tão confiável quanto uma previsão sobre uma combinação já testada.
 
 ## <a name="c3"></a>3. Metodologia
 
