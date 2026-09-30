@@ -30,11 +30,15 @@
 
 ## 📝 Descrição
 
-Escreva uma curta descrição sobre o seu projeto (problema a ser resolvido e solução proposta). (minímo 150 palavras, máximo 600 palavras)
+Na Divisão de Fogões da Whirlpool, cada novo fogão de piso precisa ter o comportamento térmico validado antes de ser aprovado. Hoje essa validação depende de simulações CFD completas, que levam horas e exigem software licenciado, malha, HPC e um especialista dedicado, ou de protótipos físicos submetidos a testes destrutivos. Por isso, cada alternativa de projeto avaliada custa tempo e dinheiro, e poucas combinações cabem no cronograma de desenvolvimento.
 
-<b>Link para vídeo demonstrativo:</b> <a href="https://inteli.edu.br">Coloque seu link aqui</a>
+O **Thermal Predictor** aprende com o histórico de simulações e ensaios térmicos já realizados pela Whirlpool a relação entre a montagem do fogão e a temperatura de cada sensor. O engenheiro informa uma configuração (direção do blower, estado do housing, posição da placa, material do suporte da bobina, furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, com a margem de erro, o limite de engenharia aplicável e um indicador de confiabilidade que avisa quando a consulta está fora do que já foi ensaiado.
 
-Caso tenha publicado seu modelo preditivo em uma aplicação web, não deixe de colocar o link de acesso aqui.
+A solução usa um modelo por região do fogão (Random Forest ou Gradient Boosting, conforme o desempenho em cada uma das sete regiões). Sob validação Leave-One-Group-Out, erra em média cerca de **4 °C** e mantém **87,9%** das previsões dentro da margem de 10% acordada com o parceiro, contra 75,9% de um baseline que ignora a configuração. A ferramenta não substitui o CFD nem o ensaio de certificação: ela serve para priorizar quais configurações merecem simulação completa ou protótipo.
+
+A entrega é inteiramente open source: um núcleo preditivo em Python exposto por uma API FastAPI e um dashboard interativo em React, ambos executados localmente.
+
+A documentação completa do projeto está em [`documents/documentacao.md`](documents/documentacao.md).
 
 ## 📁 Estrutura de pastas
 
