@@ -2,7 +2,7 @@
  * `ApiSource` — implementação de `PredictionSource` que fala com o FastAPI da
  * Fase 2 (`src/backend`), atrás do mesmo contrato que `LocalMockSource`.
  *
- * Base URL: `VITE_API_BASE_URL` (padrão `""` → mesma origem, `/api/v1/...`).
+ * Base URL: `VITE_API_BASE_URL` (padrão `http://localhost:8000`).
  * Anexa `Authorization: Bearer` do `tokenStore`; um 401 vira `AuthError` e
  * dispara o logout global (`notifySessionExpired`); 400/422 viram
  * `ContractError` com o `detail` da API; erro de rede vira `ContractError`
@@ -21,7 +21,9 @@ import {
 import { getToken, notifySessionExpired } from '@/features/auth/tokenStore'
 
 function apiBaseUrl(): string {
-  return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
+  // A URL relativa voltaria ao Vite (porta 5173), que nao possui a API.
+  // A variavel de ambiente permite sobrescrever esse destino em outros ambientes.
+  return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '')
 }
 
 function apiUrl(path: string): string {

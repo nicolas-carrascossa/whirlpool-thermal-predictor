@@ -10,5 +10,8 @@
     "lint": "npm --prefix src/frontend run lint",
     "contract:schema": "npm --prefix src/frontend run contract:schema",
     "install:frontend": "npm --prefix src/frontend install"
+  },
+  "dependencies": {
+    "uvicorn": "^0.0.1-security"
   }
 }

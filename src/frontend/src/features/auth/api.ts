@@ -7,7 +7,9 @@ import { ContractError } from '@/contract/v1'
 import type { AuthSession, AuthUser } from '@/features/auth/tokenStore'
 
 function apiBaseUrl(): string {
-  return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
+  // A URL relativa voltaria ao Vite (porta 5173), que nao possui a API.
+  // A variavel de ambiente permite sobrescrever esse destino em outros ambientes.
+  return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '')
 }
 
 function authUrl(path: string): string {

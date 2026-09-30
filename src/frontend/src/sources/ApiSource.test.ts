@@ -69,7 +69,7 @@ describe('ApiSource', () => {
 
     expect(result).toEqual(FIXTURE_RESPONSE)
     const [url, init] = fetchMock.mock.calls[0]
-    expect(String(url)).toContain('/api/v1/predictions')
+    expect(String(url)).toBe('http://localhost:8000/api/v1/predictions')
     const headers = new Headers(init.headers)
     expect(headers.get('Authorization')).toBe('Bearer tok-123')
     expect(init.method).toBe('POST')

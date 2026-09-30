@@ -53,7 +53,7 @@ describe('LoginPage', () => {
     await waitFor(() => expect(screen.getByText('Página inicial')).toBeInTheDocument())
 
     const [url, init] = fetchMock.mock.calls[0]
-    expect(String(url)).toContain('/api/v1/auth/login')
+    expect(String(url)).toBe('http://localhost:8000/api/v1/auth/login')
     expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded')
     expect(init.body).toBe('username=engenheiro&password=thermal2026')
 
