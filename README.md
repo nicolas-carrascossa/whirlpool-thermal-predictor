@@ -44,13 +44,27 @@ A documentação completa do projeto está em [`documents/documentacao.md`](docu
 
 Dentre os arquivos presentes na raiz do projeto, definem-se:
 
-- <b>readme.md</b>: arquivo que serve como guia e explicação geral sobre o projeto (o mesmo que você está lendo agora).
+- <b>README.md</b>: arquivo que serve como guia e explicação geral sobre o projeto (o mesmo que você está lendo agora).
 
-- <b>assets</b>: todas as imagens e mídias utilizadas nos notebooks e documentação são posicionadas aqui.
+- <b>package.json</b>: atalhos de npm para rodar a interface a partir da raiz (<code>npm run dev:api</code>, <code>npm run test</code> etc.); o projeto npm de fato fica em <code>src/frontend</code>.
 
-- <b>documents</b>: aqui estarão todos os documentos do projeto. Há também uma pasta denominada <b>extras</b> onde estão presentes documentos complementares.
+- <b>requirements.txt</b>: dependências Python dos notebooks.
 
-- <b>notebooks</b>: todos os Jupyter Notebooks criados para desenvolvimento do projeto.
+- <b>.env.api</b> e <b>.env.example</b>: configuração de fonte de dados do front-end, a mesma de <code>src/frontend</code>.
+
+- <b>REFACTORING_AGENT_GUIDE.md</b>: guia de arquitetura e convenções usado na refatoração do software.
+
+- <b>relatorio_dados_nao_treinados.md</b>: auditoria de cobertura de sensores e configurações por região no modelo exportado.
+
+- <b>assets</b>: todas as imagens e mídias utilizadas nos notebooks e na documentação.
+
+- <b>contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
+
+- <b>data</b>: bases de dados do parceiro e derivadas. A pasta e os arquivos de dados não são versionados (ver <code>.gitignore</code>); é preciso criá-la localmente para rodar os notebooks.
+
+- <b>documents</b>: documentação do projeto (<a href="documents/documentacao.md"><code>documentacao.md</code></a>) e documentos de arquitetura. A pasta <b>extras</b> reúne documentos complementares.
+
+- <b>notebooks</b>: Jupyter Notebooks de exploração, pré-processamento, modelagem e comparação de modelos.
 
 - <b>src</b>: a aplicação. <b>src/backend</b> é a API em FastAPI, que carrega os modelos treinados de <code>models/</code> e serve as predições; <b>src/frontend</b> é a interface em React que consome essa API. Execução em <a href="#-execução-dos-projetos">Execução dos projetos</a>, abaixo.
 
