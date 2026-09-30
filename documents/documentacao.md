@@ -41,18 +41,29 @@ Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diret
 
 ## <a name="c2"></a>2. Objetivos e Justificativa
 ### 2.1 Objetivos
-```
-Descreva resumidamente os objetivos gerais e específicos do seu parceiro de negócios.
 
-Remova este bloco ao final
-```
+**Objetivo geral**
+
+Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de piso, hoje dependente da construção de protótipos físicos e de testes destrutivos, sem perda de confiabilidade sobre o comportamento térmico previsto, de modo que a Divisão de Fogões da Whirlpool consiga acompanhar o ritmo de renovação de portfólio exigido pela concorrência e pelas mudanças de comportamento do consumidor.
+
+**Objetivos específicos**
+
+- Reduzir em até 30% o tempo total de desenvolvimento de um novo fogão de piso, do início do projeto ao lançamento³³.
+- Elevar a eficiência de tempo do ciclo de validação térmica (simulação CFD e ensaio físico) em até 90% em relação ao processo tradicional³³. Essa é a etapa de maior peso sobre o lead time de desenvolvimento.
+- Reduzir em 25% os gastos operacionais com protótipos físicos e testes destrutivos³³, incluindo material, fabricação e o uso de malha, HPC e especialista dedicado por rodada de validação.
+- Manter a temperatura prevista pelo modelo dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico³³, garantindo que a validação térmica acelerada não comprometa a confiabilidade exigida para certificação e aprovação de projeto.
 
 ### 2.2 Proposta de solução
-```
-Descreva resumidamente sua proposta de modelo preditivo e como esse modelo pretende resolver o problema, atendendo os objetivos.
 
-Remova este bloco ao final
-```
+O **Thermal Predictor** aprende, a partir do histórico de ensaios já realizados pelo Dataset de testes CFDs, a relação entre a forma como o fogão é montado e a temperatura que cada sensor atinge. O engenheiro informa uma configuração de montagem (direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, sem construir um protótipo nem rodar uma simulação CFD completa.
+
+Não se trata de um único modelo para o fogão inteiro. O equipamento foi dividido nas **sete regiões** monitoradas pelos ensaios (Mainback, Coil Temps, IPC Comp, IPC Cooling, Main Vent Sys, CT Knobs e Oven HMI), cada uma com seu próprio modelo, porque elas se comportam de maneiras muito diferentes: a região mais quente varia em uma faixa de temperatura mais de oito vezes maior que a mais fria. Dos três algoritmos testados, dois ficaram em produção, cada um nas regiões em que se saiu melhor: **Random Forest** em três delas e **Gradient Boosting** nas outras quatro, ambos baseados em árvores de decisão, o que permite explicar quais características da montagem mais pesaram em cada previsão. O modelo é o mesmo para Brasil e México; o que muda entre os dois países são apenas os limites de temperatura aceitáveis com os quais a previsão é comparada.
+
+A entrega é um **sistema único e inteiramente open source**: um núcleo preditivo em Python, que reúne pré-processamento, modelos treinados e rotina de predição, exposto por uma API que também alimenta o **dashboard interativo**. Nele, o usuário escolhe a configuração, o país e as regiões de interesse, e recebe a temperatura estimada, a margem de erro, o limite de engenharia aplicável e um indicador de confiabilidade que avisa quando a configuração consultada está fora do que já foi ensaiado. A equipe de Engenharia pode chamar o mesmo núcleo diretamente para prever vários cenários de uma vez ou retreinar os modelos com novos ensaios, sempre com o resultado idêntico ao da tela, sem custo de licenciamento.
+
+Os resultados obtidos até aqui, detalhados nas Seções 4 e 5, sustentam essa proposta: avaliados sob o mesmo protocolo, os modelos erram em média cerca de **4 °C** (≈5% da temperatura medida) e mantêm **87%** das previsões dentro da margem de 10% acordada com o parceiro. Esse número ainda está abaixo dos 100% perseguidos pela meta de confiabilidade da Seção 2.1, mas já é muito acima do baseline (76% dentro da margem, erro de 6,55 °C), evidência de que o modelo aprendeu a reagir à montagem, e não apenas a decorar o patamar térmico de cada região. O retreinamento contínuo previsto no software é o mecanismo para fechar essa distância à medida que novos ensaios forem incorporados.
+
+Cada elemento da proposta atende a um dos objetivos da Seção 2.1: a predição em segundos, no lugar da simulação CFD completa, é o que viabiliza o ganho de até 90% de eficiência no ciclo de validação térmica e sustenta a redução de até 30% no tempo total de desenvolvimento; eliminar a necessidade de protótipo físico a cada configuração testada é o que permite a redução de 25% nos gastos operacionais; e a margem de erro reportada acima mede o progresso, ainda parcial, em direção à meta de confiabilidade de erro máximo de 10%.
 
 ### 2.3 Justificativa
 ```
@@ -1528,9 +1539,27 @@ O modelo erra menos em Main Vent Sys (1,76 °C) e mais em Coil Temps (10,64 °C)
 
 A razão RMSE/MAE indica onde os erros grandes se concentram. Ela é mais alta em **Main Vent Sys** (1,78), justamente a região de menor MAE: o erro típico é pequeno, mas algumas configurações concentram desvios bem acima dele. **Mainback** vem em seguida (1,57). Nas demais regiões a razão fica entre 1,28 e 1,45, compatível com erros distribuídos de forma mais homogênea entre as configurações.
 
-Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1.
+Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1. 
 
 <sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`.</sup>
+
+**Uso principal: priorizar ensaios físicos, não substituí-los.** O Thermal Predictor é instrumento de priorização, não substituto do ensaio. Na concepção, o engenheiro de CFD e o de Qualidade usam o dashboard para varrer as configurações candidatas, ordená-las por temperatura estimada e confiança associada e reservar protótipo às mais críticas de cada região (oportunidade R03, Seção 4.1.5). O ensaio permanece obrigatório onde a liberação dependa de margem normativa: erro típico de 1,76 °C a 10,64 °C (Seção 5.1) não autoriza declarar conformidade sem medição. A ordenação por criticidade ainda não foi verificada contra a real, a coincidência em pelo menos 80% dos pares avaliados, prevista em R03, é condição para propor a ferramenta como apoio formal ao planejamento dos ensaios.
+
+**Domínio de validade (R04).** Nenhuma previsão deve ser lida sem o estado de domínio que a acompanha. O detector de extrapolação classifica cada consulta em um de três estados, definidos no plano de ação de R04 (Seção 4.1.5), cada um com uma conduta:
+
+- **Interpolação** — dentro do envelope de treinamento: a previsão vale como estimativa de projeto, sempre com a faixa de incerteza da região.
+- **Extrapolação moderada** — próxima do envelope, mas fora dele: vale apenas para triagem entre alternativas; congelar decisão exige confirmação por CFD.
+- **Fora de domínio** — fora do envelope: o valor numérico é suprimido e o engenheiro volta à simulação CFD. A supressão é deliberada, porque exibir um número com ressalva textual não impede seu uso.
+
+Duas categorias pouco representadas — `board_position` *Right* (5,5% das leituras) e `material_coil_support` *Aluminium Plate* (1,8%, Seção 4.3) devem ser tratadas como extrapolação moderada mesmo que a verificação de envelope marginal as aceite. Se mais de 20% das consultas caírem fora do envelope, cabe à equipe documentar formalmente o domínio de validade e comunicá-lo aos engenheiros usuários.
+
+**Validação contra medição física (R05).** O alvo de todas as métricas da Seção 4.4 é a temperatura calculada pelo solver CFD da Whirlpool, não a medida no fogão: o erro reportado mede a distância entre modelo e solver. O desvio entre solver e medição é desconhecido o solver é calibrado internamente e seu resíduo não foi disponibilizado e estabelece o teto real de acurácia: uma previsão pode caber na tolerância acordada contra o CFD e ainda assim afastar-se da realidade física sem que métrica interna alguma acuse. Recomenda-se que a Whirlpool conduza campanha de validação física, reservando ensaios jamais usados em treino como conjunto de calibração independente, e reporte o desvio simulação-ensaio como erro irredutível de referência. Até lá, o dashboard deve declarar que a previsão estima a saída do CFD, e nenhuma decisão de liberação deve apoiar-se apenas nela. Se o desvio apurado ultrapassar 5% em qualquer termopar com limite normativo, aplica-se a camada de correção de viés prevista em R05.
+
+**Revisão das margens de segurança (R06).** Cada previsão é entregue com a faixa de incerteza da região (Seção 4.4) e com a distribuição das folgas históricas em relação ao `active_limit` de cada termopar. Folga média superior ao dobro da incerteza estimada, critério da oportunidade R06 (Seção 4.1.5), indica superdimensionamento e espaço para revisar o critério de projeto. A equipe encaminha a relação desses termopares como subsídio quantitativo; revisar folga, isolamento ou material é decisão da engenharia da Whirlpool, que responde por critérios normativos e de segurança que o modelo não representa. A comparação deve ser feita em graus Celsius por termopar e pelo erro normalizado pela folga térmica, nunca em percentual da temperatura prevista: a escala Celsius é intervalar e o percentual sobre ela muda de valor conforme a unidade, conforme registrado no risco R06 da matriz de ameaças.
+
+**Limitações que condicionam o uso.** Três limitações decorrem do desenho da base, não do algoritmo. A primeira é o volume: 56 execuções registradas (Seção 4.2.1) resultam em 32 configurações distintas por região (Seção 4.4), amostra que não distingue de forma confiável diferenças de desempenho da ordem de décimos de grau. A segunda é a cobertura parcial do espaço de configurações: apenas 11 das 36 combinações possíveis entre as variáveis principais foram ensaiadas, e metade das execuções concentra-se em duas delas (Seção 4.2.4, H2). A terceira é o aliasing: `losses` e `deflector_hole` têm V de Cramér de 0,89, com doze das quatorze categorias de `losses` ligadas a um único valor de `deflector_hole`, padrão que se repete em `run_case`–`losses`, `housing`–`losses` e `blower_direction`–`deflector_hole` (Seção 4.2.4, H2). A consequência é direta: a base permite identificar configurações de risco, mas não atribuir efeito individual a cada variável, porque variar uma peça quase sempre implicou variar outra. Rankings de importância descrevem como o modelo decide, não como o fogão aquece, e não servem como evidência de causa. Recomenda-se planejar os próximos ensaios de modo a quebrar essas dependências; até lá, o roteamento de algoritmos por região e a exclusão de qualquer variável de configuração permanecem decisões a reavaliar.
+
+<sup>Fonte: Elaborado pelos autores (2026). Recomendações derivadas dos planos de ação da matriz de riscos da Seção 4.1.5, oportunidade R03 (priorização de ensaios), ameaça R04 (domínio de validade), ameaça R05 (herança do erro do solver), oportunidade R06 (revisão de margens) e ameaça R06 (operacionalização do critério de aceite). Limitações apuradas nas Seções 4.2.1 e 4.2.4 (hipótese H2), a partir de `data/dataset_pre_processado.csv`, e nas métricas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb).</sup>
 
 ## <a name="c6"></a>6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo
 
@@ -1643,6 +1672,7 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 30. BERGSTRA, James; BENGIO, Yoshua. *Random search for hyper-parameter optimization.* Journal of Machine Learning Research, v. 13, p. 281-305, 2012. Disponível em: https://jmlr.org/papers/v13/bergstra12a.html. Acesso em: 25 set. 2026.
 31. LUNDBERG, Scott M.; LEE, Su-In. *A unified approach to interpreting model predictions.* In: CONFERENCE ON NEURAL INFORMATION PROCESSING SYSTEMS (NIPS), 31., 2017, Long Beach. Advances in Neural Information Processing Systems 30. Red Hook: Curran Associates, 2017. p. 4765-4774. Disponível em: https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions. Acesso em: 25 set. 2026.
 32. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
+33. WHIRLPOOL; INTELI. *Project Charter: Thermal Predictor.* Whirlpool - Divisão Fogões (Brasil & México), fev. 2026. Documento interno de projeto.
 
 ## <a name="attachments"></a>Anexos
 
