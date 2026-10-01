@@ -112,9 +112,14 @@ dos resultados.
 
 ### Os notebooks (pesquisa e treino)
 
-1. Instale as dependências: `pip install -r requirements.txt`.
+1. Instale as dependências: `pip install -r requirements.txt` (inclui o Jupyter).
 2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
-3. Abra `notebooks/expl_preprocessamenro_hipote.ipynb` e rode todas as células **em ordem, do início ao fim** (Run All). As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
+3. Rode os notebooks nesta ordem, cada um com todas as células **em ordem, do início ao fim** (Run All):
+    1. `notebooks/expl_preprocessamenro_hipote.ipynb` — exploração, pré-processamento e hipóteses. As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
+    2. `notebooks/tratamento_final_dos_dados.ipynb` — gera as sete tabelas por região (`data/<regiao>_data.csv`) usadas pelos modelos.
+    3. `notebooks/Decision_tree_regre.ipynb`, `notebooks/Random_for_regre.ipynb`, `notebooks/Grad_Boosting_Regre.ipynb` e `notebooks/comparacao_modelos.ipynb` — os três modelos candidatos e o comparativo entre eles, em qualquer ordem.
+
+Os notebooks de dados sintéticos e de diagnóstico (`geracao_dados_sinteticos_kmeans.ipynb`, `avaliacao_dados_sinteticos.ipynb` e `diagnostico_dados_e_validacao.ipynb`) leem `data/dataset_preprocessado.csv`, uma versão anterior da base pré-processada que o passo 3.1 não gera. Para rodá-los, esse arquivo precisa estar em `data/`.
 
 **No Google Colab:**
 
