@@ -43,6 +43,7 @@ import { executedRunIndex, scopeToPrediction } from './metricsModel'
 const PredictedVsActualScatter = lazy(() => import('./PredictedVsActualScatter'))
 const FeatureImportanceBars = lazy(() => import('./FeatureImportanceBars'))
 const AreaMaeBars = lazy(() => import('./AreaMaeBars'))
+const ResidualScatter = lazy(() => import('./ResidualScatter'))
 
 function ChartSkeleton({ height }: { height: number }) {
   return <div aria-hidden="true" className="animate-pulse rounded-md bg-wp-gray05" style={{ height }} />
@@ -211,6 +212,28 @@ export function MetricsPanel({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Resíduo vs. previsto — {selectedLabel}</CardTitle>
+          <CardDescription>
+            Onde o modelo erra mais, não só quanto erra em média. Cada ponto é previsto − real contra o valor
+            previsto; a faixa cinza é a margem de ±10 % do KPI. Pontos fora dela são o que o MAE da área
+            esconde.
+            {executedRun !== null ? (
+              <>
+                {' '}
+                A estrela marca o ensaio com <strong>a mesma configuração que você consultou</strong>.
+              </>
+            ) : null}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense fallback={<ChartSkeleton height={340} />}>
+            <ResidualScatter points={selectedPoints} runs={selected.validation.runs} executedRun={executedRun} />
+          </Suspense>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-2">
