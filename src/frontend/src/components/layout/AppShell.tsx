@@ -1,5 +1,5 @@
 /**
- * Casca da aplicação: barra superior + painéis fixos de configuração e histórico
+ * Casca da aplicação: barra superior + painéis fixos de recorte (áreas/sensores) e de configuração do fogão
  * ao redor da área de resultados. Abaixo de 1024 px os painéis se empilham.
  */
 
@@ -54,7 +54,7 @@ export function AppShell({
   userDisplayName,
   onLogout,
   sidebar,
-  historySidebar,
+  configSidebar,
   children,
 }: {
   /** Modo `local` (mock). Hoje só afeta a nota do rodapé. */
@@ -62,14 +62,15 @@ export function AppShell({
   /** Nome do usuário autenticado (modo `api`). Ausente/`undefined` no modo `local`. */
   userDisplayName?: string
   onLogout?: () => void
-  sidebar: ReactNode
-  /** Painel opcional de consultas recentes, exibido à direita dos resultados. */
-  historySidebar?: ReactNode
+  /** Painel esquerdo opcional. Sem ele a área de resultados ocupa a largura toda. */
+  sidebar?: ReactNode
+  /** Painel opcional de configuração do fogão, exibido à direita dos resultados. */
+  configSidebar?: ReactNode
   children: ReactNode
 }) {
   const headerRef = useRef<HTMLElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(true)
+  const [isConfigSidebarOpen, setIsConfigSidebarOpen] = useState(true)
 
   // O header quebra em 2 linhas (flex-wrap) dependendo do nome do usuário e
   // dos botões visíveis, então sua altura real varia entre telas/máquinas.
@@ -115,81 +116,83 @@ export function AppShell({
       </header>
 
       <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-6 py-6 lg:flex-row lg:items-start">
-        <div
-          className={cn(
-            'relative shrink-0 lg:sticky lg:top-[var(--header-h)] lg:max-h-[calc(100vh-var(--header-h)-24px)]',
-            isSidebarOpen ? 'w-full lg:w-[340px]' : 'w-full lg:w-0',
-          )}
-        >
-          <div className="flex justify-end pb-2 lg:hidden">
+        {sidebar && (
+          <div
+            className={cn(
+              'relative shrink-0 lg:sticky lg:top-[var(--header-h)] lg:max-h-[calc(100vh-var(--header-h)-24px)]',
+              isSidebarOpen ? 'w-full lg:w-[340px]' : 'w-full lg:w-0',
+            )}
+          >
+            <div className="flex justify-end pb-2 lg:hidden">
+              <SidebarToggle
+                isOpen={isSidebarOpen}
+                onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
+                panelId="dashboard-sidebar"
+                openLabel="Abrir painel de áreas"
+                closeLabel="Fechar painel de áreas"
+                side="left"
+              />
+            </div>
+            <aside
+              id="dashboard-sidebar"
+              className={cn(
+                'w-full lg:max-h-[calc(100vh-var(--header-h)-24px)] lg:overflow-y-auto lg:pr-12',
+                !isSidebarOpen && 'hidden',
+              )}
+            >
+              {sidebar}
+            </aside>
             <SidebarToggle
               isOpen={isSidebarOpen}
               onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
               panelId="dashboard-sidebar"
-              openLabel="Abrir painel de configurações"
-              closeLabel="Fechar painel de configurações"
+              openLabel="Abrir painel de áreas"
+              closeLabel="Fechar painel de áreas"
               side="left"
+              className={cn(
+                'absolute z-10 hidden lg:inline-flex',
+                isSidebarOpen ? 'right-3 top-3' : '-left-4 top-0',
+              )}
             />
           </div>
-          <aside
-            id="dashboard-sidebar"
-            className={cn(
-              'w-full lg:max-h-[calc(100vh-var(--header-h)-24px)] lg:overflow-y-auto lg:pr-12',
-              !isSidebarOpen && 'hidden',
-            )}
-          >
-            {sidebar}
-          </aside>
-          <SidebarToggle
-            isOpen={isSidebarOpen}
-            onClick={() => setIsSidebarOpen((isOpen) => !isOpen)}
-            panelId="dashboard-sidebar"
-            openLabel="Abrir painel de configurações"
-            closeLabel="Fechar painel de configurações"
-            side="left"
-            className={cn(
-              'absolute z-10 hidden lg:inline-flex',
-              isSidebarOpen ? 'right-3 top-3' : '-left-4 top-0',
-            )}
-          />
-        </div>
+        )}
         <main className="dashboard-results min-w-0 flex-1">{children}</main>
-        {historySidebar && (
+        {configSidebar && (
           <div
             className={cn(
               'relative shrink-0 lg:sticky lg:top-[var(--header-h)] lg:max-h-[calc(100vh-var(--header-h)-24px)]',
-              isHistorySidebarOpen ? 'w-full lg:w-[280px]' : 'w-full lg:w-0',
+              isConfigSidebarOpen ? 'w-full lg:w-[344px]' : 'w-full lg:w-0',
             )}
           >
             <div className="flex justify-start pb-2 lg:hidden">
               <SidebarToggle
-                isOpen={isHistorySidebarOpen}
-                onClick={() => setIsHistorySidebarOpen((isOpen) => !isOpen)}
-                panelId="dashboard-history-sidebar"
-                openLabel="Abrir painel de histórico"
-                closeLabel="Fechar painel de histórico"
+                isOpen={isConfigSidebarOpen}
+                onClick={() => setIsConfigSidebarOpen((isOpen) => !isOpen)}
+                panelId="dashboard-config-sidebar"
+                openLabel="Abrir configurações do fogão"
+                closeLabel="Fechar configurações do fogão"
                 side="right"
               />
             </div>
             <aside
-              id="dashboard-history-sidebar"
+              id="dashboard-config-sidebar"
               className={cn(
                 'w-full lg:max-h-[calc(100vh-var(--header-h)-24px)] lg:overflow-y-auto lg:pl-14',
-                !isHistorySidebarOpen && 'hidden',
+                !isConfigSidebarOpen && 'hidden',
               )}
             >
-              {historySidebar}
+              {configSidebar}
             </aside>
             <SidebarToggle
-              isOpen={isHistorySidebarOpen}
-              onClick={() => setIsHistorySidebarOpen((isOpen) => !isOpen)}
-              panelId="dashboard-history-sidebar"
-              openLabel="Abrir painel de histórico"
-              closeLabel="Fechar painel de histórico"
+              isOpen={isConfigSidebarOpen}
+              onClick={() => setIsConfigSidebarOpen((isOpen) => !isOpen)}
+              panelId="dashboard-config-sidebar"
+              openLabel="Abrir configurações do fogão"
+              closeLabel="Fechar configurações do fogão"
               side="right"
               className={cn(
                 'absolute z-10 hidden lg:inline-flex',
-                isHistorySidebarOpen ? 'left-3 top-3' : '-right-4 top-0',
+                isConfigSidebarOpen ? 'left-3 top-3' : '-right-4 top-0',
               )}
             />
           </div>

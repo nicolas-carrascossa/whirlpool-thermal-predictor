@@ -1,18 +1,27 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { ConfigPanel } from '@/features/config/ConfigPanel'
+import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE } from '@/test/fixtures'
 
+let reopened = 0
+
+function pickMode(name: string) {
+  fireEvent.click(
+    within(screen.getByRole('radiogroup', { name: 'Modo de operação' })).getByRole('radio', { name }),
+  )
+}
+
 function renderHistory() {
+  reopened = 0
   return render(
     <TooltipProvider delayDuration={0}>
       <ConfigStoreProvider metadata={FIXTURE_METADATA}>
-        <ConfigPanel />
-        <HistoryPanel />
+        <StoveConfigPanel />
+        <HistoryPanel onReopen={() => (reopened += 1)} />
         <RequestSnapshot />
         <RecordPrediction />
       </ConfigStoreProvider>
@@ -38,13 +47,9 @@ function RecordPrediction() {
 }
 
 describe('HistoryPanel', () => {
-  it('salva a consulta ao prever e a reabre com seu recorte original', () => {
+  it('salva a consulta ao prever e a reabre com a configuração original', () => {
     renderHistory()
-    fireEvent.click(screen.getByLabelText('Modo de operação'))
-    fireEvent.click(screen.getByRole('option', { name: 'Broil C2' }))
-    fireEvent.click(
-      screen.getByRole('checkbox', { name: /Compartimento da eletrônica de potência/ }),
-    )
+    pickMode('Broil C2')
     fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
 
     const historyName = screen.getByRole('button', { name: 'Abrir detalhes de Consulta 1' })
@@ -54,20 +59,19 @@ describe('HistoryPanel', () => {
 
     fireEvent.click(historyName)
     expect(screen.getByText('Configuração do fogão')).toBeInTheDocument()
-    expect(screen.getAllByText('Botões do cooktop')).toHaveLength(3)
+    // A previsão roda em todas as áreas: o histórico lista todas.
+    expect(screen.getAllByText('Botões do cooktop')).toHaveLength(1)
     expect(screen.queryByText('IGBT 1')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByLabelText('Modo de operação'))
-    fireEvent.click(screen.getByRole('option', { name: 'Pyro' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Selecionar todas' }))
+    pickMode('Pyro')
     fireEvent.click(screen.getByRole('button', { name: 'Reabrir consulta' }))
+    expect(reopened).toBe(1)
 
-    expect(screen.getByLabelText('Modo de operação')).toHaveTextContent('Broil C2')
     expect(
-      screen.getByRole('checkbox', { name: /Compartimento da eletrônica de potência/ }),
-    ).not.toBeChecked()
-    const request = JSON.parse(screen.getByTestId('prediction-request').textContent ?? 'null')
-    expect(request.targets).toEqual({ key_areas: ['CT Knobs', 'Main Vent Sys'] })
+      within(screen.getByRole('radiogroup', { name: 'Modo de operação' })).getByRole('radio', {
+        name: 'Broil C2',
+      }),
+    ).toBeChecked()
   })
 
   it('só exclui uma consulta depois da confirmação por checkbox', () => {

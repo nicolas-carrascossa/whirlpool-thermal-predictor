@@ -1,5 +1,5 @@
 /**
- * Painel direito de consultas recentes. Cada item representa a requisição
+ * Consultas recentes (aba "Histórico" da área de resultados). Cada item representa a requisição
  * enviada ao preditor, e não o formulário que pode ter sido alterado depois.
  */
 
@@ -44,7 +44,7 @@ function formatPredictionDate(createdAt: string) {
   }).format(new Date(createdAt))
 }
 
-function HistoryCard({ entry }: { entry: HistoryEntry }) {
+function HistoryCard({ entry, onReopen }: { entry: HistoryEntry; onReopen?: () => void }) {
   const store = useConfigStore()
   const [confirmed, setConfirmed] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -181,7 +181,15 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
           </section>
 
           <div className="flex flex-col gap-2 border-t border-white/25 pt-3">
-            <Button type="button" variant="secondary" size="sm" onClick={() => store.restoreHistory(entry)}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                store.restoreHistory(entry)
+                onReopen?.()
+              }}
+            >
               Reabrir consulta
             </Button>
             <label className="flex cursor-pointer items-start gap-2 text-[11px] leading-snug text-white/90">
@@ -211,7 +219,7 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
   )
 }
 
-export function HistoryPanel() {
+export function HistoryPanel({ onReopen }: { onReopen?: () => void } = {}) {
   const store = useConfigStore()
 
   return (
@@ -228,10 +236,13 @@ export function HistoryPanel() {
           As consultas aparecerão aqui quando você clicar em Prever.
         </p>
       ) : (
-        <ol className="flex flex-col gap-2" aria-label="Consultas salvas">
+        <ol
+          className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 2xl:grid-cols-3"
+          aria-label="Consultas salvas"
+        >
           {store.history.map((entry) => (
             <li key={entry.id}>
-              <HistoryCard entry={entry} />
+              <HistoryCard entry={entry} onReopen={onReopen} />
             </li>
           ))}
         </ol>

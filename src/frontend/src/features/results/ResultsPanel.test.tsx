@@ -85,8 +85,39 @@ describe('ResultsPanel', () => {
     renderPanel()
     expect(screen.getByText('Sensores previstos').nextSibling).toHaveTextContent('4')
     expect(screen.getByText('Excedem o limite').nextSibling).toHaveTextContent('1')
-    expect(screen.getByText(/IGBT 1 ·/)).toBeInTheDocument()
-    expect(screen.getByText('mock-0.1.0')).toBeInTheDocument()
+    expect(screen.getByText('Pior razão temp/limite').nextSibling).toHaveTextContent('%')
+  })
+
+  it('mostra cada indicador num cartão próprio e sem o rodapé de procedência', () => {
+    renderPanel()
+    const labels = ['Sensores previstos', 'Excedem o limite', 'Em atenção (≥ 90 %)', 'Pior razão temp/limite']
+    const cards = labels.map((label) => screen.getByText(label).parentElement as HTMLElement)
+    expect(new Set(cards).size).toBe(4)
+    // Sem a dica "sensor · temp / limite" sob a pior razão, nem versão do modelo, id da consulta ou data.
+    expect(screen.queryByText(/IGBT 1 ·/)).not.toBeInTheDocument()
+    expect(screen.queryByText('mock-0.1.0')).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Consulta req-/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Gerado em/)).not.toBeInTheDocument()
+    // A faixa com a configuração foi para o painel da direita.
+    expect(screen.queryByText(/Direção do blower:/)).not.toBeInTheDocument()
+  })
+
+  it('não mostra o algoritmo no cabeçalho do card de área', () => {
+    renderPanel()
+    expect(screen.queryByText('Random Forest')).not.toBeInTheDocument()
+    expect(screen.queryByText('Gradient Boosting')).not.toBeInTheDocument()
+  })
+
+  it('mostra a aba "Histórico" só quando há conteúdo para ela', () => {
+    const { unmount } = renderPanel()
+    expect(screen.queryByRole('tab', { name: 'Histórico' })).not.toBeInTheDocument()
+    unmount()
+
+    renderPanel({ historySlot: <p>conteúdo do histórico</p> })
+    expect(screen.queryByText('conteúdo do histórico')).not.toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Histórico' }))
+    expect(screen.getByText('conteúdo do histórico')).toBeInTheDocument()
+    expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
   })
 
   it('coloca o sensor que excede o limite no topo da sua área, com badge vermelho', () => {
@@ -100,7 +131,7 @@ describe('ResultsPanel', () => {
   })
 
   it('mostra "monitor" e badge neutro para sensores sem limite', () => {
-    const { container } = renderPanel()
+    const { container } = renderPanel({ selectedKeyArea: 'Main Vent Sys', onSelectKeyArea: () => {} })
     const monitorRow = container.querySelector('tbody tr[data-tc="4"]') as HTMLElement
     expect(within(monitorRow).getByText('monitor')).toBeInTheDocument()
     expect(within(monitorRow).getAllByText('Monitor').length).toBeGreaterThan(0)
@@ -133,23 +164,40 @@ describe('ResultsPanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Valor inválido para "housing": "X".')
   })
 
-  it('filtra para uma única área quando selectedKeyArea está definido', () => {
-    renderPanel({ selectedKeyArea: 'CT Knobs' })
-    expect(screen.getByText(/Filtrando: Botões do cooktop/)).toBeInTheDocument()
-    expect(screen.getByText('Botões do cooktop')).toBeInTheDocument()
-    expect(screen.queryByText('Compartimento da eletrônica de potência')).not.toBeInTheDocument()
-    expect(screen.queryByText('Ventilação principal')).not.toBeInTheDocument()
+  it('mostra uma área por vez: abre a mais crítica e troca pela faixa de áreas', () => {
+    renderPanel()
+    // Sem escolha, abre a de maior razão (IPC Comp) e mais nenhuma.
+    expect(screen.getByRole('heading', { level: 3, name: 'Compartimento da eletrônica de potência' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 3, name: 'Botões do cooktop' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ver resultados: Compartimento da eletrônica de potência' })).toHaveAttribute('aria-pressed', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver resultados: Botões do cooktop' }))
+    expect(screen.getByRole('heading', { level: 3, name: 'Botões do cooktop' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 3, name: 'Compartimento da eletrônica de potência' })).not.toBeInTheDocument()
   })
 
-  it('chama onSelectKeyArea(null) ao clicar no chip de filtro', () => {
-    let cleared: string | null | undefined
-    renderPanel({
-      selectedKeyArea: 'CT Knobs',
-      onSelectKeyArea: (area) => {
-        cleared = area
-      },
-    })
-    fireEvent.click(screen.getByText(/Filtrando: Botões do cooktop/))
-    expect(cleared).toBeNull()
+  it('não há dropdown: o detalhe da área já vem aberto, com a tabela de sensores', () => {
+    const { container } = renderPanel()
+    expect(container.querySelectorAll('tbody tr[data-tc]').length).toBeGreaterThan(0)
+    expect(container.querySelector('[aria-expanded]')).not.toBeInTheDocument()
   })
+
+  it('respeita a área escolhida de fora e avisa a troca, sem limpar ao reclicar na atual', () => {
+    const picked: string[] = []
+    renderPanel({ selectedKeyArea: 'CT Knobs', onSelectKeyArea: (a) => a && picked.push(a) })
+    expect(screen.getByRole('heading', { level: 3, name: 'Botões do cooktop' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Ver resultados: Botões do cooktop' }))
+    expect(picked).toEqual([])
+    fireEvent.click(screen.getByRole('button', { name: 'Ver resultados: Ventilação principal' }))
+    expect(picked).toEqual(['Main Vent Sys'])
+  })
+
+  it('a faixa mostra status e pior razão por área; área só de monitoramento não inventa número', () => {
+    renderPanel()
+    const ipc = screen.getByRole('button', { name: 'Ver resultados: Compartimento da eletrônica de potência' })
+    expect(within(ipc).getByText('Excede o limite')).toBeInTheDocument()
+    expect(within(ipc).getByText(/%/)).toBeInTheDocument()
+    expect(within(screen.getByRole('button', { name: 'Ver resultados: Ventilação principal' })).getByText('monitor')).toBeInTheDocument()
+  })
+
 })

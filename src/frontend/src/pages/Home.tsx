@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { Card, CardContent } from '@/components/ui/card'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { ConfigPanel } from '@/features/config/ConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
+import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
@@ -43,7 +43,8 @@ function HomeContent() {
   const navigate = useNavigate()
 
   // Aba ativa da área de resultados; vive aqui porque o botão que abre o mapa
-  // fica na barra superior (AppShell) e as abas ficam no ResultsPanel.
+  // fica na barra superior (AppShell) e as abas ficam no ResultsPanel. O histórico
+  // é uma dessas abas; reabrir uma consulta leva de volta a "resultados".
   const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
 
   useEffect(() => {
@@ -65,8 +66,7 @@ function HomeContent() {
       isMock={isMock}
       userDisplayName={apiMode ? auth.user?.display_name : undefined}
       onLogout={apiMode ? auth.logout : undefined}
-      sidebar={<ConfigPanel />}
-      historySidebar={<HistoryPanel />}
+      configSidebar={<StoveConfigPanel />}
     >
       {apiMode && auth.sessionExpired && (
         <div
@@ -93,6 +93,7 @@ function HomeContent() {
         onHoverVariable={store.setHoveredVariable}
         activeTab={resultsTab}
         onTabChange={setResultsTab}
+        historySlot={<HistoryPanel onReopen={() => setResultsTab('resultados')} />}
       />
     </AppShell>
   )
