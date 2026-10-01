@@ -695,7 +695,7 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 **Observações da revisão manual:**
 
 - `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
-- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. Precisa virar `NaN` (ou um flag `is_monitor` à parte) no pré-processamento da Seção 4.2.2 antes de qualquer cálculo estatístico.
+- `active_limit` é majoritariamente numérica (limite de temperatura em °C), mas ainda tem 1 valor residual de texto (`"Monitor (150 C)"`) — sensor sem limite de segurança definido. O pré-processamento da Seção 4.2.2 o converte para `1000`, o mesmo valor usado para os demais sensores apenas monitorados.
 - `reason` (138→134 ausentes conforme a limpeza mais recente) e `losses` (418 ausentes) têm muitos valores faltantes — considerar no tratamento de missing values da Seção 4.2.2.
 - `material_coil_support` (material do suporte da bobina: alumínio vs. plástico) **está presente e preenchida** no dataset — é a variável central de uma das hipóteses de negócio do projeto de referência, e pode ser testada com estes dados (relevante para a Seção 4.2.4).
 
@@ -814,24 +814,39 @@ Em seguida, foi realizada a **identificação de outliers** nas temperaturas por
 
 Também foram documentados **dados confusos ou insuficientes**:
 
- - O `active_limit` do componente Turbo Duct / AC Blower Outlet aparece como `Monitor (150 C)`, sem deixar claro se o componente não possui limite de temperatura ou se o limite é 150 °C. 
- 
--  O componente Dedicated IPC/CKTP Outlet, por sua vez, estava completamente sem informações e foi retirado durante a reestruturação. 
+- O `active_limit` do componente Turbo Duct / AC Blower Outlet aparece como `Monitor (150 C)`, sem deixar claro se o componente não possui limite de temperatura ou se o limite é 150 °C.
 
-- Para o Oven RTD Connector Body, foi observada uma divergência entre o `active_limit` de 150 °C e temperaturas próximas de 200 °C. A anotação disponível sugere que o componente provavelmente não atingirá 150 °C e poderia ser removido em uma simulação inicial, mas essa orientação é subjetiva. Por isso, o grupo optou por manter os dados do componente sem alterações até obter uma validação técnica.
+- O componente Dedicated IPC/CKTP Outlet, por sua vez, estava completamente sem informações e foi retirado durante a reestruturação. Por isso a planilha original tem 78 termopares e a base pré-processada, 77.
 
+- Para o Oven RTD Connector Body, foi observada uma divergência entre o `active_limit` de 150 °C e temperaturas próximas de 200 °C. A anotação disponível sugere que o componente provavelmente não atingirá 150 °C e poderia ser removido em uma simulação inicial. O sensor foi mantido sem alterações na base pré-processada e excluído das tabelas de treino na etapa seguinte (Seção 4.2.3).
 
-Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para o valor numérico `150`, permitindo manter um padrão numérico nessa coluna. As linhas que continham esse valor foram armazenadas e exibidas para conferência antes da substituição. 
+Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_limit` foi convertido para `1000`, o mesmo valor já usado na planilha para o placeholder genérico `Monitor` (sensor apenas monitorado, sem limite de temperatura). O valor 1000 foi escolhido por ser tecnicamente impossível de alcançar nesses ensaios, o que mantém a coluna numérica sem confundir esse sensor com os componentes cujo limite real é 150 °C. As linhas afetadas (56, uma por run) foram exibidas para conferência antes da substituição.
+
+Por fim, foi feita a **padronização das grafias** das variáveis de configuração, já que a mesma categoria aparecia escrita de formas diferentes:
+
+| Variável | Antes | Depois |
+|---|---|---|
+| `blower_direction` | `To Back`, `To Front` | `To back`, `To front` |
+| `run_case` | `Broil Case 2` | `Broil C2` |
+| `run_case` | `Broil Qual`, `Qualitative` | `Broil Qualitative` |
+| `housing` | `Open - Updated` | `Open` |
+| `losses` | `No Losses` | `No losses` |
+| `board_position` | `Center ` (com espaço) | `Center` |
+
+Após a padronização, restam 2 categorias em `blower_direction`, `housing`, `board_position` e `deflector_hole`, 4 em `run_case`, 14 em `losses` e 3 em `material_coil_support`. As sete variáveis receberam então uma codificação ordinal em ordem alfabética. Essa foi a codificação do primeiro modelo candidato (Seção 4.3); as versões atuais dos modelos usam codificação one-hot (Seção 4.4).
 
 #### <a name="c4_2_3"></a>4.2.3. Processamento final dos dados
 
-Nesta nova etapa de limpeza dos dados, a equipe consolidou um conjunto de ajustes voltados a simplificar a identificação dos registros e a reorganizar a base por área do produto. Em primeiro lugar, foram removidas as colunas “tc_id” e “tc_number”, que atuavam como identificadores redundantes do sensor: como ambas cumpriam a mesma função de rótulo já desempenhada por “tc_name”, sem agregar informação adicional e sem possuir significado quantitativo, sua manutenção apenas aumentava a redundância da base sem trazer ganho analítico. A partir dessa mudança, a identificação de cada termopar passa a ser feita exclusivamente pelo “tc_name”, simplificando o esquema de colunas sem perda de rastreabilidade.
+O processamento final transforma a base pré-processada, com uma linha por combinação de run e termopar, nas sete tabelas usadas pelos modelos, uma por região do produto. Implementação completa em [`notebooks/tratamento_final_dos_dados.ipynb`](../notebooks/tratamento_final_dos_dados.ipynb). As etapas, na ordem em que são aplicadas, são:
 
-Em relação à coluna “key_area”, o grupo optou por decompor a base única em sete novas tabelas, uma para cada área-chave do fogão: “Mainback”, “Coil Temps”, “Main Vent Sys”, “IPC Cooling”, “IPC Comp”, “CT Knobs” e “Oven HMI”. Essa separação reorganiza os dados originalmente consolidados em “key_area” de modo que cada tabela reúna apenas os sensores e leituras pertencentes à sua respectiva região do produto, facilitando análises e comparações centradas em cada área térmica sem exigir filtragem repetida da base principal.
+1. **Separação por região.** A base é dividida em sete tabelas, uma para cada `key_area`: Mainback, Coil Temps, Main Vent Sys, IPC Cooling, IPC Comp, CT Knobs e Oven HMI. Saem de todas as tabelas as colunas `run_id`, `tc_number`, `reason`, `active_limit` e `key_area`, que não são variáveis de entrada do modelo; a identificação do sensor passa a ser feita só pelo `tc_name`. O Oven RTD Connector Body é excluído da tabela de Mainback, por ter sido identificado como erro de sensor (Seção 4.2.2).
+2. **Formato largo.** Dentro de cada tabela, cada termopar passa a ocupar uma coluna própria, e cada linha passa a representar um run, com as sete variáveis de configuração e a temperatura de todos os termopares da região naquele ensaio.
+3. **Valores ausentes de temperatura.** Quando um termopar não tem leitura em algum run, o valor é preenchido com a mediana daquele termopar se a coluna tiver outliers pelo critério do IQR, e com a média caso contrário.
+4. **`losses` não informado.** Como `losses` é a única variável com a categoria "Não informado", essa categoria é substituída por `No losses`.
+5. **Consolidação dos IGBTs.** Em IPC Comp, os 16 termopares `IGBT 1` a `IGBT 16` são substituídos por uma única coluna `IGBT`, com a média dos 16 em cada run.
+6. **Unificação de configurações repetidas.** Runs com as sete variáveis de configuração idênticas são unificados, e a temperatura de cada termopar passa a ser a média das repetições. Cada região passa a ter uma linha por configuração distinta, e essas são as linhas de treino de todos os modelos.
 
-Dentro de cada uma dessas sete tabelas, a coluna “tc_name” foi mantida como identificador do sensor, mas passou por uma reestruturação adicional: em vez de permanecer como uma coluna categórica com um valor de temperatura por linha (formato longo), cada tipo de termopar presente na área passou a ocupar uma coluna própria, e as leituras de temperatura passaram a ser organizadas como linhas da tabela (formato largo). Essa reorganização, definida como a versão final da estruturação do dataset destinado ao treino do modelo, evita a repetição do rótulo do sensor a cada linha e alinha cada observação às temperaturas simultâneas de todos os termopares daquela área, facilitando o uso direto da base pelas próximas etapas de modelagem (Seção 4.3).
-
-Nessa tabela larga, cada linha passa a representar uma combinação das variáveis de configuração (“VAR.CONFIG”: `housing`, `blower_direction`, `deflector_hole`, `material_coil_support`, `run_case`, `losses` e `board_position`), e cada coluna de termopar guarda a temperatura observada para aquela combinação. Para o treino do modelo, essa tabela larga é achatada em uma tabela longa auxiliar com três colunas — “tc_name”, “VAR.CONFIG” e “TEMP” —, deixando explícita a relação `(tc_name) x (VAR.CONFIG) → TEMP`: a temperatura é o alvo, determinado pela combinação entre o termopar e a configuração testada. A coluna “active_limit” acompanha essa mesma chave (termopar x configuração), servindo de referência para calcular o quanto cada leitura se aproxima ou ultrapassa o limite de engenharia do sensor correspondente. Na modelagem (Seção 4.3), essa estrutura se traduz em um problema de regressão multi-saída: o vetor das sete variáveis de configuração (x₁, ..., x₇) é usado para prever simultaneamente o vetor de temperaturas de todos os termopares da área (y₁, ..., yₙ).
+Na modelagem (Seção 4.3), essa estrutura se traduz em um problema de regressão multi-saída: o vetor das sete variáveis de configuração (x₁, ..., x₇) é usado para prever simultaneamente o vetor de temperaturas de todos os termopares da região (y₁, ..., yₙ).
 
 #### <a name="c4_2_4"></a>4.2.4. Hipóteses
 
