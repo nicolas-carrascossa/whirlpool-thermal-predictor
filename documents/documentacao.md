@@ -46,6 +46,9 @@
     - [4.5.3. Explicabilidade](#c4_5_3)
     - [4.5.4. Verificação das hipóteses](#c4_5_4)
 - [5. Conclusões e Recomendações](#c5)
+  - [5.1. Principais resultados](#c5_1)
+  - [5.2. Recomendações ao parceiro](#c5_2)
+  - [5.3. Pessoas afetadas e uso ético](#c5_3)
 - [6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
   - [6.1. Requisitos funcionais](#c6_1)
     - [6.1.1. Requisitos funcionais do dashboard](#c6_1_1)
@@ -1613,11 +1616,38 @@ As quatro hipóteses da Seção 4.2.4 foram confirmadas na análise exploratóri
 | **H4** — A carcaça aberta aquece o IGBT 1 | Confirmada (+9,6 °C com a carcaça aberta) | Em IPC Comp, região do IGBT 1, `housing` não está entre as variáveis líderes; o efeito observado nos dados não aparece isolado no modelo | **Aceita** nos dados, **não reforçada** pelo modelo, coerente com a confusão entre variáveis apontada pela H2 |
 
 ## <a name="c5"></a>5. Conclusões e Recomendações
-```
-Escreva, de forma resumida, sobre os principais resultados do seu projeto e faça recomendações formais ao seu parceiro de negócios em relação ao uso desse modelo. Você pode aproveitar este espaço para comentar sobre possíveis materiais extras, como um manual de usuário mais detalhado na seção “Anexos”. Não se esqueça também das pessoas que serão potencialmente afetadas pelas decisões do modelo preditivo e elabore recomendações que ajudem seu parceiro a tratá-las de maneira estratégica e ética. 
 
-Remova este bloco ao final
-```
+### <a name="c5_1"></a>5.1. Principais resultados
+
+O projeto mostrou que o histórico de simulações e ensaios térmicos da Divisão de Fogões da Whirlpool, até então arquivado e não reaproveitado, é suficiente para estimar a temperatura dos componentes de um fogão de piso a partir da sua configuração de montagem. Os principais resultados são:
+
+- **Uma base de dados tratada e documentada.** A planilha original, com cabeçalhos duplicados, células vazias e grafias inconsistentes, foi convertida em uma base padronizada por região do produto, com cada decisão de tratamento registrada nos notebooks e na Seção 4.2.
+- **Um modelo por região, com erro médio de cerca de 4 °C.** Sob a validação mais rigorosa disponível, a solução final erra em média 3,97 °C e mantém 87,9% das previsões dentro da margem de 10% acordada com o parceiro, contra 75,9% do baseline que ignora a configuração (Seção 4.5.1).
+- **Previsões acompanhadas de sinal de confiança.** Cada consulta é classificada conforme sua distância das combinações já ensaiadas, e o dashboard comunica essa classificação ao usuário.
+- **Um diagnóstico claro do limite atual.** Os modelos acertam o patamar térmico de cada região, mas ainda não distinguem com segurança configurações parecidas. A causa não está no algoritmo, e sim na base: 32 configurações distintas por região, com as variáveis confundidas entre si pelo desenho histórico dos ensaios (H2).
+
+A meta de erro máximo de 10% foi atingida em parte: a maioria das previsões cumpre a margem, mas Coil Temps e IPC Comp ainda ficam abaixo dos 90% de acerto dentro dela.
+
+### <a name="c5_2"></a>5.2. Recomendações ao parceiro
+
+1. **Usar o modelo para priorizar ensaios, não para substituí-los.** O Thermal Predictor deve servir para decidir quais configurações merecem simulação CFD completa ou teste físico, e em que ordem. Nenhum projeto deve ser aprovado ou certificado só com base na previsão, em especial em Coil Temps e IPC Comp e em qualquer consulta fora do domínio ensaiado.
+2. **Planejar os próximos ensaios para ampliar a base.** O ganho de precisão mais barato não vem de ajustar algoritmos, e sim de ensaiar combinações ainda não testadas. Recomenda-se um planejamento fatorial, ainda que parcial, que separe variáveis hoje confundidas, como `losses` e `deflector_hole`, em vez de repetir as configurações já frequentes.
+3. **Formalizar o critério de aceite.** O critério de 10% do Project Charter não define métrica nem unidade (R06). Recomenda-se um aditivo que adote o erro médio absoluto em °C por termopar, o erro normalizado pela folga até o limite e a taxa de falsos-negativos de segurança.
+4. **Medir a distância entre CFD e teste físico.** O modelo aprende a saída do CFD, não a medição física (R05). Reservar um conjunto de testes físicos para medir esse desvio define o teto real de precisão da ferramenta.
+5. **Designar um responsável pela manutenção.** A ferramenta precisa de um mantenedor na Whirlpool para incorporar novos ensaios, retreinar os modelos e comparar cada nova versão com a anterior sobre o mesmo conjunto de referência (R07, RN21 e RN22).
+6. **Envolver os usuários desde a implantação.** A adoção depende de confiança (R08). Recomenda-se treinar as equipes com casos reais escolhidos por elas mesmas e acompanhar o uso do dashboard no primeiro mês.
+
+### <a name="c5_3"></a>5.3. Pessoas afetadas e uso ético
+
+A decisão de engenharia continua sendo humana. O modelo apoia João, Estela e Rafael na triagem, mas a responsabilidade técnica por aprovar um projeto permanece com os engenheiros e com o processo de certificação. Por isso, a ferramenta deve deixar sempre visível a margem de erro e a confiabilidade de cada previsão.
+
+A equipe de CFD não é substituída. O objetivo é liberar sua capacidade para os casos mais críticos, e não reduzir o time. Comunicar isso desde o início evita resistência e preserva o conhecimento especializado de que o próprio modelo depende para ser retreinado.
+
+Os consumidores finais são afetados indiretamente, pela segurança térmica do produto. Essa é a razão para manter os testes físicos de certificação e tratar como excedente qualquer previsão cuja margem de erro alcance o limite de engenharia (Seção 4.5.2).
+
+Por fim, os dados de ensaio são confidenciais e o dashboard registra dados pessoais dos usuários, como o histórico de acessos. Seu tratamento deve seguir a política de privacidade da Seção 4.1.8 e a legislação de proteção de dados do Brasil, a LGPD²², e do México, a LFPDPPP²³.
+
+As instruções para instalar e executar a solução, incluindo a API, o dashboard e os notebooks, estão no [README do repositório](../README.md#-execução-dos-projetos).
 
 ## <a name="c6"></a>6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo
 
