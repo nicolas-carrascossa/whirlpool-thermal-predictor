@@ -859,8 +859,8 @@ O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os 
 | # | Hipótese | Resultado |
 |---|---|---|
 | **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
-| **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser redundante com `deflector_hole`. | Confirmada |
-| **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~85 °C (Broil). | Confirmada |
+| **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser quase redundante com `deflector_hole`. | Confirmada |
+| **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~84 °C (Broil Qualitative). | Confirmada |
 | **H4** | A carcaça aberta eleva a temperatura do IGBT 1: com o housing aberto, o componente opera ~9,6 °C mais quente que fechado, o contrário do esperado. | Confirmada |
 
 ##### H1 — Configurações redistribuem calor, não o eliminam
@@ -877,17 +877,17 @@ A consequência direta para a modelagem (Seção 4.3) é que a predição precis
 
 A hipótese é de que as configurações estão confundidas no desenho experimental, porque os 56 ensaios não vêm de um experimento fatorial planejado: são um histórico de testes, em que cada run respondia a uma pergunta específica e mudanças em uma peça vinham acompanhadas de mudanças em outras.
 
-A hipótese se confirmou, no caso mais extremo possível. Cada categoria de `losses` corresponde a um único valor de `deflector_hole`, sem nenhum ensaio que separe as duas variáveis — não é apenas associação forte, é identidade. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 36 combinações possíveis entre as três variáveis principais, apenas 11 foram ensaiadas, e metade dos runs se concentra em duas delas.
+A hipótese se confirmou. Doze das quatorze categorias de `losses` correspondem a um único valor de `deflector_hole` (V de Cramér = 0,89): é uma associação quase perfeita, mas não uma identidade literal. As duas exceções são `No losses` (8 runs, 5 com o deflector fechado e 3 aberto) e `Não informado` (6 runs, 5 fechado e 1 aberto). Uma regra que prevê `deflector_hole` pela categoria de `losses` acerta 92,9% dos runs, o que basta para que nenhum modelo consiga separar o efeito de uma variável do da outra. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 36 combinações possíveis entre `blower_direction`, `housing`, `deflector_hole` e `material_coil_support`, apenas 11 foram ensaiadas, e 27 dos 56 runs se concentram em duas delas.
 
 Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e reproduzíveis, porém pertencem a blocos de configuração inteiros, não a peças isoladas. A base permite identificar configurações de risco, não atribuir a causa a um componente específico.
 
-As decisões que isso gera para a modelagem são: manter as sete variáveis de configuração como preditoras — `losses` e `board_position` inclusos —, já que a redundância estatística observada reflete uma limitação do desenho experimental (ensaios não fatoriais, histórico), não a ausência de relevância física dessas variáveis; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências.
+As recomendações da análise para a modelagem foram: retirar `losses`, que não acrescenta informação além de `deflector_hole`, e `board_position`, totalmente confundida com outras configurações; não apresentar ranking de importância de variáveis ao parceiro como evidência de causa, já que modelos de árvore distribuem o crédito arbitrariamente entre variáveis redundantes; e recomendar que os próximos ensaios sejam planejados para quebrar essas dependências. A retirada de variáveis foi testada na modelagem e não adotada: os modelos mantêm as sete variáveis, pelas razões expostas na Seção 4.3.2.
 
 ##### H3 — O modo de operação eleva a temperatura, mas é um fator secundário
 
 A hipótese é de que o modo de operação afeta a temperatura medida nos componentes: os modos Broil (grelhar), que acionam o elemento superior em alta potência, operariam mais quentes que o Pyro (autolimpeza) e os casos Qualitative.
 
-A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5 °C nos demais, uma diferença de 9,1 °C, e a amplitude entre o modo mais quente (Broil C2, 84,7 °C) e o mais frio (Pyro, 71,4 °C) chega a 13,3 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
+A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 71,4 °C nos demais, uma diferença de 12,1 °C. Depois da padronização de grafias (Seção 4.2.2), o grupo "demais" contém apenas o Pyro, porque os casos `Qualitative` foram fundidos em `Broil Qualitative`. O modo mais quente (Broil Qualitative, 83,8 °C) supera o mais frio (Pyro, 71,4 °C) em 12,4 °C. A separação é muito significativa, confirmada por ANOVA, Kruskal-Wallis e pelo contraste Broil vs. demais (Welch e Mann-Whitney), todos com p < 0,001.
 
 <div align="center">
   <sub>Figura 16 — Temperatura por modo de operação (run_case) e contraste Broil vs. demais</sub><br>
@@ -895,7 +895,7 @@ A hipótese se confirmou. Os modos Broil operam a 83,5 °C em média contra 74,5
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-A ressalva é sobre a magnitude: o modo explica apenas cerca de 2% da variância da temperatura (η² ≈ 0,02; Cohen's d ≈ 0,28). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
+A ressalva é sobre a magnitude: o modo explica apenas cerca de 1,6% da variância da temperatura (η² ≈ 0,016; Cohen's d ≈ 0,39). Com mais de quatro mil leituras, a significância é quase garantida, então a leitura honesta se apoia no efeito absoluto em °C, não no p-valor. A maior parte da variação vem da área do sensor (key_area), não do modo.
 
 Para a modelagem (Seção 4.3), isso significa manter run_case como preditor, é um fator real e consistente, porém com peso secundário frente à área do sensor. Como nas demais hipóteses, os fatores estão confundidos entre si, de modo que o resultado identifica um padrão associado ao modo, não uma causa isolada.
 
@@ -1290,7 +1290,7 @@ Diferente das florestas e do boosting, a árvore dispensa técnica adicional de 
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (semente 42).</sup>
 </div>
 
-**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest e o Gradient Boosting, apoiada na hipótese H2: as sete configurações estão confundidas no desenho dos ensaios — `losses` é redundante com `deflector_hole`, e das 36 combinações possíveis entre as três variáveis principais apenas 11 foram ensaiadas. A árvore escolhe uma entre variáveis redundantes de forma arbitrária, e a importância zero de uma variável indica que a árvore **não precisou** dela, não que seja termicamente irrelevante. A figura descreve **como o modelo decide**, não **como o fogão aquece**.
+**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest e o Gradient Boosting, apoiada na hipótese H2: as sete configurações estão confundidas no desenho dos ensaios — `losses` é redundante com `deflector_hole`, e das 36 combinações possíveis entre as quatro variáveis principais apenas 11 foram ensaiadas. A árvore escolhe uma entre variáveis redundantes de forma arbitrária, e a importância zero de uma variável indica que a árvore **não precisou** dela, não que seja termicamente irrelevante. A figura descreve **como o modelo decide**, não **como o fogão aquece**.
 
 ##### Em resumo
 
