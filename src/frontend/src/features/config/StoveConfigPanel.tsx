@@ -8,18 +8,7 @@
  */
 
 import { useId, type KeyboardEvent } from 'react'
-import {
-  CircleDot,
-  CircuitBoard,
-  Flame,
-  Layers,
-  PanelTop,
-  SlidersHorizontal,
-  Wind,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react'
-
+import { BrazilFlag } from '@/components/BrazilFlag'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,22 +22,14 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { StoveConfig } from '@/contract/v1'
 import { useConfigStore } from '@/features/config/store'
+import { HIDDEN_OPTIONS, VARIABLE_LABEL_EN } from '@/features/config/variableLabels'
 import { cn } from '@/lib/utils'
-
-const VARIABLE_ICON: Record<keyof StoveConfig, LucideIcon> = {
-  blower_direction: Wind,
-  housing: PanelTop,
-  board_position: CircuitBoard,
-  run_case: Flame,
-  losses: Zap,
-  deflector_hole: CircleDot,
-  material_coil_support: Layers,
-}
 
 /** Até 3 opções cabem numa linha; acima disso vira grade de 2 colunas. */
 const MAX_OPTIONS_PER_ROW = 3
-/** Acima de 6 opções a grade vira um paredão de botões (ex.: perfil de perdas): volta o dropdown. */
-const MAX_SEGMENTED_OPTIONS = 6
+const LONG_OPTION_CHARS = 18
+/** Acima disso a grade vira um paredão de botões: volta o dropdown. */
+const MAX_SEGMENTED_OPTIONS = 8
 
 function SegmentedOptions({
   label,
@@ -84,8 +65,13 @@ function SegmentedOptions({
       role="radiogroup"
       aria-label={label}
       className={cn(
-        'gap-1 rounded-md bg-wp-gray05 p-1',
-        options.length <= MAX_OPTIONS_PER_ROW ? 'flex' : 'grid grid-cols-2',
+        'gap-1 rounded-xl bg-wp-gray05 p-1 shadow-[inset_0_1px_3px_rgba(17,18,20,0.08)]',
+        // Nomes longos (ex.: opções de losses) não cabem em duas colunas: um botão por linha.
+        options.some((o) => o.length > LONG_OPTION_CHARS)
+          ? 'grid grid-cols-1'
+          : options.length <= MAX_OPTIONS_PER_ROW
+            ? 'flex'
+            : 'grid grid-cols-2',
       )}
     >
       {options.map((option, index) => {
@@ -100,16 +86,56 @@ function SegmentedOptions({
             onClick={() => onChange(option)}
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
-              'min-w-0 flex-1 break-words rounded-sm px-1.5 py-1.5 text-center font-body text-[11px] font-semibold leading-tight transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'min-w-0 flex-1 break-words rounded-[10px] px-1.5 py-1.5 text-center font-body text-[11px] font-semibold leading-tight transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               checked
-                ? 'bg-wp-core text-white shadow-sm'
+                ? 'bg-wp-core text-white shadow-press'
                 : 'text-wp-gray65 hover:bg-white hover:text-wp-core',
             )}
           >
-            {option}
+            {option.replace(/\s+/g, ' ')}
           </button>
         )
       })}
+    </div>
+  )
+}
+
+/** Resumo somente leitura da configuração já prevista. */
+function ConfigSummary() {
+  const store = useConfigStore()
+  const { metadata, config } = store
+  if (!metadata || !config) return null
+  const architectureLabel =
+    metadata.architectures.find((a) => a.code === store.architecture)?.label_pt ?? store.architecture
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">
+          Configuração selecionada
+        </h2>
+        <Badge variant="outline" className="whitespace-nowrap uppercase">
+          {store.architecture === 'BR' ? <BrazilFlag label={architectureLabel} /> : architectureLabel}
+        </Badge>
+      </div>
+      <div className="flex flex-col">
+        {metadata.variables.map((variable) => {
+          const field = variable.name as keyof StoveConfig
+          const value = config[field] ?? ''
+          const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
+          return (
+            <div
+              key={variable.name}
+              className="flex items-center justify-between gap-2 border-b border-wp-gray12 py-3 first:pt-0 last:border-b-0"
+            >
+              <span className="font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
+                {label}
+              </span>
+              <span className="text-right text-xs font-semibold text-wp-gray85">{value}</span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -127,6 +153,10 @@ export function StoveConfigPanel() {
         ))}
       </div>
     )
+  }
+
+  if (store.request !== null) {
+    return <ConfigSummary />
   }
 
   const noAreaSelected = store.areas.length === 0
@@ -147,27 +177,27 @@ export function StoveConfigPanel() {
           id={headingId}
           className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core"
         >
-          Configurações do fogão
+          Stove configuration
         </h2>
         <Badge variant="outline" className="whitespace-nowrap uppercase">
-          {architectureLabel}
+          {store.architecture === 'BR' ? <BrazilFlag label={architectureLabel} /> : architectureLabel}
         </Badge>
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col">
         {metadata.variables.map((variable) => {
           const field = variable.name as keyof StoveConfig
           const value = config[field] ?? ''
-          const Icon = VARIABLE_ICON[field] ?? SlidersHorizontal
+          const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
+          const options = variable.options.filter((o) => !HIDDEN_OPTIONS[field]?.includes(o))
           const reference = metadata.reference_config?.[field]
           const changed = reference !== undefined && reference !== value
           return (
             <div
               key={variable.name}
               className={cn(
-                'flex flex-col gap-2 rounded-lg border bg-white p-3 transition-colors',
-                changed ? 'border-wp-accent' : 'border-wp-gray12 hover:border-wp-gray20',
-                !variable.used_by_model && 'border-dashed',
+                // Sem cartões sobrepostos: cada variável é só uma faixa separada por linha.
+                'flex flex-col gap-2 border-b border-wp-gray12 py-4 first:pt-0 last:border-b-0',
               )}
               onMouseEnter={() => store.setHoveredVariable(field)}
               onMouseLeave={() => store.setHoveredVariable(null)}
@@ -175,17 +205,8 @@ export function StoveConfigPanel() {
               onBlur={() => store.setHoveredVariable(null)}
             >
               <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
-                    variable.used_by_model ? 'bg-wp-accentLt text-wp-core' : 'bg-wp-gray05 text-wp-gray45',
-                  )}
-                  aria-hidden="true"
-                >
-                  <Icon className="h-4 w-4" strokeWidth={1.75} />
-                </span>
                 <span className="flex-1 font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
-                  {variable.label_pt}
+                  {label}
                 </span>
                 {changed && (
                   <span
@@ -195,20 +216,20 @@ export function StoveConfigPanel() {
                     aria-label={`Diferente da referência (${reference})`}
                   />
                 )}
-                <HelpTooltip label={variable.label_pt} text={variable.help_pt} />
+                <HelpTooltip label={label} text={variable.help_pt} />
               </div>
               {!variable.used_by_model && (
                 <Badge variant="outline" className="self-start border-dashed px-2 py-0 text-[10px] font-normal">
-                  informativo — não usado pelo modelo
+                  informative — not used by the model
                 </Badge>
               )}
-              {variable.options.length > MAX_SEGMENTED_OPTIONS ? (
+              {options.length > MAX_SEGMENTED_OPTIONS ? (
                 <Select value={value} onValueChange={(next) => store.setField(field, next)}>
-                  <SelectTrigger aria-label={variable.label_pt} className="h-9 text-xs">
+                  <SelectTrigger aria-label={label} className="h-9 text-xs">
                     <SelectValue placeholder="Selecione…" />
                   </SelectTrigger>
                   <SelectContent>
-                    {variable.options.map((option) => (
+                    {options.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -217,8 +238,8 @@ export function StoveConfigPanel() {
                 </Select>
               ) : (
                 <SegmentedOptions
-                  label={variable.label_pt}
-                  options={variable.options}
+                  label={label}
+                  options={options}
                   value={value}
                   onChange={(next) => store.setField(field, next)}
                 />

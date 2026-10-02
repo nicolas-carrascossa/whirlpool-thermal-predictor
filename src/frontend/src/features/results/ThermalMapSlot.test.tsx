@@ -71,7 +71,7 @@ function pick(variable: string, option: string) {
 }
 
 async function changeHousingToOpen() {
-  pick('Carcaça da eletrônica', 'Open')
+  pick('Electronics housing', 'Open')
 }
 
 describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
@@ -97,8 +97,8 @@ describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
 
   it('mostra o aviso de pré-visualização quando o rascunho diverge da última predição e some após "Prever"', async () => {
     await renderHarness()
-    // A carga inicial já auto-submete a config de referência: nada divergente ainda.
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    // Antes da 1ª previsão, qualquer rascunho já é "divergente" (nada foi submetido ainda).
+    expect(screen.getByRole('status')).toBeInTheDocument()
 
     await changeHousingToOpen()
 
@@ -113,7 +113,7 @@ describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
   it('alterar "losses" não pulsa nenhuma peça e não gera erro no aviso de pré-visualização', async () => {
     const stub = await renderHarness()
 
-    pick('Perfil de perdas', 'Losses A')
+    pick('Losses', 'Losses A')
     await wait(1150)
 
     expect(stub.getAttribute('data-highlight')).toBe('')

@@ -3,12 +3,11 @@
  * configuração?" antes de qualquer tabela, mais o aviso de confiabilidade.
  */
 
-import { AlertTriangle, Info, OctagonAlert } from 'lucide-react'
+import { Activity, AlertTriangle, OctagonAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
 
-import { Card } from '@/components/ui/card'
 import type { PredictionResponse, Reliability } from '@/contract/v1'
-import { formatCount, formatRatioPct } from '@/lib/format'
-import { ratioOf, statusOf } from '@/lib/status'
+import { formatCount } from '@/lib/format'
+import { statusOf } from '@/lib/status'
 import { cn } from '@/lib/utils'
 
 const RELIABILITY_COPY: Record<
@@ -33,52 +32,50 @@ const RELIABILITY_COPY: Record<
 }
 
 const TONE_STYLE = {
-  neutral: 'border-wp-gray12 bg-wp-gray05 text-wp-gray85',
   warn: 'border-status-warn bg-status-warn/10 text-wp-gray85',
   danger: 'border-status-danger bg-status-danger/10 text-wp-gray85',
 } as const
 
 const TONE_ICON = {
-  neutral: Info,
   warn: AlertTriangle,
   danger: OctagonAlert,
 } as const
 
-/** Filete no topo do cartão: a cor já antecipa o status antes de ler o número. */
-const STAT_ACCENT = {
-  ok: 'bg-wp-core',
-  warn: 'bg-status-warn',
-  danger: 'bg-status-danger',
-} as const
-
-/** Um indicador por cartão: o número que responde a uma pergunta só. */
+/** Um indicador por coluna (divididas por linhas): o número que responde a uma pergunta só. */
 function Stat({
   label,
   value,
   hint,
   tone,
+  icon: Icon,
 }: {
   label: string
   value: string
   hint?: string
   tone?: 'ok' | 'warn' | 'danger'
+  icon: LucideIcon
 }) {
   const color =
     tone === 'danger'
-      ? 'text-status-danger'
+      ? 'text-status-danger-ink'
       : tone === 'warn'
-        ? 'text-status-warn'
-        : 'text-wp-core'
+        ? 'text-status-warn-ink'
+        : 'text-wp-gray85'
   return (
-    <Card className="relative flex min-w-0 flex-col gap-1.5 overflow-hidden p-4">
-      <span
-        aria-hidden="true"
-        className={cn('absolute inset-x-0 top-0 h-1', tone ? STAT_ACCENT[tone] : 'bg-wp-gray12')}
-      />
-      <span className="text-xs font-semibold uppercase tracking-wide text-wp-gray65">{label}</span>
-      <span className={cn('tabular text-3xl leading-none', color)}>{value}</span>
+    <div className="relative flex min-w-0 flex-col gap-1.5 px-5 first:pl-0 last:pr-0">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-wp-gray65">{label}</span>
+        <span
+          aria-hidden="true"
+          className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md', color)}
+          style={{ backgroundColor: 'color-mix(in srgb, currentColor 12%, white)' }}
+        >
+          <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
+        </span>
+      </div>
+      <span className={cn('tabular text-3xl font-extrabold leading-none', color)}>{value}</span>
       {hint && <span className="line-clamp-2 text-xs leading-snug text-wp-gray65">{hint}</span>}
-    </Card>
+    </div>
   )
 }
 
@@ -86,56 +83,40 @@ export function ResultsSummary({ response }: { response: PredictionResponse }) {
   const preds = response.predictions
   const exceeding = preds.filter((p) => statusOf(p) === 'danger')
   const warning = preds.filter((p) => statusOf(p) === 'warn')
-  const worst = preds
-    .filter((p) => ratioOf(p) !== null)
-    .reduce<(typeof preds)[number] | null>(
-      (acc, p) => (acc === null || (ratioOf(p) ?? 0) > (ratioOf(acc) ?? 0) ? p : acc),
-      null,
-    )
-  const worstRatio = worst ? ratioOf(worst) : null
-
   const reliability = preds[0]?.reliability ?? 'interpolation'
   const copy = RELIABILITY_COPY[reliability]
-  const ToneIcon = TONE_ICON[copy.tone]
+  const ToneIcon = copy.tone === 'neutral' ? null : TONE_ICON[copy.tone]
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Stat label="Sensores previstos" value={formatCount(preds.length)} />
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 divide-y divide-wp-gray12 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <Stat label="Sensores previstos" value={formatCount(preds.length)} icon={Activity} />
         <Stat
           label="Excedem o limite"
+          icon={OctagonAlert}
           value={formatCount(exceeding.length)}
           tone={exceeding.length > 0 ? 'danger' : undefined}
           hint={exceeding.length > 0 ? 'exigem revisão de projeto' : 'nenhum acima do limite'}
         />
         <Stat
           label="Em atenção (≥ 90 %)"
+          icon={TriangleAlert}
           value={formatCount(warning.length)}
           tone={warning.length > 0 ? 'warn' : undefined}
           hint="entre 90 % e 100 % do limite"
         />
-        <Stat
-          label="Pior razão temp/limite"
-          value={formatRatioPct(worstRatio)}
-          tone={
-            worst && statusOf(worst) === 'danger'
-              ? 'danger'
-              : worst && statusOf(worst) === 'warn'
-                ? 'warn'
-                : undefined
-          }
-        />
       </div>
 
-      <div
-        role={copy.tone === 'neutral' ? undefined : 'alert'}
-        className={cn('flex gap-3 rounded-md border px-3 py-2.5 text-xs', TONE_STYLE[copy.tone])}
-      >
-        <ToneIcon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-        <p className="leading-relaxed">
-          <span className="font-semibold">Confiabilidade: {copy.title}.</span> {copy.text}
-        </p>
-      </div>
+      {/* Interpolação (o caso bom) não ganha aviso: o ícone de cada sensor já diz. Extrapolação e
+          fora do domínio continuam avisando, porque a leitura dos números muda (RN08). */}
+      {copy.tone !== 'neutral' && (
+        <div role="alert" className={cn('flex gap-3 rounded-lg border px-4 py-3 text-xs', TONE_STYLE[copy.tone])}>
+          {ToneIcon && <ToneIcon className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />}
+          <p className="leading-relaxed">
+            <span className="font-bold">Confiabilidade: {copy.title}.</span> {copy.text}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

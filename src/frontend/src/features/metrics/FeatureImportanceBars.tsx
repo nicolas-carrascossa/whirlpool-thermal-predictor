@@ -1,10 +1,17 @@
 /**
  * Importância das 7 variáveis de configuração para a área selecionada, em
- * barras horizontais ordenadas da maior para a menor. Uma variável que o
- * modelo no ar não usa aparece zerada, em cinza, com o mesmo rótulo do painel
- * de configuração: mostrar a ausência de efeito é o ponto, não escondê-la.
- * Quem decide isso é `VariableMeta.used_by_model`, vindo do back-end — este
- * componente não sabe, e não deve saber, o nome de nenhuma variável.
+ * formato waterfall: cada barra soma a importância de uma variável ao
+ * acumulado das anteriores, ordenadas da maior para a menor, até fechar em
+ * 100%. Uma variável que o modelo no ar não usa aparece com barra zerada, em
+ * cinza, com o mesmo rótulo do painel de configuração: mostrar a ausência de
+ * efeito é o ponto, não escondê-la. Quem decide isso é `VariableMeta.used_by_model`,
+ * vindo do back-end — este componente não sabe, e não deve saber, o nome de
+ * nenhuma variável.
+ *
+ * Os valores vêm de `feature_importances_` do scikit-learn (import./do
+ * Gradient Boosting/Random Forest), globais e estáticos por modelo — não são
+ * contribuições SHAP por predição. Este gráfico não deve ser rotulado como
+ * "SHAP" em nenhuma tela.
  */
 
 import {
@@ -23,6 +30,35 @@ import { formatPct } from '@/lib/format'
 
 import { importanceData } from './metricsModel'
 
+interface WaterfallDatum {
+  name: string
+  label: string
+  usedByModel: boolean
+  note: string
+  /** Início do trecho acumulado (invisível, só empurra a barra visível). */
+  base: number
+  /** Importância desta variável — o trecho visível da barra. */
+  importance: number
+  /** Fim do trecho acumulado, para o tooltip. */
+  cumulative: number
+}
+
+function toWaterfall(data: ReturnType<typeof importanceData>): WaterfallDatum[] {
+  let running = 0
+  return data.map((d) => {
+    const base = running
+    running += d.importance
+    return {
+      name: d.name,
+      label: d.label,
+      usedByModel: d.usedByModel,
+      note: d.note,
+      base,
+      importance: d.importance,
+      cumulative: running,
+    }
+  })
+}
 
 export default function FeatureImportanceBars({
   importance,
@@ -32,9 +68,9 @@ export default function FeatureImportanceBars({
   importance: Record<string, number>
   variables: VariableMeta[] | undefined
 }) {
-  const data = importanceData(importance, variables)
+  const data = toWaterfall(importanceData(importance, variables))
   return (
-    <div className="h-[280px] w-full min-w-0" role="img" aria-label="Importância das variáveis de configuração">
+    <div className="h-[280px] w-full min-w-0" role="img" aria-label="Waterfall da importância das variáveis de configuração">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 140, bottom: 4, left: 8 }}>
           <XAxis
@@ -56,9 +92,16 @@ export default function FeatureImportanceBars({
           <RechartsTooltip
             cursor={{ fill: 'var(--wp-accent-lt)' }}
             contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--wp-gray-12)' }}
-            formatter={(value) => [formatPct(Number(value) * 100), 'Importância'] as [string, string]}
+            formatter={(value, name, item) => {
+              const d = item.payload as WaterfallDatum
+              return [
+                `${formatPct(d.importance * 100)} (acumulado: ${formatPct(d.cumulative * 100)})`,
+                'Importância',
+              ] as [string, string]
+            }}
           />
-          <Bar dataKey="importance" radius={[0, 2, 2, 0]} isAnimationActive={false} minPointSize={2}>
+          <Bar dataKey="base" stackId="waterfall" isAnimationActive={false} fill="transparent" />
+          <Bar dataKey="importance" stackId="waterfall" radius={[0, 2, 2, 0]} isAnimationActive={false} minPointSize={2}>
             {data.map((d) => (
               <Cell key={d.name} fill={d.usedByModel ? 'var(--wp-core)' : 'var(--wp-gray-45)'} />
             ))}

@@ -13,7 +13,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { OctagonAlert, SlidersHorizontal } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import type { PartId } from '@/components/thermal-map/parts'
 import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import {
@@ -99,7 +99,7 @@ function Placeholder({
         role={tone === 'danger' ? 'alert' : undefined}
       >
         <Icon
-          className={tone === 'danger' ? 'h-6 w-6 text-status-danger' : 'h-6 w-6 text-wp-gray45'}
+          className={tone === 'danger' ? 'h-6 w-6 text-status-danger-ink' : 'h-6 w-6 text-wp-gray45'}
           strokeWidth={1.5}
           aria-hidden="true"
         />
@@ -141,6 +141,7 @@ export function ResultsPanel({
   activeTab,
   onTabChange,
   historySlot,
+  technicianView = true,
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
@@ -163,6 +164,8 @@ export function ResultsPanel({
   onTabChange?: (tab: ResultsTab) => void
   /** Conteúdo da aba "Histórico". Sem ele a aba não aparece. */
   historySlot?: ReactNode
+  /** `false` = visão "não técnico": tabela de sensor só mostra quem pede atenção. Padrão `true`. */
+  technicianView?: boolean
 }) {
   // Etapa B: "Status (limite)" é o modo padrão — a pergunta do engenheiro é
   // onde o limite estoura, não onde está mais quente.
@@ -249,8 +252,8 @@ export function ResultsPanel({
       return (
         <Placeholder
           icon={SlidersHorizontal}
-          title="Nenhuma consulta ainda"
-          text="Selecione uma configuração e clique em Prever."
+          title="Esperando previsão"
+          text="Selecione uma configuração ao lado e clique em Prever para ver os resultados aqui."
         />
       )
     }
@@ -291,6 +294,7 @@ export function ResultsPanel({
             key={shownGroup.name}
             group={shownGroup}
             focus={sensorFocus && sensorFocus.area === shownGroup.name ? sensorFocus : null}
+            technicianView={technicianView}
           />
         )}
       </>
@@ -299,18 +303,16 @@ export function ResultsPanel({
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
-      <TabsList aria-label="Seções dos resultados">
-        <TabsTrigger value="resultados">Resultados</TabsTrigger>
-        <TabsTrigger value="mapa">Mapa térmico</TabsTrigger>
-        <TabsTrigger value="metricas">Métricas Estatísticas</TabsTrigger>
-        {historySlot && <TabsTrigger value="historico">Histórico</TabsTrigger>}
-      </TabsList>
-      <TabsContent value="resultados" className="mt-4 flex flex-col gap-4">
+      {/* A troca de seção é feita pela barra lateral (`NavRail`); aqui ficam só os painéis. */}
+      <TabsContent
+        value="resultados"
+        className="mt-0 flex flex-col divide-y divide-wp-gray12 [&>*]:py-5"
+      >
         {body}
       </TabsContent>
       {/* A aba inativa é desmontada pelo Radix: o canvas WebGL (frameloop
           "always") não fica renderizando escondido. */}
-      <TabsContent value="mapa" className="mt-4">
+      <TabsContent value="mapa" className="mt-0">
         <ThermalMapSlot
           metadata={metadata}
           response={response}
@@ -329,7 +331,7 @@ export function ResultsPanel({
         />
       </TabsContent>
       {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
-      <TabsContent value="metricas" className="mt-4">
+      <TabsContent value="metricas" className="mt-0">
         <MetricsPanel
           metadata={metadata}
           keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
@@ -337,7 +339,7 @@ export function ResultsPanel({
         />
       </TabsContent>
       {historySlot && (
-        <TabsContent value="historico" className="mt-4">
+        <TabsContent value="historico" className="mt-0">
           {historySlot}
         </TabsContent>
       )}
