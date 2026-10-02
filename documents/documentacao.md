@@ -993,13 +993,15 @@ necessária para decidir a remoção. Este primeiro candidato mantém as sete pa
 observar o comportamento de cada uma, decisão a ser revista quando o espaço de
 configurações estiver mais preenchido.
 
-A importância de variáveis apoia a escolha: nenhuma zera nos três algoritmos
-avaliados, e as duas que a H2 recomendara retirar aparecem entre as mais
-relevantes, `losses` em segundo na floresta aleatória (0,2217) e `board_position`
-em terceiro na árvore de decisão (0,1423). Sob confundimento, porém, a importância
-atribuída a uma variável pode pertencer àquela com que ela se confunde, de modo
-que esses valores indicam apenas que nenhuma variável é dispensável à luz dos
-dados atuais, e não uma relação causal.
+A importância de variáveis não decide a questão. No primeiro candidato de
+floresta aleatória (`Main Vent Sys`, em `notebooks/Random_for_regre.ipynb`),
+as sete recebem importância não nula, mas `board_position` (0,0085) e
+`material_coil_support` (0,0004) ficam perto de zero. Na árvore de decisão de
+`Mainback` (Seção 4.4.1), `run_case` concentra toda a importância. Sob confundimento,
+a importância atribuída a uma variável pode pertencer àquela com que ela se
+confunde, de modo que esses valores não indicam relação causal nem permitem, sozinhos,
+descartar uma variável. A retirada de variáveis foi testada diretamente no Random
+Forest (Seção 4.4.2) e piorou o erro na maioria das regiões.
 
 Duas categorias são raras no conjunto, `board_position` igual a *Right* (5,5% das
 leituras) e `material_coil_support` igual a *Aluminium Plate* (1,8%); predições que
