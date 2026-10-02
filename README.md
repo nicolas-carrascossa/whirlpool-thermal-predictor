@@ -146,16 +146,16 @@ cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_prepr
 
 ## 🗃 Histórico de lançamentos
 
-* 1.0.0 - 11/10/2024
-    * [sprint 5] Lançamento da primeira versão do modelo preditivo com documentação.
-* 0.6.0 - 27/09/2024
-    * [sprint 4] Comparação de modelos preditivos
-* 0.3.1 - 13/09/2024
-    * [sprint 3] Preparação de dados e modelo preditivo preliminar
-* 0.2.7 - 30/08/2024
-    * [sprint 2] Análise exploratória e levantamento de hipóteses
-* 0.1.3 - 16/08/2024
-    * [sprint 1] Documentação de entendimento do negócio
+* 1.0.0 - 09/10/2026
+    * [sprint 5] Solução final: avaliação, conclusões e recomendações na documentação, dashboard integrado à API e ajustes de publicação.
+* 0.4.0 - 25/09/2026
+    * [sprint 4] Comparação de modelos preditivos (Decision Tree, Random Forest e Gradient Boosting) e explicabilidade.
+* 0.3.0 - 11/09/2026
+    * [sprint 3] Preparação dos dados e modelo preditivo preliminar.
+* 0.2.0 - 28/08/2026
+    * [sprint 2] Análise exploratória e levantamento de hipóteses.
+* 0.1.0 - 14/08/2026
+    * [sprint 1] Documentação de entendimento do negócio.
 
 ## 📋 Licença/License
 
