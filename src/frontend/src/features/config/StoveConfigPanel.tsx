@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { VARIABLE_TO_PART } from '@/components/thermal-map/parts'
 import type { StoveConfig } from '@/contract/v1'
 import { useConfigStore } from '@/features/config/store'
 import { HIDDEN_OPTIONS, VARIABLE_LABEL_EN } from '@/features/config/variableLabels'
@@ -100,8 +101,11 @@ function SegmentedOptions({
   )
 }
 
-/** Resumo somente leitura da configuração já prevista. */
-function ConfigSummary() {
+/**
+ * Resumo da configuração já prevista. Cada linha com peça no 3D é um botão:
+ * passar o mouse destaca a peça e clicar leva a câmera até ela.
+ */
+function ConfigSummary({ onFocusVariable }: { onFocusVariable?: (field: keyof StoveConfig) => void }) {
   const store = useConfigStore()
   const { metadata, config } = store
   if (!metadata || !config) return null
@@ -109,7 +113,7 @@ function ConfigSummary() {
     metadata.architectures.find((a) => a.code === store.architecture)?.label_pt ?? store.architecture
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">
           Configuração selecionada
@@ -123,16 +127,46 @@ function ConfigSummary() {
           const field = variable.name as keyof StoveConfig
           const value = config[field] ?? ''
           const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
-          return (
-            <div
-              key={variable.name}
-              className="flex items-center justify-between gap-2 border-b border-wp-gray12 py-3 first:pt-0 last:border-b-0"
-            >
+          const row = 'flex items-center justify-between gap-2 border-b border-wp-gray12 py-1.5 last:border-b-0'
+          const content = (
+            <>
               <span className="font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
                 {label}
               </span>
               <span className="text-right text-xs font-semibold text-wp-gray85">{value}</span>
-            </div>
+            </>
+          )
+          // `losses` não tem peça no 3D: fica como linha comum.
+          if (!VARIABLE_TO_PART[field]) {
+            return (
+              <div key={variable.name} className={row}>
+                {content}
+              </div>
+            )
+          }
+          const active = store.hoveredVariable === field
+          return (
+            <button
+              key={variable.name}
+              type="button"
+              title="Ver no mapa térmico"
+              aria-label={`${label}: ${value} — ver no mapa térmico`}
+              onMouseEnter={() => store.setHoveredVariable(field)}
+              onMouseLeave={() => store.setHoveredVariable(null)}
+              onFocus={() => store.setHoveredVariable(field)}
+              onBlur={() => store.setHoveredVariable(null)}
+              onClick={() => {
+                store.focusVariable(field)
+                onFocusVariable?.(field)
+              }}
+              className={cn(
+                row,
+                'rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                active ? 'bg-wp-accentLt' : 'hover:bg-wp-gray05',
+              )}
+            >
+              {content}
+            </button>
           )
         })}
       </div>
@@ -140,7 +174,12 @@ function ConfigSummary() {
   )
 }
 
-export function StoveConfigPanel() {
+export function StoveConfigPanel({
+  onFocusVariable,
+}: {
+  /** Clique numa linha do resumo (após "Prever"): ex. abrir a aba do mapa. */
+  onFocusVariable?: (field: keyof StoveConfig) => void
+} = {}) {
   const store = useConfigStore()
   const { metadata, config } = store
   const headingId = useId()
@@ -156,7 +195,7 @@ export function StoveConfigPanel() {
   }
 
   if (store.request !== null) {
-    return <ConfigSummary />
+    return <ConfigSummary onFocusVariable={onFocusVariable} />
   }
 
   const noAreaSelected = store.areas.length === 0

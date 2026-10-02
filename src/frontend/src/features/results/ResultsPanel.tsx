@@ -137,7 +137,8 @@ export function ResultsPanel({
   draftConfig = null,
   hoveredVariable = null,
   highlightPart = null,
-  onHoverVariable,
+  mapToolbarContainer = null,
+  focusRequest = null,
   activeTab,
   onTabChange,
   historySlot,
@@ -158,7 +159,10 @@ export function ResultsPanel({
   draftConfig?: StoveConfig | null
   hoveredVariable?: keyof StoveConfig | null
   highlightPart?: PartId | null
-  onHoverVariable?: (field: keyof StoveConfig | null) => void
+  /** Onde o mapa térmico renderiza seus filtros (barra lateral direita). */
+  mapToolbarContainer?: HTMLElement | null
+  /** Pedido de "ir até a peça" (clique em "Configuração selecionada"). */
+  focusRequest?: { part: PartId; token: number } | null
   /** Aba ativa. Sem a prop, o painel controla a aba sozinho (começa em "resultados"). */
   activeTab?: ResultsTab
   onTabChange?: (tab: ResultsTab) => void
@@ -327,7 +331,8 @@ export function ResultsPanel({
           submittedConfig={submittedConfig}
           highlightPart={highlightPart}
           hoveredVariable={hoveredVariable}
-          onHoverVariable={onHoverVariable}
+          toolbarContainer={mapToolbarContainer}
+          focusRequest={focusRequest}
         />
       </TabsContent>
       {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
