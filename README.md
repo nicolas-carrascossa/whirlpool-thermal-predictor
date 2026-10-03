@@ -82,24 +82,27 @@ nem Docker. São dois processos: a API e a interface.
 Pré-requisitos: Python 3.12+ e Node 20+.
 
 ```bash
-# 1. dependências
+# 1. dependências (na raiz do repositório)
 pip install -r src/backend/requirements.txt
 npm run install:frontend
 
-# 2. configuração da API (cria src/backend/.env a partir do exemplo)
+# 2. configuração da API: cria src/backend/.env a partir do exemplo
 cp src/backend/.env.example src/backend/.env
+#    em seguida, abra src/backend/.env e troque MODEL_MODE=mock por
+#    MODEL_MODE=real, para a API usar os modelos treinados de models/
 
-# 3. API (terminal 1) — MODEL_MODE=real usa os modelos treinados de models/
+# 3. API (terminal 1)
 cd src/backend
-MODEL_MODE=real python -m uvicorn app.main:app --port 8000
+python -m uvicorn app.main:app --port 8000
 
 # 4. interface (terminal 2, na raiz do repositório)
 npm run dev:api
 ```
 
-No Windows (PowerShell), use `Copy-Item` no lugar de `cp` e defina o modo
-antes de subir a API com `$env:MODEL_MODE="real"`. Em qualquer sistema, também
-é possível trocar `MODEL_MODE=mock` por `MODEL_MODE=real` em `src/backend/.env`.
+Os comandos valem para qualquer terminal (bash, PowerShell ou cmd), exceto a
+cópia do passo 2: no PowerShell, use
+`Copy-Item src/backend/.env.example src/backend/.env`; no cmd,
+`copy src\backend\.env.example src\backend\.env`.
 
 A interface sobe em `http://localhost:5173` e fala com a API em
 `http://localhost:8000` (configurado em `src/frontend/.env.api`). Os usuários
