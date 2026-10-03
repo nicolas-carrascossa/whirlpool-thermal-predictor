@@ -1,8 +1,9 @@
 import { Edges, Html } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 
+import { zoneSurface } from './detailTextures'
 import { useStove } from './StoveContext'
 import type { ZoneMeshDef } from './zoneGeometry'
 
@@ -34,6 +35,7 @@ export function ZoneMesh({
   const [isPointerOver, setPointerOver] = useState(false)
   const [hoverEnabled, setHoverEnabled] = useState(false)
   const { view, clipPlanes } = useStove()
+  const surface = useMemo(() => zoneSurface(def.surface), [def.surface])
 
   // Cor só é atualizada quando muda (não a cada frame) — evita recriar material.
   useEffect(() => {
@@ -100,7 +102,18 @@ export function ZoneMesh({
       {geometry}
       {/* `toneMapped={false}`: a cor da zona É o dado (status/calor/delta) — o
           ACES do rig de estúdio não pode lavá-la. */}
-      <meshStandardMaterial ref={matRef} roughness={0.55} metalness={0.12} toneMapped={false} />
+      {/* A textura (`surface`) só modula valor e relevo: `map` e `emissiveMap`
+          são em tons de cinza, então a cor de status continua sendo o matiz. */}
+      <meshStandardMaterial
+        ref={matRef}
+        roughness={0.55}
+        metalness={0.12}
+        toneMapped={false}
+        map={surface?.map ?? null}
+        emissiveMap={surface?.map ?? null}
+        bumpMap={surface?.bump ?? null}
+        bumpScale={0.6}
+      />
       {isZoneActive && <Edges color={OUTLINE_COLOR} threshold={20} lineWidth={1} />}
       {isPointerOver && (
         <Html center distanceFactor={14} style={{ pointerEvents: 'none' }} zIndexRange={[10, 0]}>

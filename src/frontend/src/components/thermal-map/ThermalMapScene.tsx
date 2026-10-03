@@ -12,6 +12,8 @@ import { ExplodeLayer } from './ExplodeLayer'
 import { cameraPlacementForBounds, type CameraPlacement, type FitOptions } from './fitCamera'
 import { C } from './materials'
 import { OrientationMarkers, PartChangeCallout } from './SceneAnnotations'
+import { CoolingDuctTrim } from './CoolingDuctTrim'
+import { VentBayParts } from './MainVentParts'
 import { Blower } from './parts/Blower'
 import { CoilSupport } from './parts/CoilSupport'
 import { ControlBoard } from './parts/ControlBoard'
@@ -24,7 +26,15 @@ import { StoveProvider, type OpeningState, type StoveView } from './StoveContext
 import { FLOOR_Y, StoveBody } from './StoveBody'
 import { ZoneCallout } from './ZoneCallout'
 import type { ZoneStatus } from './zoneStatus'
-import { BAY_ZONE_KEYS, CONSOLE_BOUNDS, STOVE_BOUNDS, TOP_ZONE_KEYS, ZONE_MESHES, type Bounds } from './zoneGeometry'
+import {
+  BAY_ZONE_KEYS,
+  CONSOLE_BOUNDS,
+  REAR_ZONE_KEYS,
+  STOVE_BOUNDS,
+  TOP_ZONE_KEYS,
+  ZONE_MESHES,
+  type Bounds,
+} from './zoneGeometry'
 import { ZoneMesh } from './ZoneMesh'
 
 export type CameraPreset = 'front' | 'back' | 'console' | 'iso'
@@ -326,7 +336,8 @@ export function ThermalMapScene({
 
   const isTop = (key: string) => TOP_ZONE_KEYS.has(key)
   const isBay = (key: string) => BAY_ZONE_KEYS.has(key)
-  const isBody = (key: string) => !isTop(key) && !isBay(key)
+  const isRear = (key: string) => REAR_ZONE_KEYS.has(key)
+  const isBody = (key: string) => !isTop(key) && !isBay(key) && !isRear(key)
 
   // Zonas, rótulos e pinos de cada camada animada entram no mesmo grupo da
   // peça — o `<Openable>`/camada do cooktop (via `topExtras`) ou a camada da
@@ -388,7 +399,7 @@ export function ThermalMapScene({
         resolution={512}
       />
 
-      <StoveBody topExtras={layerExtras(isTop)} />
+      <StoveBody topExtras={layerExtras(isTop)} rearExtras={layerExtras(isRear)} />
       {showAnnotations && <OrientationMarkers />}
 
       {/* Baía da eletrônica sob o cooktop: peças + zonas IPC sobem juntas na vista explodida. */}
@@ -397,6 +408,8 @@ export function ThermalMapScene({
         <ControlBoard />
         <Blower />
         <DeflectorPlate />
+        <CoolingDuctTrim />
+        <VentBayParts />
         {layerExtras(isBay)}
       </ExplodeLayer>
 

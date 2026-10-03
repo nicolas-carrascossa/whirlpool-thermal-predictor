@@ -1,15 +1,22 @@
 /**
- * Corpo do fogão: painéis do gabinete em inox escovado, cavidade esmaltada com
- * grades de arame, porta com vidro, cooktop de vitrocerâmica, console com
- * botões e display, e pés. Segue o produto real (range elétrica de piso de
+ * Corpo do fogão: painéis do gabinete em inox escovado (grão procedural),
+ * cavidade esmaltada com grades de arame, porta com vidro, tela do forno na
+ * faixa frontal, cooktop de vitrocerâmica, console com botões, e pés. Segue o produto real (range elétrica de piso de
  * 30", controle frontal) sem virar CAD: nenhuma dessas peças é interativa — as
  * zonas coloridas (`ZoneMesh`) e as peças configuráveis (`parts/`) ficam por
  * cima e são as superfícies de dado. Geometria ilustrativa.
  */
-import { ExplodeLayer } from './ExplodeLayer'
+import { useMemo } from 'react'
+
+import { dataPlateTexture, GRAIN_TILE } from './detailTextures'
+import { ExplodeLayer, ExplodeRear } from './ExplodeLayer'
+import { ConsoleInternals, HotSurfaceLens } from './ConsoleInternals'
 import { C, ShellMaterial } from './materials'
 import { Openable } from './Openable'
 import { CooktopGlow, CooktopLoad } from './parts/CooktopLoad'
+import { HmiScreen } from './HmiScreen'
+import { TopDuct } from './MainVentParts'
+import { RadiantElements } from './RadiantElements'
 import { useStove } from './StoveContext'
 import { cutZForDepth } from './cutPlane'
 import {
@@ -20,10 +27,12 @@ import {
   BURNER_SLOTS,
   CAVITY,
   CONSOLE,
+  COIL,
   COOKTOP_AUX_ELEMENT,
   COOKTOP_ELEMENTS,
   COOKTOP_GLASS,
   COOKTOP_STACK,
+  DOOR_TOP,
   DRAWER,
   VENT_TRIM,
   ZONE_MESHES,
@@ -38,6 +47,7 @@ function Panel({
   roughness = 0.6,
   metalness = 0.1,
   clip = true,
+  grain = false,
 }: {
   args: [number, number, number]
   position: [number, number, number]
@@ -45,31 +55,41 @@ function Panel({
   roughness?: number
   metalness?: number
   clip?: boolean
+  /** Aço escovado: o grão acompanha o tamanho da peça (mesma escala em toda face). */
+  grain?: boolean
 }) {
+  const repeat: [number, number] | undefined = grain
+    ? [
+        Math.max(args[0], args[2]) / GRAIN_TILE,
+        Math.max(args[1], Math.min(args[0], args[2])) / GRAIN_TILE,
+      ]
+    : undefined
   return (
     <mesh position={position}>
       <boxGeometry args={args} />
-      <ShellMaterial color={color} roughness={roughness} metalness={metalness} clip={clip} />
+      <ShellMaterial color={color} roughness={roughness} metalness={metalness} clip={clip} grain={repeat} />
     </mesh>
   )
 }
 
 /** Inox escovado dos painéis externos: roughness média-baixa, metalness alta. */
 const STEEL = { roughness: 0.38, metalness: 0.78 }
+/** O mesmo inox com o grão escovado — para painéis planos (não para cilindros). */
+const BRUSHED = { ...STEEL, grain: true }
 
 function Cabinet() {
   const halfW = BODY.w / 2
   return (
     <group>
       {/* laterais e fundo (a traseira sai em "Abrir traseira") */}
-      <Panel args={[T, BODY.h, BODY.d]} position={[-halfW + T / 2, 0, 0]} color={C.steel} {...STEEL} />
-      <Panel args={[T, BODY.h, BODY.d]} position={[halfW - T / 2, 0, 0]} color={C.steel} {...STEEL} />
+      <Panel args={[T, BODY.h, BODY.d]} position={[-halfW + T / 2, 0, 0]} color={C.steel} {...BRUSHED} />
+      <Panel args={[T, BODY.h, BODY.d]} position={[halfW - T / 2, 0, 0]} color={C.steel} {...BRUSHED} />
       <Panel args={[BODY.w, 0.9, BODY.d]} position={[0, -BODY.h / 2 + 0.45, 0]} color={C.dark} roughness={0.8} />
       {/* moldura frontal em volta da abertura da porta */}
-      <Panel args={[1.6, BODY.h, T]} position={[-halfW + 0.8, 0, BODY_FRONT - T / 2]} color={C.steelDark} {...STEEL} />
-      <Panel args={[1.6, BODY.h, T]} position={[halfW - 0.8, 0, BODY_FRONT - T / 2]} color={C.steelDark} {...STEEL} />
-      <Panel args={[BODY.w, 6, T]} position={[0, BODY.h / 2 - 3, BODY_FRONT - T / 2]} color={C.steelDark} {...STEEL} />
-      <Panel args={[BODY.w, 2.4, T]} position={[0, -BODY.h / 2 + 1.2, BODY_FRONT - T / 2]} color={C.steelDark} {...STEEL} />
+      <Panel args={[1.6, BODY.h, T]} position={[-halfW + 0.8, 0, BODY_FRONT - T / 2]} color={C.steelDark} {...BRUSHED} />
+      <Panel args={[1.6, BODY.h, T]} position={[halfW - 0.8, 0, BODY_FRONT - T / 2]} color={C.steelDark} {...BRUSHED} />
+      <Panel args={[BODY.w, 6, T]} position={[0, BODY.h / 2 - 3, BODY_FRONT - T / 2]} color={C.steelDark} {...BRUSHED} />
+      <Panel args={[BODY.w, 2.4, T]} position={[0, -BODY.h / 2 + 1.2, BODY_FRONT - T / 2]} color={C.steelDark} {...BRUSHED} />
     </group>
   )
 }
@@ -112,6 +132,50 @@ function WireRack({ y }: { y: number }) {
 }
 
 /**
+ * Ferragem da resistência de assar (`Coil Temps`), como no manual de serviço:
+ * as duas pontas do tubo seguem retas até a parede do fundo, atravessam
+ * isoladores cerâmicos e se prendem a uma placa de terminais parafusada.
+ * A resistência em si é a zona de dado — aqui só o que a sustenta.
+ */
+function BakeElementHardware() {
+  const wallZ = CAVITY.zCenter - CAVITY.d / 2 + 0.25 // face do fundo (parede de brilho)
+  const ringBackZ = COIL.z - Math.sqrt(COIL.radius ** 2 - 1.1 ** 2)
+  const tailLen = ringBackZ - (wallZ + 0.55)
+  const tailZ = (ringBackZ + wallZ + 0.55) / 2
+  return (
+    <group>
+      <Panel args={[4.2, 1.7, 0.16]} position={[0, COIL.y, wallZ + 0.1]} color={C.gray65} roughness={0.5} metalness={0.6} />
+      {[-1.1, 1.1].map((x) => (
+        <group key={x}>
+          <mesh position={[x, COIL.y, tailZ]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.3, 0.3, tailLen, 12]} />
+            <ShellMaterial color={C.metalDark} roughness={0.4} metalness={0.8} />
+          </mesh>
+          {/* isolador cerâmico + porca de fixação */}
+          <mesh position={[x, COIL.y, wallZ + 0.4]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.52, 0.52, 0.5, 14]} />
+            <ShellMaterial color="#d9d6d0" roughness={0.9} metalness={0} />
+          </mesh>
+          <mesh position={[x, COIL.y, wallZ + 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.4, 0.4, 0.18, 6]} />
+            <ShellMaterial color={C.wire} roughness={0.3} metalness={0.85} />
+          </mesh>
+        </group>
+      ))}
+      {/* quatro parafusos da placa de terminais */}
+      {[-1.8, 1.8].map((x) =>
+        [-0.65, 0.65].map((dy) => (
+          <mesh key={`${x}${dy}`} position={[x, COIL.y + dy, wallZ + 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.11, 0.11, 0.1, 8]} />
+            <ShellMaterial color={C.wire} roughness={0.3} metalness={0.85} />
+          </mesh>
+        )),
+      )}
+    </group>
+  )
+}
+
+/**
  * Cavidade esmaltada: caixa aberta para a frente, com trilhos laterais e duas
  * grades de arame em níveis diferentes, visíveis pelo vidro da porta. A parede
  * do fundo recebe o brilho.
@@ -141,6 +205,55 @@ function Cavity() {
       {RACK_LEVELS.map((y) => (
         <WireRack key={y} y={y} />
       ))}
+      <BakeElementHardware />
+    </group>
+  )
+}
+
+/** Face de trás da zona `Mainback` (z): as ferragens do painel assentam a partir daqui. */
+const MAINBACK_FACE_Z = BODY_BACK - 0.45
+
+/**
+ * Ferragens do painel traseiro (o relevo estampado — venezianas, nervuras,
+ * rebaixo — vem da textura da zona `Mainback`): caixa de ligação da rede
+ * elétrica no rebaixo, com prensa-cabo e cordão de alimentação, e a etiqueta
+ * de série. Posições casadas com o desenho da textura.
+ */
+function RearHardware() {
+  const plate = useMemo(() => dataPlateTexture(), [])
+  const boxX = -6.5
+  const boxY = -5.8
+  const boxD = 0.9
+  const boxZ = MAINBACK_FACE_Z - boxD / 2
+  const faceZ = MAINBACK_FACE_Z - boxD
+  return (
+    <group>
+      <Panel args={[5.0, 3.4, boxD]} position={[boxX, boxY, boxZ]} color={C.steelDark} {...BRUSHED} />
+      {/* tampa da caixa: quatro parafusos nos cantos */}
+      {[-2.0, 2.0].map((dx) =>
+        [-1.2, 1.2].map((dy) => (
+          <mesh key={`${dx}${dy}`} position={[boxX + dx, boxY + dy, faceZ - 0.04]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.15, 0.15, 0.1, 8]} />
+            <ShellMaterial color={C.wire} roughness={0.3} metalness={0.85} />
+          </mesh>
+        )),
+      )}
+      {/* prensa-cabo no fundo da caixa e o cordão de alimentação descendo */}
+      <mesh position={[boxX, boxY - 1.7 - 0.4, boxZ]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.8, 14]} />
+        <ShellMaterial color={C.dark} roughness={0.7} metalness={0.2} />
+      </mesh>
+      <mesh position={[boxX, boxY - 1.7 - 0.8 - 1.6, boxZ]}>
+        <cylinderGeometry args={[0.3, 0.3, 3.2, 10]} />
+        <ShellMaterial color={C.dark} roughness={0.85} metalness={0} />
+      </mesh>
+      {/* etiqueta de série */}
+      {plate && (
+        <mesh position={[6.75, -6.4, MAINBACK_FACE_Z - 0.02]} rotation={[0, Math.PI, 0]} raycast={() => null}>
+          <planeGeometry args={[4.4, 2.4]} />
+          <meshStandardMaterial map={plate} roughness={0.65} metalness={0} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -149,12 +262,13 @@ function Cavity() {
 function RearPanels() {
   return (
     <group>
-      <Panel args={[BODY.w, BODY.h, T]} position={[0, 0, BODY_BACK + T / 2]} color={C.steel} {...STEEL} />
+      <RearHardware />
+      <Panel args={[BODY.w, BODY.h, T]} position={[0, 0, BODY_BACK + T / 2]} color={C.steel} {...BRUSHED} />
       <Panel
         args={[BACKSPLASH.w, BACKSPLASH.h, 0.5]}
         position={[0, CONSOLE.yCenter, CONSOLE.zBack + 0.25]}
         color={C.steel}
-        {...STEEL}
+        {...BRUSHED}
       />
     </group>
   )
@@ -162,14 +276,13 @@ function RearPanels() {
 
 /** Porta do forno: da dobradiça (`DOOR_HINGE_Y`, topo da gaveta) até a faixa frontal. */
 const DOOR_BOTTOM = DRAWER.yTop
-const DOOR_TOP = 5.9
 const DOOR_CENTER_Y = (DOOR_BOTTOM + DOOR_TOP) / 2
 
 function Door() {
   const h = DOOR_TOP - DOOR_BOTTOM
   return (
     <group>
-      <Panel args={[BODY.w - 1.2, h, 0.8]} position={[0, DOOR_CENTER_Y, BODY_FRONT + 0.4]} color={C.steel} {...STEEL} />
+      <Panel args={[BODY.w - 1.2, h, 0.8]} position={[0, DOOR_CENTER_Y, BODY_FRONT + 0.4]} color={C.steel} {...BRUSHED} />
       {/* janela de vidro grande, ocupando a maior parte da face: deixa ver a
           resistência e as grades por dentro */}
       <mesh position={[0, DOOR_CENTER_Y - 0.6, BODY_FRONT + 0.9]}>
@@ -182,7 +295,7 @@ function Door() {
         <ShellMaterial color={C.steel} roughness={0.25} metalness={0.85} />
       </mesh>
       {[-10.2, 10.2].map((x) => (
-        <Panel key={x} args={[0.7, 0.7, 1.5]} position={[x, DOOR_TOP - 0.9, BODY_FRONT + 1.1]} color={C.steelDark} {...STEEL} />
+        <Panel key={x} args={[0.7, 0.7, 1.5]} position={[x, DOOR_TOP - 0.9, BODY_FRONT + 1.1]} color={C.steelDark} {...BRUSHED} />
       ))}
     </group>
   )
@@ -197,13 +310,13 @@ function Drawer() {
   const y = (DRAWER.yTop + DRAWER.yBottom) / 2
   return (
     <group>
-      <Panel args={[BODY.w - 1.2, h - 0.3, 0.8]} position={[0, y, BODY_FRONT + 0.4]} color={C.steel} {...STEEL} />
+      <Panel args={[BODY.w - 1.2, h - 0.3, 0.8]} position={[0, y, BODY_FRONT + 0.4]} color={C.steel} {...BRUSHED} />
       <mesh position={[0, DRAWER.handleY, BODY_FRONT + 1.35]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.3, 0.3, 14, 14]} />
         <ShellMaterial color={C.steel} roughness={0.25} metalness={0.85} />
       </mesh>
       {[-6.6, 6.6].map((x) => (
-        <Panel key={x} args={[0.6, 0.6, 1.0]} position={[x, DRAWER.handleY, BODY_FRONT + 1.0]} color={C.steelDark} {...STEEL} />
+        <Panel key={x} args={[0.6, 0.6, 1.0]} position={[x, DRAWER.handleY, BODY_FRONT + 1.0]} color={C.steelDark} {...BRUSHED} />
       ))}
     </group>
   )
@@ -230,7 +343,7 @@ function PrintedRing({
 }
 
 /** Toda a pilha do cooktop fica fora do corte, para a carga seguir visível no modo Corte. */
-const TOP_STACK = { ...STEEL, clip: false }
+const TOP_STACK = { ...BRUSHED, clip: false }
 
 /**
  * Camada de cima da pilha: vidro de vitrocerâmica quase preto, levemente
@@ -291,36 +404,6 @@ function CooktopGlass() {
 }
 
 /**
- * Camada dos elementos radiantes: uma espiral (dois anéis finos concêntricos)
- * escura por elemento, sobre um refletor. É o que se vê sob o vidro na vista
- * explodida — e onde a resistência acesa brilha (`CooktopGlow`).
- */
-function RadiantElements() {
-  const { elementsY, reflectorY } = COOKTOP_STACK
-  return (
-    <group>
-      {BURNER_SLOTS.map(([x, z], i) => {
-        const r = COOKTOP_ELEMENTS[i].radius
-        return (
-          <group key={i} position={[x, 0, z]}>
-            {[r - 0.35, r - 0.95].map((ring) => (
-              <mesh key={ring} position={[0, elementsY, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                <torusGeometry args={[ring, 0.12, 6, 32]} />
-                <ShellMaterial color={C.dark} roughness={0.7} metalness={0.2} clip={false} />
-              </mesh>
-            ))}
-            <mesh position={[0, reflectorY, 0]}>
-              <cylinderGeometry args={[r + 0.3, r + 0.3, 0.15, 32]} />
-              <ShellMaterial color={C.metal} roughness={0.35} metalness={0.7} clip={false} />
-            </mesh>
-          </group>
-        )
-      })}
-    </group>
-  )
-}
-
-/**
  * Camada da bandeja: chapa que fecha o corpo por cima e sustenta os elementos,
  * com um suporte curto sob cada um. Abaixo dela começa a baía da eletrônica.
  */
@@ -344,9 +427,8 @@ function CooktopTray() {
   )
 }
 
-/** Zonas da fachada que ganham peças decorativas em volta (botões e display). */
+/** Zonas da fachada que ganham peças decorativas em volta (botões e fenda). */
 const KNOB_ZONES = ZONE_MESHES.filter((z) => z.zoneKey === 'CT Knobs')
-const HMI_ZONE = ZONE_MESHES.find((z) => z.zoneKey === 'Oven HMI')
 const VENT_ZONE = ZONE_MESHES.find((z) => z.zoneKey === 'Main Vent Sys')
 
 /**
@@ -369,6 +451,15 @@ function TopVentTrim() {
       <Panel args={[innerW + t * 2, h, t]} position={[0, y, z - innerD / 2 - t / 2]} {...metal} />
       <Panel args={[t, h, innerD]} position={[-innerW / 2 - t / 2, y, z]} {...metal} />
       <Panel args={[t, h, innerD]} position={[innerW / 2 + t / 2, y, z]} {...metal} />
+      {/* parafusos de fixação do aro, nas barras da frente e de trás */}
+      {[-1, 1].map((s) =>
+        [-7.5, -2.5, 2.5, 7.5].map((x) => (
+          <mesh key={`${s}${x}`} position={[x, y + h / 2 + 0.02, z + s * (innerD / 2 + t / 2)]}>
+            <cylinderGeometry args={[0.09, 0.09, 0.05, 8]} />
+            <ShellMaterial color={C.wire} roughness={0.3} metalness={0.85} clip={false} />
+          </mesh>
+        )),
+      )}
     </group>
   )
 }
@@ -376,21 +467,21 @@ function TopVentTrim() {
 /**
  * Tampa do console: laterais, tampo (partido pela fenda de ventilação, agora
  * emoldurada pelo Top Vent Trim), face frontal e faixa de comando em grafite
- * com o display embutido em rebaixo escuro e a fileira de botões sobre bezels
- * rasos. Sobe inteira em "Abrir console", junto com as zonas da fachada (botões
- * e display), que são filhas do mesmo `<Openable>` — os cilindros dos botões e
- * o box do display são zonas de dado e não são tocados aqui; só o entorno.
+ * com a fileira de botões sobre bezels rasos. Sobe inteira em "Abrir console",
+ * junto com as zonas dos botões, que são filhas do mesmo `<Openable>` — os
+ * cilindros dos botões são zonas de dado e não são tocados aqui; só o entorno.
+ * A tela do forno (`Oven HMI`) não está aqui: fica na faixa frontal (`HmiScreen`).
  */
 function ConsoleCover() {
   const halfW = BACKSPLASH.w / 2
   const { yCenter, yTop, zFront } = CONSOLE
   return (
     <group>
-      <Panel args={[0.5, BACKSPLASH.h, BACKSPLASH.d]} position={[-halfW + 0.25, yCenter, CONSOLE.zCenter]} color={C.steel} {...STEEL} />
-      <Panel args={[0.5, BACKSPLASH.h, BACKSPLASH.d]} position={[halfW - 0.25, yCenter, CONSOLE.zCenter]} color={C.steel} {...STEEL} />
-      <Panel args={[BACKSPLASH.w, 0.5, BACKSPLASH.d]} position={[0, yTop - 0.25, CONSOLE.zCenter]} color={C.steel} {...STEEL} />
+      <Panel args={[0.5, BACKSPLASH.h, BACKSPLASH.d]} position={[-halfW + 0.25, yCenter, CONSOLE.zCenter]} color={C.steel} {...BRUSHED} />
+      <Panel args={[0.5, BACKSPLASH.h, BACKSPLASH.d]} position={[halfW - 0.25, yCenter, CONSOLE.zCenter]} color={C.steel} {...BRUSHED} />
+      <Panel args={[BACKSPLASH.w, 0.5, BACKSPLASH.d]} position={[0, yTop - 0.25, CONSOLE.zCenter]} color={C.steel} {...BRUSHED} />
       {/* face frontal do console + faixa de comando em grafite escovado */}
-      <Panel args={[BACKSPLASH.w, BACKSPLASH.h, 0.4]} position={[0, yCenter, zFront - 0.2]} color={C.steel} {...STEEL} />
+      <Panel args={[BACKSPLASH.w, BACKSPLASH.h, 0.4]} position={[0, yCenter, zFront - 0.2]} color={C.steel} {...BRUSHED} />
       <Panel
         args={[BACKSPLASH.w - 1.6, BACKSPLASH.h - 1.0, 0.22]}
         position={[0, yCenter, zFront + 0.1]}
@@ -398,16 +489,9 @@ function ConsoleCover() {
         roughness={0.4}
         metalness={0.55}
       />
-      {/* rebaixo escuro em volta do display (zona Oven HMI) */}
-      {HMI_ZONE && (
-        <Panel
-          args={[HMI_ZONE.args[0] + 0.8, HMI_ZONE.args[1] + 0.5, 0.14]}
-          position={[HMI_ZONE.position[0], HMI_ZONE.position[1], zFront + 0.26]}
-          color={C.glass}
-          roughness={0.2}
-          metalness={0.3}
-        />
-      )}
+      {/* atrás dos botões: placa dos encoders, termistores e chicote; no centro, a lente do indicador */}
+      <ConsoleInternals />
+      <HotSurfaceLens />
       {/* bezel/arruela rasa sob cada botão + indicador em D na frente do cilindro */}
       {KNOB_ZONES.map((knob, i) => {
         const [x, y] = knob.position
@@ -499,16 +583,21 @@ function CutCap() {
  * A pilha inteira sobe em "Levantar cooktop" (`<Openable kind="console">`),
  * revelando a baía da eletrônica, que fica no corpo (ver `ThermalMapScene`).
  *
+ * `rearExtras` (a zona `Mainback`, seus pinos e rótulo) entra do mesmo modo no
+ * grupo do painel traseiro: a zona é a face externa do painel e tem de recuar
+ * com ele, em "Abrir traseira" e na explosão — senão a chapa abre e a face fica.
+ *
  * `topExtras` entra **dentro** do `<Openable>`/camada do vidro: é por onde as
  * zonas, pinos e rótulos sobem junto com a peça, sem depender de dois grupos
  * animados manterem-se sincronizados.
  */
-export function StoveBody({ topExtras }: { topExtras?: React.ReactNode }) {
+export function StoveBody({ topExtras, rearExtras }: { topExtras?: React.ReactNode; rearExtras?: React.ReactNode }) {
   return (
     <group>
       <Cabinet />
       <Cavity />
       <Drawer />
+      <HmiScreen />
       <Openable kind="console">
         <ExplodeLayer layer="glass">
           <CooktopGlass />
@@ -519,6 +608,7 @@ export function StoveBody({ topExtras }: { topExtras?: React.ReactNode }) {
         </ExplodeLayer>
         <ExplodeLayer layer="elements">
           <RadiantElements />
+          <TopDuct />
           <CooktopGlow />
         </ExplodeLayer>
         <ExplodeLayer layer="tray">
@@ -527,7 +617,10 @@ export function StoveBody({ topExtras }: { topExtras?: React.ReactNode }) {
       </Openable>
       <Feet />
       <Openable kind="rear">
-        <RearPanels />
+        <ExplodeRear>
+          <RearPanels />
+          {rearExtras}
+        </ExplodeRear>
       </Openable>
       <Openable kind="oven">
         <Door />

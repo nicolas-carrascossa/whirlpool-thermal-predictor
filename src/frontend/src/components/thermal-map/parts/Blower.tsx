@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { C } from '../materials'
 import { useStove } from '../StoveContext'
 import { BLOWER } from '../zoneGeometry'
+import { BlowerBody } from './BlowerBody'
 import { PartGroup } from './PartGroup'
 
 /** Trajetos retos percorridos pelas setas de ar. */
@@ -89,24 +90,8 @@ export function Blower() {
 
   return (
     <PartGroup partId="blower" tooltipAt={[BLOWER.x, BLOWER.y + 2.8, BLOWER.z]}>
-      {/* carcaça do ventilador */}
-      <mesh position={[BLOWER.x, BLOWER.y, BLOWER.z]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[BLOWER.radius, BLOWER.radius, 1.5, 22, 1, true]} />
-        <meshStandardMaterial color={C.metalDark} roughness={0.5} metalness={0.6} side={THREE.DoubleSide} />
-      </mesh>
-      {/* rotor */}
-      <group ref={fan} position={[BLOWER.x, BLOWER.y, BLOWER.z]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.45, 0.45, 1.3, 12]} />
-          <meshStandardMaterial color={C.dark} roughness={0.6} metalness={0.3} />
-        </mesh>
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={i} rotation={[0, 0, (i * Math.PI) / 3]}>
-            <boxGeometry args={[BLOWER.radius * 1.5, 0.28, 0.9]} />
-            <meshStandardMaterial color={C.metal} roughness={0.35} metalness={0.7} />
-          </mesh>
-        ))}
-      </group>
+      {/* voluta, rotor, motor e pés */}
+      <BlowerBody fan={fan} />
       {/* setas de fluxo */}
       <instancedMesh ref={arrows} args={[undefined, undefined, ARROW_COUNT]} frustumCulled={false}>
         <coneGeometry args={[0.3, 0.85, 8]} />
