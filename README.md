@@ -70,7 +70,7 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>models</b>: os artefatos treinados (um por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. Gerados por <code>scripts/export_models.py</code>.
 
-- <b>scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>) e treino/exportação dos modelos (<code>export_models.py</code>).
+- <b>scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
 
 ## 💻 Execução dos projetos
 
