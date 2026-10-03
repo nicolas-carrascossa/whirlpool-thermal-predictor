@@ -1680,7 +1680,7 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
-| RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a ser avaliado: direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. | Alta |
+| RF01 | Permitir que o usuário informe os parâmetros de configuração do fogão a ser avaliado (direção do fluxo de ar do blower, estado do housing, posição da placa, modo de operação, perfil de perdas, material do suporte da bobina e presença do furo do defletor) e o país de referência, Brasil ou México. | Alta |
 | RF02 | Permitir que o usuário selecione quais sensores ou áreas-chave deseja consultar, em vez de exigir a leitura dos 77 sensores a cada consulta. | Alta |
 | RF03 | Exibir a temperatura estimada para cada sensor ou área-chave selecionada, desde que a confiabilidade da predição permita a exibição de um valor numérico. | Alta |
 | RF04 | Exibir, junto de cada predição, a margem de erro esperada. | Alta |
@@ -1713,33 +1713,33 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
 | RN01 | Uma consulta só pode ser submetida se todos os parâmetros de configuração forem informados; o dashboard não deve aceitar o envio com algum desses campos em branco. | RF01 |
-| RN02 | A seleção do país de referência é obrigatória em toda consulta realizada no dashboard. | RF02 |
-| RN03 | O país selecionado determina os limites de temperatura de engenharia aplicáveis a cada sensor consultado; o modelo preditivo usado na predição é o mesmo para os dois países, apenas os limites de comparação variam. | RF02, RF13 |
-| RN04 | Ao menos um sensor ou área-chave deve ser selecionado para que a consulta seja realizada, dentro das sete áreas-chave já mapeadas: Mainback, Coil Temps, Main Vent Sys, IPC Cooling, IPC Comp, CT Knobs e Oven HMI. | RF03 |
-| RN05 | Toda temperatura estimada exibida deve vir acompanhada de sua margem de erro; não é permitido exibir uma predição sem indicar sua incerteza associada. | RF04, RF05 |
-| RN06 | A margem de erro exibida deve ser apresentada em formato comparável ao critério de aceite oficial do projeto, o erro máximo de 10%. | RF04, RF05 |
-| RN07 | Toda predição deve passar pela classificação de confiabilidade antes de ser exibida ao usuário; o dashboard não deve apresentar um resultado que ainda não tenha sido classificado. | RF07 |
-| RN08 | No estado fora de domínio, o valor numérico da temperatura não pode ser exibido, devendo ser substituído pela recomendação de simulação CFD completa. | RF07 |
-| RN09 | Toda predição com valor numérico exibido que exceda o limite de engenharia definido para o sensor consultado deve ser destacada visualmente, esteja a configuração em interpolação ou em extrapolação moderada. | RF08 |
-| RN10 | Na consulta simultânea de múltiplas configurações, cada uma deve ser validada individualmente pelas mesmas regras antes de ser exibida lado a lado com as demais. | RF09 |
-| RN11 | Nenhuma ação do dashboard pode ser realizada sem uma sessão autenticada válida, com usuário e senha individuais. | RF06 |
-| RN12 | Não é permitido o acesso anônimo ao dashboard, nem o compartilhamento de credenciais entre usuários. | RF06 |
-| RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário, data e horário, de modo a permitir auditoria de uso. | RF06, RF10 |
-| RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade, nunca apenas o valor bruto da predição. | RF04, RF05, RF07, RF11 |
+| RN02 | A seleção do país de referência é obrigatória em toda consulta realizada no dashboard. | RF01 |
+| RN03 | O país selecionado determina os limites de temperatura de engenharia aplicáveis a cada sensor consultado; o modelo preditivo usado na predição é o mesmo para os dois países, apenas os limites de comparação variam. | RF07, RF12 |
+| RN04 | Ao menos um sensor ou área-chave deve ser selecionado para que a consulta seja realizada, dentro das sete áreas-chave já mapeadas: Mainback, Coil Temps, Main Vent Sys, IPC Cooling, IPC Comp, CT Knobs e Oven HMI. | RF02 |
+| RN05 | Toda temperatura estimada exibida deve vir acompanhada de sua margem de erro; não é permitido exibir uma predição sem indicar sua incerteza associada. | RF03, RF04 |
+| RN06 | A margem de erro exibida deve ser apresentada em formato comparável ao critério de aceite oficial do projeto, o erro máximo de 10%. | RF04 |
+| RN07 | Toda predição deve passar pela classificação de confiabilidade antes de ser exibida ao usuário; o dashboard não deve apresentar um resultado que ainda não tenha sido classificado. | RF06 |
+| RN08 | No estado fora de domínio, o valor numérico da temperatura não pode ser exibido, devendo ser substituído pela recomendação de simulação CFD completa. | RF03, RF06 |
+| RN09 | Toda predição com valor numérico exibido que exceda o limite de engenharia definido para o sensor consultado deve ser destacada visualmente, esteja a configuração em interpolação ou em extrapolação moderada. | RF07 |
+| RN10 | Na consulta simultânea de múltiplas configurações, cada uma deve ser validada individualmente pelas mesmas regras antes de ser exibida lado a lado com as demais. | RF08 |
+| RN11 | Nenhuma ação do dashboard pode ser realizada sem uma sessão autenticada válida, com usuário e senha individuais. | RF05 |
+| RN12 | Não é permitido o acesso anônimo ao dashboard, nem o compartilhamento de credenciais entre usuários. | RF05 |
+| RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário, data e horário, de modo a permitir auditoria de uso. | RF05, RF09 |
+| RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade, nunca apenas o valor bruto da predição. | RF04, RF06, RF10 |
 
 #### <a name="c6_2_2"></a>6.2.2. Regras de negócio do software preditivo
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
-| RN15 | Toda avaliação de uma predição contra os limites de engenharia deve informar obrigatoriamente o país de referência, Brasil ou México, usado exclusivamente para selecionar a tabela de limites aplicável, e não para escolher entre modelos preditivos distintos. | RF13 |
-| RN16 | Uma predição é considerada inválida se os dados de entrada não tiverem passado pelo mesmo pré-processamento aplicado no treinamento. | RF14 |
-| RN17 | A vedação a bibliotecas proprietárias ou licenciadas vale para todas as etapas do software: pré-processamento, treinamento e predição. | RF15 |
-| RN18 | Os dados de simulação (CFD), de testes físicos e os anexados pelo usuário não podem ser versionados junto ao código-fonte; devem sempre residir na fonte de dados externa ao repositório. | RF16 |
-| RN19 | O retreinamento dos modelos não pode exigir alteração do código-fonte da rotina de predição; a atualização deve se limitar à fonte de dados externa e ao disparo do retreinamento. | RF16, RF17 |
-| RN20 | Na predição em lote, cada configuração do conjunto deve ser validada e processada de forma independente, de modo que uma configuração inválida ou malformada não invalide o resultado das demais configurações do lote. | RF18, RF12 |
-| RN21 | Toda nova versão do modelo deve reportar as métricas que operacionalizam o critério de aceite de erro máximo de 10%: o erro médio absoluto em °C por termopar, o erro normalizado pela folga entre a temperatura prevista e o limite de engenharia do sensor, e a taxa de falsos-negativos de segurança (a proporção de predições não sinalizadas como excedentes que, no teste físico correspondente, ultrapassam o limite de engenharia). | RF08, RF19 |
-| RN22 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores. | RF19 |
-| RN23 | Toda predição exibida deve comunicar explicitamente que o valor representa uma estimativa da saída da simulação CFD e não uma medição física direta, para que o usuário não a interprete como dado de campo. | RF20 |
+| RN15 | Toda avaliação de uma predição contra os limites de engenharia deve informar obrigatoriamente o país de referência, Brasil ou México, usado exclusivamente para selecionar a tabela de limites aplicável, e não para escolher entre modelos preditivos distintos. | RF07, RF12 |
+| RN16 | Uma predição é considerada inválida se os dados de entrada não tiverem passado pelo mesmo pré-processamento aplicado no treinamento. | RF13 |
+| RN17 | A vedação a bibliotecas proprietárias ou licenciadas vale para todas as etapas do software: pré-processamento, treinamento e predição. | RF14 |
+| RN18 | Os dados de simulação (CFD), de testes físicos e os anexados pelo usuário não podem ser versionados junto ao código-fonte; devem sempre residir na fonte de dados externa ao repositório. | RF15 |
+| RN19 | O retreinamento dos modelos não pode exigir alteração do código-fonte da rotina de predição; a atualização deve se limitar à fonte de dados externa e ao disparo do retreinamento. | RF15, RF16 |
+| RN20 | Na predição em lote, cada configuração do conjunto deve ser validada e processada de forma independente, de modo que uma configuração inválida ou malformada não invalide o resultado das demais configurações do lote. | RF17 |
+| RN21 | Toda nova versão do modelo deve reportar as métricas que operacionalizam o critério de aceite de erro máximo de 10%: o erro médio absoluto em °C por termopar, o erro normalizado pela folga entre a temperatura prevista e o limite de engenharia do sensor, e a taxa de falsos-negativos de segurança (a proporção de predições não sinalizadas como excedentes que, no teste físico correspondente, ultrapassam o limite de engenharia). | RF18 |
+| RN22 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores. | RF18 |
+| RN23 | Toda predição exibida deve comunicar explicitamente que o valor representa uma estimativa da saída da simulação CFD e não uma medição física direta, para que o usuário não a interprete como dado de campo. | RF11 |
 
 ## <a name="c7"></a>7. Referências
 
