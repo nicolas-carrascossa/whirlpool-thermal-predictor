@@ -240,7 +240,7 @@ Como critério de sucesso, o modelo deverá prever a temperatura com margem de e
 
 <div align="center">
   <sub>Figura 2 — Canvas de Proposta de Valor da Whirlpool</sub><br>
-  <img src="../assets/caanvasSolucao.png" width="800" alt="Canvas"><br>
+  <img src="../assets/canvasSolucao.png" width="800" alt="Canvas"><br>
   <sup>Fonte: Elaborado pelos autores (2026).</sup>
 </div>
 

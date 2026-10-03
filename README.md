@@ -78,7 +78,8 @@ npm run dev
 
 A interface sobe em `http://localhost:5173` e fala com a API em
 `http://localhost:8000` (configurável em `src/frontend/.env`). O login padrão
-de desenvolvimento está em `src/backend/README.md`.
+de desenvolvimento está em `src/backend/README.md`. Essas credenciais servem
+apenas para demonstração local e não dão acesso a nenhum sistema real.
 
 Sem `MODEL_MODE=real` a API responde com o preditor mock determinístico, útil
 para desenvolver a interface sem os artefatos treinados. O que está na tela
