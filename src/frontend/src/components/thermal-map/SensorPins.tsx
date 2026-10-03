@@ -22,9 +22,9 @@ const PIN_HIT_RADIUS = PIN_RADIUS * 2.8
 
 /** Cores espelhadas de `src/styles/tokens.css`. */
 const PIN_COLOR: Record<SensorStatus, string> = {
-  ok: '#6aa342',
-  warn: '#e08650',
-  danger: '#b3261e',
+  ok: '#5aa469',
+  warn: '#f4a63c',
+  danger: '#cf5f57',
   monitor: '#9fa0a1',
 }
 

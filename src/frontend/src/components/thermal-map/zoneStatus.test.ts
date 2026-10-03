@@ -60,9 +60,9 @@ describe('zoneStatusOf / zoneStatusColor', () => {
   })
 
   it('traduz o status nas cores dos tokens', () => {
-    expect(zoneStatusColor(predictions, 'CT Knobs')).toBe('#6aa342')
-    expect(zoneStatusColor(predictions, 'IPC Comp')).toBe('#e08650')
-    expect(zoneStatusColor(predictions, 'Coil Temps')).toBe('#b3261e')
+    expect(zoneStatusColor(predictions, 'CT Knobs')).toBe('#5aa469')
+    expect(zoneStatusColor(predictions, 'IPC Comp')).toBe('#f4a63c')
+    expect(zoneStatusColor(predictions, 'Coil Temps')).toBe('#cf5f57')
   })
 
   it('reaproveita o corte de 90% de lib/status (89,9% ainda é ok)', () => {

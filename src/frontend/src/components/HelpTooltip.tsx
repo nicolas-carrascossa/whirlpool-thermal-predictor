@@ -13,7 +13,7 @@ export function HelpTooltip({ label, text }: { label: string; text: string }) {
         <button
           type="button"
           aria-label={`Ajuda sobre ${label}`}
-          className="inline-flex h-4 w-4 items-center justify-center rounded-full text-wp-gray45 transition-colors hover:text-wp-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex h-4 w-4 items-center justify-center rounded-full text-wp-gray45 transition-colors hover:text-wp-gray85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Info className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
         </button>

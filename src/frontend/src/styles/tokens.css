@@ -1,24 +1,37 @@
 /* src/frontend/src/styles/tokens.css — única fonte de verdade visual */
 :root {
   /* núcleo + acento (Whirlpool) */
-  --wp-core:        #0d436b;  /* Accomplished Blue — títulos, botões primários, links */
-  --wp-accent:      #00a0dd;  /* Accent Blue — foco, seleção, destaques */
-  --wp-accent-lt:   #edf4fc;  /* Light Accent Blue — fundos de seleção, linhas ativas */
+  --wp-core:        #111214;  /* tinta — títulos, botões primários, sidebar (era Accomplished Blue #0d436b) */
+  --wp-accent:      #94a3b8;  /* cinza-azulado neutro — seleção, destaques (já foi azul #00a0dd e limão #c4e95b) */
+  --wp-accent-lt:   #eef1f5;  /* cinza-azulado claro — fundos de seleção, linhas ativas */
   /* neutros (Whirlpool) */
-  --wp-gray-05:     #f5f6f7;  /* fundo de página secundário, cabeçalho de tabela */
-  --wp-gray-12:     #dee0e3;  /* bordas */
+  --wp-gray-05:     #f4f5f6;  /* preenchimento suave dentro de blocos brancos, cabeçalho de tabela */
+  --wp-gray-12:     #e8eaec;  /* bordas */
   --wp-gray-20:     #d1d3d4;  /* divisores */
   --wp-gray-45:     #9fa0a1;  /* texto desabilitado */
-  --wp-gray-65:     #767777;  /* texto secundário */
-  --wp-gray-85:     #484949;  /* texto principal */
-  --wp-white:       #ffffff;  /* fundo dominante */
+  --wp-gray-65:     #6b6f73;  /* texto secundário (pouco usado: só o que importa menos) */
+  --wp-gray-85:     #111214;  /* texto principal — preto */
+  --wp-white:       #ffffff;  /* blocos sobrepostos ao fundo cinza */
+  --page-bg:        #ffffff;  /* fundo da página: tudo branco; a divisão é feita por linhas, não por blocos */
+  --rail-bg:        #0b0b0c;  /* barra lateral de navegação */
   /* semântica de status (exceção documentada — ver nota) */
-  --status-ok:      #6aa342;  /* Conscientious Green — dentro do limite */
-  --status-warn:    #e08650;  /* Empathetic Orange — perto do limite (≥ 90%) */
-  --status-danger:  #b3261e;  /* fora da paleta: excede o limite */
+  --status-ok:      #5aa469;  /* verde sóbrio — dentro do limite (preenchimentos: barras, gauge, pontos) */
+  --status-warn:    #f4a63c;  /* âmbar — perto do limite (≥ 90%) */
+  --status-danger:  #cf5f57;  /* vermelho do exemplo de referência: excede o limite */
+  /* Versões escuras dos status, só para TEXTO sobre branco (os preenchimentos acima
+     não têm contraste de leitura). Mesmo matiz, mais escuro. */
+  --status-ok-ink:     #2f7a43;
+  --status-warn-ink:   #a85d00;
+  --status-danger-ink: #b8453e;
+  /* elevação: cinco degraus, sempre sombra suave e difusa (preto a baixa opacidade) */
+  --shadow-card:   0 1px 2px rgba(17, 18, 20, 0.05), 0 6px 16px rgba(17, 18, 20, 0.06);
+  --shadow-raised: 0 2px 4px rgba(17, 18, 20, 0.06), 0 12px 28px rgba(17, 18, 20, 0.12);
+  --shadow-pop:    0 4px 8px rgba(17, 18, 20, 0.08), 0 20px 44px rgba(17, 18, 20, 0.2);
+  --shadow-press:  0 4px 12px rgba(17, 18, 20, 0.28);
+  --shadow-glow:   0 6px 20px rgba(148, 163, 184, 0.5);
   /* tipografia */
-  --font-display:   'Nunito Sans', 'Noto Sans', system-ui, sans-serif;
-  --font-body:      'Open Sans', 'Noto Sans', system-ui, sans-serif;
+  --font-display:   'Plus Jakarta Sans', 'Noto Sans', system-ui, sans-serif;
+  --font-body:      'Plus Jakarta Sans', 'Noto Sans', system-ui, sans-serif;
   --font-mono:      'Noto Sans Mono', ui-monospace, Consolas, monospace;
   /* layout */
   --header-h:       73px; /* fallback até o AppShell medir a altura real do header via ResizeObserver */
