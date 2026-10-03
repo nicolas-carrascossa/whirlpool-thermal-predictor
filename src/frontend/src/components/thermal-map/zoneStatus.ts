@@ -18,9 +18,9 @@ export type ZoneStatus = 'ok' | 'warn' | 'danger' | 'none'
 
 /** Cores espelhadas de `src/styles/tokens.css` (three.js não lê CSS variables). */
 export const ZONE_STATUS_COLOR: Record<ZoneStatus, string> = {
-  ok: '#6aa342', // --status-ok
-  warn: '#e08650', // --status-warn
-  danger: '#b3261e', // --status-danger
+  ok: '#5aa469', // --status-ok
+  warn: '#f4a63c', // --status-warn
+  danger: '#cf5f57', // --status-danger
   none: ZONE_GRAY_HEX, // --wp-gray-20
 }
 

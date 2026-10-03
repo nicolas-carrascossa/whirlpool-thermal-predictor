@@ -1,6 +1,6 @@
 /**
- * Coluna de resultados: agrupa a resposta por área, ordena pelas áreas mais
- * críticas e cuida dos estados de vazio, carregamento, erro e arquitetura
+ * Coluna de resultados: resumo, faixa de áreas e o detalhe da área escolhida;
+ * cuida dos estados de vazio, carregamento, erro e arquitetura
  * indisponível.
  *
  * O mapa térmico 3D fica numa aba própria ("Mapa térmico"), separada da lista
@@ -9,11 +9,11 @@
  * "Acessar Mapa térmico" da barra superior chega até aqui.
  */
 
-import { useCallback, useMemo, useState } from 'react'
-import { OctagonAlert, SlidersHorizontal, X } from 'lucide-react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { OctagonAlert, SlidersHorizontal } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import type { PartId } from '@/components/thermal-map/parts'
 import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import {
@@ -24,6 +24,7 @@ import {
   type StoveConfig,
 } from '@/contract/v1'
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
+import { AreaStrip } from '@/features/results/AreaStrip'
 import { ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { MetricsPanel } from '@/features/metrics/MetricsPanel'
@@ -98,7 +99,7 @@ function Placeholder({
         role={tone === 'danger' ? 'alert' : undefined}
       >
         <Icon
-          className={tone === 'danger' ? 'h-6 w-6 text-status-danger' : 'h-6 w-6 text-wp-gray45'}
+          className={tone === 'danger' ? 'h-6 w-6 text-status-danger-ink' : 'h-6 w-6 text-wp-gray45'}
           strokeWidth={1.5}
           aria-hidden="true"
         />
@@ -120,7 +121,7 @@ function ResultsSkeleton() {
 }
 
 /** Abas da área de resultados. */
-export type ResultsTab = 'resultados' | 'mapa' | 'metricas'
+export type ResultsTab = 'resultados' | 'mapa' | 'metricas' | 'historico'
 
 export function ResultsPanel({
   metadata,
@@ -139,6 +140,8 @@ export function ResultsPanel({
   onHoverVariable,
   activeTab,
   onTabChange,
+  historySlot,
+  technicianView = true,
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
@@ -159,6 +162,10 @@ export function ResultsPanel({
   /** Aba ativa. Sem a prop, o painel controla a aba sozinho (começa em "resultados"). */
   activeTab?: ResultsTab
   onTabChange?: (tab: ResultsTab) => void
+  /** Conteúdo da aba "Histórico". Sem ele a aba não aparece. */
+  historySlot?: ReactNode
+  /** `false` = visão "não técnico": tabela de sensor só mostra quem pede atenção. Padrão `true`. */
+  technicianView?: boolean
 }) {
   // Etapa B: "Status (limite)" é o modo padrão — a pergunta do engenheiro é
   // onde o limite estoura, não onde está mais quente.
@@ -175,8 +182,21 @@ export function ResultsPanel({
     [onTabChange],
   )
   const submittedConfig = request?.config ?? null
-  const isPreview =
-    !!draftConfig && !!submittedConfig && JSON.stringify(draftConfig) !== JSON.stringify(submittedConfig)
+
+  // Área em exibição: controlada de fora quando `onSelectKeyArea` vem por prop
+  // (o store compartilha a escolha com o mapa 3D); senão, estado local.
+  const [internalArea, setInternalArea] = useState<string | null>(null)
+  const chosenArea = onSelectKeyArea ? selectedKeyArea : internalArea
+  const selectArea = useCallback(
+    (area: string) => {
+      // O store alterna (clicar na mesma limpa); aqui sempre há uma área, então
+      // reescolher a atual não faz nada.
+      if (area === chosenArea) return
+      setInternalArea(area)
+      onSelectKeyArea?.(area)
+    },
+    [chosenArea, onSelectKeyArea],
+  )
 
   const groups = useMemo(
     () => (response ? groupByArea(response, metadata) : []),
@@ -192,19 +212,16 @@ export function ResultsPanel({
     (tcNumber: number) => {
       const prediction = response?.predictions.find((p) => p.tc_number === tcNumber)
       if (!prediction) return
-      if (selectedKeyArea && selectedKeyArea !== prediction.key_area) onSelectKeyArea?.(null)
+      selectArea(prediction.key_area)
       setSensorFocus({ tcNumber, area: prediction.key_area, token: Date.now() })
       setTab('resultados')
     },
-    [response, selectedKeyArea, onSelectKeyArea, setTab],
+    [response, selectArea, setTab],
   )
 
-  const visibleGroups = selectedKeyArea
-    ? groups.filter((g) => g.name === selectedKeyArea)
-    : groups
-  const selectedLabel = selectedKeyArea
-    ? groups.find((g) => g.name === selectedKeyArea)?.label_pt ?? selectedKeyArea
-    : null
+  // A área em exibição é sempre uma só. Sem escolha (ou com uma área que a
+  // resposta não cobre) abre a mais crítica, que `groupByArea` já põe primeiro.
+  const shownGroup = groups.find((g) => g.name === chosenArea) ?? groups[0] ?? null
 
   const body = (() => {
     if (error) {
@@ -235,8 +252,8 @@ export function ResultsPanel({
       return (
         <Placeholder
           icon={SlidersHorizontal}
-          title="Nenhuma consulta ainda"
-          text="Selecione uma configuração e clique em Prever."
+          title="Esperando previsão"
+          text="Selecione uma configuração ao lado e clique em Prever para ver os resultados aqui."
         />
       )
     }
@@ -265,48 +282,37 @@ export function ResultsPanel({
 
     return (
       <>
-        <ResultsSummary
-          response={response}
-          metadata={metadata}
-          request={request ?? null}
-          isPreview={isPreview}
+        <ResultsSummary response={response} />
+        <AreaStrip
+          areas={metadata?.key_areas ?? groups.map((g) => ({ name: g.name, label_pt: g.label_pt }))}
+          groups={groups}
+          selected={shownGroup?.name ?? null}
+          onSelect={selectArea}
         />
-        {selectedKeyArea && (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onSelectKeyArea?.(null)}
-              className="flex items-center gap-1.5 rounded-full border border-wp-accent bg-wp-accentLt px-3 py-1 font-body text-xs font-semibold text-wp-core transition-colors hover:bg-wp-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Filtrando: {selectedLabel}
-              <X className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
-            </button>
-          </div>
-        )}
-        {visibleGroups.map((group) => (
+        {shownGroup && (
           <AreaCard
-            key={group.name}
-            group={group}
-            focus={sensorFocus && sensorFocus.area === group.name ? sensorFocus : null}
+            key={shownGroup.name}
+            group={shownGroup}
+            focus={sensorFocus && sensorFocus.area === shownGroup.name ? sensorFocus : null}
+            technicianView={technicianView}
           />
-        ))}
+        )}
       </>
     )
   })()
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
-      <TabsList aria-label="Seções dos resultados">
-        <TabsTrigger value="resultados">Resultados</TabsTrigger>
-        <TabsTrigger value="mapa">Mapa térmico</TabsTrigger>
-        <TabsTrigger value="metricas">Métricas Estatísticas</TabsTrigger>
-      </TabsList>
-      <TabsContent value="resultados" className="mt-4 flex flex-col gap-4">
+      {/* A troca de seção é feita pela barra lateral (`NavRail`); aqui ficam só os painéis. */}
+      <TabsContent
+        value="resultados"
+        className="mt-0 flex flex-col divide-y divide-wp-gray12 [&>*]:py-5"
+      >
         {body}
       </TabsContent>
       {/* A aba inativa é desmontada pelo Radix: o canvas WebGL (frameloop
           "always") não fica renderizando escondido. */}
-      <TabsContent value="mapa" className="mt-4">
+      <TabsContent value="mapa" className="mt-0">
         <ThermalMapSlot
           metadata={metadata}
           response={response}
@@ -325,13 +331,18 @@ export function ResultsPanel({
         />
       </TabsContent>
       {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
-      <TabsContent value="metricas" className="mt-4">
+      <TabsContent value="metricas" className="mt-0">
         <MetricsPanel
           metadata={metadata}
           keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
           response={response ?? undefined}
         />
       </TabsContent>
+      {historySlot && (
+        <TabsContent value="historico" className="mt-0">
+          {historySlot}
+        </TabsContent>
+      )}
     </Tabs>
   )
 }

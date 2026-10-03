@@ -38,7 +38,6 @@ import { useMetricsQuery } from '@/hooks/useThermalQueries'
 import { formatCount } from '@/lib/format'
 
 import { AreaErrorTable } from './AreaErrorTable'
-import ErrorHeatmap from './ErrorHeatmap'
 import { executedRunIndex, scopeToPrediction } from './metricsModel'
 
 const PredictedVsActualScatter = lazy(() => import('./PredictedVsActualScatter'))
@@ -111,7 +110,7 @@ export function MetricsPanel({
     return (
       <Card>
         <CardContent role="alert" className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-          <TriangleAlert className="h-6 w-6 text-status-danger" strokeWidth={1.5} aria-hidden="true" />
+          <TriangleAlert className="h-6 w-6 text-status-danger-ink" strokeWidth={1.5} aria-hidden="true" />
           <h2 className="font-display text-lg font-semibold text-wp-gray85">
             Não foi possível carregar as métricas
           </h2>
@@ -196,10 +195,10 @@ export function MetricsPanel({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Importância das variáveis — {selectedLabel}</CardTitle>
+            <CardTitle className="text-base">Importância das variáveis (waterfall) — {selectedLabel}</CardTitle>
             <CardDescription>
-              Quanto cada variável de configuração pesa no modelo desta área. Variável que este modelo não
-              usa aparece zerada e em cinza.
+              Quanto cada variável de configuração pesa no modelo desta área, acumulado até 100%. Variável
+              que este modelo não usa aparece zerada e em cinza.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -212,24 +211,6 @@ export function MetricsPanel({
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Mapa de calor do erro por área</CardTitle>
-          <CardDescription>
-            Estatísticas do erro absoluto (°C) medido no conjunto de teste, restritas aos sensores desta
-            consulta, na mesma escala de cor do mapa 3D. Clique numa área para selecioná-la.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <ErrorHeatmap
-            areas={validationByArea}
-            areaLabels={areaLabels}
-            selectedKeyArea={selected.key_area}
-            onSelectKeyArea={setPreferredArea}
-          />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader className="pb-2">

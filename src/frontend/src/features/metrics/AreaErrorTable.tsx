@@ -27,9 +27,9 @@ const ROW_CLASS: Record<KpiStatus, string> = {
 }
 
 const STATUS_TEXT_CLASS: Record<KpiStatus, string> = {
-  ok: 'text-status-ok',
-  warn: 'text-status-warn',
-  danger: 'text-status-danger',
+  ok: 'text-status-ok-ink',
+  warn: 'text-status-warn-ink',
+  danger: 'text-status-danger-ink',
 }
 
 export function AreaErrorTable({

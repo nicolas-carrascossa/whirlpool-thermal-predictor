@@ -60,7 +60,7 @@ interface MapToolbarProps {
 }
 
 const chip =
-  'rounded px-2 py-1 font-body text-xs leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wp-accent'
+  'rounded px-2 py-1 font-body text-xs leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 /** Controles de abertura, rótulos, câmera e (em "Avançado") vista e corte. */
 export function MapToolbar({

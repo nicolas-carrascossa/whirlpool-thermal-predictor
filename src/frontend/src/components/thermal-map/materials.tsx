@@ -22,7 +22,7 @@ export const C = {
   gray65: '#767777', // --wp-gray-65
   dark: '#484949', // --wp-gray-85
   glass: '#23262a',
-  accent: '#00a0dd', // --wp-accent
+  accent: '#94a3b8', // --wp-accent
   core: '#0d436b', // --wp-core
   metal: '#9fa0a1', // metálico claro (neutro)
   metalDark: '#767777', // metálico escuro (neutro)
