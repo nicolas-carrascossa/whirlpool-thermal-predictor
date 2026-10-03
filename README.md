@@ -105,8 +105,17 @@ cópia do passo 2: no PowerShell, use
 `copy src\backend\.env.example src\backend\.env`.
 
 A interface sobe em `http://localhost:5173` e fala com a API em
-`http://localhost:8000` (configurado em `src/frontend/.env.api`). Os usuários
-de demonstração estão em [`src/backend/README.md`](src/backend/README.md#usuários-de-demonstração).
+`http://localhost:8000` (configurado em `src/frontend/.env.api`). Para entrar,
+use um dos usuários de demonstração, criados automaticamente na primeira
+execução da API:
+
+| Usuário | Senha | Perfil |
+|---|---|---|
+| `engenheiro` | `thermal2026` | Engenharia (uso do dia a dia) |
+| `admin` | `admin2026` | Administrador |
+
+São credenciais apenas para uso local; troque-as antes de qualquer uso real
+(ver [`src/backend/README.md`](src/backend/README.md#usuários-de-demonstração)).
 
 Sem `MODEL_MODE=real` a API responde com o preditor mock determinístico, útil
 para desenvolver a interface sem os artefatos treinados. O que está na tela
