@@ -3,18 +3,17 @@
  * (`ConfigPanel`) alimenta o `<ThermalMap3D>` (mockado — não renderiza WebGL)
  * em tempo real via `ThermalMapSlot`, sem precisar de "Prever".
  *
- * Usa temporizadores reais (em vez de fake timers) porque o fluxo passa por
- * `findByRole`/estado assíncrono do Radix Select — misturar isso com fake
- * timers trava a espera dos testes.
+ * Usa temporizadores reais (em vez de fake timers) porque o pulso da peça
+ * dura ~1,1 s de relógio real.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ThermalMap3DProps } from '@/components/thermal-map/ThermalMap3D'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
-import { ConfigPanel } from '@/features/config/ConfigPanel'
+import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE } from '@/test/fixtures'
 
@@ -36,7 +35,7 @@ function Harness() {
   const store = useConfigStore()
   return (
     <>
-      <ConfigPanel />
+      <StoveConfigPanel />
       <ThermalMapSlot
         metadata={store.metadata}
         response={FIXTURE_RESPONSE}
@@ -67,12 +66,15 @@ async function renderHarness() {
   return screen.findByTestId('thermal-map-stub')
 }
 
-async function changeHousingToOpen() {
-  fireEvent.click(screen.getByLabelText('Carcaça da eletrônica'))
-  fireEvent.click(await screen.findByRole('option', { name: 'Open' }))
+function pick(variable: string, option: string) {
+  fireEvent.click(within(screen.getByRole('radiogroup', { name: variable })).getByRole('radio', { name: option }))
 }
 
-describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
+async function changeHousingToOpen() {
+  pick('Electronics housing', 'Open')
+}
+
+describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
   it('propaga o rascunho da configuração para o mapa sem precisar de "Prever"', async () => {
     const stub = await renderHarness()
     expect(JSON.parse(stub.getAttribute('data-config') ?? '{}')).toMatchObject({ housing: 'Closed' })
@@ -95,8 +97,8 @@ describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
 
   it('mostra o aviso de pré-visualização quando o rascunho diverge da última predição e some após "Prever"', async () => {
     await renderHarness()
-    // A carga inicial já auto-submete a config de referência: nada divergente ainda.
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    // Antes da 1ª previsão, qualquer rascunho já é "divergente" (nada foi submetido ainda).
+    expect(screen.getByRole('status')).toBeInTheDocument()
 
     await changeHousingToOpen()
 
@@ -111,8 +113,7 @@ describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
   it('alterar "losses" não pulsa nenhuma peça e não gera erro no aviso de pré-visualização', async () => {
     const stub = await renderHarness()
 
-    fireEvent.click(screen.getByLabelText('Perfil de perdas'))
-    fireEvent.click(await screen.findByRole('option', { name: 'Losses A' }))
+    pick('Losses', 'Losses A')
     await wait(1150)
 
     expect(stub.getAttribute('data-highlight')).toBe('')

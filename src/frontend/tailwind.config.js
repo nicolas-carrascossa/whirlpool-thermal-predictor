@@ -21,6 +21,9 @@ export default {
           ok: 'var(--status-ok)',
           warn: 'var(--status-warn)',
           danger: 'var(--status-danger)',
+          'ok-ink': 'var(--status-ok-ink)',
+          'warn-ink': 'var(--status-warn-ink)',
+          'danger-ink': 'var(--status-danger-ink)',
         },
         border: 'var(--border)',
         input: 'var(--input)',
@@ -55,6 +58,13 @@ export default {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
         },
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
+        pop: 'var(--shadow-pop)',
+        press: 'var(--shadow-press)',
+        glow: 'var(--shadow-glow)',
       },
       fontFamily: {
         display: ['var(--font-display)'],

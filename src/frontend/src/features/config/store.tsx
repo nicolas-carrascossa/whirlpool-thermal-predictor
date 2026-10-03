@@ -32,10 +32,21 @@ export interface QueryState {
   sensors: number[]
 }
 
+/**
+ * Como a consulta em andamento é tratada, escolhido na tela de início:
+ *  - `save`: fica no Histórico com o nome dado; cada previsão ATUALIZA essa mesma
+ *    entrada (não cria outra), então o histórico sempre guarda a última;
+ *  - `view`: só visualização momentânea, nada é salvo.
+ * `null` = ainda na tela de início (nenhuma escolha feita).
+ */
+export type Session =
+  | { mode: 'save'; name: string; /** Entrada do histórico desta consulta; `null` até a 1ª previsão. */ entryId: number | null }
+  | { mode: 'view' }
+
 /** Consulta salva durante a sessão para que possa ser reaberta posteriormente. */
 export interface HistoryEntry {
   id: number
-  /** Título editável da consulta, iniciado como "Consulta N". */
+  /** Título da consulta: o nome dado na tela de início (editável no histórico). */
   name: string
   /** Mesmo `request_id` retornado pelo preditor; nulo enquanto a previsão carrega. */
   record: string | null
@@ -62,8 +73,22 @@ export interface ConfigStore extends QueryState {
   highlightPart: PartId | null
   /** Variável cujo select/legenda está sob o cursor — destaque contínuo no 3D. */
   hoveredVariable: keyof StoveConfig | null
-  /** Consultas submetidas manualmente, na ordem em que foram criadas. */
+  /** Consultas registradas, na ordem em que foram criadas. */
   history: HistoryEntry[]
+  /** Consulta em andamento; `null` na tela de início. */
+  session: Session | null
+  /**
+   * `false` (padrão) = visão "não técnico": nas tabelas de sensor só aparecem os
+   * que pedem atenção (em atenção ou acima do limite). `true` = visão técnica,
+   * com todos os sensores, inclusive os dentro do limite. O gráfico de barras
+   * sempre mostra todos, nos dois modos.
+   */
+  technicianView: boolean
+  setTechnicianView: (value: boolean) => void
+  /** Sai da tela de início: `name` registra no histórico; `null` é só visualização. */
+  startSession: (name: string | null) => void
+  /** "Nova consulta": volta à tela de início com a configuração de referência. */
+  endSession: () => void
   setHoveredVariable: (field: keyof StoveConfig | null) => void
   setArchitecture: (value: Architecture) => void
   setField: (field: keyof StoveConfig, value: string) => void
@@ -160,6 +185,8 @@ export function ConfigStoreProvider({
   })
   const [request, setRequest] = useState<PredictionRequest | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [session, setSession] = useState<Session | null>(null)
+  const [technicianView, setTechnicianView] = useState(false)
   const nextHistoryId = useRef(1)
   const [selectedKeyArea, setSelectedKeyArea] = useState<string | null>(null)
   const [hoveredVariable, setHoveredVariable] = useState<keyof StoveConfig | null>(null)
@@ -196,16 +223,39 @@ export function ConfigStoreProvider({
   /** Nomes de todas as áreas do metadata — o valor de `areas` no estado "todas". */
   const allAreas = useMemo(() => (metadata?.key_areas ?? []).map((a) => a.name), [metadata])
 
+  /** Entrada do histórico da consulta em andamento (modo `save`), se já existir. */
+  const sessionEntry =
+    session?.mode === 'save' && session.entryId !== null
+      ? history.find((entry) => entry.id === session.entryId)
+      : undefined
+
+  /**
+   * Registra a previsão da consulta em andamento. Só no modo `save`, e sempre na
+   * MESMA entrada: a 1ª previsão cria; as seguintes trocam a requisição e zeram o
+   * resultado até a resposta chegar.
+   */
   function saveToHistory(nextRequest: PredictionRequest) {
+    if (session?.mode !== 'save') return
+    if (sessionEntry) {
+      setHistory((current) =>
+        current.map((entry) =>
+          entry.id === sessionEntry.id
+            ? { ...entry, record: null, createdAt: new Date().toISOString(), request: cloneRequest(nextRequest) }
+            : entry,
+        ),
+      )
+      return
+    }
     const entry: HistoryEntry = {
       id: nextHistoryId.current,
-      name: `Consulta ${nextHistoryId.current}`,
+      name: session.name,
       record: null,
       createdAt: new Date().toISOString(),
       request: cloneRequest(nextRequest),
     }
     nextHistoryId.current += 1
     setHistory((current) => [...current, entry])
+    setSession({ ...session, entryId: entry.id })
   }
 
   /** Aplica o novo estado e já o submete (usado por ações que re-consultam). */
@@ -216,10 +266,11 @@ export function ConfigStoreProvider({
     if (saveHistory && nextRequest) saveToHistory(nextRequest)
   }
 
-  // Preenchimento inicial + predição automática na primeira carga.
+  // Preenchimento inicial do formulário, sem submeter nenhuma predição ainda:
+  // o meio só mostra resultado depois do primeiro clique em "Prever".
   useEffect(() => {
     if (!metadata || state.config) return
-    commit({
+    setState({
       architecture: 'BR',
       config: { ...metadata.reference_config },
       areas: allAreas,
@@ -230,8 +281,10 @@ export function ConfigStoreProvider({
 
   const value = useMemo<ConfigStore>(() => {
     const pending = buildRequest(state, allAreas)
+    // Só vale no modo `save`: prever de novo sem mudar nada não acrescenta nada à
+    // consulta registrada. Na visualização momentânea não há nada a duplicar.
     const hasDuplicateHistory =
-      pending !== null && history.some((entry) => sameRequest(entry.request, pending))
+      pending !== null && !!sessionEntry && sameRequest(sessionEntry.request, pending)
     return {
       ...state,
       metadata,
@@ -242,11 +295,25 @@ export function ConfigStoreProvider({
       highlightPart,
       hoveredVariable,
       history,
+      session,
+      technicianView,
+      setTechnicianView,
+      startSession: (name) => setSession(name === null ? { mode: 'view' } : { mode: 'save', name, entryId: null }),
+      endSession: () => {
+        setSession(null)
+        setSelectedKeyArea(null)
+        setRequest(null)
+        if (metadata) {
+          setState({ architecture: 'BR', config: { ...metadata.reference_config }, areas: allAreas, sensors: [] })
+        }
+      },
       setHoveredVariable,
       selectKeyArea: (area) => setSelectedKeyArea((current) => (current === area ? null : area)),
-      // A arquitetura re-submete na hora: a indisponibilidade do México precisa
-      // aparecer sem exigir um clique em "Prever".
-      setArchitecture: (architecture) => commit({ ...state, architecture }),
+      // A arquitetura re-submete na hora (só se já houve previsão): a
+      // indisponibilidade do México precisa aparecer sem exigir um novo
+      // clique em "Prever". Antes da 1ª previsão, só atualiza o rascunho.
+      setArchitecture: (architecture) =>
+        request ? commit({ ...state, architecture }) : setState((prev) => ({ ...prev, architecture })),
       setField: (field, val) => {
         setState((prev) =>
           prev.config ? { ...prev, config: { ...prev.config, [field]: val } } : prev,
@@ -286,6 +353,8 @@ export function ConfigStoreProvider({
         setState(restored)
         setRequest(cloneRequest(entry.request))
         setSelectedKeyArea(null)
+        // Reabrir continua ESSA consulta: as próximas previsões a atualizam.
+        setSession({ mode: 'save', name: entry.name, entryId: entry.id })
       },
       recordHistoryPrediction: (submittedRequest, response) =>
         setHistory((current) => {
@@ -313,18 +382,21 @@ export function ConfigStoreProvider({
           current.map((entry) => (entry.id === id ? { ...entry, name: nextName } : entry)),
         )
       },
-      deleteHistory: (id) =>
-        setHistory((current) => current.filter((entry) => entry.id !== id)),
+      deleteHistory: (id) => {
+        setHistory((current) => current.filter((entry) => entry.id !== id))
+        // Apagou a consulta em andamento: a próxima previsão a registra de novo, com o mesmo nome.
+        if (session?.mode === 'save' && session.entryId === id) setSession({ ...session, entryId: null })
+      },
       runAll: () => {
         const next = { ...state, areas: allAreas, sensors: [] }
         const nextRequest = buildRequest(next, allAreas)
-        if (nextRequest && history.some((entry) => sameRequest(entry.request, nextRequest))) return
+        if (nextRequest && sessionEntry && sameRequest(sessionEntry.request, nextRequest)) return
         commit(next, true)
       },
       clearSelection: () => setState((prev) => ({ ...prev, areas: allAreas, sensors: [] })),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, metadata, allAreas, request, selectedKeyArea, highlightPart, hoveredVariable, history])
+  }, [state, metadata, allAreas, request, selectedKeyArea, highlightPart, hoveredVariable, history, session, technicianView])
 
   return <ConfigStoreContext.Provider value={value}>{children}</ConfigStoreContext.Provider>
 }
