@@ -23,14 +23,12 @@ plausivel e errado, sem erro nenhum:
    categoria para os codigos deixarem de coincidir, e o erro sai como numero
    plausivel, sem excecao nenhuma.
 
-   Sobre `material_coil_support`: os notebooks divergiam — o de Gradient
-   Boosting normalizava "Aluminium Plate" -> "Aluminium ", o de Random Forest
-   nao. A normalizacao agora e aplicada NOS DOIS, seguindo a decisao registrada
-   em `documents/extras/hipotese_material_sem_correcao_E17.md` (o glossario oficial do
-   parceiro documenta so 2 niveis; "Aluminium Plate" aparece em 1 run de 56 e
-   nao tem confirmacao fisica). Sem isso, escolher esse valor fazia 4 areas
-   tratarem como Aluminium, 2 usarem uma categoria treinada com um unico run e
-   `IPC Comp` sumir da resposta.
+   Sobre `material_coil_support`: "Aluminium Plate" -> "Aluminium " e unificado
+   em `notebooks/tratamento_final_dos_dados.ipynb`, antes de qualquer modelo,
+   seguindo a decisao registrada em
+   `documents/extras/hipotese_material_sem_correcao_E17.md` (o glossario oficial
+   do parceiro documenta so 2 niveis; "Aluminium Plate" aparece em 1 run de 56 e
+   nao tem confirmacao fisica). Assim as 7 areas tratam o valor do mesmo jeito.
 2. CONSOLIDACAO DOS IGBTs. `notebooks/tratamento_final_dos_dados.ipynb` funde
    `IGBT 1`..`IGBT 16` numa unica coluna `IGBT` (media por linha). O modelo de
    `IPC Comp` preve 22 valores, mas a resposta da API precisa de 37
@@ -72,7 +70,7 @@ REGISTRY_PATH = BACKEND_DATA_DIR / "sensor_registry.json"
 VARIABLE_OPTIONS_PATH = BACKEND_DATA_DIR / "variable_options.json"
 
 #: Versao do CONJUNTO de artefatos. Sobe a cada reexportacao que mude numeros.
-MODEL_SET_VERSION = "models-1.0.0"
+MODEL_SET_VERSION = "models-1.1.0"
 
 SEED = 42
 
@@ -113,34 +111,27 @@ ALGORITHM_LABELS = {
     "gradient_boosting": "Gradient Boosting",
 }
 
-#: Padronizacao de grafias, copiada literalmente de cada notebook. Note a
-#: divergencia deliberada em `material_coil_support` (ver docstring).
+#: Grafias que `notebooks/tratamento_final_dos_dados.ipynb` JA unificou nos CSVs
+#: de treino. O dado chega padronizado, entao aqui elas nao alteram nada
+#: (`standardize` e idempotente); a tabela continua necessaria porque tambem
+#: serve de alias de OPCAO: o catalogo da API ainda oferece "Open - Updated" e
+#: "Aluminium Plate", e `canonical_to_training` precisa saber que elas viraram
+#: "Open" e "Aluminium ". `blower_direction` ("To back"/"To front") e `losses`
+#: ("No losses") nao entram: a base ja traz essas categorias na grafia correta,
+#: e troca-las (como faziam os notebooks) as afastava da grafia do catalogo.
 SPELLING_FIXES: dict[str, dict[str, dict[str, str]]] = {
-    "random_forest": {
-        "blower_direction": {"To back": "To Back", "To front": "To Front"},
-        "losses": {"No losses": "No Losses"},
+    algorithm: {
         "run_case": {
             "Broil Case 2": "Broil C2",
             "Broil Qual": "Broil Qualitative",
             "Qualitative": "Broil Qualitative",
         },
         "housing": {"Open - Updated": "Open"},
-        # Mesma normalizacao do Gradient Boosting (ver docstring do modulo): o
-        # notebook de RF ainda nao a aplicava, e manter os dois diferentes fazia
-        # a mesma consulta significar coisas distintas de area para area.
+        # Decisao da equipe (documents/extras/hipotese_material_sem_correcao_E17.md):
+        # o glossario do parceiro documenta so 2 niveis para este campo.
         "material_coil_support": {"Aluminium Plate": "Aluminium "},
-    },
-    "gradient_boosting": {
-        "blower_direction": {"To back": "To Back", "To front": "To Front"},
-        "losses": {"No losses": "No Losses"},
-        "run_case": {
-            "Broil Case 2": "Broil C2",
-            "Broil Qual": "Broil Qualitative",
-            "Qualitative": "Broil Qualitative",
-        },
-        "housing": {"Open - Updated": "Open"},
-        "material_coil_support": {"Aluminium Plate": "Aluminium "},
-    },
+    }
+    for algorithm in ("random_forest", "gradient_boosting")
 }
 
 #: Um termopar so vira alvo se medido em pelo menos esta fracao dos runs.

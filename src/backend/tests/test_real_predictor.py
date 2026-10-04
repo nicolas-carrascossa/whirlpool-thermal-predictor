@@ -130,6 +130,50 @@ def test_canonical_option_unknown_to_one_area_skips_only_that_area(engine, confi
     assert area in engine.skipped_areas
 
 
+def test_every_catalog_option_reaches_every_area_model(engine, config, manifest) -> None:
+    """Toda opcao que o catalogo oferece tem de ser aceita pelo modelo de TODAS as areas.
+
+    Se os CSVs de treino perdem linhas (por exemplo, descarte de run inteiro por
+    um unico alvo nulo), categorias inteiras somem do dicionario de uma area e
+    ela passa a ser omitida da resposta em silencio. O que o usuario pode
+    escolher precisa poder chegar a cada modelo.
+    """
+    unmapped = {
+        area: entry["unmapped_options"]
+        for area, entry in manifest["areas"].items()
+        if entry.get("unmapped_options")
+    }
+    assert not unmapped, f"opcoes do catalogo sem categoria de treino: {unmapped}"
+
+    for variable in manifest["variables"]:
+        for option in engine.dataset.options_for(variable):
+            for area in manifest["areas"]:
+                engine._encode(area, dict(config, **{variable: option}))
+
+
+def test_area_that_cannot_encode_an_option_is_skipped_not_guessed(config) -> None:
+    """A rede de seguranca continua valendo: area que nao conhece a opcao sai da resposta.
+
+    O cenario e montado em memoria (um preditor proprio, com uma categoria
+    removida do dicionario de uma area), porque os artefatos exportados hoje
+    cobrem todas as opcoes do catalogo e o teste acima garante que seguem assim.
+    """
+    from app.predictors.real import RealPredictor
+
+    isolated = RealPredictor(model_dir=MODEL_DIR)
+    area, variable, option = "IPC Comp", "deflector_hole", "Open"
+    entry = isolated._areas[area]
+    trained = entry["canonical_to_training"][variable].pop(option)
+    del entry["encoding"][variable][trained]
+
+    response = isolated.predict(
+        PredictionRequest(architecture="BR", config=dict(config, **{variable: option}))
+    )
+    assert area not in response.algorithm_by_area
+    assert response.predictions, "as demais áreas têm de responder"
+    assert area in isolated.skipped_areas
+
+
 def test_each_area_carries_its_own_encoding(manifest) -> None:
     """The dictionary is per artifact, never global.
 
