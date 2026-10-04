@@ -91,6 +91,21 @@ dos resultados.
 1. Instale as dependências: `pip install -r requirements.txt`.
 2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
 3. Abra `notebooks/expl_preprocessamenro_hipote.ipynb` e rode todas as células **em ordem, do início ao fim** (Run All). As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
+4. Rode os demais notebooks na ordem abaixo. Cada etapa lê os arquivos gerados pela anterior, e todos leem e gravam em `data/` (um nível acima de `notebooks/`):
+
+| Ordem | Notebook | Lê | Gera | Tempo aproximado |
+|---|---|---|---|---|
+| 1 | `expl_preprocessamenro_hipote.ipynb` | `data/dataset_bruto.csv` | `data/dataset_pre_processado.csv`, `data/classificacao_colunas.csv` | < 1 min |
+| 2 | `tratamento_final_dos_dados.ipynb` | `data/dataset_pre_processado.csv` | `data/<area>_data.csv` (uma planilha por área) | < 1 min |
+| 3 | `Decision_tree_regre.ipynb` | `data/<area>_data.csv` | resultados e previsões do Decision Tree | ~3 min |
+| 3 | `Grad_Boosting_Regre.ipynb` | `data/<area>_data.csv` | resultados do Gradient Boosting | ~20 min |
+| 3 | `Random_for_regre.ipynb` | `data/<area>_data.csv`, `src/backend/data/sensor_registry.json` | resultados do Random Forest | ~30 min |
+| 4 | `comparacao_modelos.ipynb` | `data/<area>_data.csv`, `scripts/export_models.py` | comparação entre os três modelos | ~3 min |
+| 5 | `geracao_dados_sinteticos_kmeans.ipynb` | `data/dataset_pre_processado.csv` | runs sintéticas (ver abaixo) | ~1 min |
+| 5 | `avaliacao_dados_sinteticos.ipynb` | `data/dataset_pre_processado.csv`, `data/<area>_data.csv` | avaliação das runs sintéticas | ~5 min |
+| 5 | `diagnostico_dados_e_validacao.ipynb` | `data/dataset_pre_processado.csv` | diagnóstico de vazamento de dados | ~1 min |
+
+Notebooks com a mesma ordem não dependem uns dos outros. Use o kernel Python do ambiente em que instalou o `requirements.txt`. A célula 16 do `Decision_tree_regre.ipynb` lê `resultados_experimentos_overfitting.csv`, que não é versionado: sem ele a célula é pulada e o gráfico já salvo fica em `assets/graficos/dt_experimentos_overfitting.png`.
 
 **No Google Colab:**
 
@@ -102,7 +117,7 @@ dos resultados.
 
 `notebooks/geracao_dados_sinteticos_kmeans.ipynb` agrupa as 56 runs reais por assinatura térmica,
 sorteia 44 configurações de hardware inéditas e gera o perfil de cada uma interpolando runs reais do
-cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_preprocessado.csv`:
+cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_pre_processado.csv`:
 
 - `data/dataset_sintetico.csv` — só as 44 runs sintéticas;
 - `data/dataset_com_sinteticos.csv` — as 100 runs (56 reais + 44 sintéticas);
