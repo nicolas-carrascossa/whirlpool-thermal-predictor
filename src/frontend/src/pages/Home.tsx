@@ -206,6 +206,7 @@ function HomeContent() {
           onTabChange={setResultsTab}
           historySlot={<HistoryPanel onReopen={() => setResultsTab('resultados')} />}
           technicianView={store.technicianView}
+          analysisBases={store.history}
         />
       )}
     </AppShell>
