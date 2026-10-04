@@ -227,7 +227,11 @@ export function ResultsPanel({
   // resposta não cobre) abre a mais crítica, que `groupByArea` já põe primeiro.
   const shownGroup = groups.find((g) => g.name === chosenArea) ?? groups[0] ?? null
 
-  const body = (() => {
+  // Estados em que ainda não há previsão a mostrar (erro, sem consulta,
+  // carregando, arquitetura sem modelo, recorte vazio). É compartilhado pelas
+  // abas que dependem da previsão: nenhuma delas exibe dado que o usuário não
+  // pediu.
+  const stateView = (() => {
     if (error) {
       const message =
         error instanceof ContractError
@@ -284,7 +288,12 @@ export function ResultsPanel({
       )
     }
 
-    return (
+    return null
+  })()
+
+  const body =
+    stateView ??
+    (response && (
       <>
         <ResultsSummary response={response} />
         <AreaStrip
@@ -302,8 +311,7 @@ export function ResultsPanel({
           />
         )}
       </>
-    )
-  })()
+    ))
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
@@ -337,11 +345,14 @@ export function ResultsPanel({
       </TabsContent>
       {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-0">
-        <MetricsPanel
-          metadata={metadata}
-          keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
-          response={response ?? undefined}
-        />
+        {stateView ??
+          (response && (
+            <MetricsPanel
+              metadata={metadata}
+              keyAreas={[...new Set(response.predictions.map((p) => p.key_area))]}
+              response={response}
+            />
+          ))}
       </TabsContent>
       {historySlot && (
         <TabsContent value="historico" className="mt-0">

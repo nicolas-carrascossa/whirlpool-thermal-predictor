@@ -68,9 +68,9 @@ Pré-requisitos: Python 3.12+ e Node 20+.
 pip install -r src/backend/requirements.txt
 npm run install:frontend
 
-# 2. API (terminal 1) — MODEL_MODE=real usa os modelos treinados de models/
+# 2. API (terminal 1) — por padrão usa os modelos treinados de models/
 cd src/backend
-MODEL_MODE=real python -m uvicorn app.main:app --port 8000
+python -m uvicorn app.main:app --port 8000
 
 # 3. interface (terminal 2)
 npm run dev
@@ -80,8 +80,9 @@ A interface sobe em `http://localhost:5173` e fala com a API em
 `http://localhost:8000` (configurável em `src/frontend/.env`). O login padrão
 de desenvolvimento está em `src/backend/README.md`.
 
-Sem `MODEL_MODE=real` a API responde com o preditor mock determinístico, útil
-para desenvolver a interface sem os artefatos treinados. O que está na tela
+A API responde sempre com os modelos treinados (`MODEL_MODE=real` é o padrão); o
+preditor mock só roda se `MODEL_MODE=mock` for definido de forma explícita, e é
+usado nos testes automatizados. O que está na tela
 diz qual dos dois respondeu — veja a versão do conjunto de modelos no rodapé
 dos resultados.
 

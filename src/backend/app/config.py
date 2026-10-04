@@ -34,10 +34,12 @@ class Settings(BaseSettings):
     jwt_expires_min: int = 480
 
     # --- predictor ----------------------------------------------------------
-    #: `mock` (offline demo, Fase 1) or `real` (trained artifacts, Fase 3).
+    #: `real` (trained artifacts, Fase 3) is the default: the product answers
+    #: with the trained models unless someone opts out. `mock` (offline demo,
+    #: Fase 1) only runs when asked for explicitly (the test suite does).
     #: This is the ONLY operating switch — the algorithm of each area comes
     #: from the manifest, never from a request or another setting.
-    model_mode: str = "mock"
+    model_mode: str = "real"
 
     #: Directory with one artifact per (algorithm x key_area) plus
     #: `manifest.json`, produced by `scripts/export_models.py`. Only read when
