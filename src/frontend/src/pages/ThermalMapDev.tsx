@@ -117,7 +117,7 @@ export function ThermalMapDevPage() {
   if (error) {
     return (
       <main className="p-8">
-        <p role="alert" className="text-status-danger">
+        <p role="alert" className="text-status-danger-ink">
           Falha ao carregar: {error}
         </p>
       </main>

@@ -21,7 +21,9 @@ const LEGEND_ENTRIES = (Object.entries(VARIABLE_TO_PART) as [keyof StoveConfig, 
 
 /** Compara as 7 variáveis da configuração (ignora `targets`/arquitetura). */
 function configsDiffer(a: StoveConfig | null | undefined, b: StoveConfig | null | undefined): boolean {
-  if (!a || !b) return false
+  if (!a) return false
+  // Sem `b` (nenhuma previsão submetida ainda), o rascunho já é "divergente".
+  if (!b) return true
   return JSON.stringify(a) !== JSON.stringify(b)
 }
 
@@ -131,7 +133,7 @@ function PartLegend({
           onFocus={() => onHoverVariable(field)}
           onBlur={() => onHoverVariable(null)}
           className={cn(
-            'rounded-full border px-2.5 py-1 font-body text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'rounded-md border px-2.5 py-1 font-body text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             activePart === part
               ? 'border-wp-accent bg-wp-accentLt text-wp-core'
               : 'border-wp-gray12 text-wp-gray65 hover:border-wp-accent hover:text-wp-core',
@@ -221,7 +223,7 @@ export function ThermalMapSlot({
           {showPreviewNotice && (
             <div
               role="status"
-              className="absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] rounded-full border border-wp-accent bg-wp-accentLt px-3 py-1.5 font-body text-xs font-semibold text-wp-core shadow-sm"
+              className="absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] rounded-md border border-wp-accent bg-wp-accentLt px-3 py-1.5 font-body text-xs font-semibold text-wp-core shadow-sm"
             >
               Pré-visualização da configuração — clique em Prever para atualizar as temperaturas
             </div>

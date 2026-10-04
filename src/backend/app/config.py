@@ -10,7 +10,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BACKEND_DIR.parent.parent
-DEFAULT_DATA_DIR = REPO_ROOT / "src" / "frontend" / "src" / "data"
+#: The API owns its runtime data. It used to read these files from inside the
+#: React source tree (`src/frontend/src/data`), which made the server depend on
+#: where the client keeps its sources — the dependency pointing the wrong way.
+#: `scripts/build_registry.py` writes here, `app/data.py` reads from here, and
+#: the front-end gets this data over HTTP like any other client.
+DEFAULT_DATA_DIR = BACKEND_DIR / "data"
 
 
 class Settings(BaseSettings):
@@ -41,8 +46,8 @@ class Settings(BaseSettings):
 
     # --- data ---------------------------------------------------------------
     #: Directory holding sensor_registry.json / sensor_stats.json /
-    #: variable_options.json. The backend reads the very same files the
-    #: front-end bundles — they are never duplicated.
+    #: variable_options.json / model_manifest.json, produced by
+    #: `scripts/build_registry.py` and `scripts/export_models.py`.
     data_dir: Path = DEFAULT_DATA_DIR
 
     #: SQLite file. Relative paths resolve against `src/backend/`.
