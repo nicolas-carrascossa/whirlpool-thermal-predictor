@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
+import { BRUSHED_ROUGH_MEAN, brushedSteel, type SurfaceSet } from './detailTextures'
 import { useStove } from './StoveContext'
 
 /**
@@ -22,6 +23,8 @@ export const C = {
   gray65: '#767777', // --wp-gray-65
   dark: '#484949', // --wp-gray-85
   glass: '#23262a',
+  /** Vidro preto da tela do forno (Oven HMI). */
+  screen: '#08090b',
   accent: '#94a3b8', // --wp-accent
   core: '#0d436b', // --wp-core
   metal: '#9fa0a1', // metálico claro (neutro)
@@ -61,6 +64,15 @@ export interface ShellMaterialProps {
   emissive?: string
   emissiveIntensity?: number
   side?: THREE.Side
+  /**
+   * Aço escovado: repetição (u, v) do grão procedural. O grão entra por
+   * rugosidade e relevo — varia o reflexo, não a cor — então a carcaça
+   * continua preta/grafite, só deixa de ser lisa.
+   */
+  grain?: [number, number]
+  /** Textura própria da superfície (mapa/relevo/rugosidade), em vez do grão. */
+  surface?: SurfaceSet | null
+  bumpScale?: number
 }
 
 /**
@@ -78,8 +90,13 @@ export function ShellMaterial({
   emissive,
   emissiveIntensity = 0,
   side = THREE.DoubleSide,
+  grain,
+  surface,
+  bumpScale = 0.11,
 }: ShellMaterialProps) {
   const { view, clipPlanes } = useStove()
+  const brushed = grain ? brushedSteel(grain[0], grain[1]) : null
+  const maps = brushed ?? surface ?? null
   const ref = useRef<THREE.MeshStandardMaterial>(null)
   const isXray = xray && view === 'xray'
   const planes = clip && view === 'cutaway' ? clipPlanes : NO_PLANES
@@ -100,11 +117,15 @@ export function ShellMaterial({
     <meshStandardMaterial
       ref={ref}
       color={color}
-      roughness={roughness}
+      roughness={brushed ? Math.min(1, roughness / BRUSHED_ROUGH_MEAN) : roughness}
       metalness={metalness}
       side={side}
       emissive={emissive ?? '#000000'}
       emissiveIntensity={emissiveIntensity}
+      map={surface?.map ?? null}
+      roughnessMap={maps?.rough ?? null}
+      bumpMap={maps?.bump ?? null}
+      bumpScale={bumpScale}
     />
   )
 }

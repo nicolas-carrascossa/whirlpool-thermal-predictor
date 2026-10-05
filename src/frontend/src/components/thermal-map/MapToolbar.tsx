@@ -1,5 +1,7 @@
+import { RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { CollapseToggle } from './CollapseToggle'
@@ -28,7 +30,7 @@ const OPENING_LABELS: { id: keyof OpeningState; label: string; title: string }[]
     label: 'Levantar cooktop',
     title: 'Levanta o cooktop (vidro, elementos e bandeja): mostra a baía da eletrônica — carcaça, blower, defletor e placa',
   },
-  { id: 'rear', label: 'Abrir traseira', title: 'Afasta o painel traseiro: fundo da baía e caminho do ar' },
+  { id: 'rear', label: 'Abrir traseira', title: 'Afasta o painel traseiro: fundo da baía' },
   { id: 'oven', label: 'Abrir forno', title: 'Abaixa a porta: resistência e suporte da resistência' },
   {
     id: 'explode',
@@ -53,6 +55,7 @@ interface MapToolbarProps {
   onExplodeAmountChange: (amount: number) => void
   cameraPreset: CameraPreset
   onCameraPresetChange: (preset: CameraPreset) => void
+  /** "Recentralizar": o fogão volta à posição inicial e todos os rótulos somem (como um reinício). */
   onRecenter: () => void
   /** "Câmera segue a peça alterada" (Fase 1d, etapa E) — padrão OFF. */
   cameraFollowsPart?: boolean
@@ -102,7 +105,19 @@ export function MapToolbar({
       )}
     >
       {isPanel ? (
-        <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">Filtros do mapa</h2>
+        <>
+          {/* Fica entre "Configuração selecionada" e os filtros: age sobre o mapa inteiro. */}
+          <Button
+            type="button"
+            size="sm"
+            className="w-full"
+            title="Volta o fogão à posição inicial e remove todos os rótulos"
+            onClick={onRecenter}
+          >
+            <RotateCcw aria-hidden="true" /> Recentralizar
+          </Button>
+          <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">Filtros do mapa</h2>
+        </>
       ) : (
         <CollapseToggle label="Filtros" expanded={expanded} onClick={() => setExpanded(!expanded)} />
       )}
@@ -185,13 +200,15 @@ export function MapToolbar({
                 {c.label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={onRecenter}
-              className={cn(chip, 'border border-wp-gray20 text-wp-gray65 hover:bg-wp-gray05')}
-            >
-              Recentralizar
-            </button>
+            {!isPanel && (
+              <button
+                type="button"
+                onClick={onRecenter}
+                className={cn(chip, 'border border-wp-gray20 text-wp-gray65 hover:bg-wp-gray05')}
+              >
+                Recentralizar
+              </button>
+            )}
           </div>
 
           <div>

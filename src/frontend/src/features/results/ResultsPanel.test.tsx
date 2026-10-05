@@ -60,6 +60,12 @@ describe('ResultsPanel', () => {
     expect(await screen.findByLabelText('Área do modelo')).toBeInTheDocument()
   })
 
+  it('não mostra métricas antes de haver uma previsão', () => {
+    renderPanel({ activeTab: 'metricas', response: undefined, hasRequest: false })
+    expect(screen.getByText('Esperando previsão')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Área do modelo')).not.toBeInTheDocument()
+  })
+
   it('monta o mapa térmico na seção "mapa"', () => {
     const { container } = renderPanel({ activeTab: 'mapa' })
     expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()

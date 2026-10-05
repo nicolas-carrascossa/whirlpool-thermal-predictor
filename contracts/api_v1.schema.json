@@ -121,7 +121,7 @@
         },
         "validation": {
           "$ref": "#/$defs/AreaValidation",
-          "description": "Pares previsto/real do conjunto de teste desta área (v1.2). Alimentam a dispersão e o mapa de calor da aba de métricas, que antes liam dado simulado."
+          "description": "Pares previsto/real da validação LOGO desta área (v1.2). Alimentam a dispersão e o mapa de calor da aba de métricas, que antes liam dado simulado."
         },
         "within_ten_pct_rate": {
           "description": "Fração (0..1) das predições com erro ≤ 10 % — o KPI do projeto.",
@@ -536,7 +536,7 @@
     },
     "ValidationPoint": {
       "additionalProperties": false,
-      "description": "Um par previsto/real do conjunto de teste: a temperatura que o laboratório mediu e a que o modelo previu para **a mesma configuração**.\n\nSão os únicos valores reais medidos que o produto tem. Uma configuração que nunca foi ao laboratório não tem — e não pode ter — um \"real\" para comparar.",
+      "description": "Um par previsto/real da validação LOGO: a temperatura que o laboratório mediu e a que o modelo previu para **a mesma configuração**.\n\nSão os únicos valores reais medidos que o produto tem. Uma configuração que nunca foi ao laboratório não tem — e não pode ter — um \"real\" para comparar.",
       "properties": {
         "active_limit_c": {
           "type": [
@@ -584,7 +584,7 @@
     },
     "ValidationRun": {
       "additionalProperties": false,
-      "description": "Um ensaio de laboratório do conjunto de teste da área.",
+      "description": "Um ensaio de laboratório da área, usado como teste na validação LOGO.",
       "properties": {
         "label": {
           "description": "Rótulo curto do ensaio, montado com as variáveis que mais o distinguem. Serve para o tooltip identificar de qual ensaio veio o ponto.",

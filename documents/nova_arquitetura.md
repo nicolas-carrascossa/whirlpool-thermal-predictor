@@ -2,7 +2,7 @@
 
 > Relatório do estado atual do repositório, verificado no código em 27 de
 > setembro de 2026. Este documento descreve o que está implementado agora; não
-> substitui o plano de evolução em `../REFACTORING_AGENT_GUIDE.md`.
+> substitui o plano de evolução em `extras/REFACTORING_AGENT_GUIDE.md`.
 
 ![Visão geral da arquitetura](nova_arquitetura_diagrama.svg)
 
@@ -273,7 +273,7 @@ estrutura implementada com o objetivo arquitetural definido pela equipe:
 
 ## Checklist para novos integrantes
 
-1. Leia este relatório e `../REFACTORING_AGENT_GUIDE.md` antes de alterar
+1. Leia este relatório e `extras/REFACTORING_AGENT_GUIDE.md` antes de alterar
    fronteiras entre camadas.
 2. Para UI, comece em `src/frontend/src/pages/Home.tsx` e siga até
    `ResultsPanel`, `ThermalMapSlot` e `MetricsPanel`.

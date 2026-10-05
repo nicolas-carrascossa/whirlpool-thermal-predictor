@@ -47,7 +47,11 @@ Para o front-end falar com esta API, rode-o com `VITE_DATA_SOURCE=api` e
 | `engenheiro` | `thermal2026` | `engineer` | João — Engenharia Térmica |
 | `admin` | `admin2026` | `admin` | Administrador |
 
-São credenciais de demonstração; troque-as antes de qualquer uso real.
+> **Atenção:** estas credenciais, assim como o `JWT_SECRET` padrão de
+> `app/config.py`, existem **apenas para demonstração local** e são públicas por
+> estarem neste repositório. Elas não dão acesso a nenhum sistema real nem a
+> dados de pessoas. Troque-as antes de qualquer uso fora da máquina de
+> desenvolvimento.
 
 ## Variáveis de ambiente
 
@@ -57,7 +61,7 @@ Lidas de `src/backend/.env` (ou do ambiente). Ver `.env.example`.
 |---|---|---|
 | `JWT_SECRET` | `dev-secret-change-me` | Assinatura dos tokens. Troque em produção. |
 | `JWT_EXPIRES_MIN` | `480` | Validade do token, em minutos. |
-| `MODEL_MODE` | `mock` | `mock` (demo offline da Fase 1) ou `real` (modelos treinados). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
+| `MODEL_MODE` | `real` | `real` (modelos treinados, padrão) ou `mock` (gerador determinístico, só para testes/demos). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
 | `MODEL_DIR` | `<raiz>/models` | Artefatos `.joblib` + `manifest.json`, gerados por `scripts/export_models.py`. Só é lido com `MODEL_MODE=real`. |
 | `DATA_DIR` | `../frontend/src/data` | Pasta dos JSONs do dataset (e do `model_manifest.json`). O back-end lê **os mesmos arquivos** do front; nada é duplicado. |
 | `DB_PATH` | `./thermal.db` | Arquivo SQLite (usuários + `access_log`), relativo a `src/backend/`. |

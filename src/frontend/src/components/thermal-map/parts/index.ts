@@ -53,7 +53,7 @@ export const PART_TO_VARIABLE: Record<PartId, keyof StoveConfig> = {
 /** Rótulo curto em pt-BR de cada peça (usado no tooltip e na legenda). */
 export const PART_LABEL_PT: Record<PartId, string> = {
   'housing-lid': 'Carcaça da eletrônica',
-  blower: 'Blower e fluxo de ar',
+  blower: 'Blower',
   deflector: 'Defletor de ar',
   'control-board': 'Placa eletrônica',
   'coil-support': 'Suporte da resistência',
