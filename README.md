@@ -119,6 +119,7 @@ dos resultados.
 
 1. Instale as dependências: `pip install -r requirements.txt` (inclui o Jupyter).
 2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
+   > **Como obter os dados:** a base é do parceiro de projeto e é confidencial, por isso nenhum arquivo de dados (`.csv`, `.xlsx` etc.) é publicado neste repositório. Para rodar os notebooks, solicite o arquivo ao grupo G03 ou à orientação do projeto no Inteli. Os notebooks não se conectam a um banco de dados: todos leem e gravam arquivos CSV na pasta `data/`.
 3. Abra `notebooks/expl_preprocessamenro_hipote.ipynb` e rode todas as células **em ordem, do início ao fim** (Run All). As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
 4. Rode os demais notebooks na ordem abaixo. Cada etapa lê os arquivos gerados pela anterior, e todos leem e gravam em `data/` (um nível acima de `notebooks/`):
 
