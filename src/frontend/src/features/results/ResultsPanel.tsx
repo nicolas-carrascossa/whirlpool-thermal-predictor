@@ -349,7 +349,7 @@ export function ResultsPanel({
           focusRequest={focusRequest}
         />
       </TabsContent>
-      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
+      {/* Métricas reais da validação LOGO, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-0">
         <MetricsPanel
           metadata={metadata}
