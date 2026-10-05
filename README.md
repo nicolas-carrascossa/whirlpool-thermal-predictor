@@ -152,7 +152,11 @@ a API procura os modelos ao iniciar:
 - **não encontrou as planilhas:** a interface pergunta *"Sem dataset. Deseja
   utilizar comando de dados mockados?"*. **Sim** passa a API para os dados
   mockados (previsões sintéticas) até ela ser reiniciada; **Não** mantém tudo
-  como está, sem previsões, até os modelos serem gerados.
+  como está, sem previsões, até os modelos serem gerados;
+- **a geração falhou:** a interface mostra o motivo e oferece os mesmos botões.
+  O caso mais comum é faltar uma biblioteca no Python da API: instale
+  `pip install -r src/backend/requirements.txt` (que inclui o pandas) no mesmo
+  ambiente da API, e a geração começa sozinha em seguida.
 
 A interface sobe em `http://localhost:5173` e fala com a API em
 `http://localhost:8000` (configurado em `src/frontend/.env.api`). Para entrar,

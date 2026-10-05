@@ -5,7 +5,8 @@
  *    Sim → a API passa ao mock e a tela recarrega os dados; Não → nada acontece.
  *  - `training` → avisa que os modelos estão sendo gerados e consulta de novo
  *    até terminarem; aí recarrega os dados.
- *  - `failed` → mostra o motivo.
+ *  - `failed` → mostra o motivo e oferece os dados mockados, como no `no_dataset`.
+ *    Continua consultando: depois de um `pip install`, a geração começa sozinha.
  *  - `ready` / `mock` → não renderiza nada.
  */
 
@@ -19,6 +20,8 @@ import { enableMockMode, fetchModelStatus, type ModelState } from '@/features/sy
 
 const MODEL_STATUS_KEY = ['system', 'models'] as const
 const POLL_WHILE_TRAINING_MS = 3000
+const POLL_WHILE_FAILED_MS = 5000
+const FAILED_PREFIX = 'Não foi possível gerar os modelos: '
 
 export function ModelsGate() {
   const queryClient = useQueryClient()
@@ -29,7 +32,12 @@ export function ModelsGate() {
     queryKey: MODEL_STATUS_KEY,
     queryFn: fetchModelStatus,
     retry: false,
-    refetchInterval: (query) => (query.state.data?.state === 'training' ? POLL_WHILE_TRAINING_MS : false),
+    refetchInterval: (query) => {
+      const current = query.state.data?.state
+      if (current === 'training') return POLL_WHILE_TRAINING_MS
+      if (current === 'failed') return POLL_WHILE_FAILED_MS
+      return false
+    },
   })
   const state: ModelState | undefined = status.data?.state
 
@@ -66,18 +74,9 @@ export function ModelsGate() {
     )
   }
 
-  if (state === 'failed') {
-    return (
-      <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
-        <Card role="alert" className="flex max-w-xl items-start gap-3 px-4 py-3 shadow-pop">
-          <OctagonAlert className="mt-0.5 h-5 w-5 shrink-0 text-status-danger-ink" aria-hidden="true" />
-          <p className="whitespace-pre-line text-sm text-wp-gray85">{status.data?.message}</p>
-        </Card>
-      </div>
-    )
-  }
-
-  if (state !== 'no_dataset' || dismissed) return null
+  if ((state !== 'no_dataset' && state !== 'failed') || dismissed) return null
+  const failed = state === 'failed'
+  const Icon = failed ? OctagonAlert : DatabaseZap
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-wp-gray85/40 px-4">
@@ -85,16 +84,30 @@ export function ModelsGate() {
         <div className="flex flex-col gap-4">
           <span
             aria-hidden="true"
-            className="flex h-10 w-10 items-center justify-center rounded-md bg-wp-accentLt text-wp-core"
+            className={
+              failed
+                ? 'flex h-10 w-10 items-center justify-center rounded-md bg-status-danger/15 text-status-danger-ink'
+                : 'flex h-10 w-10 items-center justify-center rounded-md bg-wp-accentLt text-wp-core'
+            }
           >
-            <DatabaseZap className="h-5 w-5" strokeWidth={1.75} />
+            <Icon className="h-5 w-5" strokeWidth={1.75} />
           </span>
           <h2 id={titleId} className="font-display text-lg font-extrabold text-wp-gray85">
-            Sem dataset. Deseja utilizar comando de dados mockados?
+            {failed
+              ? 'Não foi possível gerar os modelos. Deseja utilizar comando de dados mockados?'
+              : 'Sem dataset. Deseja utilizar comando de dados mockados?'}
           </h2>
+          {failed ? (
+            <p role="alert" className="text-sm leading-relaxed text-wp-gray85">
+              {status.data?.message.replace(FAILED_PREFIX, '')}
+            </p>
+          ) : (
+            <p className="text-sm leading-relaxed text-wp-gray65">
+              Não há modelos treinados nem as planilhas da base em <code>data/</code>.
+            </p>
+          )}
           <p className="text-sm leading-relaxed text-wp-gray65">
-            Não há modelos treinados nem as planilhas da base em <code>data/</code>. Com os dados mockados, a
-            interface funciona com previsões sintéticas.
+            Com os dados mockados, a interface funciona com previsões sintéticas.
           </p>
           {mock.error ? (
             <p role="alert" className="text-sm text-status-danger-ink">

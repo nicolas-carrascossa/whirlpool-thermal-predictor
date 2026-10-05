@@ -17,6 +17,8 @@ procurar os modelos, para quem colocar a base depois nao ficar preso no mock.
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
 import subprocess
 import sys
@@ -43,6 +45,8 @@ AREA_FILES = (
     "oven_hmi_data.csv",
 )
 MANIFEST_NAME = "manifest.json"
+#: Bibliotecas que o script importa, alem das que a API ja usa.
+SCRIPT_DEPENDENCIES = ("pandas", "numpy", "sklearn", "joblib")
 
 State = Literal["ready", "training", "no_dataset", "failed", "mock"]
 
@@ -89,6 +93,28 @@ def dataset_available() -> bool:
     return all((DATASET_DIR / name).exists() for name in AREA_FILES)
 
 
+def missing_dependencies() -> list[str]:
+    """Bibliotecas do script ausentes no Python que roda a API."""
+    # Sem invalidar, um `pip install` feito com a API no ar so seria visto
+    # depois de reinicia-la.
+    importlib.invalidate_caches()
+    return [name for name in SCRIPT_DEPENDENCIES if importlib.util.find_spec(name) is None]
+
+
+def _missing_dependencies_message(missing: list[str]) -> str:
+    return (
+        f"Não foi possível gerar os modelos: falta {', '.join(missing)} no Python da API. "
+        "Instale com `pip install -r src/backend/requirements.txt` no mesmo ambiente "
+        "em que a API roda; a geração começa sozinha em seguida."
+    )
+
+
+def _summarize(output: str, returncode: int) -> str:
+    """Última linha útil da saída do script, sem o traceback inteiro."""
+    lines = [line.strip() for line in output.strip().splitlines() if line.strip()]
+    return lines[-1] if lines else f"o script terminou com código {returncode}"
+
+
 def _clear_caches() -> None:
     # Import local: `app.predictors` importa este modulo.
     from app.data import load_dataset
@@ -104,8 +130,7 @@ def _train() -> None:
     try:
         result = _run_export(get_settings().model_dir)
         if result.returncode != 0:
-            output = (result.stderr or result.stdout or "").strip().splitlines()
-            _error = "\n".join(output[-5:]) or f"o script terminou com codigo {result.returncode}"
+            _error = _summarize(result.stderr or result.stdout or "", result.returncode)
         else:
             _error = None
             _clear_caches()
@@ -130,6 +155,11 @@ def status() -> Status:
             return Status("failed", f"Não foi possível gerar os modelos: {_error}")
         if not dataset_available():
             return Status("no_dataset", "Sem dataset. Deseja utilizar comando de dados mockados?")
+        # Conferido antes de rodar, e a cada consulta: depois do `pip install`, a
+        # proxima consulta ja inicia a geracao, sem reiniciar a API.
+        missing = missing_dependencies()
+        if missing:
+            return Status("failed", _missing_dependencies_message(missing))
         _training = True
     _spawn(_train)
     return Status("training", "Gerando os modelos a partir do dataset encontrado em data/.")

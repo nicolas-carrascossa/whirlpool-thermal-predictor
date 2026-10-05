@@ -23,6 +23,8 @@ def real_without_models(monkeypatch, tmp_path: Path):
     monkeypatch.setattr(settings, "model_dir", tmp_path / "models")
     monkeypatch.setattr(model_setup, "DATASET_DIR", tmp_path / "data")
     monkeypatch.setattr(model_setup, "_spawn", lambda target: target())
+    # O script nunca roda de verdade aqui; o ambiente de testes nem precisa de pandas.
+    monkeypatch.setattr(model_setup, "missing_dependencies", lambda: [])
     model_setup.reset()
     get_predictor.cache_clear()
     yield tmp_path
@@ -88,16 +90,54 @@ def test_dataset_present_generates_the_models(client, auth, real_without_models,
     assert client.get("/api/v1/system/models", headers=auth).json()["state"] == "ready"
 
 
-def test_failed_generation_is_reported(client, auth, real_without_models, monkeypatch) -> None:
+def test_missing_library_is_reported_before_running_the_script(
+    client, auth, real_without_models, monkeypatch
+) -> None:
+    """O caso real: a API instalada sem pandas não pode rodar o script."""
     _put_dataset(real_without_models)
+    monkeypatch.setattr(model_setup, "missing_dependencies", lambda: ["pandas"])
+    calls: list[Path] = []
+    monkeypatch.setattr(model_setup, "_run_export", lambda model_dir: calls.append(model_dir))
+
+    body = client.get("/api/v1/system/models", headers=auth).json()
+
+    assert body["state"] == "failed"
+    assert "falta pandas no Python da API" in body["message"]
+    assert "pip install -r src/backend/requirements.txt" in body["message"]
+    assert calls == []
+
+    # Depois do `pip install`, a próxima consulta já inicia a geração, sem reiniciar.
+    monkeypatch.setattr(model_setup, "missing_dependencies", lambda: [])
     monkeypatch.setattr(
         model_setup,
         "_run_export",
-        lambda _dir: subprocess.CompletedProcess([], 1, stdout="", stderr="ModuleNotFoundError: pandas"),
+        lambda _dir: subprocess.CompletedProcess([], 1, stdout="", stderr="erro"),
+    )
+    assert client.get("/api/v1/system/models", headers=auth).json()["state"] == "training"
+
+
+def test_failed_generation_shows_only_the_last_line(client, auth, real_without_models, monkeypatch) -> None:
+    _put_dataset(real_without_models)
+    traceback = (
+        "Traceback (most recent call last):\n"
+        '  File "export_models.py", line 64, in <module>\n'
+        "    import numpy\n"
+        "ValueError: planilha sem a coluna run_id\n"
+    )
+    monkeypatch.setattr(
+        model_setup,
+        "_run_export",
+        lambda _dir: subprocess.CompletedProcess([], 1, stdout="", stderr=traceback),
     )
 
     client.get("/api/v1/system/models", headers=auth)
     body = client.get("/api/v1/system/models", headers=auth).json()
 
     assert body["state"] == "failed"
-    assert "ModuleNotFoundError: pandas" in body["message"]
+    assert body["message"] == "Não foi possível gerar os modelos: ValueError: planilha sem a coluna run_id"
+
+
+def test_the_api_requirements_cover_the_script() -> None:
+    """A geração automática roda o script com o Python da API: ele precisa de pandas."""
+    requirements = (Path(model_setup.BACKEND_DIR) / "requirements.txt").read_text(encoding="utf-8")
+    assert "pandas" in requirements

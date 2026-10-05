@@ -60,13 +60,21 @@ describe('ModelsGate', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('mostra o motivo quando a geração falha', async () => {
+  it('quando a geração falha, mostra o motivo e também oferece os dados mockados', async () => {
     vi.mocked(fetchModelStatus).mockResolvedValue(
-      status('failed', 'Não foi possível gerar os modelos: ModuleNotFoundError: pandas'),
+      status('failed', 'Não foi possível gerar os modelos: falta pandas no Python da API.'),
     )
+    vi.mocked(enableMockMode).mockResolvedValue(status('mock'))
     renderWithQuery(<ModelsGate />)
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('ModuleNotFoundError: pandas')
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Não foi possível gerar os modelos. Deseja utilizar comando de dados mockados?',
+    })
+    expect(dialog).toHaveTextContent('falta pandas no Python da API.')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sim' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(enableMockMode).toHaveBeenCalledTimes(1)
   })
 
   it.each(['ready', 'mock'] as const)('com o estado %s não mostra nada', async (state) => {
