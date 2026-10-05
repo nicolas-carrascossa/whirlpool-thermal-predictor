@@ -121,7 +121,7 @@ describe('ResultsPanel', () => {
     expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
   })
 
-  it('interpolação não ganha banner; extrapolação continua avisando', () => {
+  it('mostra a aprovação apenas para a visão não técnica', () => {
     const { unmount } = renderPanel()
     expect(screen.queryByText(/Confiabilidade:/)).not.toBeInTheDocument()
     unmount()
@@ -130,8 +130,10 @@ describe('ResultsPanel', () => {
       ...FIXTURE_RESPONSE,
       predictions: FIXTURE_RESPONSE.predictions.map((p) => ({ ...p, reliability: 'moderate_extrapolation' as const })),
     }
-    renderPanel({ response: extrapolated })
-    expect(screen.getByRole('alert')).toHaveTextContent('Confiabilidade: Extrapolação moderada')
+    renderPanel({ response: extrapolated, technicianView: false })
+    expect(screen.getByText('Aprovação')).toBeInTheDocument()
+    expect(screen.getByText('Média')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('a tabela não tem mais as colunas Razão e Confiável, nem o círculo de pior razão', () => {

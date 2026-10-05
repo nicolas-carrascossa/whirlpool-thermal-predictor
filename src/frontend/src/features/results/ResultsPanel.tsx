@@ -26,7 +26,7 @@ import {
 import { AnalysisPanel, type BaseOption } from '@/features/analysis/AnalysisPanel'
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { AreaStrip } from '@/features/results/AreaStrip'
-import { ResultsSummary } from '@/features/results/ResultsSummary'
+import { ReliabilityApproval, ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { MetricsPanel } from '@/features/metrics/MetricsPanel'
 import { ratioOf } from '@/lib/status'
@@ -310,6 +310,7 @@ export function ResultsPanel({
             technicianView={technicianView}
           />
         )}
+        {!technicianView && <ReliabilityApproval response={response} />}
         {technicianView && shownGroup && metadata && request && (
           <AnalysisPanel
             metadata={metadata}
@@ -359,6 +360,7 @@ export function ResultsPanel({
               metadata={metadata}
               keyAreas={[...new Set(response.predictions.map((p) => p.key_area))]}
               response={response}
+              technicianView={technicianView}
             />
           ))}
       </TabsContent>
