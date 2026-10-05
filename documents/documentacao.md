@@ -1,11 +1,18 @@
-# Documentação Modelo Preditivo - Inteli
-
+# Documentação Modelo Preditivo - Módulo 3 - Inteli
+---
 ## Whirlpool Thermal Predictor
-
+---
 ### FOG - A predição que nasce da névoa dos dados do Dataset
+---
+#### Integrantes
 
-#### Felipe Sodré Pessôa, Gabriel Lorenzo Baglioli de Loyola, Lucas Andrade Silva, Nícolas Rigolin Carrascossa, Samuel Yenyu Chen, Vitor Medrado Lisbôa, William Martins Moraes
-
+- <a href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">Felipe Sodré Pessôa</a>
+- <a href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">Gabriel Lorenzo Baglioli de Loyola</a>
+- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade Silva</a> 
+- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Rigolin Carrascossa</a> 
+- <a href="https://www.linkedin.com/in/samuel-chen-7244893b6/">Samuel Yenyu Chen</a>
+- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Medrado Lisboa</a> 
+- <a href="https://www.linkedin.com/in/william-moraes-34b35b26b/">William Martins Moraes</a>
 
 ## Sumário
 

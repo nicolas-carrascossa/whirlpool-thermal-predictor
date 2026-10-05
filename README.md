@@ -9,13 +9,13 @@
 ## Equipe FOG
 
 ## :student: Integrantes: 
-- <a href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">Felipe Pessoa</a>
-- <a href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">Gabriel Loyola</a>
-- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade</a> 
-- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Carrascossa</a> 
-- <a href="https://www.linkedin.com/in/samuel-chen-7244893b6/">Samuel Chen</a>
-- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Lisboa</a> 
-- <a href="https://www.linkedin.com/in/william-moraes-34b35b26b/">William Moraes</a>
+- <a href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">Felipe Sodré Pessôa</a>
+- <a href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">Gabriel Lorenzo Baglioli de Loyola</a>
+- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade Silva</a> 
+- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Rigolin Carrascossa</a> 
+- <a href="https://www.linkedin.com/in/samuel-chen-7244893b6/">Samuel Yenyu Chen</a>
+- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Medrado Lisboa</a> 
+- <a href="https://www.linkedin.com/in/william-moraes-34b35b26b/">William Martins Moraes</a>
 
 ## :teacher: Professores:
 ### Orientador
@@ -177,4 +177,26 @@ cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_pre_p
 
 ## 📋 Licença/License
 
-<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://git.inteli.edu.br/graduacao/2026-2a/t29/g03">FOG — Whirlpool Thermal Predictor</a> by Inteli, Felipe Pessoa, Gabriel Loyola, Lucas Andrade, Nicolas Carrascossa, Samuel Chen, Vitor Lisboa e William Moraes is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Attribution 4.0 International</a>.</p>
+<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1">
+<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1">
+
+<p xmlns:cc="http://creativecommons.org/ns#"
+xmlns:dct="http://purl.org/dc/terms/">
+
+<a property="dct:title" rel="cc:attributionURL" href="https://git.inteli.edu.br/graduacao/2026-2a/t29/g03">
+FOG — Whirlpool Thermal Predictor
+</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.inteli.edu.br/">
+Inteli — Instituto de Tecnologia e Liderança</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">
+Felipe Sodré Pessôa</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">
+Gabriel Lorenzo Baglioli de Loyola</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/lucas-andrade-sva/">
+Lucas Andrade Silva</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">
+Nicolas Rigolin Carrascossa</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/samuel-chen-7244893b6/">
+Samuel Yenyu Chen</a>, <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/lisboavitor/">
+Vitor Medrado Lisboa</a> e <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.linkedin.com/in/william-moraes-34b35b26b/">
+William Martins Moraes</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1"
+target="_blank"
+rel="license noopener noreferrer"
+style="display:inline-block;">
+Attribution 4.0 International</a>.
+
+</p>
