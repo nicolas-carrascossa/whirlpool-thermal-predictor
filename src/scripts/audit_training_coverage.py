@@ -28,10 +28,10 @@ from export_models import (
 )
 
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 BACKEND_DATA = ROOT / "src" / "backend" / "data"
-MANIFEST_PATH = ROOT / "models" / "manifest.json"
+MANIFEST_PATH = ROOT / "src" / "backend" / "models" / "manifest.json"
 
 
 def _config_tuple(config: dict[str, str]) -> tuple[str, ...]:

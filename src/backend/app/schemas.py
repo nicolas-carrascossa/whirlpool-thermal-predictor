@@ -1,6 +1,6 @@
 """Pydantic v2 models mirroring `src/frontend/src/contract/v1.ts`.
 
-Structural parity with `contracts/api_v1.schema.json` is enforced by
+Structural parity with `src/contracts/api_v1.schema.json` is enforced by
 `tests/test_schema_drift.py`: same property names and same required fields for
 every object of the contract.
 """

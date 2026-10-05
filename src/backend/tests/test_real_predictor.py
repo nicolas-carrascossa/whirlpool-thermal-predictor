@@ -1,7 +1,7 @@
 """Real predictor (MODEL_MODE=real): routing, slicing, dictionaries and log.
 
-These tests need the artifacts produced by `scripts/export_models.py`; without
-`models/manifest.json` the whole module is skipped, so a fresh clone does not
+These tests need the artifacts produced by `src/scripts/export_models.py`; without
+`src/backend/models/manifest.json` the whole module is skipped, so a fresh clone does not
 fail before the first export.
 """
 
@@ -15,12 +15,11 @@ import pytest
 from app.predictors.base import ContractError
 from app.schemas import PredictionRequest
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-MODEL_DIR = REPO_ROOT / "models"
+MODEL_DIR = Path(__file__).resolve().parents[1] / "models"
 
 pytestmark = pytest.mark.skipif(
     not (MODEL_DIR / "manifest.json").exists(),
-    reason="artefatos ausentes; rode `python scripts/export_models.py`",
+    reason="artefatos ausentes; rode `python src/scripts/export_models.py`",
 )
 
 

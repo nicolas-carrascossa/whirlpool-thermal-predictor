@@ -1,5 +1,5 @@
 /**
- * Gera `contracts/api_v1.schema.json` (JSON Schema draft 2020-12) a partir de
+ * Gera `src/contracts/api_v1.schema.json` (JSON Schema draft 2020-12) a partir de
  * `src/contract/v1.ts`. Reprodutível: rodar de novo sem mudar os tipos produz
  * um arquivo byte a byte idêntico.
  *
@@ -73,6 +73,6 @@ const schema = {
   $defs: sortKeys(rewriteRefs(defs)),
 }
 
-const outFile = resolve(repoRoot, 'contracts/api_v1.schema.json')
+const outFile = resolve(repoRoot, 'src/contracts/api_v1.schema.json')
 writeFileSync(outFile, `${JSON.stringify(schema, null, 2)}\n`, 'utf8')
-console.log(`contracts/api_v1.schema.json escrito com ${Object.keys(defs).length} definições.`)
+console.log(`src/contracts/api_v1.schema.json escrito com ${Object.keys(defs).length} definições.`)

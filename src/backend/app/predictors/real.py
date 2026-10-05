@@ -6,7 +6,7 @@ does not know which one is answering — `MODEL_MODE` is the only switch, and
 
 Routing. Each area is served by a fixed algorithm, chosen by the performance it
 showed in that area. **The mapping is not hardcoded here**: it lives in
-`models/manifest.json` and is exposed to the front-end in
+`src/backend/models/manifest.json` and is exposed to the front-end in
 `Metadata.area_algorithms`. Changing the algorithm of an area is a re-export,
 not a deploy.
 
@@ -140,7 +140,7 @@ class RealPredictor:
         if not path.exists():
             raise RuntimeError(
                 f"Manifesto de modelos não encontrado em {path}. "
-                "Rode `python scripts/export_models.py` ou aponte MODEL_DIR para o "
+                "Rode `python src/scripts/export_models.py` ou aponte MODEL_DIR para o "
                 "diretório dos artefatos."
             )
         with path.open("r", encoding="utf-8") as handle:

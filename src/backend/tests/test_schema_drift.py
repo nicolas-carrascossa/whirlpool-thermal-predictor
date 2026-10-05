@@ -1,4 +1,4 @@
-"""Structural parity between the Pydantic models and `contracts/api_v1.schema.json`.
+"""Structural parity between the Pydantic models and `src/contracts/api_v1.schema.json`.
 
 Fails on any drift: a renamed property, a new property or a changed required
 set on either side. The JSON Schema is generated from `contract/v1.ts`, so this

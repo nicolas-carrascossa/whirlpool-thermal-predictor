@@ -22,7 +22,7 @@ import {
 
 const schema = JSON.parse(
   // vitest roda com cwd em src/frontend
-  readFileSync(resolve(process.cwd(), '../../contracts/api_v1.schema.json'), 'utf8'),
+  readFileSync(resolve(process.cwd(), '../contracts/api_v1.schema.json'), 'utf8'),
 ) as { $id: string }
 
 const ajv = new Ajv2020({ strict: false, allErrors: true })
