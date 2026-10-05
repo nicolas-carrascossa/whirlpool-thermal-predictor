@@ -31,6 +31,8 @@ export const DEFAULT_OPENINGS: OpeningState = { console: true, rear: false, oven
 
 export interface StoveContextValue {
   view: StoveView
+  /** Campo térmico CFD aplicado às superfícies; exclusivo do modo Mapa de calor. */
+  thermalMode: boolean
   /** Plano de corte compartilhado (mutado no lugar pelo slider, sem re-render). */
   clipPlanes: THREE.Plane[]
   /** Profundidade do corte em % — usada pela tampa escura da face cortada. */

@@ -102,7 +102,7 @@ describe('StoveConfigPanel', () => {
     expect(snapshot().hoveredVariable).toBeNull()
   })
 
-  it('variável com muitas opções volta a ser um dropdown, em vez de um paredão de botões', () => {
+  it('variável com muitas opções mantém o padrão de botões em duas colunas', () => {
     const options = Array.from({ length: 9 }, (_, i) => `Perfil ${i + 1}`)
     const many: Metadata = {
       ...FIXTURE_METADATA,
@@ -110,10 +110,11 @@ describe('StoveConfigPanel', () => {
       reference_config: { ...FIXTURE_METADATA.reference_config, losses: 'Perfil 1' },
     }
     renderPanel(many)
-    expect(screen.queryByRole('radiogroup', { name: 'Losses' })).not.toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Losses' })).toHaveTextContent('Perfil 1')
-    // As demais variáveis continuam com as opções visíveis.
-    expect(screen.getAllByRole('radiogroup')).toHaveLength(FIXTURE_METADATA.variables.length - 1)
+    const losses = screen.getByRole('radiogroup', { name: 'Losses' })
+    expect(losses.className).toMatch(/grid-cols-2/)
+    expect(within(losses).getAllByRole('radio')).toHaveLength(9)
+    expect(within(losses).getByRole('radio', { name: 'Perfil 1' })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByRole('combobox', { name: 'Losses' })).not.toBeInTheDocument()
   })
 
   it('não tem ícone de variável nem texto em português nos rótulos', () => {
@@ -160,14 +161,14 @@ describe('StoveConfigPanel', () => {
       variables: FIXTURE_METADATA.variables.map((v) => (v.name === 'losses' ? { ...v, options: real } : v)),
       reference_config: { ...FIXTURE_METADATA.reference_config, losses: 'No losses' },
     })
-    // 13 opções passam do limite de botões: viram dropdown, e o dropdown lista todas.
-    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Losses' }), { key: 'ArrowDown' })
-    expect(screen.getAllByRole('option').map((o) => o.textContent?.replace(/\s+/g, ' '))).toEqual(
+    const losses = screen.getByRole('radiogroup', { name: 'Losses' })
+    expect(within(losses).getAllByRole('radio').map((o) => o.textContent?.replace(/\s+/g, ' '))).toEqual(
       real.map((o) => o.replace(/\s+/g, ' ')),
     )
+    expect(losses.className).toMatch(/grid-cols-2/)
   })
 
-  it('losses fica em botões (um por linha, nomes longos), não em dropdown', () => {
+  it('losses fica em botões, no mesmo padrão dos demais campos', () => {
     const meta: Metadata = {
       ...FIXTURE_METADATA,
       variables: FIXTURE_METADATA.variables.map((v) =>
@@ -178,7 +179,7 @@ describe('StoveConfigPanel', () => {
     }
     renderPanel(meta)
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-    expect(group('Losses').className).toMatch(/grid-cols-1/)
+    expect(group('Losses').className).toMatch(/flex/)
     // O espaço duplo do dataset não aparece na tela, mas o valor enviado continua o original.
     fireEvent.click(within(group('Losses')).getByRole('radio', { name: 'Miro Qualitative - Back Order' }))
     expect(snapshot().config.losses).toBe('Miro Qualitative  - Back Order')

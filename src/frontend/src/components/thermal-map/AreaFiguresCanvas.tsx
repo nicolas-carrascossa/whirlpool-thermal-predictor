@@ -155,6 +155,7 @@ function Scene({ placements, reducedMotion }: AreaFiguresCanvasProps) {
   const stove = useMemo<StoveContextValue>(
     () => ({
       view: 'solid',
+      thermalMode: false,
       clipPlanes: [],
       cutDepth: DEFAULT_CUT_DEPTH,
       explodeAmount: 0,

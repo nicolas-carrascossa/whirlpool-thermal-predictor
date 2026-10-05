@@ -13,6 +13,7 @@ import type { PartFocus } from './cameraForPart'
 import { DEFLECTOR } from './zoneGeometry'
 
 interface SceneProps {
+  thermalMode: boolean
   cameraPreset: string
   focus: PartFocus | null
   recenterToken: number
@@ -57,7 +58,21 @@ describe('ThermalMap3D — câmera e rótulos', () => {
 
   it('abre na câmera isométrica, sem foco em nenhuma peça e sem rótulos', () => {
     renderMap()
-    expect(last()).toMatchObject({ cameraPreset: 'iso', focus: null, showAnnotations: false })
+    expect(last()).toMatchObject({ cameraPreset: 'iso', focus: null, showAnnotations: false, thermalMode: false })
+  })
+
+  it('aplica o campo CFD somente no modo Mapa de calor', () => {
+    const { rerender } = renderMap({ mode: 'status' })
+    expect(last().thermalMode).toBe(false)
+
+    rerender(
+      <ThermalMap3D
+        predictions={FIXTURE_RESPONSE.predictions}
+        keyAreaLabels={keyAreaLabels}
+        mode="absolute"
+      />,
+    )
+    expect(last().thermalMode).toBe(true)
   })
 
   it('"ir até a peça" enquadra a região da peça, não só o preset', () => {

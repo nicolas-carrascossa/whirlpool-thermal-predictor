@@ -79,6 +79,8 @@ export interface ZoneLabelDatum {
 
 interface ThermalMapSceneProps {
   colorFor: (zoneKey: string) => string
+  /** Ativa a textura CFD somente nos meshes que representam áreas medidas. */
+  thermalMode: boolean
   isZoneActive: (zoneKey: string) => boolean
   onHoverZone: (key: string) => void
   onUnhoverZone: (key: string) => void
@@ -254,6 +256,7 @@ function ClippingSetup({ enabled }: { enabled: boolean }) {
 
 export function ThermalMapScene({
   colorFor,
+  thermalMode,
   isZoneActive,
   onHoverZone,
   onUnhoverZone,
@@ -309,6 +312,7 @@ export function ThermalMapScene({
   const ctx = useMemo(
     () => ({
       view,
+      thermalMode,
       clipPlanes,
       cutDepth,
       explodeAmount,
@@ -322,6 +326,7 @@ export function ThermalMapScene({
     }),
     [
       view,
+      thermalMode,
       clipPlanes,
       cutDepth,
       explodeAmount,
