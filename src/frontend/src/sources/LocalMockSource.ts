@@ -1,6 +1,6 @@
 /**
  * `LocalMockSource` — implementação de `PredictionSource` que roda inteiramente
- * no navegador, a partir dos três JSONs gerados por `src/scripts/build_registry.py`.
+ * no navegador, a partir dos três JSONs gerados por `scripts/build_registry.py`.
  *
  * Não é um modelo: é um gerador determinístico calibrado pelas estatísticas
  * reais do dataset e pelos sinais das hipóteses H1, H3 e H4. Serve para
@@ -32,7 +32,7 @@ import variableOptionsJson from '@data/variable_options.json'
 export const MODEL_VERSION = 'mock-0.1.0'
 
 /**
- * Manifesto dos modelos (gerado por `src/scripts/export_models.py`). O mock não
+ * Manifesto dos modelos (gerado por `scripts/export_models.py`). O mock não
  * roda modelo nenhum, mas ecoa daqui o mapeamento área → algoritmo e as
  * métricas, para que o modo local exercite exatamente o mesmo caminho de
  * código da API — e para que o mapa não seja escrito à mão em lugar nenhum.

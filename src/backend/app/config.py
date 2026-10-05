@@ -9,10 +9,11 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BACKEND_DIR.parent.parent
 #: The API owns its runtime data. It used to read these files from inside the
 #: React source tree (`src/frontend/src/data`), which made the server depend on
 #: where the client keeps its sources — the dependency pointing the wrong way.
-#: `src/scripts/build_registry.py` writes here, `app/data.py` reads from here, and
+#: `scripts/build_registry.py` writes here, `app/data.py` reads from here, and
 #: the front-end gets this data over HTTP like any other client.
 DEFAULT_DATA_DIR = BACKEND_DIR / "data"
 
@@ -41,14 +42,14 @@ class Settings(BaseSettings):
     model_mode: str = "real"
 
     #: Directory with one artifact per (algorithm x key_area) plus
-    #: `manifest.json`, produced by `src/scripts/export_models.py`. Only read when
+    #: `manifest.json`, produced by `scripts/export_models.py`. Only read when
     #: `model_mode == "real"`.
-    model_dir: Path = BACKEND_DIR / "models"
+    model_dir: Path = REPO_ROOT / "models"
 
     # --- data ---------------------------------------------------------------
     #: Directory holding sensor_registry.json / sensor_stats.json /
     #: variable_options.json / model_manifest.json, produced by
-    #: `src/scripts/build_registry.py` and `src/scripts/export_models.py`.
+    #: `scripts/build_registry.py` and `scripts/export_models.py`.
     data_dir: Path = DEFAULT_DATA_DIR
 
     #: SQLite file. Relative paths resolve against `src/backend/`.

@@ -6,8 +6,8 @@ O token NUNCA vai no codigo. Ele e lido da variavel de ambiente GITLAB_TOKEN.
 
     # PowerShell
     $env:GITLAB_TOKEN = "<seu token>"
-    python src/scripts/datas_sprint4.py                # inspeciona, nao altera nada
-    python src/scripts/datas_sprint4.py --aplicar      # aplica
+    python scripts/datas_sprint4.py                # inspeciona, nao altera nada
+    python scripts/datas_sprint4.py --aplicar      # aplica
 
     # bash
     export GITLAB_TOKEN="<seu token>"

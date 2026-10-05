@@ -223,7 +223,7 @@ projeto separado, não uma aba.
 
 ## 7. Viabilidade técnica (medida)
 
-Medições feitas neste repositório, com os modelos reais em `src/backend/models/`:
+Medições feitas neste repositório, com os modelos reais em `models/`:
 
 | Operação | Tempo medido |
 | --- | --- |

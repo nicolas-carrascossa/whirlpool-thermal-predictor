@@ -37,9 +37,9 @@ Estatísticas** are critical product scope.
 2. `graphify-out/GRAPH_REPORT.md` — generated architecture graph, dated
    2026-09-26. **Its inventory predates the removals below**; use it to discover
    duplicate communities, not as a current file listing.
-3. `src/contracts/README.md` and `src/contracts/api_v1.schema.json`.
+3. `contracts/README.md` and `contracts/api_v1.schema.json`.
 4. `src/backend/README.md` and `src/frontend/DEMO.md`.
-5. `src/scripts/README.md`, `src/backend/models/manifest.json`, and `documents/documentacao.md`.
+5. `scripts/README.md`, `models/manifest.json`, and `documents/documentacao.md`.
 
 Treat `graphify-out/` as analysis output, not production source. It is useful
 for discovering duplicate communities; it is not proof that a dependency is
@@ -115,7 +115,7 @@ with no API running. Its constraints are non-negotiable:
 - `src/backend/app/predictors/mock.py` is a Python port of
   `LocalMockSource.ts`, kept in step by a parity fixture. This duplication is
   intentional only for the demo/test path and must not be expanded.
-- `src/scripts/build_registry.py` and `src/scripts/export_models.py` duplicate parts of
+- `scripts/build_registry.py` and `scripts/export_models.py` duplicate parts of
   preprocessing/model logic that also exists in notebooks.
 
 ## Target architecture
@@ -319,7 +319,7 @@ covered by direct unit tests without FastAPI or SQLite.
 **Gate:** the service serves a versioned model bundle with no dependency on the
 web client's source tree and no notebook execution. *(The data-ownership half of
 this gate is already met: the catalog moved to `src/backend/data/` and
-`src/scripts/build_registry.py` writes there.)*
+`scripts/build_registry.py` writes there.)*
 
 ### Phase 5 — Frontend simplification
 
@@ -394,9 +394,9 @@ model bundle and pass every test with one documented command sequence.
 | --- | --- | --- |
 | Supported web app | `src/frontend/` | Preserve; convert to generated API client and simplify state. |
 | Supported API | `src/backend/` | Preserve public v1 behaviour; refactor internals behind ports/use cases. |
-| API-owned catalog | `src/backend/data/` | Written by `src/scripts/build_registry.py`, read by `app/data.py`, served over HTTP. Never read it from the web client at runtime. |
-| Contract | `src/contracts/`, frontend `contract/v1.ts`, backend `schemas.py` | Consolidate through generated OpenAPI artifacts; version breaking changes. |
-| Real models | `src/backend/models/`, `src/scripts/export_models.py` | Turn into immutable model bundles with provenance. |
+| API-owned catalog | `src/backend/data/` | Written by `scripts/build_registry.py`, read by `app/data.py`, served over HTTP. Never read it from the web client at runtime. |
+| Contract | `contracts/`, frontend `contract/v1.ts`, backend `schemas.py` | Consolidate through generated OpenAPI artifacts; version breaking changes. |
+| Real models | `models/`, `scripts/export_models.py` | Turn into immutable model bundles with provenance. |
 | Notebooks | `notebooks/` | Research/documentation only; extract shared executable code. |
 | Graph output | `graphify-out/` | Read-only analysis aid; exclude from scans and commits unless asked. |
 

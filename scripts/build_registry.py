@@ -39,7 +39,7 @@ from pathlib import Path
 
 import pandas as pd
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parent.parent
 DATASET_PATH = REPO_ROOT / "data" / "dataset_pre_processado.csv"
 # Os dados de catalogo pertencem ao back-end, que os le em runtime
 # (`src/backend/app/config.py`). O front-end os recebe pela API.

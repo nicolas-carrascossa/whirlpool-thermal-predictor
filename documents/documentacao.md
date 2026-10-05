@@ -1203,7 +1203,7 @@ Por região, a tabela abaixo traz as métricas do algoritmo em produção em cad
 | IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
 | Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`src/scripts/export_models.py`](../src/scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
 
 #### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
 
@@ -1613,7 +1613,7 @@ Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide quand
 
 ##### A decisão registrada
 
-O roteamento por região adotado em produção é o seguinte, e vive em um único lugar no repositório — o mapa `AREA_ALGORITHMS` em [`src/scripts/export_models.py`](../src/scripts/export_models.py), que o grava no manifesto consumido pelo back-end e pelo front-end. Nem a API nem o dashboard reescrevem esse mapa à mão; ambos leem do manifesto, de modo que a decisão documentada aqui e o modelo que efetivamente responde a uma requisição não podem divergir.
+O roteamento por região adotado em produção é o seguinte, e vive em um único lugar no repositório — o mapa `AREA_ALGORITHMS` em [`scripts/export_models.py`](../scripts/export_models.py), que o grava no manifesto consumido pelo back-end e pelo front-end. Nem a API nem o dashboard reescrevem esse mapa à mão; ambos leem do manifesto, de modo que a decisão documentada aqui e o modelo que efetivamente responde a uma requisição não podem divergir.
 
 | Região | Algoritmo em produção | Artefato |
 |---|---|---|
@@ -1625,11 +1625,11 @@ O roteamento por região adotado em produção é o seguinte, e vive em um únic
 | IPC Comp | Random Forest | `random_forest__ipc_comp.joblib` |
 | IPC Cooling | Random Forest | `random_forest__ipc_cooling.joblib` |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de `src/backend/models/manifest.json`.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `models/manifest.json`.</sup>
 
 ##### Do notebook ao artefato em produção
 
-Os artefatos acima são gerados por [`src/scripts/export_models.py`](../src/scripts/export_models.py) com o mesmo pipeline da versão atual descrita nas Seções 4.4.2 e 4.4.3: as 32 configurações de cada região, a padronização de categorias do notebook consolidado (espaços normalizados antes das correções de grafia), codificação one-hot, o estimador híbrido no Random Forest e os hiperparâmetros oficiais de cada algoritmo, sem nova busca em grade. As métricas gravadas no manifesto são as da validação LOGO. Depois dessa validação, o artefato final de cada região é treinado com **todas** as 32 configurações, e o erro medido no LOGO é a estimativa do erro desse artefato em configurações novas. É desse erro por termopar que vem a margem exibida no dashboard ao lado de cada previsão (RF04).
+Os artefatos acima são gerados por [`scripts/export_models.py`](../scripts/export_models.py) com o mesmo pipeline da versão atual descrita nas Seções 4.4.2 e 4.4.3: as 32 configurações de cada região, a padronização de categorias do notebook consolidado (espaços normalizados antes das correções de grafia), codificação one-hot, o estimador híbrido no Random Forest e os hiperparâmetros oficiais de cada algoritmo, sem nova busca em grade. As métricas gravadas no manifesto são as da validação LOGO. Depois dessa validação, o artefato final de cada região é treinado com **todas** as 32 configurações, e o erro medido no LOGO é a estimativa do erro desse artefato em configurações novas. É desse erro por termopar que vem a margem exibida no dashboard ao lado de cada previsão (RF04).
 
 Nos quatro modelos de Gradient Boosting, as métricas do manifesto reproduzem exatamente as da tabela da Seção 4.4.3. Nos três de Random Forest, a diferença para a tabela da Seção 4.4.2 é de até 0,03 °C no MAE e de até 0,009 no R² médio entre termopares. Ela vem da padronização de espaços em `material_coil_support` (ressalva acima), que o notebook de origem do Random Forest não aplicava e o artefato aplica. A diferença é pequena demais para alterar qualquer escolha de roteamento.
 
@@ -1648,7 +1648,7 @@ Esta seção fecha a Seção 4 e responde se o modelo entregue atende ao que a S
 
 #### <a name="c4_5_1"></a>4.5.1. Solução final e justificativa
 
-A solução final é um conjunto de **sete modelos de regressão multi-saída, um por região do fogão**, cada um prevendo de uma vez a temperatura de todos os termopares da sua região a partir das sete variáveis de configuração de montagem. O algoritmo foi escolhido região a região: **Gradient Boosting em quatro** (Main Vent Sys, CT Knobs, Oven HMI e Coil Temps) e **Random Forest em três** (Mainback, IPC Comp e IPC Cooling). Esse roteamento é gravado em `src/backend/models/manifest.json`, lido pela API e pelo dashboard (Seção 4.4.4).
+A solução final é um conjunto de **sete modelos de regressão multi-saída, um por região do fogão**, cada um prevendo de uma vez a temperatura de todos os termopares da sua região a partir das sete variáveis de configuração de montagem. O algoritmo foi escolhido região a região: **Gradient Boosting em quatro** (Main Vent Sys, CT Knobs, Oven HMI e Coil Temps) e **Random Forest em três** (Mainback, IPC Comp e IPC Cooling). Esse roteamento é gravado em `models/manifest.json`, lido pela API e pelo dashboard (Seção 4.4.4).
 
 A escolha se sustenta em três argumentos, cada um demonstrado em uma seção anterior:
 
@@ -1709,7 +1709,7 @@ As hipóteses H1 a H4 foram testadas nos dados na Seção 4.2.4. Aqui se verific
 | **H3** — a temperatura depende do modo de operação (`run_case`) | Confirmada, com efeito secundário: os modos Broil operam 12,1 °C acima dos demais (83,5 °C contra 71,4 °C), mas o modo explica ~1,6% da variância da base inteira. | `run_case` lidera o SHAP em quatro das sete regiões (53% em Coil Temps) e a importância dos modelos em produção em seis. | Aceita com ressalva: secundário na base inteira, onde a região domina, e principal dentro de cada região; segue confundido com `losses` (H2) |
 | **H4** — a carcaça aberta aquece o IGBT 1 | Confirmada no teste de médias: +9,6 °C com a carcaça aberta (Welch, p ≈ 0,03), sem significância no Mann-Whitney (p ≈ 0,08). | Em produção, os IGBT 1 a 16 são previstos como uma média única (fusão descrita na Seção 4.2.3). Para essa média, abrir a carcaça nas 18 configurações de IPC Comp ensaiadas com ela fechada eleva a previsão em +2,34 °C em média, com sinal positivo em 17 delas; `housing` responde por 9% da importância do modelo da região (6% no SHAP do Gradient Boosting, Figura 25). | Aceita nos dados; reproduzida pelo modelo no sentido, não na magnitude do IGBT 1 |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 4.2.4, 4.3.3.4 e 4.4. A verificação da H4 foi feita para esta seção sobre o artefato em produção `src/backend/models/random_forest__ipc_comp.joblib`, alternando apenas `housing` em cada configuração de treino registrada no manifesto.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 4.2.4, 4.3.3.4 e 4.4. A verificação da H4 foi feita para esta seção sobre o artefato em produção `models/random_forest__ipc_comp.joblib`, alternando apenas `housing` em cada configuração de treino registrada no manifesto.</sup>
 
 O modelo reproduz o sentido da H4, mas não permite verificar a magnitude afirmada para o IGBT 1. O efeito de +9,6 °C foi medido no IGBT 1, e o modelo prevê a média dos 16 IGBTs (Seção 4.2.3), que dilui o efeito de um único sensor, sobretudo do mais frio dos dezesseis (Seção 4.2.4). Na mesma média, os dados mostram 6,1 °C a mais com a carcaça aberta, mas essa comparação não isola as demais variáveis. O modelo isola: alterando só a carcaça, a previsão sobe 2,3 °C. O próprio efeito nos dados também não passou no teste mais conservador. Prever o IGBT 1 separadamente é o ajuste necessário para verificar a magnitude da H4 no modelo.
 
@@ -1724,7 +1724,7 @@ O modelo vai errar, e a Matriz de Riscos (Seção 4.1.5) já antecipou como. Os 
 | A consulta cai em região de R² baixo (IPC Comp, 0,158; Oven HMI, 0,074) | Reforçar o aviso de incerteza e usar a previsão só para triagem | R03; Seção 4.5.2 | Pendente: o aviso é o mesmo das demais regiões |
 | Mais de 20% das consultas caem fora do envelope de treino | Documentar formalmente o domínio de validade e comunicá-lo aos engenheiros | R04 | Pendente: depende da telemetria de uso |
 | O desvio entre CFD e teste físico passa de 5% em termopar com limite normativo | Aplicar camada de correção de viés calibrada sobre os testes físicos | R05 | Pendente: o desvio ainda não foi quantificado |
-| Novos ensaios ficam disponíveis | Retreinar, refazer o comparativo e reavaliar o roteamento, começando por CT Knobs | R02, RF16 | Parcial: `src/scripts/export_models.py` regenera artefatos e manifesto; a reavaliação do roteamento é manual |
+| Novos ensaios ficam disponíveis | Retreinar, refazer o comparativo e reavaliar o roteamento, começando por CT Knobs | R02, RF16 | Parcial: `scripts/export_models.py` regenera artefatos e manifesto; a reavaliação do roteamento é manual |
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 4.1.5 e 6.1 e do código em `src/backend/app/predictors/real.py`.</sup>
 
@@ -1734,7 +1734,7 @@ A regra que une as seis linhas é a mesma: na dúvida, o Thermal Predictor devol
 
 ### <a name="c5_1"></a>5.1. Principais resultados
 
-O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem por meio de sete modelos independentes, um por `key_area` (Seção 4.3): **Gradient Boosting** em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, **Random Forest** em Mainback, IPC Comp e IPC Cooling, conforme o mapa `AREA_ALGORITHMS` de [`src/scripts/export_models.py`](../src/scripts/export_models.py). As métricas por região estão na tabela da Seção 4.5.1: o erro típico vai de 2,07 °C em Main Vent Sys a 9,55 °C em Coil Temps, média de 3,97 °C e 87,9% das previsões dentro da margem de 10%, sob validação LOGO, em que cada uma das 32 configurações da região serve de teste uma vez. O erro maior em Coil Temps acompanha o patamar térmico da região, não uma falha de ajuste.
+O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem por meio de sete modelos independentes, um por `key_area` (Seção 4.3): **Gradient Boosting** em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, **Random Forest** em Mainback, IPC Comp e IPC Cooling, conforme o mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). As métricas por região estão na tabela da Seção 4.5.1: o erro típico vai de 2,07 °C em Main Vent Sys a 9,55 °C em Coil Temps, média de 3,97 °C e 87,9% das previsões dentro da margem de 10%, sob validação LOGO, em que cada uma das 32 configurações da região serve de teste uma vez. O erro maior em Coil Temps acompanha o patamar térmico da região, não uma falha de ajuste.
 
 Esta documentação reporta duas medições do mesmo conjunto de modelos: a dos notebooks de origem, que mede o que está em produção e sustenta os valores por região, e a do comparativo consolidado, única que inclui o baseline da média do treino e, portanto, a única de onde saem as reduções abaixo. Contra esse baseline, os sete modelos reduzem o MAE nas sete regiões: de 10,2% em Oven HMI (2,19 contra 2,44 °C) e 10,9% em IPC Comp (4,76 contra 5,34 °C) a 43,6% em Mainback (3,43 contra 6,08 °C) e 48,6% em Coil Temps (10,64 contra 20,70 °C); na média, o MAE cai de 6,55 °C para 4,10 °C, redução de 37,4%. O R² é desigual: 0,785 em Coil Temps e 0,591 em Main Vent Sys, mas 0,158 em IPC Comp e 0,074 em Oven HMI, regiões em que o modelo acerta o patamar térmico sem distinguir com segurança duas configurações próximas.
 

@@ -1,7 +1,7 @@
 /**
  * Exportador da fixture de paridade TS ↔ Python (Fase 2).
  *
- * Não é um teste de comportamento: é o gerador de `src/contracts/fixtures/
+ * Não é um teste de comportamento: é o gerador de `contracts/fixtures/
  * mock_parity_v1.json`, o alvo que `src/backend/tests/test_parity.py` usa para
  * provar que o mock portado para Python devolve exatamente os mesmos números
  * que o mock do navegador.
@@ -20,7 +20,7 @@ import type { PredictionRequest, StoveConfig } from '@/contract/v1'
 import { LocalMockSource, REFERENCE_CONFIG } from './LocalMockSource'
 
 const ENABLED = process.env.EXPORT_PARITY === '1'
-const OUT = resolve(process.cwd(), '../contracts/fixtures/mock_parity_v1.json')
+const OUT = resolve(process.cwd(), '../../contracts/fixtures/mock_parity_v1.json')
 const FIXED_NOW = new Date('2026-09-10T12:00:00.000Z')
 
 function cfg(patch: Partial<StoveConfig>): StoveConfig {
@@ -81,7 +81,7 @@ function buildRequests(): PredictionRequest[] {
 describe('fixture de paridade', () => {
   const run = ENABLED ? it : it.skip
 
-  run('exporta 25 pares request/response para src/contracts/fixtures', async () => {
+  run('exporta 25 pares request/response para contracts/fixtures', async () => {
     const source = new LocalMockSource({ now: () => FIXED_NOW })
     const requests = buildRequests()
     expect(requests).toHaveLength(25)

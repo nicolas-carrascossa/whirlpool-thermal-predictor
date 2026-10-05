@@ -13,8 +13,8 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BACKEND_DIR.parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-CONTRACT_SCHEMA = REPO_ROOT / "src" / "contracts" / "api_v1.schema.json"
-PARITY_FIXTURE = REPO_ROOT / "src" / "contracts" / "fixtures" / "mock_parity_v1.json"
+CONTRACT_SCHEMA = REPO_ROOT / "contracts" / "api_v1.schema.json"
+PARITY_FIXTURE = REPO_ROOT / "contracts" / "fixtures" / "mock_parity_v1.json"
 
 
 @pytest.fixture(scope="session", autouse=True)

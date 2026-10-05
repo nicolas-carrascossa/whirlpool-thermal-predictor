@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
         version=CONTRACT_VERSION,
         description=(
             "API do Thermal Predictor (Inteli × Whirlpool). Implementa o contrato v1 "
-            "definido em `src/contracts/api_v1.schema.json`. Todas as rotas `/api/v1/*` "
+            "definido em `contracts/api_v1.schema.json`. Todas as rotas `/api/v1/*` "
             "exigem um token Bearer obtido em `POST /api/v1/auth/login`."
         ),
         lifespan=lifespan,

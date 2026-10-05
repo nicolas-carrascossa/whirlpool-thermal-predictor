@@ -23,9 +23,9 @@ flowchart LR
     W -->|"HTTPS /api/v1 + Bearer"| A["API\nFastAPI"]
     A --> C["Catálogo de runtime\nsrc/backend/data/*.json"]
     A --> P["Preditor selecionado\nMODEL_MODE=real ou mock"]
-    P -->|"real"| M["src/backend/models/*.joblib\nsrc/backend/models/manifest.json"]
+    P -->|"real"| M["models/*.joblib\nmodels/manifest.json"]
     A --> D[("SQLite\nusuários + access_log")]
-    S["src/scripts/build_registry.py\nsrc/scripts/export_models.py"] --> C
+    S["scripts/build_registry.py\nscripts/export_models.py"] --> C
     S --> M
 
     classDef client fill:#e8f2f8,stroke:#28506e,color:#142b3d;
@@ -48,11 +48,11 @@ locais — API e frontend — e não iniciar uma segunda interface ou um contain
 | --- | --- | --- | --- |
 | Cliente web | `src/frontend/` | interação, estado de tela, visualização 3D e apresentação de resultados | executar modelo treinado ou ler JSONs internos do servidor |
 | Cliente HTTP | `src/frontend/src/sources/ApiSource.ts` | anexar token, chamar a API, traduzir falhas HTTP em erros da interface | duplicar regras de validação/modelagem |
-| Contrato | `src/frontend/src/contract/v1.ts`, `src/contracts/` e `src/backend/app/schemas.py` | definir forma dos pedidos e respostas v1 | carregar dados ou executar predições |
+| Contrato | `src/frontend/src/contract/v1.ts`, `contracts/` e `src/backend/app/schemas.py` | definir forma dos pedidos e respostas v1 | carregar dados ou executar predições |
 | API | `src/backend/app/` | autenticação, validação, roteamento, acesso aos dados, predição e auditoria | renderizar UI ou depender de arquivos do frontend |
 | Catálogo | `src/backend/data/` | sensores, opções canônicas, estatísticas e recorte de metadados do manifesto | ficar embutido no bundle do navegador |
-| Modelos | `src/backend/models/` | artefatos `.joblib` e manifesto completo por área | ser enviado ao cliente |
-| Pesquisa e geração | `notebooks/`, `src/scripts/` | preparar dados, construir catálogo e treinar/exportar modelos | participar do caminho de requisição em produção |
+| Modelos | `models/` | artefatos `.joblib` e manifesto completo por área | ser enviado ao cliente |
+| Pesquisa e geração | `notebooks/`, `scripts/` | preparar dados, construir catálogo e treinar/exportar modelos | participar do caminho de requisição em produção |
 
 ## Organização de diretórios
 
@@ -66,15 +66,14 @@ g03/
 │   │       ├── sources/           # ApiSource e LocalMockSource
 │   │       ├── hooks/             # consultas TanStack Query
 │   │       └── contract/          # tipos e erros do contrato v1
-│   ├── backend/                   # serviço FastAPI
-│   │   ├── app/                   # rotas, preditores, segurança, banco
-│   │   ├── data/                  # catálogo servido pela API
-│   │   ├── models/                # modelos treinados + manifesto completo
-│   │   └── tests/                 # testes de API, modelo e contrato
-│   ├── contracts/                 # schema JSON e fixture de paridade
-│   └── scripts/                   # build_registry.py e export_models.py
+│   └── backend/                   # serviço FastAPI
+│       ├── app/                   # rotas, preditores, segurança, banco
+│       ├── data/                  # catálogo servido pela API
+│       └── tests/                 # testes de API, modelo e contrato
+├── models/                        # modelos treinados + manifesto completo
+├── scripts/                       # build_registry.py e export_models.py
 ├── notebooks/                     # pesquisa e experimentação
-├── assets/                        # imagens e diagramas da documentação
+├── contracts/                     # schema JSON e fixture de paridade
 └── documents/                     # documentação, incluindo este relatório
 ```
 
@@ -169,7 +168,7 @@ Há dois conjuntos de arquivos que cumprem papéis diferentes:
    `variable_options.json` e uma versão de consumo do `model_manifest.json`.
    Esses arquivos passaram a pertencer ao backend; o frontend os recebe por
    `GET /api/v1/metadata`.
-2. `src/backend/models/` contém os sete artefatos treinados `.joblib` e o
+2. `models/` contém os sete artefatos treinados `.joblib` e o
    `manifest.json` completo. O manifesto mapeia cada área a seu algoritmo,
    registra métricas, codificações, opções conhecidas no treino, expansão de
    alvos para termopares, versão do conjunto e proveniência.
@@ -199,8 +198,8 @@ catálogo, mas nunca vista pelo modelo de uma área, faz aquela área ser omitid
 e registrada como `skipped_areas`; o servidor não inventa uma substituição de
 modelo.
 
-`src/scripts/build_registry.py` é responsável por gerar o catálogo do backend a
-partir dos dados preparados. `src/scripts/export_models.py` treina/exporta os
+`scripts/build_registry.py` é responsável por gerar o catálogo do backend a
+partir dos dados preparados. `scripts/export_models.py` treina/exporta os
 artefatos, constrói o manifesto e escreve o recorte de manifesto em
 `src/backend/data/`. Os notebooks são o ambiente de pesquisa e não fazem parte
 do caminho de uma requisição web.
@@ -209,7 +208,7 @@ do caminho de uma requisição web.
 
 O contrato v1 é consumido pelos dois lados: o frontend modela pedidos e
 respostas em `src/frontend/src/contract/v1.ts`; a API usa DTOs Pydantic em
-`src/backend/app/schemas.py`; e `src/contracts/api_v1.schema.json` é o schema JSON
+`src/backend/app/schemas.py`; e `contracts/api_v1.schema.json` é o schema JSON
 gerado. A forma mais importante é `PredictionRequest`, formada por arquitetura,
 sete variáveis de configuração e, opcionalmente, filtros por área/sensor.
 
@@ -264,7 +263,7 @@ estrutura implementada com o objetivo arquitetural definido pela equipe:
   `VITE_DATA_SOURCE=local` ainda habilita `LocalMockSource`. Use-o apenas para
   demo offline e deixe claro na interface quando estiver ativo.
 - **Parte da documentação histórica está defasada.** Alguns textos em
-  `src/backend/README.md`, `src/scripts/README.md` e `src/contracts/README.md` ainda
+  `src/backend/README.md`, `scripts/README.md` e `contracts/README.md` ainda
   citam caminhos, fases ou origem de dados anteriores. Para decisões técnicas,
   priorize `app/config.py`, `app/data.py`, os scripts e os testes atuais; estes
   documentos devem ser atualizados em seguida.
@@ -280,9 +279,9 @@ estrutura implementada com o objetivo arquitetural definido pela equipe:
    `ResultsPanel`, `ThermalMapSlot` e `MetricsPanel`.
 3. Para uma chamada HTTP, comece em `ApiSource.ts`, siga para
    `routers/predictions.py` e depois para `predictors/`.
-4. Para entender uma temperatura, consulte o `src/backend/models/manifest.json` da área:
+4. Para entender uma temperatura, consulte o `models/manifest.json` da área:
    ele identifica artefato, codificação, métricas e sensores atendidos.
 5. Para alterar opções, sensores ou métricas, regenere os artefatos por meio
    dos scripts; não copie dados para o frontend.
 6. Preserve a separação: navegador apresenta; API valida, prediz e audita;
-   scripts e notebooks produzem catálogo e modelos.
+   scripts/notebooks produzem catálogo e modelos.
