@@ -47,7 +47,11 @@ Para o front-end falar com esta API, rode-o com `VITE_DATA_SOURCE=api` e
 | `engenheiro` | `thermal2026` | `engineer` | João — Engenharia Térmica |
 | `admin` | `admin2026` | `admin` | Administrador |
 
-São credenciais de demonstração; troque-as antes de qualquer uso real.
+> **Atenção:** estas credenciais, assim como o `JWT_SECRET` padrão de
+> `app/config.py`, existem **apenas para demonstração local** e são públicas por
+> estarem neste repositório. Elas não dão acesso a nenhum sistema real nem a
+> dados de pessoas. Troque-as antes de qualquer uso fora da máquina de
+> desenvolvimento.
 
 ## Variáveis de ambiente
 

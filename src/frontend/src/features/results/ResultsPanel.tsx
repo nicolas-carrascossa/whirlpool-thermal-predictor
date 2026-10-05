@@ -23,6 +23,7 @@ import {
   type PredictionResponse,
   type StoveConfig,
 } from '@/contract/v1'
+import { AnalysisPanel, type BaseOption } from '@/features/analysis/AnalysisPanel'
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { AreaStrip } from '@/features/results/AreaStrip'
 import { ResultsSummary } from '@/features/results/ResultsSummary'
@@ -141,6 +142,7 @@ export function ResultsPanel({
   onTabChange,
   historySlot,
   technicianView = true,
+  analysisBases = [],
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
@@ -166,6 +168,8 @@ export function ResultsPanel({
   historySlot?: ReactNode
   /** `false` = visão "não técnico": tabela de sensor só mostra quem pede atenção. Padrão `true`. */
   technicianView?: boolean
+  /** Consultas do Histórico oferecidas como base de comparação na análise técnica. */
+  analysisBases?: BaseOption[]
 }) {
   // Etapa B: "Status (limite)" é o modo padrão — a pergunta do engenheiro é
   // onde o limite estoura, não onde está mais quente.
@@ -306,6 +310,16 @@ export function ResultsPanel({
             technicianView={technicianView}
           />
         )}
+        {technicianView && shownGroup && metadata && request && (
+          <AnalysisPanel
+            metadata={metadata}
+            request={request}
+            response={response}
+            baseOptions={analysisBases}
+            keyArea={shownGroup.name}
+            keyAreaLabel={shownGroup.label_pt}
+          />
+        )}
       </>
     ))
 
@@ -337,7 +351,7 @@ export function ResultsPanel({
           focusRequest={focusRequest}
         />
       </TabsContent>
-      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
+      {/* Métricas reais da validação LOGO, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-0">
         {stateView ??
           (response && (

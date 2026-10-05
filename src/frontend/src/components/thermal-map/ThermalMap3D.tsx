@@ -243,8 +243,8 @@ export function ThermalMap3D({
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
 
-  // Clique numa variável de "Configuração selecionada": a câmera vai até a região da
-  // peça. Só reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
+  // Clique numa variável de "Configuração selecionada": vai até a peça. Só
+  // reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
   const handledFocusToken = useRef<number | null>(null)
   useEffect(() => {
     if (!focusRequest || handledFocusToken.current === focusRequest.token) return
