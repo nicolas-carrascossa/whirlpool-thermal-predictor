@@ -38,11 +38,20 @@ import { useMetricsQuery } from '@/hooks/useThermalQueries'
 import { formatCount } from '@/lib/format'
 
 import { AreaErrorTable } from './AreaErrorTable'
-import { executedRunIndex, scopeToPrediction } from './metricsModel'
+import { ConfigurationDecision } from './ConfigurationDecision'
+import { ConfusionMatrix } from './ConfusionMatrix'
+import {
+  configurationDecision,
+  confusionByDesign,
+  confusionByReading,
+  executedRunIndex,
+  scopeToPrediction,
+} from './metricsModel'
 
 const PredictedVsActualScatter = lazy(() => import('./PredictedVsActualScatter'))
 const FeatureImportanceBars = lazy(() => import('./FeatureImportanceBars'))
 const AreaMaeBars = lazy(() => import('./AreaMaeBars'))
+const ResidualScatter = lazy(() => import('./ResidualScatter'))
 
 function ChartSkeleton({ height }: { height: number }) {
   return <div aria-hidden="true" className="animate-pulse rounded-md bg-wp-gray05" style={{ height }} />
@@ -96,6 +105,30 @@ export function MetricsPanel({
     ? (validationByArea.find((a) => a.keyArea === selected.key_area)?.points ?? [])
     : []
   const executedRun = executedRunIndex(selectedPoints, predictedByTc)
+
+  // A matriz avalia o modelo, não a consulta: usa TODOS os pares da área, sem o
+  // recorte por termopar. No nível do design o veredito precisa dos sensores todos.
+  const confusionRows = useMemo(
+    () =>
+      areas.map((area) => ({
+        keyArea: area.key_area,
+        readings: confusionByReading(area.validation.points),
+        designs: confusionByDesign(area.validation.points),
+      })),
+    [areas],
+  )
+  // Matriz da configuração consultada: só existe depois de uma previsão.
+  const configDecision = useMemo(
+    () =>
+      response
+        ? configurationDecision(
+            areas.map((a) => ({ keyArea: a.key_area, points: a.validation.points })),
+            predictedByTc,
+          )
+        : null,
+    [areas, response, predictedByTc],
+  )
+  const selectedConfusion = confusionRows.find((r) => r.keyArea === selected?.key_area)
 
   if (metrics.isLoading) {
     return (
@@ -211,6 +244,107 @@ export function MetricsPanel({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Resíduo vs. previsto — {selectedLabel}</CardTitle>
+          <CardDescription>
+            Onde o modelo erra mais, não só quanto erra em média. Cada ponto é previsto − real contra o valor
+            previsto; a faixa cinza é a margem de ±10 % do KPI. Pontos fora dela são o que o MAE da área
+            esconde.
+            {executedRun !== null ? (
+              <>
+                {' '}
+                A estrela marca o ensaio com <strong>a mesma configuração que você consultou</strong>.
+              </>
+            ) : null}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense fallback={<ChartSkeleton height={340} />}>
+            <ResidualScatter points={selectedPoints} runs={selected.validation.runs} executedRun={executedRun} />
+          </Suspense>
+        </CardContent>
+      </Card>
+
+      {selectedConfusion ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Como ler as matrizes de decisão</CardTitle>
+            <CardDescription>
+              &quot;Positivo&quot; significa <strong>aprovar</strong>: a temperatura prevista está dentro do limite.
+              O limite é o <strong>limite ativo do sensor</strong> (<em>active limit</em>, o limite de engenharia
+              do país), usado exatamente como está.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-1.5 text-sm text-wp-gray85">
+              <li>
+                <strong className="text-status-ok-ink">TP (verdadeiro positivo):</strong> o modelo aprovou e a
+                medição confirmou que estava dentro do limite.
+              </li>
+              <li>
+                <strong className="text-status-danger-ink">FP (falso positivo):</strong> o modelo aprovou, mas a
+                medição passou do limite. É o erro grave: um superaquecimento seria liberado.
+              </li>
+              <li>
+                <strong className="text-status-warn-ink">FN (falso negativo):</strong> o modelo reprovou, mas a
+                medição estava dentro do limite. Custa só uma simulação a mais.
+              </li>
+              <li>
+                <strong className="text-status-ok-ink">TN (verdadeiro negativo):</strong> o modelo reprovou e a
+                medição confirmou que passou do limite.
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {selectedConfusion ? (
+        <div className="grid gap-4 min-[1100px]:grid-cols-2">
+          <Card className="flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Decisão por leitura — {selectedLabel}</CardTitle>
+              <CardDescription>
+                Cada sensor de cada ensaio de teste conta como uma observação: a previsão dele é comparada com a
+                medição de laboratório.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <ConfusionMatrix counts={selectedConfusion.readings} unit="leituras" />
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Decisão por design — {selectedLabel}</CardTitle>
+              <CardDescription>
+                Aqui cada ensaio de teste é um design inteiro. O design é reprovado se pelo menos um sensor da
+                área passa do limite, tanto na previsão quanto na medição. São poucos designs, então leia os
+                números como contagem, não como porcentagem.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <ConfusionMatrix counts={selectedConfusion.designs} unit="designs" />
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {configDecision ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Decisão para a configuração consultada</CardTitle>
+            <CardDescription>
+              Junta a resposta do modelo de cada área para a configuração que você consultou. Só conta a área em
+              que ela é um ensaio de teste, porque onde foi usada no treino o modelo já viu a resposta. Cada área
+              tem um modelo diferente.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConfigurationDecision decision={configDecision} areaLabels={areaLabels} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader className="pb-2">

@@ -49,7 +49,7 @@ const STATUS_LABEL_PT: Record<SensorStatus, string> = {
   ok: 'Dentro do limite',
   warn: 'Atenção ≥ 90 %',
   danger: 'Excede o limite',
-  monitor: 'Monitor (sem limite)',
+  monitor: 'Sem limite',
 }
 
 const STATUS_COLOR_HEX: Record<SensorStatus, string> = {
@@ -99,7 +99,7 @@ function absoluteTicks(predictions: SensorPrediction[]): { min: number; max: num
 /**
  * Constrói a legenda in-canvas do modo ativo.
  * - `status`: contagem de **sensores** (não zonas) em cada status normativo,
- *   mais "Monitor (sem limite)" — a soma das 4 linhas é sempre o total de
+ *   mais "Sem limite" — a soma das 4 linhas é sempre o total de
  *   sensores no recorte da consulta.
  * - `absolute`: faixa mín/máx e 5 ticks (quantis) das médias por zona da
  *   consulta atual.

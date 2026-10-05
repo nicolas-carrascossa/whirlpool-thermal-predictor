@@ -67,12 +67,7 @@ export function NavRail<Id extends string>({
       aria-label="Seções"
       className="sticky top-0 z-30 flex h-screen w-[76px] shrink-0 flex-col items-center gap-2 bg-[var(--rail-bg)] py-5"
     >
-      <div
-        aria-hidden="true"
-        className="mb-4 flex h-10 w-10 items-center justify-center font-display text-lg font-extrabold text-white"
-      >
-        TP
-      </div>
+      <img src="/TP.png" alt="" aria-hidden="true" className="mb-4 h-10 w-10 object-contain" />
       {/* Ícones no centro vertical da barra; logotipo no topo e Ajuda embaixo. */}
       <ul className="my-auto flex flex-col items-center gap-6">
         {items.map((item) => (

@@ -23,6 +23,7 @@ vi.mock('@/components/thermal-map/ThermalMap3D', () => ({
       data-testid="thermal-map-stub"
       data-config={JSON.stringify(props.config)}
       data-highlight={props.highlightPart ?? ''}
+      data-focus={JSON.stringify(props.focusRequest ?? null)}
     />
   ),
 }))
@@ -46,10 +47,10 @@ function Harness() {
         selectedKeyArea={null}
         onSelectKeyArea={() => {}}
         draftConfig={store.config}
+        focusRequest={store.focusRequest}
         submittedConfig={store.request?.config ?? null}
         highlightPart={store.highlightPart}
         hoveredVariable={store.hoveredVariable}
-        onHoverVariable={store.setHoveredVariable}
       />
     </>
   )
@@ -120,14 +121,25 @@ describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
     expect(screen.getByRole('status')).toBeInTheDocument()
   }, 10000)
 
-  it('passar o mouse num chip da legenda destaca a peça correspondente', async () => {
+  it('em "Configuração selecionada", passar o mouse numa variável destaca a peça e clicar leva o mapa até ela', async () => {
     const stub = await renderHarness()
-    const chip = screen.getByRole('button', { name: 'Carcaça da eletrônica' })
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    const row = screen.getByRole('button', { name: /Electronics housing: Closed/ })
 
-    fireEvent.mouseEnter(chip)
+    fireEvent.mouseEnter(row)
     expect(stub.getAttribute('data-highlight')).toBe('housing-lid')
-
-    fireEvent.mouseLeave(chip)
+    fireEvent.mouseLeave(row)
     expect(stub.getAttribute('data-highlight')).toBe('')
+
+    fireEvent.click(row)
+    expect(JSON.parse(stub.getAttribute('data-focus') ?? 'null')).toMatchObject({ part: 'housing-lid', token: 1 })
+    fireEvent.click(row)
+    expect(JSON.parse(stub.getAttribute('data-focus') ?? 'null')).toMatchObject({ token: 2 })
+  })
+
+  it('"losses" não vira botão em "Configuração selecionada" (não tem peça no 3D)', async () => {
+    await renderHarness()
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    expect(screen.queryByRole('button', { name: /^Losses:/ })).not.toBeInTheDocument()
   })
 })

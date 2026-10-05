@@ -41,6 +41,8 @@ interface WaterfallDatum {
   importance: number
   /** Fim do trecho acumulado, para o tooltip. */
   cumulative: number
+  /** Texto do rótulo à direita da barra: percentual OU nota, nunca os dois. */
+  barLabel: string
 }
 
 function toWaterfall(data: ReturnType<typeof importanceData>): WaterfallDatum[] {
@@ -56,6 +58,7 @@ function toWaterfall(data: ReturnType<typeof importanceData>): WaterfallDatum[] 
       base,
       importance: d.importance,
       cumulative: running,
+      barLabel: d.note || (d.importance > 0 ? formatPct(d.importance * 100, 0) : ''),
     }
   })
 }
@@ -106,15 +109,9 @@ export default function FeatureImportanceBars({
               <Cell key={d.name} fill={d.usedByModel ? 'var(--wp-core)' : 'var(--wp-gray-45)'} />
             ))}
             <LabelList
-              dataKey="importance"
+              dataKey="barLabel"
               position="right"
-              formatter={(value) => (Number(value) > 0 ? formatPct(Number(value) * 100, 0) : '')}
               style={{ fontSize: 10, fill: 'var(--wp-gray-65)' }}
-            />
-            <LabelList
-              dataKey="note"
-              position="right"
-              style={{ fontSize: 10, fill: 'var(--wp-gray-45)', fontStyle: 'italic' }}
             />
           </Bar>
         </BarChart>

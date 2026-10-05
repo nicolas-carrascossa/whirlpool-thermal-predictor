@@ -14,6 +14,9 @@ import type { ValidationPoint } from '@/contract/v1'
 import { FIXTURE_METADATA } from '@/test/fixtures'
 
 import {
+  configurationDecision,
+  confusionByDesign,
+  confusionByReading,
   equalAxisDomain,
   errorProfileOf,
   executedRunIndex,
@@ -157,5 +160,71 @@ describe('importância das variáveis', () => {
     const notUsed = data.filter((d) => !d.usedByModel).map((d) => d.name).sort()
     expect(notUsed).toEqual(['board_position', 'losses'])
     for (const d of data) expect(d.note).toBe(d.usedByModel ? '' : NOT_USED_LABEL_PT)
+  })
+})
+
+describe('matriz de decisão', () => {
+  const p = (run: number, limit: number | null, actual: number, predicted: number) =>
+    point({ run, active_limit_c: limit, actual_c: actual, predicted_c: predicted })
+
+  it('classifica cada leitura contra o limite e ignora sensores sem limite', () => {
+    const counts = confusionByReading([
+      p(0, 100, 90, 95), // TP
+      p(0, 100, 110, 95), // FP: aprovou e excede
+      p(1, 100, 90, 105), // FN: reprovou à toa
+      p(1, 100, 110, 105), // TN
+      p(1, 100, 100, 100), // no limite não excede: TP
+      p(1, null, 500, 500), // monitor: fora
+    ])
+    expect(counts).toEqual({ tp: 2, fp: 1, fn: 1, tn: 1 })
+  })
+
+  it('no nível do design, um sensor que excede reprova o ensaio inteiro', () => {
+    const counts = confusionByDesign([
+      p(0, 100, 90, 95),
+      p(0, 100, 110, 95), // run 0: real excede, previsto não → FP
+      p(1, 100, 90, 95),
+      p(1, 100, 95, 105), // run 1: previsto excede, real não → FN
+      p(2, 100, 90, 95), // run 2: TP
+      p(3, 100, 110, 110), // run 3: TN
+      p(4, null, 500, 500), // sem limite: fora
+    ])
+    expect(counts).toEqual({ tp: 1, fp: 1, fn: 1, tn: 1 })
+  })
+})
+
+describe('matriz da configuração consultada', () => {
+  const pt = (run: number, tc: number, limit: number, actual: number, predicted: number) =>
+    point({ run, tc_numbers: [tc], active_limit_c: limit, actual_c: actual, predicted_c: predicted })
+
+  it('usa só áreas em que a configuração é ensaio de teste e soma as leituras', () => {
+    // Área A: o run 1 bate com a consulta (previsões 95 e 105). Área B: nenhum run bate.
+    const a = [pt(0, 1, 100, 90, 80), pt(0, 2, 100, 90, 80), pt(1, 1, 100, 90, 95), pt(1, 2, 100, 110, 105)]
+    const b = [pt(0, 3, 100, 90, 70)]
+    const predicted = new Map([
+      [1, 95],
+      [2, 105],
+      [3, 99],
+    ])
+    const result = configurationDecision(
+      [
+        { keyArea: 'A', points: a },
+        { keyArea: 'B', points: b },
+      ],
+      predicted,
+    )
+    expect(result.coveredAreas).toBe(1)
+    expect(result.areas.find((r) => r.keyArea === 'B')?.hasTestRun).toBe(false)
+    expect(result.readings).toEqual({ tp: 1, fp: 0, fn: 0, tn: 1 })
+    expect(result.design).toEqual({ tp: 0, fp: 0, fn: 0, tn: 1 })
+  })
+
+  it('sem nenhuma área coberta, não há observação', () => {
+    const result = configurationDecision(
+      [{ keyArea: 'A', points: [pt(0, 1, 100, 90, 80)] }],
+      new Map([[1, 50]]),
+    )
+    expect(result.coveredAreas).toBe(0)
+    expect(result.design).toEqual({ tp: 0, fp: 0, fn: 0, tn: 0 })
   })
 })
