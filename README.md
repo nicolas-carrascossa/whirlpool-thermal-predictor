@@ -1,4 +1,4 @@
-# Inteli - Instituto de Tecnologia e Liderança 
+# Inteli - Instituto de Tecnologia e Liderança
 
 <p align="center">
 <a href= "https://www.inteli.edu.br/"><img src="assets/inteli.png" alt="Inteli - Instituto de Tecnologia e Liderança" border="0"></a>
@@ -8,13 +8,13 @@
 
 ## Equipe FOG
 
-## :student: Integrantes: 
+## :student: Integrantes:
 - <a href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">Felipe Pessoa</a>
 - <a href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">Gabriel Loyola</a>
-- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade</a> 
-- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Carrascossa</a> 
+- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade</a>
+- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Carrascossa</a>
 - <a href="https://www.linkedin.com/in/samuel-chen-7244893b6/">Samuel Chen</a>
-- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Lisboa</a> 
+- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Lisboa</a>
 - <a href="https://www.linkedin.com/in/william-moraes-34b35b26b/">William Moraes</a>
 
 ## :teacher: Professores:
@@ -22,10 +22,10 @@
 - <a href="https://www.linkedin.com/in/fabiocassiosouza/">Fabio Cassio</a>
 ### Instrutores
 - <a href="https://www.linkedin.com/in/roberto-c%C3%A2ndido-450582a0/">Roberto Cândido</a>
-- <a href="https://www.linkedin.com/in/egondaxbacher/">Egon Daxbacher</a> 
-- <a href="https://www.linkedin.com/in/geraldo-magela-severino-vasconcelos-22b1b220/">Geraldo Vasconcelos</a> 
+- <a href="https://www.linkedin.com/in/egondaxbacher/">Egon Daxbacher</a>
+- <a href="https://www.linkedin.com/in/geraldo-magela-severino-vasconcelos-22b1b220/">Geraldo Vasconcelos</a>
 - <a href="https://www.linkedin.com/in/heloisacandello/">Heloisa Candello</a>
-- <a href="https://www.linkedin.com/in/laizaribeiro/">Laíza Ribeiro</a> 
+- <a href="https://www.linkedin.com/in/laizaribeiro/">Laíza Ribeiro</a>
 
 
 ## 📝 Descrição

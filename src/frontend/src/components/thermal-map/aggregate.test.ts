@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { SensorPrediction } from '@/contract/v1'
 
-import { absoluteRange, aggregateByKeyArea, formatTempPt, maxAbsDelta } from './aggregate'
+import { absoluteRange, aggregateByKeyArea, formatTempPt } from './aggregate'
 
 function sensor(overrides: Partial<SensorPrediction> & { key_area: string; temp_c: number }): SensorPrediction {
   return {
@@ -59,18 +59,12 @@ describe('aggregateByKeyArea', () => {
     expect(agg.label).toBe('Unknown Zone')
   })
 
-  it('calcula delta contra referencePredictions quando fornecido', () => {
-    const current: SensorPrediction[] = [sensor({ key_area: 'IPC Comp', temp_c: 90 })]
-    const reference: SensorPrediction[] = [sensor({ key_area: 'IPC Comp', temp_c: 80 })]
-    const [agg] = aggregateByKeyArea(current, { 'IPC Comp': 'IPC' }, reference)
-    expect(agg.referenceMean).toBe(80)
-    expect(agg.delta).toBeCloseTo(10)
-  })
-
-  it('delta é null quando não há referencePredictions', () => {
+  it('só agrega o que a consulta devolveu: não existe média de referência nem delta', () => {
     const current: SensorPrediction[] = [sensor({ key_area: 'IPC Comp', temp_c: 90 })]
     const [agg] = aggregateByKeyArea(current, { 'IPC Comp': 'IPC' })
-    expect(agg.delta).toBeNull()
+    expect(Object.keys(agg).sort()).toEqual(
+      ['exceedCount', 'hasSensors', 'key', 'label', 'max', 'mean', 'min', 'n'].sort(),
+    )
   })
 })
 
@@ -86,25 +80,6 @@ describe('absoluteRange', () => {
 
   it('retorna {0,0} quando nenhuma zona tem sensores', () => {
     expect(absoluteRange(aggregateByKeyArea([], LABELS))).toEqual({ min: 0, max: 0 })
-  })
-})
-
-describe('maxAbsDelta', () => {
-  it('retorna o maior |delta| entre as zonas', () => {
-    const current: SensorPrediction[] = [
-      sensor({ key_area: 'IPC Comp', temp_c: 90 }),
-      sensor({ key_area: 'Main Vent Sys', temp_c: 30 }),
-    ]
-    const reference: SensorPrediction[] = [
-      sensor({ key_area: 'IPC Comp', temp_c: 80 }),
-      sensor({ key_area: 'Main Vent Sys', temp_c: 40 }),
-    ]
-    const aggregates = aggregateByKeyArea(current, LABELS, reference)
-    expect(maxAbsDelta(aggregates)).toBeCloseTo(10)
-  })
-
-  it('retorna 0 quando não há deltas', () => {
-    expect(maxAbsDelta(aggregateByKeyArea([], LABELS))).toBe(0)
   })
 })
 

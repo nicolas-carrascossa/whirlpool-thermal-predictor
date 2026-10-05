@@ -95,7 +95,7 @@ export default function FeatureImportanceBars({
           <RechartsTooltip
             cursor={{ fill: 'var(--wp-accent-lt)' }}
             contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--wp-gray-12)' }}
-            formatter={(value, name, item) => {
+            formatter={(_, __, item) => {
               const d = item.payload as WaterfallDatum
               return [
                 `${formatPct(d.importance * 100)} (acumulado: ${formatPct(d.cumulative * 100)})`,

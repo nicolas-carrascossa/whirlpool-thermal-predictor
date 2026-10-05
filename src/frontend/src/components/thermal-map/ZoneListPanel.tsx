@@ -24,7 +24,6 @@ function sortAggregates(
 ): ZoneAggregate[] {
   return [...aggregates].sort((a, b) => {
     if (a.hasSensors !== b.hasSensors) return a.hasSensors ? -1 : 1
-    if (mode === 'delta') return Math.abs(b.delta ?? 0) - Math.abs(a.delta ?? 0)
     if (mode === 'status') {
       const diff = STATUS_RANK[statusFor(b.key)] - STATUS_RANK[statusFor(a.key)]
       if (diff !== 0) return diff

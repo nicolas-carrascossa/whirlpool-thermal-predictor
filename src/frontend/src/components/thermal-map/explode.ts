@@ -19,8 +19,19 @@ export const EXPLODE_LIFT: Record<ExplodeLayerId, number> = {
   glass: 11.0,
 }
 
+/**
+ * Quanto o painel traseiro (com a zona `Mainback`) recua em -Z com a explosão a
+ * 100 %. Soma-se ao recuo de "Abrir traseira": são grupos aninhados.
+ */
+export const EXPLODE_REAR_PUSH = 7
+
 /** Afastamento inicial ao ligar a vista explodida (%). */
 export const DEFAULT_EXPLODE_AMOUNT = 60
+
+/** Recuo do painel traseiro para um `explodeAmount` (0–100). */
+export function rearPushFor(amount: number): number {
+  return EXPLODE_REAR_PUSH * clampAmount(amount)
+}
 
 /** Maior elevação possível — usada para enquadrar o fogão explodido. */
 export const EXPLODE_MAX_LIFT = Math.max(...Object.values(EXPLODE_LIFT))
@@ -41,12 +52,16 @@ export function explodeLiftFor(amount: number): number {
 
 /**
  * Caixa de enquadramento para um afastamento da vista explodida: a camada mais
- * alta sobe `explodeLiftFor(amount)`. Para ser calculada sob demanda (ao trocar
+ * alta sobe `explodeLiftFor(amount)` e o painel traseiro recua `rearPushFor(amount)`.
+ * Para ser calculada sob demanda (ao trocar
  * preset, ao recentralizar, ao redimensionar) — nunca por quadro, pelos motivos
  * registrados em `zoneGeometry.ts` junto a `STOVE_BOUNDS`.
  */
 export function framingBoundsFor(base: Bounds, explodeAmount: number): Bounds {
   const lift = explodeLiftFor(explodeAmount)
   if (lift <= 0) return base
-  return { min: base.min, max: [base.max[0], base.max[1] + lift, base.max[2]] }
+  return {
+    min: [base.min[0], base.min[1], base.min[2] - rearPushFor(explodeAmount)],
+    max: [base.max[0], base.max[1] + lift, base.max[2]],
+  }
 }

@@ -1,10 +1,13 @@
 /**
- * Miniatura 3D de uma `key_area`, feita só com CSS 3D (sem canvas WebGL): sete
- * miniaturas num painel lateral não justificam sete contextos `three.js`.
+ * Desenho de reserva de uma `key_area`, feito só com CSS 3D (sem WebGL).
  *
- * Em repouso o objeto fica num ângulo fixo. Com `active` (mouse ou foco na
- * linha da área) ele cresce um pouco e gira no próprio eixo; ao sair, termina
- * a volta atual e assenta na posição original em vez de "pular" de volta.
+ * A figura que a faixa de áreas mostra é a peça real do fogão 3D, desenhada
+ * com os mesmos componentes do mapa (`AreaFigures`). Este desenho só entra
+ * quando o navegador não tem WebGL ou quando o canvas das figuras falha.
+ *
+ * Em repouso o objeto fica num ângulo fixo. Com `active` (mouse, foco ou
+ * seleção) ele cresce um pouco e gira no próprio eixo; ao sair, termina a
+ * volta atual e assenta na posição original em vez de "pular" de volta.
  *
  * As formas são ilustrativas — a peça real está no mapa térmico. O que importa
  * aqui é o reconhecimento rápido de qual parte do fogão a área representa.

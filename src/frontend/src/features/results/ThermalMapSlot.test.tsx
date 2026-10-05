@@ -24,7 +24,9 @@ vi.mock('@/components/thermal-map/ThermalMap3D', () => ({
       data-config={JSON.stringify(props.config)}
       data-highlight={props.highlightPart ?? ''}
       data-focus={JSON.stringify(props.focusRequest ?? null)}
-    />
+    >
+      {props.zonePanelControls}
+    </div>
   ),
 }))
 
@@ -40,8 +42,6 @@ function Harness() {
       <ThermalMapSlot
         metadata={store.metadata}
         response={FIXTURE_RESPONSE}
-        referenceResponse={undefined}
-        isReferenceConfig={false}
         mode="absolute"
         onModeChange={() => {}}
         selectedKeyArea={null}
@@ -141,5 +141,12 @@ describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
     await renderHarness()
     fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
     expect(screen.queryByRole('button', { name: /^Losses:/ })).not.toBeInTheDocument()
+  })
+
+  it('o modo de cor oferece só Status e Mapa de calor: não há comparação com uma configuração de referência', async () => {
+    await renderHarness()
+    const modes = within(screen.getByRole('radiogroup', { name: 'Modo de cor do mapa térmico' }))
+    expect(modes.getAllByRole('radio').map((r) => r.textContent)).toEqual(['Status (limite)', 'Mapa de calor'])
+    expect(screen.queryByText(/referência/i)).not.toBeInTheDocument()
   })
 })

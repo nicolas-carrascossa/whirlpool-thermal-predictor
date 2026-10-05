@@ -6,7 +6,6 @@
 
 import { lazy, Suspense, useMemo } from 'react'
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { VARIABLE_TO_PART, type PartId } from '@/components/thermal-map/parts'
 import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import type { Metadata, PredictionResponse, StoveConfig } from '@/contract/v1'
@@ -40,67 +39,41 @@ function MapSkeleton() {
   )
 }
 
-/** Os três modos de cor do mapa (Fase 1d, etapa B): status é o padrão. */
+/** Os dois modos de cor do mapa (Fase 1d, etapa B): status é o padrão. */
 const MODE_OPTIONS: { id: MapColorMode; label: string }[] = [
   { id: 'status', label: 'Status (limite)' },
   { id: 'absolute', label: 'Mapa de calor' },
-  { id: 'delta', label: 'Δ vs. referência' },
 ]
 
-function ModeToggle({
-  mode,
-  onChange,
-  disabled,
-}: {
-  mode: MapColorMode
-  onChange: (mode: MapColorMode) => void
-  /** `true` quando a config atual é a referência: só o modo delta é bloqueado. */
-  disabled: boolean
-}) {
-  const group = (
+function ModeToggle({ mode, onChange }: { mode: MapColorMode; onChange: (mode: MapColorMode) => void }) {
+  return (
     <div
       role="radiogroup"
       aria-label="Modo de cor do mapa térmico"
       className="flex w-full items-center gap-1 rounded-md border border-wp-gray12 bg-wp-gray05 p-0.5"
     >
-      {MODE_OPTIONS.map((option) => {
-        const isDisabled = disabled && option.id === 'delta'
-        return (
-          <button
-            key={option.id}
-            type="button"
-            role="radio"
-            aria-checked={mode === option.id}
-            disabled={isDisabled}
-            onClick={() => onChange(option.id)}
-            className={cn(
-              'min-w-0 flex-1 whitespace-normal rounded-[5px] px-1.5 py-1 font-body text-[11px] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60',
-              mode === option.id ? 'bg-wp-core text-white' : 'text-wp-gray65 hover:text-wp-core',
-            )}
-          >
-            {option.label}
-          </button>
-        )
-      })}
+      {MODE_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          role="radio"
+          aria-checked={mode === option.id}
+          onClick={() => onChange(option.id)}
+          className={cn(
+            'min-w-0 flex-1 whitespace-normal rounded-[5px] px-1.5 py-1 font-body text-[11px] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            mode === option.id ? 'bg-wp-core text-white' : 'text-wp-gray65 hover:text-wp-core',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
-  )
-
-  if (!disabled) return group
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span>{group}</span>
-      </TooltipTrigger>
-      <TooltipContent>A configuração atual é a referência.</TooltipContent>
-    </Tooltip>
   )
 }
 
 export function ThermalMapSlot({
   metadata,
   response,
-  referenceResponse,
-  isReferenceConfig,
   mode,
   onModeChange,
   selectedKeyArea,
@@ -115,8 +88,6 @@ export function ThermalMapSlot({
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
-  referenceResponse: PredictionResponse | undefined
-  isReferenceConfig: boolean
   mode: MapColorMode
   onModeChange: (mode: MapColorMode) => void
   selectedKeyArea: string | null
@@ -139,7 +110,6 @@ export function ThermalMapSlot({
   const keyAreaLabels = Object.fromEntries(
     (metadata?.key_areas ?? []).map((a) => [a.name, a.label_pt]),
   )
-  const effectiveMode: MapColorMode = isReferenceConfig && mode === 'delta' ? 'status' : mode
   const effectiveHighlightPart = hoveredVariable ? VARIABLE_TO_PART[hoveredVariable] : highlightPart
   const showPreviewNotice = useMemo(
     () => configsDiffer(draftConfig, submittedConfig),
@@ -159,8 +129,7 @@ export function ThermalMapSlot({
             <Suspense fallback={<MapSkeleton />}>
               <ThermalMap3D
                 predictions={response.predictions}
-                referencePredictions={referenceResponse?.predictions}
-                mode={effectiveMode}
+                mode={mode}
                 keyAreaLabels={keyAreaLabels}
                 selectedKeyArea={selectedKeyArea}
                 onSelectKeyArea={onSelectKeyArea}
@@ -170,7 +139,7 @@ export function ThermalMapSlot({
                 overlayZoneList
                 toolbarContainer={toolbarContainer}
                 focusRequest={focusRequest}
-                zonePanelControls={<ModeToggle mode={effectiveMode} onChange={onModeChange} disabled={isReferenceConfig} />}
+                zonePanelControls={<ModeToggle mode={mode} onChange={onModeChange} />}
               />
             </Suspense>
           )}
