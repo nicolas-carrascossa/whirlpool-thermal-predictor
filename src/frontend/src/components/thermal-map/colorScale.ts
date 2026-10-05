@@ -1,8 +1,8 @@
 /**
  * Escalas de cor do mapa térmico 3D.
  *
- * Escala absoluta: azul → amarelo → laranja → vermelho, conforme a exceção de
- * codificação de dados definida em `documents/plano_frontend.md` (seção 1):
+ * Escala absoluta: azul → amarelo → laranja → vermelho, exceção à paleta da
+ * marca reservada à codificação de dados:
  * `#00a0dd → #eeb111 → #e08650 → #b3261e`. Os pontos de parada em t=0/0.35/0.68/1
  * reproduzem os mesmos t do protótipo original (só as cores mudaram).
  *

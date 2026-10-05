@@ -60,12 +60,12 @@ Contagem de quantas das 4 seeds confirmam melhora (IC inteiro < 0) ou piora
 MAE absoluto por área (seed=42, visão LIMPA, 30 configs), R vs. F3 completo
 (descontinuado) vs. F3 atual (sem correção de material):
 
-![Efeito de remover a correção de material](../assets/graficos/decisao_remover_material_mae.png)
+![Efeito de remover a correção de material](../../assets/graficos/decisao_remover_material_mae.png)
 
 IC 95% da diferença por área, nas 4 seeds do modelo (verde = melhora real,
 cinza = sem mudança, vermelho = piora real):
 
-![IC95% multi-seed, F3 completo vs. F3 sem material](../assets/graficos/gb_v2_E17_material_multiseed.png)
+![IC95% multi-seed, F3 completo vs. F3 sem material](../../assets/graficos/gb_v2_E17_material_multiseed.png)
 
 ## Interpretação
 

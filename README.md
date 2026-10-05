@@ -40,6 +40,14 @@ A entrega é inteiramente open source: um núcleo preditivo em Python exposto po
 
 A documentação completa do projeto está em [`documents/documentacao.md`](documents/documentacao.md).
 
+## 🎥 Link de demonstração
+
+Vídeo de demonstração do Thermal Predictor funcionando, narrado e legendado: [FOG - Thermal Predictor do G03/Módulo 3 Inteli 2026](https://youtu.be/KYrNsAxtvYk) (YouTube).
+
+<p align="center">
+<a href="https://youtu.be/KYrNsAxtvYk"><img src="https://i.ytimg.com/vi/KYrNsAxtvYk/hqdefault.jpg" alt="Vídeo de demonstração do Thermal Predictor" width="480"></a>
+</p>
+
 ## 📁 Estrutura de pastas
 
 Dentre os arquivos presentes na raiz do projeto, definem-se:
@@ -54,7 +62,7 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>data</b>: bases de dados do parceiro e derivadas. A pasta e os arquivos de dados não são versionados (ver <code>.gitignore</code>); é preciso criá-la localmente para rodar os notebooks.
 
-- <b>documents</b>: documentação do projeto (<a href="documents/documentacao.md"><code>documentacao.md</code></a>) e documentos de arquitetura. A pasta <b>extras</b> reúne documentos complementares, entre eles o guia de arquitetura usado na refatoração do software (<code>REFACTORING_AGENT_GUIDE.md</code>) e a auditoria de cobertura de sensores e configurações por região no modelo exportado (<code>relatorio_dados_nao_treinados.md</code>).
+- <b>documents</b>: documentação do projeto (<a href="documents/documentacao.md"><code>documentacao.md</code></a>). A pasta <b>extras</b> reúne documentos complementares: os registros dos experimentos com hipóteses de modelagem (<code>hipotese_*.md</code>) e o guia de estilos da interface (<code>guia_estilos.html</code>).
 
 - <b>notebooks</b>: Jupyter Notebooks de exploração, pré-processamento, modelagem e comparação de modelos.
 
