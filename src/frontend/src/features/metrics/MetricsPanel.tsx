@@ -24,6 +24,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { TriangleAlert } from 'lucide-react'
 
+import { HelpTooltip } from '@/components/HelpTooltip'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import {
@@ -48,6 +49,30 @@ import {
   scopeToPrediction,
 } from './metricsModel'
 
+function decisionHelpText(points: AreaMetrics['validation']['points'], mode: 'reading' | 'design'): string {
+  const limited = points.filter((p) => p.active_limit_c !== null)
+  const designs = new Set(limited.map((p) => p.run)).size
+  const sensors = new Set(limited.flatMap((p) => p.tc_numbers)).size
+  const readings = limited.length
+  const totalSensors = new Set(points.flatMap((p) => p.tc_numbers)).size
+  const ignored = Math.max(0, totalSensors - sensors)
+
+  const relation =
+    mode === 'reading'
+      ? `Relação: ${designs} x ${sensors} = ${readings} leitura(s)`
+      : `Relação: ${designs} design(s), cada um avaliado pelos ${sensors} sensor(es) = ${designs} decisão(ões)`
+  const base = `Designs: ${designs}\nSensores: ${sensors}\n${relation}`
+  const ignoredText = ignored
+    ? `\n${ignored} sensor(es) sem limite ativo ficam fora da matriz.`
+    : ''
+  const modeText =
+    mode === 'reading'
+      ? '\n\nCada sensor de cada ensaio de teste conta como uma observação: a previsão dele é comparada com a medição de laboratório.'
+      : '\n\nCada ensaio de teste conta como um design inteiro: ele reprova se qualquer sensor com limite exceder.'
+
+  return base + ignoredText + modeText
+}
+
 const PredictedVsActualScatter = lazy(() => import('./PredictedVsActualScatter'))
 const FeatureImportanceBars = lazy(() => import('./FeatureImportanceBars'))
 const AreaMaeBars = lazy(() => import('./AreaMaeBars'))
@@ -61,12 +86,15 @@ export function MetricsPanel({
   metadata,
   keyAreas,
   response,
+  technicianView = true,
 }: {
   metadata: Metadata | undefined
   /** Áreas do recorte submetido; vazio/ausente = todas as áreas. */
   keyAreas?: string[]
   /** A previsão executada, à qual esta aba se refere. */
   response?: PredictionResponse
+  /** `false` = visão "não técnico": oculta diagnósticos de erro detalhados. */
+  technicianView?: boolean
 }) {
   const metrics = useMetricsQuery(keyAreas?.length ? keyAreas : undefined)
   const areas: AreaMetrics[] = useMemo(() => metrics.data?.areas ?? [], [metrics.data])
@@ -129,6 +157,8 @@ export function MetricsPanel({
     [areas, response, predictedByTc],
   )
   const selectedConfusion = confusionRows.find((r) => r.keyArea === selected?.key_area)
+  const readingDecisionHelp = selected ? decisionHelpText(selected.validation.points, 'reading') : ''
+  const designDecisionHelp = selected ? decisionHelpText(selected.validation.points, 'design') : ''
 
   if (metrics.isLoading) {
     return (
@@ -245,27 +275,29 @@ export function MetricsPanel({
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Resíduo vs. previsto — {selectedLabel}</CardTitle>
-          <CardDescription>
-            Onde o modelo erra mais, não só quanto erra em média. Cada ponto é previsto − real contra o valor
-            previsto; a faixa cinza é a margem de ±10 % do KPI. Pontos fora dela são o que o MAE da área
-            esconde.
-            {executedRun !== null ? (
-              <>
-                {' '}
-                A estrela marca o ensaio com <strong>a mesma configuração que você consultou</strong>.
-              </>
-            ) : null}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Suspense fallback={<ChartSkeleton height={340} />}>
-            <ResidualScatter points={selectedPoints} runs={selected.validation.runs} executedRun={executedRun} />
-          </Suspense>
-        </CardContent>
-      </Card>
+      {technicianView ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Resíduo vs. previsto — {selectedLabel}</CardTitle>
+            <CardDescription>
+              Onde o modelo erra mais, não só quanto erra em média. Cada ponto é previsto − real contra o valor
+              previsto; a faixa cinza é a margem de ±10 % do KPI. Pontos fora dela são o que o MAE da área
+              esconde.
+              {executedRun !== null ? (
+                <>
+                  {' '}
+                  A estrela marca o ensaio com <strong>a mesma configuração que você consultou</strong>.
+                </>
+              ) : null}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<ChartSkeleton height={340} />}>
+              <ResidualScatter points={selectedPoints} runs={selected.validation.runs} executedRun={executedRun} />
+            </Suspense>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {selectedConfusion ? (
         <Card>
@@ -304,11 +336,10 @@ export function MetricsPanel({
         <div className="grid gap-4 min-[1100px]:grid-cols-2">
           <Card className="flex flex-col">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Decisão por leitura — {selectedLabel}</CardTitle>
-              <CardDescription>
-                Cada sensor de cada ensaio de teste conta como uma observação: a previsão dele é comparada com a
-                medição de laboratório.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-1.5 text-base">
+                <span>Decisão por leitura — {selectedLabel}</span>
+                <HelpTooltip label="decisão por leitura" text={readingDecisionHelp} />
+              </CardTitle>
             </CardHeader>
             <CardContent className="mt-auto">
               <ConfusionMatrix counts={selectedConfusion.readings} unit="leituras" />
@@ -316,12 +347,10 @@ export function MetricsPanel({
           </Card>
           <Card className="flex flex-col">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Decisão por design — {selectedLabel}</CardTitle>
-              <CardDescription>
-                Aqui cada ensaio de teste é um design inteiro. O design é reprovado se pelo menos um sensor da
-                área passa do limite, tanto na previsão quanto na medição. São poucos designs, então leia os
-                números como contagem, não como porcentagem.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-1.5 text-base">
+                <span>Decisão por design — {selectedLabel}</span>
+                <HelpTooltip label="decisão por design" text={designDecisionHelp} />
+              </CardTitle>
             </CardHeader>
             <CardContent className="mt-auto">
               <ConfusionMatrix counts={selectedConfusion.designs} unit="designs" />
@@ -346,27 +375,29 @@ export function MetricsPanel({
         </Card>
       ) : null}
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Medidas de erro por área</CardTitle>
-          <CardDescription>
-            KPI do projeto: erro ≤ 10 %. A coluna <span className="font-semibold">Modelo</span> mostra o
-            algoritmo que atende cada área — sem ela, comparar MAE entre linhas produzidas por modelos
-            diferentes induz a conclusão errada.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <AreaErrorTable
-            areas={areas}
-            areaLabels={areaLabels}
-            selectedKeyArea={selected.key_area}
-            onSelectKeyArea={setPreferredArea}
-          />
-          <Suspense fallback={<ChartSkeleton height={260} />}>
-            <AreaMaeBars areas={areas} areaLabels={areaLabels} selectedKeyArea={selected.key_area} />
-          </Suspense>
-        </CardContent>
-      </Card>
+      {technicianView ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Medidas de erro por área</CardTitle>
+            <CardDescription>
+              KPI do projeto: erro ≤ 10 %. A coluna <span className="font-semibold">Modelo</span> mostra o
+              algoritmo que atende cada área — sem ela, comparar MAE entre linhas produzidas por modelos
+              diferentes induz a conclusão errada.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <AreaErrorTable
+              areas={areas}
+              areaLabels={areaLabels}
+              selectedKeyArea={selected.key_area}
+              onSelectKeyArea={setPreferredArea}
+            />
+            <Suspense fallback={<ChartSkeleton height={260} />}>
+              <AreaMaeBars areas={areas} areaLabels={areaLabels} selectedKeyArea={selected.key_area} />
+            </Suspense>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   )
 }
