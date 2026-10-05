@@ -1790,7 +1790,7 @@ O Thermal Predictor é entregue em duas partes que operam em conjunto: um **dash
 
 Essa divisão define duas formas distintas de acesso ao modelo. Pelo dashboard, o usuário consulta a temperatura estimada de uma configuração de fogão sem escrever uma linha de código: informa os parâmetros de montagem que deseja avaliar e recebe as previsões dos sensores de interesse. É o caminho dos times de Produtos, Design, Qualidade e Marketing. Pelo software, o usuário chama o modelo diretamente, integrando-o a rotinas próprias, executando predições em lote e retreinando o modelo à medida que novos dados de simulação e de teste físico ficam disponíveis. É o caminho da equipe de Engenharia (CFD).
 
-Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. A arquitetura de implementação está descrita em [`documents/nova_arquitetura.md`](nova_arquitetura.md), e as instruções de execução, no [README do repositório](../README.md#-execução-dos-projetos).
+Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. As instruções de execução estão no [README do repositório](../README.md#-execução-dos-projetos).
 
 ### <a name="c6_1"></a>6.1. Requisitos funcionais
 
@@ -1903,12 +1903,12 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
 
-**Nota sobre o número de variáveis analisadas.** O roteiro deste anexo pede a análise de três variáveis quantitativas. O dataset fornecido pela Whirlpool Latin America, porém, possui apenas **uma** variável quantitativa contínua de fato: `temp`. As outras duas colunas numéricas do `dtype` bruto foram descartadas dessa categoria já na classificação da Seção 4.2.1, por motivos estruturais do dado, não por escolha do grupo:
+**Nota sobre o número de variáveis analisadas.** Esta análise foi planejada para três variáveis quantitativas, mas a base fornecida pela Whirlpool Latin America tem apenas **uma** variável quantitativa contínua: `temp`. As outras duas colunas com tipo numérico na planilha original não pertencem a essa categoria, como já registrado na classificação da Seção 4.2.1. O motivo está na natureza de cada coluna, e não em uma escolha de análise:
 
 - `tc_number` é um identificador de sensor (rótulo), não uma quantidade — média, desvio-padrão e normalização não têm significado sobre ele.
 - `active_limit` é um parâmetro de especificação de engenharia atribuído a cada termopar (constante para o mesmo sensor em todas as execuções), não uma grandeza medida no experimento; além disso, carrega placeholders sem significado físico (`"Monitor (150 C)"` e `active_limit = 1000` para "sem limite definido"), o que tornaria qualquer teste de normalidade ou escalonamento sobre essa coluna pouco interpretável.
 
-Diante disso, o grupo optou por aprofundar a análise em `temp` — a única variável quantitativa contínua e também a variável-alvo do modelo — em vez de forçar testes estatísticos sobre colunas que não representam grandezas contínuas. O grupo tomou essa decisão ciente de que ela diverge do número de variáveis pedido no roteiro, e a registra aqui para validação explícita com o professor.
+Por isso, a análise se concentra em `temp`, que é a única variável quantitativa contínua e também a variável-alvo do modelo. Aplicar testes de normalidade e escalonamento a colunas que não representam grandezas contínuas produziria resultados sem interpretação física.
 
 **a) Hipóteses**
 
@@ -1947,9 +1947,9 @@ Variáveis analisadas (conforme o dataset):
 
 - `temp` (temperatura dos sensores/termopares)
 
-A classificação da Seção 1.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
+A classificação da Seção 4.2.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
 
-Resultados do teste (valores fornecidos):
+Resultados do teste:
 
 | Variável | p-valor (científico) | Conclusão (α = 0,05) |
 |:---|:---|:---|
@@ -2402,17 +2402,17 @@ $$
 temp\_scaled_{i} = \frac{temp_{i} - \min(temp_{k})}{\max(temp_{k}) - \min(temp_{k})}
 $$
 
-A tabela abaixo demonstra a transformação com uma observação real de cada `key_area`, selecionada próxima à mediana da respectiva distribuição.
+A tabela abaixo demonstra a transformação com uma observação real de cada `key_area`, selecionada próxima à mediana da respectiva distribuição. Run e sensor de cada observação são omitidos por confidencialidade da base do parceiro.
 
-| `key_area` | Observação de referência | $temp_i$ (°C) | $\min_k$ | $\max_k$ | Cálculo | $temp\_scaled_i$ |
-|---|---|---|---|---|---|---|
-| CT Knobs | Run 26 · TC 73 — *Ambient Between Left Encoders* | 47,14 | 34,34 | 73,42 | $(47{,}14 - 34{,}34)/39{,}08$ | 0,3275 |
-| Coil Temps | Run 19 · TC 16 — *Aluminium Plate FL* | 123,79 | 40,80 | 234,60 | $(123{,}79 - 40{,}80)/193{,}80$ | 0,4282 |
-| IPC Comp | Run 27 · TC 38 — *IGBT 3* | 81,53 | 45,58 | 129,63 | $(81{,}53 - 45{,}58)/84{,}05$ | 0,4277 |
-| IPC Cooling | Run 75 · TC 30 — *IPC Housing Outlet* | 58,01 | 27,69 | 114,94 | $(58{,}01 - 27{,}69)/87{,}25$ | 0,3475 |
-| Main Vent Sys | Run 1 · TC 22 — *AC Blower HES Connector* | 85,63 | 41,56 | 135,00 | $(85{,}63 - 41{,}56)/93{,}44$ | 0,4716 |
-| Mainback | Run 5 · TC 9 — *Ambient Below Terminal Block* | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
-| Oven HMI | Run 4 · TC 69 — *A33/Bellatrix Thermistor* | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
+| `key_area` | $temp_i$ (°C) | $\min_k$ | $\max_k$ | Cálculo | $temp\_scaled_i$ |
+|---|---|---|---|---|---|
+| CT Knobs | 47,14 | 34,34 | 73,42 | $(47{,}14 - 34{,}34)/39{,}08$ | 0,3275 |
+| Coil Temps | 123,79 | 40,80 | 234,60 | $(123{,}79 - 40{,}80)/193{,}80$ | 0,4282 |
+| IPC Comp | 81,53 | 45,58 | 129,63 | $(81{,}53 - 45{,}58)/84{,}05$ | 0,4277 |
+| IPC Cooling | 58,01 | 27,69 | 114,94 | $(58{,}01 - 27{,}69)/87{,}25$ | 0,3475 |
+| Main Vent Sys | 85,63 | 41,56 | 135,00 | $(85{,}63 - 41{,}56)/93{,}44$ | 0,4716 |
+| Mainback | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
+| Oven HMI | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
 
 Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83, valor pontual — ver nota abaixo) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
 
@@ -2570,7 +2570,7 @@ print(f"\nTotal fora de [0,1]: {teste['fora_do_intervalo'].sum()} de {len(teste)
 
 **g) Tabelas Comparativas dos Dados**
 
-O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
+O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e comparar os 10 primeiros registros dos dados originais com os mesmos registros após o escalonamento Min-Max. Por confidencialidade da base, os registros individuais não são reproduzidos aqui (ver nota nas Tabelas 1 e 2).
 
 Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_pre_processado.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
 
@@ -2631,43 +2631,9 @@ print("\nmin:", scaler.data_min_, "| max:", scaler.data_max_)
 
 ---
 
-### Tabela 1: Dados Originais — 10 primeiros registros
+### Tabelas 1 e 2: Dados originais e escalonados — 10 primeiros registros
 
-As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto de identificação do registro; a variável submetida ao escalonamento é `temp`.
-
-| # | run_id | tc_name | key_area | temp (°C) |
-|---|--------|---------|----------|-----------|
-| 0 | Run 1 | Door Lock Motor Ambient 1/2" Below | Mainback | 99.35 |
-| 1 | Run 1 | Door Lock Microswitch Body | Mainback | 114.72 |
-| 2 | Run 1 | Convect Motor Winding | Mainback | 89.93 |
-| 3 | Run 1 | Storage Drawer (Metal Above) | Mainback | 167.87 |
-| 4 | Run 1 | L2, Wire, Power Cord | Mainback | 53.65 |
-| 5 | Run 1 | Ambient Below Terminal Block | Mainback | 48.94 |
-| 6 | Run 1 | ACU Ambient (Hill Only) Top | Mainback | 60.00 |
-| 7 | Run 1 | ACU K8 Housing / Double Line Break | Mainback | 55.44 |
-| 8 | Run 1 | Coil FR | Coil Temps | 55.69 |
-| 9 | Run 1 | Coil FL | Coil Temps | 49.33 |
-
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
-
----
-
-### Tabela 2: Dados Escalonados (Min-Max) — 10 primeiros registros
-
-| # | temp (original, °C) | temp (escalonada) |
-|---|---------------------|-------------------|
-| 0 | 99.35 | 0.291407 |
-| 1 | 114.72 | 0.353910 |
-| 2 | 89.93 | 0.253101 |
-| 3 | 167.87 | 0.570046 |
-| 4 | 53.65 | 0.105567 |
-| 5 | 48.94 | 0.086414 |
-| 6 | 60.00 | 0.131390 |
-| 7 | 55.44 | 0.112846 |
-| 8 | 55.69 | 0.113863 |
-| 9 | 49.33 | 0.088000 |
-
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+As duas tabelas geradas pelo código acima (os 10 primeiros registros de `temp` antes e depois do Min-Max, com `run_id`, `tc_name` e `key_area` como contexto) não são reproduzidas nesta versão pública da documentação. Elas exibem leituras individuais da base do parceiro, que é confidencial, e a política de publicação do repositório não permite expor registros dos dados trabalhados. Para reproduzi-las, rode a Seção 5 de [`expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb) com a base obtida conforme a seção "Os notebooks" do [README](../README.md#-execução-dos-projetos).
 
 ---
 
@@ -2684,9 +2650,9 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 | Mediana | 76.50 |
 | Desvio-padrão | 33.28 |
 
-**Verificação do cálculo:** aplicando a fórmula ao primeiro registro, `(99.35 - 27.69) / 245.91 = 0.291407`, valor idêntico ao da Tabela 2. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: `Storage Drawer` (167.87 °C) segue o mais quente da amostra nas duas tabelas (0.570), e `Ambient Below Terminal Block` (48.94 °C) o mais frio nas duas (0.086).
+**Verificação do cálculo:** com os parâmetros acima, cada valor escalonado é `(temp - 27.69) / 245.91`; aplicada ao primeiro registro da amostra, essa conta reproduz exatamente o valor devolvido pelo `MinMaxScaler`, o que confirma que a implementação segue a fórmula. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: o sensor mais quente e o mais frio da amostra continuam nas mesmas posições depois do escalonamento.
 
-**Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
+**Concentração na faixa inferior do intervalo:** a mediana escalonada fica em torno de `(76.50 - 27.69) / 245.91 ≈ 0.20`, longe do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
 
 Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3.1), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
