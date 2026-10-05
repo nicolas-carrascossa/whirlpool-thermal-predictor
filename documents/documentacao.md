@@ -59,8 +59,9 @@
     - [4.5.5. Plano de contingência](#c4_5_5)
 - [5. Conclusões e Recomendações](#c5)
   - [5.1. Principais resultados](#c5_1)
-  - [5.2. Recomendações ao parceiro](#c5_2)
-  - [5.3. Pessoas afetadas e uso ético](#c5_3)
+  - [5.2. Verificação das hipóteses](#c5_2)
+  - [5.3. Recomendações ao parceiro](#c5_3)
+  - [5.4. Pessoas afetadas e uso ético](#c5_4)
 - [6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
   - [6.1. Requisitos funcionais](#c6_1)
     - [6.1.1. Requisitos funcionais do dashboard](#c6_1_1)
@@ -1744,7 +1745,22 @@ Três achados da Seção 4.2 independem do algoritmo e sustentam a modelagem por
 
 <sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução e a comparação com o baseline calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Métricas por região, faixa de erro típico, R² e razões RMSE/MAE da validação LOGO de `notebooks/Random_for_regre.ipynb` (Seção 21) e `notebooks/Grad_Boosting_Regre.ipynb` (Seção 8), o algoritmo escolhido em cada região, conforme a tabela da Seção 4.5.1. Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`.</sup>
 
-### <a name="c5_2"></a>5.2. Recomendações ao parceiro
+### <a name="c5_2"></a>5.2. Verificação das hipóteses
+
+As quatro hipóteses levantadas na Seção 4.2.4 foram testadas nos dados e, em seguida, reverificadas sobre o modelo treinado (Seção 4.5.4, onde está a evidência de cada uma). **Nenhuma foi refutada: as quatro são aceitas, duas delas com ressalva que condiciona o uso da solução.** O que segue registra o veredito e o que ele implica para as conclusões desta seção.
+
+| Hipótese (Seção 4.2.4) | Veredito | Consequência para a solução entregue |
+|---|---|---|
+| **H1** — o efeito de uma configuração muda de sinal entre áreas | **Aceita** | Sustenta a arquitetura entregue: sete modelos independentes, um por `key_area`. Um modelo único para o fogão inteiro teria de aprender efeitos de sinal oposto sobre a mesma variável, e a alternância reaparece na estrutura interna dos modelos sem ter sido informada ao treino. |
+| **H2** — as configurações estão confundidas no desenho dos ensaios | **Aceita** | É a limitação que mais restringe o uso. A base identifica configurações de risco, mas não atribui efeito individual a cada variável. Por isso nenhum ranking de importância é apresentado ao parceiro como evidência de causa, e quebrar essas dependências é o critério de planejamento dos próximos ensaios. |
+| **H3** — a temperatura depende do modo de operação (`run_case`) | **Aceita com ressalva** | Secundário na base inteira, onde a região domina (~1,6% da variância), e principal dentro de cada região, onde lidera a importância dos modelos em produção em seis das sete. Reforça o roteamento por região, mas segue confundido com `losses` por força da H2. |
+| **H4** — a carcaça aberta aquece o IGBT 1 | **Aceita nos dados; reproduzida pelo modelo apenas no sentido** | O modelo confirma a direção do efeito (+2,34 °C ao abrir a carcaça), não a magnitude de +9,6 °C medida no IGBT 1, porque os IGBT 1 a 16 são previstos como uma média única. Prever o IGBT 1 separadamente é o ajuste necessário para fechar a verificação. |
+
+<sup>Fonte: Elaborado pelos autores (2026). Vereditos e evidências conforme a Seção 4.5.4 desta documentação, que os apura a partir das Seções 4.2.4 (teste nos dados), 4.3.3.4 e 4.4 (comportamento do modelo).</sup>
+
+Duas leituras atravessam os quatro vereditos. A primeira é que **as hipóteses não foram informadas ao treinamento e mesmo assim reaparecem no modelo**: a alternância da variável dominante entre regiões (H1) e a liderança do modo de operação dentro de cada uma (H3) emergem da estrutura interna dos modelos, o que é evidência independente de que a modelagem por região descreve o fenômeno, e não apenas o ajuste. A segunda é que **a H2 limita o alcance de todas as outras**: enquanto `losses`, `deflector_hole` e `run_case` variarem juntas no desenho dos ensaios, qualquer atribuição de efeito a uma variável isolada permanece indistinguível de um artefato do modelo. É por isso que a solução é entregue como instrumento de triagem e priorização, e não como substituto da simulação CFD ou do ensaio físico.
+
+### <a name="c5_3"></a>5.3. Recomendações ao parceiro
 
 **Uso principal: priorizar ensaios físicos, não substituí-los.** O engenheiro de CFD e o de Qualidade usam o dashboard para varrer as configurações candidatas, ordená-las por temperatura estimada e confiança associada e reservar protótipo às mais críticas de cada região (oportunidade R03, Seção 4.1.5). O ensaio permanece obrigatório onde a liberação dependa de margem normativa: erro típico de 2,07 °C a 9,55 °C (Seção 5.1) não autoriza declarar conformidade sem medição. A ordenação por criticidade ainda não foi verificada contra a real; a coincidência em pelo menos 80% dos pares avaliados, prevista em R03, é condição para propor a ferramenta como apoio formal ao planejamento dos ensaios.
 
@@ -1764,7 +1780,7 @@ As duas categorias pouco representadas — `board_position` *Right* (5,5% das le
 
 <sup>Fonte: Elaborado pelos autores (2026). Recomendações derivadas dos planos de ação da matriz de riscos da Seção 4.1.5, oportunidade R03 (priorização de ensaios), ameaça R04 (domínio de validade), ameaça R05 (herança do erro do solver), oportunidade R06 (revisão de margens) e ameaça R06 (operacionalização do critério de aceite). Limitações apuradas nas Seções 4.2.1 e 4.2.4 (hipótese H2), a partir de `data/dataset_pre_processado.csv`, e nas métricas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb).</sup>
 
-### <a name="c5_3"></a>5.3. Pessoas afetadas e uso ético
+### <a name="c5_4"></a>5.4. Pessoas afetadas e uso ético
 
 **Partes afetadas pelas decisões do modelo.** São três, com exposição desigual: dois grupos decidem e podem contestar a previsão, e o terceiro não participa e responde pelo resultado.
 
