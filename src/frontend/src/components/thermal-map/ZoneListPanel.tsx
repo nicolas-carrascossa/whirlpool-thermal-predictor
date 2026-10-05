@@ -65,7 +65,7 @@ export function ZoneListPanel({
                 onSelect(agg.key)
               }
             }}
-            className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-wp-accent ${
+            className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
               isActive ? 'border-wp-accent bg-wp-accentLt' : 'border-transparent hover:bg-wp-gray05'
             }`}
           >

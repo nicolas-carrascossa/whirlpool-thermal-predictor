@@ -48,7 +48,7 @@ export function ZoneCallout({
     <group>
       <Line
         points={[anchor, tip]}
-        color={selected ? '#00a0dd' : '#9fa0a1'}
+        color={selected ? '#475569' : '#9fa0a1'}
         lineWidth={selected ? 1.6 : 1}
         transparent
         opacity={0.85}

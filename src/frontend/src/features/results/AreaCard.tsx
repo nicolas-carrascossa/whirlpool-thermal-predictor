@@ -1,16 +1,14 @@
 /**
- * Um card por `key_area`: leitura rápida (gauge + barras) no cabeçalho e a
- * tabela densa por sensor no corpo. As linhas são ordenadas pela razão
+ * Detalhe de uma `key_area` (a escolhida na faixa de áreas): leitura rápida
+ * (gauge + barras) e a tabela densa por sensor. Sem dropdown: o card está
+ * sempre aberto, quem escolhe qual área ver é a faixa de áreas. As linhas são ordenadas pela razão
  * temp/limite, de modo que o pior caso da área é sempre a primeira linha.
  */
 
-import { algorithmLabel } from '@/lib/algorithms'
 import type { AlgorithmCode } from '@/contract/v1'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
 
-import { Gauge } from '@/components/Gauge'
-import { ReliabilityBadge, StatusBadge } from '@/components/StatusBadge'
+import { StatusBadge } from '@/components/StatusBadge'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -22,8 +20,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { SensorPrediction } from '@/contract/v1'
-import { formatMargin, formatRatioPct, formatTemp } from '@/lib/format'
-import { STATUS_COLOR, byLimitRatioDesc, ratioOf, statusOf } from '@/lib/status'
+import { formatMargin, formatTemp } from '@/lib/format'
+import { STATUS_COLOR, byLimitRatioDesc, statusOf } from '@/lib/status'
 import { cn } from '@/lib/utils'
 
 const AreaBars = lazy(() => import('./AreaBars'))
@@ -43,29 +41,6 @@ export interface AreaGroup {
   singleLimit: number | null
 }
 
-function RatioBar({ prediction }: { prediction: SensorPrediction }) {
-  const ratio = ratioOf(prediction)
-  if (ratio === null) {
-    return <div className="h-1.5 w-full rounded-full bg-wp-gray12" aria-hidden="true" />
-  }
-  const status = statusOf(prediction)
-  return (
-    <div
-      className="h-1.5 w-full overflow-hidden rounded-full bg-wp-gray12"
-      role="img"
-      aria-label={`${formatRatioPct(ratio)} do limite`}
-    >
-      <div
-        className="h-full rounded-full"
-        style={{
-          width: `${Math.min(Math.max(ratio, 0), 1) * 100}%`,
-          backgroundColor: STATUS_COLOR[status],
-        }}
-      />
-    </div>
-  )
-}
-
 function ChartSkeleton() {
   return <div className="h-[120px] w-full min-w-0 animate-pulse rounded-md bg-wp-gray05" aria-hidden="true" />
 }
@@ -79,16 +54,27 @@ export interface SensorFocus {
 /** Duração do destaque da linha após um clique no pino (ms). */
 export const ROW_FLASH_MS = 1500
 
-export function AreaCard({ group, focus }: { group: AreaGroup; focus?: SensorFocus | null }) {
-  const [open, setOpen] = useState(true)
+export function AreaCard({
+  group,
+  focus,
+  technicianView = true,
+}: {
+  group: AreaGroup
+  focus?: SensorFocus | null
+  /**
+   * `false` = visão "não técnico": a tabela só lista sensores em atenção ou
+   * acima do limite. Padrão `true` (visão técnica, todos os sensores) para não
+   * quebrar quem já usa `AreaCard` sem passar essa prop.
+   */
+  technicianView?: boolean
+}) {
   const [flashTc, setFlashTc] = useState<number | null>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  // Clique num pino de sensor no mapa 3D: expande o card, rola a linha até o
-  // centro da tela e a pisca em `--wp-accent-lt` por ~1,5 s.
+  // Clique num pino de sensor no mapa 3D: rola a linha até o centro da tela e
+  // a pisca em `--wp-accent-lt` por ~1,5 s.
   useEffect(() => {
     if (!focus) return
-    setOpen(true)
     setFlashTc(focus.tcNumber)
     const raf = requestAnimationFrame(() => {
       const row = bodyRef.current?.querySelector(`[data-tc-number="${focus.tcNumber}"]`)
@@ -101,152 +87,114 @@ export function AreaCard({ group, focus }: { group: AreaGroup; focus?: SensorFoc
     }
   }, [focus])
 
-  const rows = [...group.predictions].sort(byLimitRatioDesc)
-  const worst = rows[0]
+  const allRows = [...group.predictions].sort(byLimitRatioDesc)
+  const worst = allRows[0]
   const headerStatus = worst ? statusOf(worst) : 'monitor'
+  // Sensores que pedem olhar: acima do limite ou em atenção (já vêm no topo da tabela).
+  const criticalCount = allRows.filter((p) => ['danger', 'warn'].includes(statusOf(p))).length
+  // Visão não técnica: a tabela só lista quem pede atenção. O gráfico continua mostrando todos.
+  const rows = technicianView ? allRows : allRows.filter((p) => ['danger', 'warn'].includes(statusOf(p)))
 
   return (
     <Card className="overflow-hidden">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-wp-gray05 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-      >
-        <ChevronDown
-          className={cn('h-4 w-4 shrink-0 text-wp-gray45 transition-transform', !open && '-rotate-90')}
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
+      <div className="flex w-full items-center gap-3 px-4 py-3">
         <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-display text-base font-semibold text-wp-core">
-            {group.label_pt}
-            {group.algorithm && (
-              <Badge
-                variant="outline"
-                className="ml-2 whitespace-nowrap font-normal"
-                title={`Modelo que atendeu esta área: ${algorithmLabel(group.algorithm)}`}
-              >
-                {algorithmLabel(group.algorithm)}
-              </Badge>
-            )}
-          </span>
+          <h3 className="font-display text-base font-semibold text-wp-core">{group.label_pt}</h3>
           <span className="text-xs text-wp-gray65">
             {group.predictions.length} sensor{group.predictions.length === 1 ? '' : 'es'}
           </span>
         </span>
-        <span className="tabular text-sm text-wp-gray85">máx. {formatTemp(group.maxTemp)}</span>
-        {headerStatus === 'monitor' ? (
+        {criticalCount > 0 ? (
+          <span
+            className={cn(
+              'flex items-center gap-2 text-sm font-bold',
+              headerStatus === 'danger' ? 'text-status-danger-ink' : 'text-status-warn-ink',
+            )}
+          >
+            Atenção nestes sensores
+            <span
+              className="tabular rounded-md px-2 py-0.5 text-xs text-white"
+              style={{ backgroundColor: STATUS_COLOR[headerStatus] }}
+              aria-label={`${criticalCount} sensor${criticalCount === 1 ? '' : 'es'}`}
+            >
+              {criticalCount}
+            </span>
+          </span>
+        ) : headerStatus === 'monitor' ? (
           <Badge variant="outline">Monitor</Badge>
         ) : (
           <StatusBadge status={headerStatus} />
         )}
-      </button>
+      </div>
 
-      {open && (
-        <CardContent ref={bodyRef} className="flex flex-col gap-4 p-4 pt-0">
-          <div className="flex flex-col gap-4 border-t border-wp-gray12 pt-4 lg:flex-row lg:items-center">
-            {group.worstSensor ? (
-              <div className="flex w-[112px] shrink-0 flex-col items-center gap-1">
-                <Gauge
-                  value={group.worstSensor.temp_c}
-                  max={group.worstSensor.active_limit_c ?? group.worstSensor.temp_c}
-                  label="Pior razão"
-                  size={112}
-                />
-                <span
-                  className="max-w-[130px] text-center text-[11px] leading-snug text-wp-gray65"
-                  title={group.worstSensor.tc_name}
-                >
-                  pior razão: {group.worstSensor.tc_name}
-                </span>
-              </div>
-            ) : (
-              <div
-                className="flex w-[112px] shrink-0 flex-col items-center gap-1 text-center"
-                role="img"
-                aria-label="Área só de monitoramento, sem limite normativo para o gauge"
-              >
-                <span className="tabular text-2xl text-wp-gray45">—</span>
-                <span className="text-xs text-wp-gray65">área só de monitoramento</span>
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <Suspense fallback={<ChartSkeleton />}>
-                <AreaBars group={group} />
-              </Suspense>
-            </div>
-          </div>
+      <CardContent ref={bodyRef} className="flex flex-col gap-4 p-4 pt-0">
+        <div className="min-w-0 border-t border-wp-gray12 pt-4">
+          <Suspense fallback={<ChartSkeleton />}>
+            <AreaBars group={group} />
+          </Suspense>
+        </div>
 
-          <div className="responsive-sensor-table">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sensor</TableHead>
-                  <TableHead>Temperatura</TableHead>
-                  <TableHead>Margem de erro</TableHead>
-                  <TableHead>Limite</TableHead>
-                  <TableHead className="w-28">Razão</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Confiabilidade</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((p) => {
-                  const status = statusOf(p)
-                  return (
-                    <TableRow
-                      key={p.tc_number}
-                      data-tc={p.tc_number}
-                      data-tc-number={p.tc_number}
-                      data-status={status}
-                      data-flash={flashTc === p.tc_number ? 'true' : undefined}
-                      className={cn(
-                        'transition-colors duration-300 hover:bg-wp-accentLt',
-                        status === 'danger' && 'bg-status-danger/5',
-                        flashTc === p.tc_number && 'bg-wp-accentLt ring-1 ring-inset ring-wp-accent',
+        {rows.length === 0 ? (
+          <p className="rounded-md bg-wp-gray05 px-4 py-3 text-sm text-wp-gray65">
+            Todos os sensores dentro do limite.
+          </p>
+        ) : (
+        <div className="responsive-sensor-table">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sensor</TableHead>
+                <TableHead>Temperatura</TableHead>
+                <TableHead>Margem de erro</TableHead>
+                <TableHead>Limite</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((p) => {
+                const status = statusOf(p)
+                return (
+                  <TableRow
+                    key={p.tc_number}
+                    data-tc={p.tc_number}
+                    data-tc-number={p.tc_number}
+                    data-status={status}
+                    data-flash={flashTc === p.tc_number ? 'true' : undefined}
+                    className={cn(
+                      'transition-colors duration-300 hover:bg-wp-accentLt',
+                      status === 'danger' && 'bg-status-danger/5',
+                      flashTc === p.tc_number && 'bg-wp-accentLt ring-1 ring-inset ring-wp-accent',
+                    )}
+                  >
+                    <TableCell className="font-semibold text-wp-gray85">{p.tc_name}</TableCell>
+                    <TableCell className="tabular whitespace-nowrap">
+                      {formatTemp(p.temp_c)}
+                    </TableCell>
+                    <TableCell className="tabular whitespace-nowrap text-wp-gray65">
+                      {formatMargin(p.error_margin_c, p.error_margin_pct)}
+                    </TableCell>
+                    <TableCell className="tabular whitespace-nowrap">
+                      {p.active_limit_c === null ? (
+                        <span className="font-body text-wp-gray45">monitor</span>
+                      ) : (
+                        formatTemp(p.active_limit_c)
                       )}
-                    >
-                      <TableCell className="font-semibold text-wp-gray85">{p.tc_name}</TableCell>
-                      <TableCell className="tabular whitespace-nowrap">
-                        {formatTemp(p.temp_c)}
-                      </TableCell>
-                      <TableCell className="tabular whitespace-nowrap text-wp-gray65">
-                        {formatMargin(p.error_margin_c, p.error_margin_pct)}
-                      </TableCell>
-                      <TableCell className="tabular whitespace-nowrap">
-                        {p.active_limit_c === null ? (
-                          <span className="font-body text-wp-gray45">monitor</span>
-                        ) : (
-                          formatTemp(p.active_limit_c)
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <RatioBar prediction={p} />
-                          <span className="tabular text-[11px] text-wp-gray65">
-                            {formatRatioPct(ratioOf(p))}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {status === 'monitor' ? (
-                          <Badge variant="outline">Monitor</Badge>
-                        ) : (
-                          <StatusBadge status={status} />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <ReliabilityBadge reliability={p.reliability} />
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      )}
+                    </TableCell>
+                    <TableCell>
+                      {status === 'monitor' ? (
+                        <Badge variant="outline">Monitor</Badge>
+                      ) : (
+                        <StatusBadge status={status} />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+        )}
+      </CardContent>
     </Card>
   )
 }

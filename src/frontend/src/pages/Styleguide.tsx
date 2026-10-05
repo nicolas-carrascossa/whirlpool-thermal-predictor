@@ -15,8 +15,8 @@ import {
 
 const COLOR_TOKENS: { name: string; varName: string; hex: string }[] = [
   { name: 'Accomplished Blue (núcleo)', varName: '--wp-core', hex: '#0d436b' },
-  { name: 'Accent Blue', varName: '--wp-accent', hex: '#00a0dd' },
-  { name: 'Light Accent Blue', varName: '--wp-accent-lt', hex: '#edf4fc' },
+  { name: 'Accent Slate', varName: '--wp-accent', hex: '#94a3b8' },
+  { name: 'Light Accent Slate', varName: '--wp-accent-lt', hex: '#eef1f5' },
   { name: 'Cinza 05', varName: '--wp-gray-05', hex: '#f5f6f7' },
   { name: 'Cinza 12', varName: '--wp-gray-12', hex: '#dee0e3' },
   { name: 'Cinza 20', varName: '--wp-gray-20', hex: '#d1d3d4' },
@@ -24,9 +24,9 @@ const COLOR_TOKENS: { name: string; varName: string; hex: string }[] = [
   { name: 'Cinza 65', varName: '--wp-gray-65', hex: '#767777' },
   { name: 'Cinza 85', varName: '--wp-gray-85', hex: '#484949' },
   { name: 'Branco', varName: '--wp-white', hex: '#ffffff' },
-  { name: 'Status OK (Conscientious Green)', varName: '--status-ok', hex: '#6aa342' },
-  { name: 'Status Atenção (Empathetic Orange)', varName: '--status-warn', hex: '#e08650' },
-  { name: 'Status Excede (fora da paleta)', varName: '--status-danger', hex: '#b3261e' },
+  { name: 'Status OK (verde sóbrio)', varName: '--status-ok', hex: '#5aa469' },
+  { name: 'Status Atenção (âmbar)', varName: '--status-warn', hex: '#f4a63c' },
+  { name: 'Status Excede (fora da paleta)', varName: '--status-danger', hex: '#cf5f57' },
 ]
 
 const SENSOR_ROWS = [

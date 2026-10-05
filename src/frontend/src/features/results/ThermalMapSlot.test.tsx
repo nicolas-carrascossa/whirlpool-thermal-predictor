@@ -3,18 +3,17 @@
  * (`ConfigPanel`) alimenta o `<ThermalMap3D>` (mockado — não renderiza WebGL)
  * em tempo real via `ThermalMapSlot`, sem precisar de "Prever".
  *
- * Usa temporizadores reais (em vez de fake timers) porque o fluxo passa por
- * `findByRole`/estado assíncrono do Radix Select — misturar isso com fake
- * timers trava a espera dos testes.
+ * Usa temporizadores reais (em vez de fake timers) porque o pulso da peça
+ * dura ~1,1 s de relógio real.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 import type { ThermalMap3DProps } from '@/components/thermal-map/ThermalMap3D'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
-import { ConfigPanel } from '@/features/config/ConfigPanel'
+import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { FIXTURE_METADATA, FIXTURE_RESPONSE } from '@/test/fixtures'
 
@@ -24,6 +23,7 @@ vi.mock('@/components/thermal-map/ThermalMap3D', () => ({
       data-testid="thermal-map-stub"
       data-config={JSON.stringify(props.config)}
       data-highlight={props.highlightPart ?? ''}
+      data-focus={JSON.stringify(props.focusRequest ?? null)}
     />
   ),
 }))
@@ -36,7 +36,7 @@ function Harness() {
   const store = useConfigStore()
   return (
     <>
-      <ConfigPanel />
+      <StoveConfigPanel />
       <ThermalMapSlot
         metadata={store.metadata}
         response={FIXTURE_RESPONSE}
@@ -47,10 +47,10 @@ function Harness() {
         selectedKeyArea={null}
         onSelectKeyArea={() => {}}
         draftConfig={store.config}
+        focusRequest={store.focusRequest}
         submittedConfig={store.request?.config ?? null}
         highlightPart={store.highlightPart}
         hoveredVariable={store.hoveredVariable}
-        onHoverVariable={store.setHoveredVariable}
       />
     </>
   )
@@ -67,12 +67,15 @@ async function renderHarness() {
   return screen.findByTestId('thermal-map-stub')
 }
 
-async function changeHousingToOpen() {
-  fireEvent.click(screen.getByLabelText('Carcaça da eletrônica'))
-  fireEvent.click(await screen.findByRole('option', { name: 'Open' }))
+function pick(variable: string, option: string) {
+  fireEvent.click(within(screen.getByRole('radiogroup', { name: variable })).getByRole('radio', { name: option }))
 }
 
-describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
+async function changeHousingToOpen() {
+  pick('Electronics housing', 'Open')
+}
+
+describe('ThermalMapSlot + StoveConfigPanel (Fase 1c, etapa C)', () => {
   it('propaga o rascunho da configuração para o mapa sem precisar de "Prever"', async () => {
     const stub = await renderHarness()
     expect(JSON.parse(stub.getAttribute('data-config') ?? '{}')).toMatchObject({ housing: 'Closed' })
@@ -95,8 +98,8 @@ describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
 
   it('mostra o aviso de pré-visualização quando o rascunho diverge da última predição e some após "Prever"', async () => {
     await renderHarness()
-    // A carga inicial já auto-submete a config de referência: nada divergente ainda.
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    // Antes da 1ª previsão, qualquer rascunho já é "divergente" (nada foi submetido ainda).
+    expect(screen.getByRole('status')).toBeInTheDocument()
 
     await changeHousingToOpen()
 
@@ -111,22 +114,32 @@ describe('ThermalMapSlot + ConfigPanel (Fase 1c, etapa C)', () => {
   it('alterar "losses" não pulsa nenhuma peça e não gera erro no aviso de pré-visualização', async () => {
     const stub = await renderHarness()
 
-    fireEvent.click(screen.getByLabelText('Perfil de perdas'))
-    fireEvent.click(await screen.findByRole('option', { name: 'Losses A' }))
+    pick('Losses', 'Losses A')
     await wait(1150)
 
     expect(stub.getAttribute('data-highlight')).toBe('')
     expect(screen.getByRole('status')).toBeInTheDocument()
   }, 10000)
 
-  it('passar o mouse num chip da legenda destaca a peça correspondente', async () => {
+  it('em "Configuração selecionada", passar o mouse numa variável destaca a peça e clicar leva o mapa até ela', async () => {
     const stub = await renderHarness()
-    const chip = screen.getByRole('button', { name: 'Carcaça da eletrônica' })
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    const row = screen.getByRole('button', { name: /Electronics housing: Closed/ })
 
-    fireEvent.mouseEnter(chip)
+    fireEvent.mouseEnter(row)
     expect(stub.getAttribute('data-highlight')).toBe('housing-lid')
-
-    fireEvent.mouseLeave(chip)
+    fireEvent.mouseLeave(row)
     expect(stub.getAttribute('data-highlight')).toBe('')
+
+    fireEvent.click(row)
+    expect(JSON.parse(stub.getAttribute('data-focus') ?? 'null')).toMatchObject({ part: 'housing-lid', token: 1 })
+    fireEvent.click(row)
+    expect(JSON.parse(stub.getAttribute('data-focus') ?? 'null')).toMatchObject({ token: 2 })
+  })
+
+  it('"losses" não vira botão em "Configuração selecionada" (não tem peça no 3D)', async () => {
+    await renderHarness()
+    fireEvent.click(screen.getByRole('button', { name: /^Prever/ }))
+    expect(screen.queryByRole('button', { name: /^Losses:/ })).not.toBeInTheDocument()
   })
 })

@@ -7,7 +7,6 @@
 import {
   Bar,
   BarChart,
-  Cell,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
@@ -18,6 +17,24 @@ import {
 import { formatNumber, formatTemp } from '@/lib/format'
 import { STATUS_COLOR, statusOf } from '@/lib/status'
 import type { AreaGroup } from './AreaCard'
+
+const BAR_RADIUS = 4
+
+interface BarShapeProps {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  payload?: { color: string }
+}
+
+/** Barra de cor sólida (a do status), com os cantos de cima arredondados. */
+function SolidBar({ x = 0, y = 0, width = 0, height = 0, payload }: BarShapeProps) {
+  if (!payload || width <= 0 || height <= 0) return null
+  const r = Math.min(BAR_RADIUS, width / 2, height)
+  const d = `M${x},${y + height} L${x},${y + r} A${r},${r} 0 0 1 ${x + r},${y} L${x + width - r},${y} A${r},${r} 0 0 1 ${x + width},${y + r} L${x + width},${y + height} Z`
+  return <path d={d} fill={payload.color} />
+}
 
 export default function AreaBars({ group }: { group: AreaGroup }) {
   const data = group.predictions.map((p) => ({
@@ -63,11 +80,7 @@ export default function AreaBars({ group }: { group: AreaGroup }) {
               }}
             />
           )}
-          <Bar dataKey="temp" radius={[2, 2, 0, 0]} isAnimationActive={false}>
-            {data.map((d) => (
-              <Cell key={d.name} fill={d.color} />
-            ))}
-          </Bar>
+          <Bar dataKey="temp" isAnimationActive={false} shape={(props: BarShapeProps) => <SolidBar {...props} />} />
         </BarChart>
       </ResponsiveContainer>
     </div>

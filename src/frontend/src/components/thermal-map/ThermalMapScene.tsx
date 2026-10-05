@@ -56,6 +56,9 @@ export const CAMERA_PRESETS: Record<
   iso: { azimuthDeg: 35, elevationDeg: 22, bounds: FRAMING_BOUNDS, margin: 1.28 },
 }
 
+/** A margem dos presets é uma esfera folgada; no enquadramento justo ela encolhe a ~1,0. */
+const TIGHT_MARGIN_SCALE = 0.78
+
 export interface ZoneLabelDatum {
   zoneKey: string
   label: string
@@ -90,6 +93,14 @@ interface ThermalMapSceneProps {
   selectedKeyArea: string | null
   sensorPins: SensorPin[]
   onSelectSensor?: (tcNumber: number) => void
+  /**
+   * Largura (px) coberta por um painel sobre a borda direita do canvas. O
+   * centro óptico é deslocado para o meio da área livre, e o enquadramento
+   * usa só essa área: o fogão não fica atrás do painel.
+   */
+  rightInset?: number
+  /** Enquadramento justo: o fogão preenche a área livre (sem folga para callouts). */
+  tightFraming?: boolean
 }
 
 interface ControlsLike {
@@ -102,14 +113,16 @@ function placementFor(
   preset: CameraPreset,
   camera: THREE.PerspectiveCamera,
   explodeAmount: number,
+  aspect: number,
+  tight: boolean,
 ): CameraPlacement {
   const p = CAMERA_PRESETS[preset]
   const options: FitOptions = {
     azimuthDeg: p.azimuthDeg,
     elevationDeg: p.elevationDeg,
-    margin: p.margin,
+    margin: tight ? Math.max(1, p.margin * TIGHT_MARGIN_SCALE) : p.margin,
     fovDeg: camera.fov,
-    aspect: camera.aspect,
+    aspect,
   }
   const bounds = framingBoundsFor(p.bounds, explodeAmount)
   return cameraPlacementForBounds(bounds.min, bounds.max, options)
@@ -124,12 +137,16 @@ function CameraRig({
   recenterToken,
   interrupted,
   explodeAmount,
+  rightInset,
+  tight,
 }: {
   preset: CameraPreset
   recenterToken: number
   interrupted: boolean
   /** Afastamento efetivo da vista explodida (0 quando desligada). */
   explodeAmount: number
+  rightInset: number
+  tight: boolean
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   const controls = useThree((s) => s.controls) as unknown as ControlsLike | null
@@ -145,8 +162,18 @@ function CameraRig({
     explodeRef.current = explodeAmount
   }, [explodeAmount])
 
+  // Desloca a projeção em vez de mover a câmera: a órbita continua em torno
+  // do fogão, só a imagem é empurrada para a área livre.
+  const inset = Math.min(Math.max(rightInset, 0), size.width * 0.6)
   useEffect(() => {
-    const placement = placementFor(preset, camera, explodeRef.current)
+    if (inset > 0) camera.setViewOffset(size.width, size.height, inset / 2, 0, size.width, size.height)
+    else camera.clearViewOffset()
+    camera.updateProjectionMatrix()
+  }, [camera, inset, size.width, size.height])
+
+  useEffect(() => {
+    const freeAspect = (size.width - inset) / Math.max(size.height, 1)
+    const placement = placementFor(preset, camera, explodeRef.current, freeAspect, tight)
     wantPos.current.set(...placement.position)
     wantTarget.current.set(...placement.target)
     animating.current = true
@@ -163,7 +190,7 @@ function CameraRig({
       }
       animating.current = false
     }
-  }, [preset, recenterToken, camera, controls, size.width, size.height])
+  }, [preset, recenterToken, camera, controls, size.width, size.height, inset, tight])
 
   useFrame((_, delta) => {
     if (interrupted) animating.current = false
@@ -211,6 +238,8 @@ export function ThermalMapScene({
   selectedKeyArea,
   sensorPins,
   onSelectSensor,
+  rightInset = 0,
+  tightFraming = false,
 }: ThermalMapSceneProps) {
   const clipPlanes = useMemo(
     () => [new THREE.Plane(new THREE.Vector3(0, 0, -1), cutZForDepth(DEFAULT_CUT_DEPTH))],
@@ -323,6 +352,8 @@ export function ThermalMapScene({
         recenterToken={recenterToken}
         interrupted={userInteracted}
         explodeAmount={effectiveExplode}
+        rightInset={rightInset}
+        tight={tightFraming}
       />
       <OrbitControls
         makeDefault

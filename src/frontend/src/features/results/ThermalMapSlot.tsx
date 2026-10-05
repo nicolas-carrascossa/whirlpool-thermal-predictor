@@ -6,22 +6,17 @@
 
 import { lazy, Suspense, useMemo } from 'react'
 
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { PART_LABEL_PT, VARIABLE_TO_PART, type PartId } from '@/components/thermal-map/parts'
+import { VARIABLE_TO_PART, type PartId } from '@/components/thermal-map/parts'
 import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import type { Metadata, PredictionResponse, StoveConfig } from '@/contract/v1'
 import { cn } from '@/lib/utils'
 
-/** As 6 variáveis com representação física no 3D (`losses` fica de fora). */
-const LEGEND_ENTRIES = (Object.entries(VARIABLE_TO_PART) as [keyof StoveConfig, PartId | null][]).filter(
-  (entry): entry is [keyof StoveConfig, PartId] => entry[1] !== null,
-)
-
 /** Compara as 7 variáveis da configuração (ignora `targets`/arquitetura). */
 function configsDiffer(a: StoveConfig | null | undefined, b: StoveConfig | null | undefined): boolean {
-  if (!a || !b) return false
+  if (!a) return false
+  // Sem `b` (nenhuma previsão submetida ainda), o rascunho já é "divergente".
+  if (!b) return true
   return JSON.stringify(a) !== JSON.stringify(b)
 }
 
@@ -33,13 +28,10 @@ function MapSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="grid gap-4 min-[900px]:grid-cols-[1fr_280px]"
+      className="grid gap-4"
     >
-      <div
-        className="animate-pulse rounded-lg border border-wp-gray12 bg-wp-gray05"
-        style={{ aspectRatio: '4 / 3', minHeight: 420 }}
-      />
-      <div className="flex flex-col gap-1.5">
+      <div className="aspect-[4/3] min-h-[420px] animate-pulse rounded-lg border border-wp-gray12 bg-wp-gray05 min-[900px]:aspect-auto min-[900px]:h-[calc(100dvh_-_280px)]" />
+      <div className="flex flex-col gap-1.5 min-[900px]:hidden">
         {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="h-8 animate-pulse rounded-md bg-wp-gray05" />
         ))}
@@ -69,7 +61,7 @@ function ModeToggle({
     <div
       role="radiogroup"
       aria-label="Modo de cor do mapa térmico"
-      className="flex w-full flex-wrap items-center gap-1 rounded-md border border-wp-gray12 bg-wp-gray05 p-0.5 min-[1200px]:w-auto min-[1200px]:flex-nowrap"
+      className="flex w-full items-center gap-1 rounded-md border border-wp-gray12 bg-wp-gray05 p-0.5"
     >
       {MODE_OPTIONS.map((option) => {
         const isDisabled = disabled && option.id === 'delta'
@@ -82,7 +74,7 @@ function ModeToggle({
             disabled={isDisabled}
             onClick={() => onChange(option.id)}
             className={cn(
-              'min-w-0 flex-1 whitespace-normal rounded-[5px] px-2.5 py-1 font-body text-xs font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 min-[1200px]:flex-none min-[1200px]:whitespace-nowrap',
+              'min-w-0 flex-1 whitespace-normal rounded-[5px] px-1.5 py-1 font-body text-[11px] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60',
               mode === option.id ? 'bg-wp-core text-white' : 'text-wp-gray65 hover:text-wp-core',
             )}
           >
@@ -104,46 +96,6 @@ function ModeToggle({
   )
 }
 
-/**
- * Legenda compacta peça ↔ variável sob o mapa 3D: dobra como hint de
- * descoberta (passar o mouse destaca a peça) e como referência rápida do que
- * cada variável controla no fogão.
- */
-function PartLegend({
-  activePart,
-  onHoverVariable,
-}: {
-  activePart: PartId | null
-  onHoverVariable: (field: keyof StoveConfig | null) => void
-}) {
-  return (
-    <div
-      className="flex flex-wrap gap-1.5 pt-2"
-      role="group"
-      aria-label="Peças do fogão 3D e as variáveis que as controlam"
-    >
-      {LEGEND_ENTRIES.map(([field, part]) => (
-        <button
-          key={part}
-          type="button"
-          onMouseEnter={() => onHoverVariable(field)}
-          onMouseLeave={() => onHoverVariable(null)}
-          onFocus={() => onHoverVariable(field)}
-          onBlur={() => onHoverVariable(null)}
-          className={cn(
-            'rounded-full border px-2.5 py-1 font-body text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            activePart === part
-              ? 'border-wp-accent bg-wp-accentLt text-wp-core'
-              : 'border-wp-gray12 text-wp-gray65 hover:border-wp-accent hover:text-wp-core',
-          )}
-        >
-          {PART_LABEL_PT[part]}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 export function ThermalMapSlot({
   metadata,
   response,
@@ -158,7 +110,8 @@ export function ThermalMapSlot({
   submittedConfig = null,
   highlightPart = null,
   hoveredVariable = null,
-  onHoverVariable,
+  toolbarContainer = null,
+  focusRequest = null,
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
@@ -176,9 +129,12 @@ export function ThermalMapSlot({
   submittedConfig?: StoveConfig | null
   /** Peça pulsando após alteração de um select (vem da store). */
   highlightPart?: PartId | null
-  /** Variável sob o cursor (select ou chip da legenda) — destaque contínuo. */
+  /** Variável sob o cursor (select ou linha de "Configuração selecionada") — destaque contínuo. */
   hoveredVariable?: keyof StoveConfig | null
-  onHoverVariable?: (field: keyof StoveConfig | null) => void
+  /** Onde renderizar os filtros do mapa (barra lateral). Sem ele, ficam sobre o canvas. */
+  toolbarContainer?: HTMLElement | null
+  /** Pedido de "ir até a peça" vindo da store. */
+  focusRequest?: { part: PartId; token: number } | null
 }) {
   const keyAreaLabels = Object.fromEntries(
     (metadata?.key_areas ?? []).map((a) => [a.name, a.label_pt]),
@@ -191,11 +147,9 @@ export function ThermalMapSlot({
   )
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 pb-2">
-        <CardTitle className="text-base">Mapa térmico</CardTitle>
-      </CardHeader>
-      <CardContent>
+    // Sem cartão nem título: o cabeçalho da página já diz "Mapa térmico", e o
+    // canvas ocupa toda a área abaixo dele.
+    <div>
         <div data-slot="thermal-map" className="relative">
           {!response || response.predictions.length === 0 ? (
             <div className="flex h-20 items-center justify-center rounded-md border border-dashed border-wp-gray20 bg-wp-gray05 text-xs text-wp-gray65">
@@ -213,29 +167,22 @@ export function ThermalMapSlot({
                 onSelectSensor={onSelectSensor}
                 config={draftConfig ?? undefined}
                 highlightPart={effectiveHighlightPart}
-                stackZoneList
-                belowMap={<ModeToggle mode={effectiveMode} onChange={onModeChange} disabled={isReferenceConfig} />}
+                overlayZoneList
+                toolbarContainer={toolbarContainer}
+                focusRequest={focusRequest}
+                zonePanelControls={<ModeToggle mode={effectiveMode} onChange={onModeChange} disabled={isReferenceConfig} />}
               />
             </Suspense>
           )}
           {showPreviewNotice && (
             <div
               role="status"
-              className="absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] rounded-full border border-wp-accent bg-wp-accentLt px-3 py-1.5 font-body text-xs font-semibold text-wp-core shadow-sm"
+              className="absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] rounded-md border border-wp-accent bg-wp-accentLt px-3 py-1.5 font-body text-xs font-semibold text-wp-core shadow-sm"
             >
               Pré-visualização da configuração — clique em Prever para atualizar as temperaturas
             </div>
           )}
         </div>
-        {response && response.predictions.length > 0 && onHoverVariable && (
-          <PartLegend activePart={effectiveHighlightPart} onHoverVariable={onHoverVariable} />
-        )}
-        {isReferenceConfig && (
-          <Badge variant="outline" className="mt-2 font-normal">
-            Esta é a configuração de referência — modo delta desabilitado.
-          </Badge>
-        )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }

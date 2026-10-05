@@ -160,6 +160,14 @@ describe('MetricsPanel', () => {
     expect(screen.getByText(/Previsto vs\. real — Resistências/)).toBeInTheDocument()
   })
 
+  it('mostra as matrizes de decisão por leitura e por design', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} />)
+    expect(await screen.findByText(/Decisão por leitura — Painel traseiro/)).toBeInTheDocument()
+    expect(screen.getByText(/Decisão por design — Painel traseiro/)).toBeInTheDocument()
+    expect(screen.getByText('Como ler as matrizes de decisão')).toBeInTheDocument()
+    expect(screen.queryByText('Decisão por área')).not.toBeInTheDocument()
+  })
+
   it('não exibe mais aviso de dado simulado: os quatro cartões são reais', async () => {
     renderWithQuery(<MetricsPanel metadata={METADATA} />)
     await screen.findByTestId('scatter-stub')
