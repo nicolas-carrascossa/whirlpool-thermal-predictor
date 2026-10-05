@@ -1,7 +1,8 @@
 import { algorithmLabel } from '@/lib/algorithms'
 import type { AlgorithmCode } from '@/contract/v1'
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import * as THREE from 'three'
 
 import type { SensorPrediction, StoveConfig } from '@/contract/v1'
@@ -13,7 +14,6 @@ import { absoluteRange, aggregateByKeyArea, formatTempPt, maxAbsDelta, type Zone
 import { cameraForPart } from './cameraForPart'
 import { divergentColorForDelta, heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
 import { CollapseToggle } from './CollapseToggle'
-import { ConfigSummaryOverlay } from './ConfigSummaryOverlay'
 import { DEFAULT_CUT_DEPTH } from './cutPlane'
 import { legendModel, type MapColorMode } from './legendModel'
 import { LegendOverlay } from './LegendOverlay'
@@ -62,10 +62,21 @@ export interface ThermalMap3DProps {
   cameraPreset?: CameraPreset
   /** Peça que deve pulsar em `--wp-accent` (~1 s) — usado ao mudar um select. */
   highlightPart?: PartId | null
-  /** Empilha a lista de áreas abaixo do mapa em vez de exibi-la à direita. */
-  stackZoneList?: boolean
-  /** Conteúdo exibido entre o mapa e a lista de áreas quando ela está empilhada. */
-  belowMap?: ReactNode
+  /**
+   * Põe a lista de áreas num painel sobre o canvas, à direita (abaixo de
+   * "Configuração"), e faz o mapa ocupar a altura da tela: tudo fica visível
+   * sem rolar a página. Abaixo de 900 px a lista volta para baixo do mapa.
+   */
+  overlayZoneList?: boolean
+  /** Controles exibidos no topo do painel de áreas (ex.: modo de cor). */
+  zonePanelControls?: ReactNode
+  /**
+   * Elemento fora do canvas (barra lateral) onde os filtros do mapa são
+   * renderizados. Sem ele, os filtros ficam no canto do canvas.
+   */
+  toolbarContainer?: HTMLElement | null
+  /** Leva a câmera até a peça (abrindo o que for preciso); muda `token` a cada pedido. */
+  focusRequest?: { part: PartId; token: number } | null
   className?: string
 }
 
@@ -117,12 +128,14 @@ export function ThermalMap3D({
   onLabelModeChange,
   cameraPreset,
   highlightPart = null,
-  stackZoneList = false,
-  belowMap,
+  overlayZoneList = false,
+  zonePanelControls,
+  toolbarContainer = null,
+  focusRequest = null,
   className,
 }: ThermalMap3DProps) {
+  const [zonePanelOpen, setZonePanelOpen] = useState(true)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
-  const [hoveredPart, setHoveredPart] = useState<PartId | null>(null)
   const [internalView, setInternalView] = useState<StoveView>('solid')
   const [internalCamera, setInternalCamera] = useState<CameraPreset>('iso')
   const [internalOpenings, setInternalOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
@@ -131,7 +144,23 @@ export function ThermalMap3D({
   const [explodeAmount, setExplodeAmount] = useState(DEFAULT_EXPLODE_AMOUNT)
   const [recenterToken, setRecenterToken] = useState(0)
   const [cameraFollowsPart, setCameraFollowsPart] = useState(false)
-  const [helpOpen, setHelpOpen] = useState(false)
+  // Com o painel sobreposto o canvas vai do topo dele até o pé da janela:
+  // mede onde o mapa começa e usa o resto da altura da tela.
+  const mapRef = useRef<HTMLDivElement>(null)
+  const [fillHeight, setFillHeight] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    if (!overlayZoneList) return
+    const measure = () => {
+      const el = mapRef.current
+      if (!el || window.innerWidth < 900) return setFillHeight(null)
+      const top = el.getBoundingClientRect().top + window.scrollY
+      // Vai até o pé da janela: o card sangra sobre o recuo de baixo (ver `style`).
+      setFillHeight(Math.max(460, window.innerHeight - top))
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [overlayZoneList])
   const prefersReducedMotion = usePrefersReducedMotion()
   const lastFollowedPart = useRef<PartId | null>(null)
 
@@ -192,6 +221,21 @@ export function ThermalMap3D({
   useEffect(() => {
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
+
+  // Clique numa variável de "Configuração selecionada": vai até a peça. Só
+  // reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
+  const handledFocusToken = useRef<number | null>(null)
+  useEffect(() => {
+    if (!focusRequest || handledFocusToken.current === focusRequest.token) return
+    handledFocusToken.current = focusRequest.token
+    const target = cameraForPart(focusRequest.part)
+    if (!cameraPreset) setInternalCamera(target.preset)
+    if (target.openings) {
+      setInternalOpenings((prev) => ({ ...(openings ?? prev), ...target.openings }))
+      onOpeningsChange?.({ ...effectiveOpenings, ...target.openings })
+    }
+    setRecenterToken((n) => n + 1)
+  }, [focusRequest, cameraPreset, openings, onOpeningsChange, effectiveOpenings])
 
   // Ligar/desligar a vista explodida muda a altura do fogão: reenquadra uma
   // vez no toggle (o slider em si não reenquadra — ver `CameraRig`).
@@ -305,17 +349,63 @@ export function ThermalMap3D({
     )
   }
 
+  const toolbar = (
+    <MapToolbar
+      openings={effectiveOpenings}
+      onToggleOpening={handleToggleOpening}
+      labelMode={effectiveLabelMode}
+      onLabelModeChange={handleLabelModeChange}
+      view={effectiveView}
+      onViewChange={handleViewChange}
+      cutDepth={cutDepth}
+      onCutDepthChange={setCutDepth}
+      explodeAmount={explodeAmount}
+      onExplodeAmountChange={setExplodeAmount}
+      cameraPreset={effectiveCamera}
+      onCameraPresetChange={setInternalCamera}
+      onRecenter={() => setRecenterToken((n) => n + 1)}
+      cameraFollowsPart={cameraFollowsPart}
+      onCameraFollowsPartChange={setCameraFollowsPart}
+      variant={toolbarContainer ? 'panel' : 'overlay'}
+    />
+  )
+
+  const zoneList = (
+    <ZoneListPanel
+      aggregates={aggregates}
+      mode={mode}
+      hoveredKey={hoveredKey}
+      selectedKeyArea={selectedKeyArea}
+      onHover={setHoveredKey}
+      onSelect={handleSelect}
+      colorFor={colorForAgg}
+      valueFor={valueFor}
+      statusFor={(key) => statusByKey.get(key) ?? 'none'}
+    />
+  )
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <div
         className={cn(
           'grid gap-4',
-          !stackZoneList && 'min-[900px]:grid-cols-[1fr_280px]',
+          !overlayZoneList && 'min-[900px]:grid-cols-[1fr_280px]',
         )}
       >
         <Card
-          className="relative overflow-hidden bg-wp-gray05"
-          style={{ aspectRatio: '4 / 3', minHeight: 460 }}
+          ref={mapRef}
+          // Sangra sobre o recuo da coluna (esquerda, deixando uma fresta da barra de navegação,
+          // direita e base) para o canvas ocupar toda a área branca.
+          style={
+            fillHeight
+              ? { height: fillHeight, marginLeft: -32, marginRight: -20, marginBottom: -32 }
+              : undefined
+          }
+          className={cn(
+            'relative min-h-[460px] overflow-hidden bg-wp-gray05',
+            overlayZoneList ? (fillHeight ? '' : 'aspect-[4/3]') : 'aspect-[4/3]',
+            overlayZoneList && 'border-0 shadow-none',
+          )}
         >
           <div
             role="img"
@@ -350,7 +440,7 @@ export function ThermalMap3D({
                 config={effectiveConfig}
                 openings={effectiveOpenings}
                 highlightPart={highlightPart}
-                onHoverPart={setHoveredPart}
+                onHoverPart={() => {}}
                 autoRotate={false}
                 reducedMotion={prefersReducedMotion}
                 cameraPreset={effectiveCamera}
@@ -360,60 +450,60 @@ export function ThermalMap3D({
                 selectedKeyArea={selectedKeyArea}
                 sensorPins={sensorPins}
                 onSelectSensor={onSelectSensor}
+                tightFraming={overlayZoneList}
               />
             </Canvas>
           </div>
 
-          <MapToolbar
-            openings={effectiveOpenings}
-            onToggleOpening={handleToggleOpening}
-            labelMode={effectiveLabelMode}
-            onLabelModeChange={handleLabelModeChange}
-            view={effectiveView}
-            onViewChange={handleViewChange}
-            cutDepth={cutDepth}
-            onCutDepthChange={setCutDepth}
-            explodeAmount={explodeAmount}
-            onExplodeAmountChange={setExplodeAmount}
-            cameraPreset={effectiveCamera}
-            onCameraPresetChange={setInternalCamera}
-            onRecenter={() => setRecenterToken((n) => n + 1)}
-            cameraFollowsPart={cameraFollowsPart}
-            onCameraFollowsPartChange={setCameraFollowsPart}
-          />
+          {!toolbarContainer && toolbar}
 
-          <ConfigSummaryOverlay config={effectiveConfig} highlightPart={highlightPart} />
-          <LegendOverlay model={legend} />
-
-          <div className="absolute bottom-3 left-3 z-10 rounded-md border border-wp-gray12 bg-white/90 px-2 py-1 font-body text-[11px] text-wp-gray65 shadow-sm backdrop-blur">
-            <CollapseToggle label="Ajuda" expanded={helpOpen} onClick={() => setHelpOpen(!helpOpen)} />
-            {helpOpen && (
-              <p className="mt-1 whitespace-nowrap">
-                Arraste para girar · scroll para zoom
-                {hoveredPart ? ' · peça em foco' : ''}
-              </p>
+          {/* Coluna direita sobre o canvas: painel de áreas no topo (rola por
+              dentro) e legenda no rodapé. O vazio entre eles deixa os eventos
+              passarem para o canvas. */}
+          <div
+            className={cn(
+              'pointer-events-none absolute bottom-14 right-3 top-3 z-10 flex flex-col items-end gap-2',
+              overlayZoneList && 'min-[900px]:w-[19rem]',
+            )}
+          >
+            {overlayZoneList && (
+              <section
+                aria-label="Áreas do mapa"
+                className="pointer-events-auto hidden min-h-0 w-full flex-col gap-2 rounded-md border border-wp-gray12 bg-white/95 px-2 py-1.5 shadow-sm backdrop-blur min-[900px]:flex"
+              >
+                <CollapseToggle label="Áreas" expanded={zonePanelOpen} onClick={() => setZonePanelOpen(!zonePanelOpen)} />
+                {zonePanelOpen && (
+                  <>
+                    {zonePanelControls}
+                    <div className="-mx-1 min-h-0 overflow-y-auto px-1 [scrollbar-width:thin]">{zoneList}</div>
+                  </>
+                )}
+              </section>
             )}
           </div>
+
+          <LegendOverlay
+            model={legend}
+            className="absolute bottom-3 left-3 z-10 w-fit max-w-[calc(100%-1.5rem)] rounded-md bg-white backdrop-blur"
+          />
         </Card>
 
-        {stackZoneList && belowMap}
-
-        <div className="flex flex-col gap-2">
-          <ZoneListPanel
-            aggregates={aggregates}
-            mode={mode}
-            hoveredKey={hoveredKey}
-            selectedKeyArea={selectedKeyArea}
-            onHover={setHoveredKey}
-            onSelect={handleSelect}
-            colorFor={colorForAgg}
-            valueFor={valueFor}
-            statusFor={(key) => statusByKey.get(key) ?? 'none'}
-          />
-        </div>
+        {overlayZoneList ? (
+          // Telas estreitas: o painel sobreposto cobriria o fogão, então a
+          // lista volta para baixo do mapa.
+          <div className="flex flex-col gap-2 min-[900px]:hidden">
+            {zonePanelControls}
+            {zoneList}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">{zoneList}</div>
+        )}
       </div>
 
-      <p className="tabular text-xs text-wp-gray45">Geometria ilustrativa — não é CAD</p>
+      {/* Com o painel sobreposto o aviso já está no rodapé da página. */}
+      {toolbarContainer && createPortal(toolbar, toolbarContainer)}
+
+      {!overlayZoneList && <p className="tabular text-xs text-wp-gray45">Geometria ilustrativa — não é CAD</p>}
     </div>
   )
 }

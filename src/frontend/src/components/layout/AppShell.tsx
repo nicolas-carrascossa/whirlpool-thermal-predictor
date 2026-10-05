@@ -10,7 +10,6 @@
 import type { ReactNode } from 'react'
 
 export function AppShell({
-  isMock,
   nav,
   title,
   section,
@@ -18,11 +17,11 @@ export function AppShell({
   configSidebar,
   children,
 }: {
-  /** Modo `local` (mock). Hoje só afeta a nota do rodapé. */
+  /** Modo `local` (mock). */
   isMock: boolean
   /** Barra de navegação lateral (`NavRail`). */
   nav: ReactNode
-  title: string
+  title: ReactNode
   /** Nome da seção ativa, mostrado sob o título. */
   section: string
   /** Informações e ações do cabeçalho, alinhadas à direita. */
@@ -35,15 +34,15 @@ export function AppShell({
     <div className="flex min-h-screen bg-background text-wp-gray85">
       {nav}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-6 py-6 lg:flex-row lg:items-start">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-6 py-3 lg:flex-row lg:items-start">
           {/* Tudo branco: cabeçalho e conteúdo separados por linhas, sem blocos nem sombras. */}
           <div className="min-w-0 flex-1">
-            <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-border px-5 py-4">
+            <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-b border-border px-5 py-2">
               <div className="min-w-0">
-                <h1 className="font-display text-xl font-extrabold leading-tight text-wp-gray85">{title}</h1>
+                <div className="font-display text-xl font-extrabold leading-tight text-wp-gray85">{title}</div>
                 <p className="mt-0.5 truncate text-sm text-wp-gray65">{section}</p>
               </div>
-              {headerRight && <div className="ml-auto flex flex-wrap items-center justify-end gap-3">{headerRight}</div>}
+              {headerRight && <div className="ml-auto mt-4 flex flex-wrap items-center justify-end gap-3">{headerRight}</div>}
             </header>
             <main className="dashboard-results min-w-0 px-5 pb-5">{children}</main>
           </div>
@@ -58,12 +57,6 @@ export function AppShell({
           )}
         </div>
 
-        <footer className="px-6 py-3">
-          <p className="mx-auto max-w-[1600px] text-[11px] text-wp-gray65">
-            Geometria 3D ilustrativa — não é CAD
-            {isMock && ' · Dados de demonstração (mock local)'}
-          </p>
-        </footer>
       </div>
     </div>
   )

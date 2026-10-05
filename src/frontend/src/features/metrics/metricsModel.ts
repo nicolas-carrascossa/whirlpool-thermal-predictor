@@ -218,3 +218,129 @@ export function importanceData(
     }
   }).sort((a, b) => b.importance - a.importance)
 }
+
+/**
+ * Matriz de decisão contra o limite de engenharia.
+ *
+ * "Positivo" é APROVAR (previsto dentro do limite). Assim FP é o erro grave —
+ * o modelo aprovou algo que na medição excede — e FN é só uma simulação CFD
+ * a mais. A regra é a simples `previsto > limite`, sem margem de segurança.
+ */
+export interface ConfusionCounts {
+  /** Aprovou e estava dentro do limite. */
+  tp: number
+  /** Aprovou, mas a medição excede o limite. */
+  fp: number
+  /** Reprovou, mas a medição estava dentro do limite. */
+  fn: number
+  /** Reprovou e a medição excede o limite. */
+  tn: number
+}
+
+export const EMPTY_CONFUSION: ConfusionCounts = { tp: 0, fp: 0, fn: 0, tn: 0 }
+
+function tally(counts: ConfusionCounts, predictedExceeds: boolean, actualExceeds: boolean) {
+  if (!predictedExceeds && !actualExceeds) counts.tp += 1
+  else if (!predictedExceeds && actualExceeds) counts.fp += 1
+  else if (predictedExceeds && !actualExceeds) counts.fn += 1
+  else counts.tn += 1
+}
+
+/** Nível 1: uma observação por leitura (ensaio × coluna-alvo). Sem limite, fica de fora. */
+export function confusionByReading(points: ValidationPoint[]): ConfusionCounts {
+  const counts = { ...EMPTY_CONFUSION }
+  for (const p of points) {
+    const limit = p.active_limit_c
+    if (limit === null) continue
+    tally(counts, p.predicted_c > limit, p.actual_c > limit)
+  }
+  return counts
+}
+
+/**
+ * Nível 2: uma observação por design (ensaio). O design excede se QUALQUER
+ * sensor com limite excede — na medição para o real, na previsão para o
+ * previsto. Um design sem nenhum sensor com limite fica de fora.
+ */
+export function confusionByDesign(points: ValidationPoint[]): ConfusionCounts {
+  const byRun = new Map<number, { predicted: boolean; actual: boolean }>()
+  for (const p of points) {
+    const limit = p.active_limit_c
+    if (limit === null) continue
+    const run = byRun.get(p.run) ?? { predicted: false, actual: false }
+    run.predicted ||= p.predicted_c > limit
+    run.actual ||= p.actual_c > limit
+    byRun.set(p.run, run)
+  }
+  const counts = { ...EMPTY_CONFUSION }
+  for (const run of byRun.values()) tally(counts, run.predicted, run.actual)
+  return counts
+}
+
+/** Total de excedências reais (FP + TN): o denominador que importa para o FP. */
+export function actualExceedances(c: ConfusionCounts): number {
+  return c.fp + c.tn
+}
+
+export function addConfusion(a: ConfusionCounts, b: ConfusionCounts): ConfusionCounts {
+  return { tp: a.tp + b.tp, fp: a.fp + b.fp, fn: a.fn + b.fn, tn: a.tn + b.tn }
+}
+
+/** Célula (tp/fp/fn/tn) de uma única observação, a partir das contagens dela. */
+export function singleOutcome(c: ConfusionCounts): keyof ConfusionCounts | null {
+  const hit = (['tp', 'fp', 'fn', 'tn'] as const).filter((k) => c[k] > 0)
+  return hit.length === 1 ? hit[0] : null
+}
+
+export interface ConfigurationAreaResult {
+  keyArea: string
+  /** `true` quando a configuração consultada é um ensaio de TESTE desta área. */
+  hasTestRun: boolean
+  readings: ConfusionCounts
+  /** O ensaio desta área como um design: no máximo uma observação. */
+  design: ConfusionCounts
+}
+
+export interface ConfigurationDecision {
+  areas: ConfigurationAreaResult[]
+  /** Soma por leitura das áreas que têm ensaio de teste. */
+  readings: ConfusionCounts
+  /** Quantas áreas do recorte têm essa configuração no teste. */
+  coveredAreas: number
+  /** Veredito do design inteiro: reprova/excede se QUALQUER área coberta o faz. */
+  design: ConfusionCounts
+}
+
+/**
+ * Matriz da CONFIGURAÇÃO consultada. Só entra a área em que a configuração é um
+ * ensaio de teste (o modelo não a viu no treino); nas demais não há comparação
+ * honesta e a área fica marcada como sem ensaio. Cada área tem seu próprio
+ * modelo, então o resultado soma respostas de modelos diferentes.
+ */
+export function configurationDecision(
+  areas: { keyArea: string; points: ValidationPoint[] }[],
+  predictedByTc: Map<number, number>,
+): ConfigurationDecision {
+  const tcNumbers = new Set(predictedByTc.keys())
+  const results: ConfigurationAreaResult[] = areas.map(({ keyArea, points }) => {
+    const run = executedRunIndex(scopeToPrediction(points, tcNumbers), predictedByTc)
+    if (run === null) {
+      return { keyArea, hasTestRun: false, readings: { ...EMPTY_CONFUSION }, design: { ...EMPTY_CONFUSION } }
+    }
+    const runPoints = points.filter((p) => p.run === run)
+    return {
+      keyArea,
+      hasTestRun: true,
+      readings: confusionByReading(runPoints),
+      design: confusionByDesign(runPoints),
+    }
+  })
+  const covered = results.filter((r) => r.hasTestRun)
+  const readings = covered.reduce((acc, r) => addConfusion(acc, r.readings), { ...EMPTY_CONFUSION })
+  const areaDesigns = covered.reduce((acc, r) => addConfusion(acc, r.design), { ...EMPTY_CONFUSION })
+  const design = { ...EMPTY_CONFUSION }
+  if (covered.length > 0) {
+    tally(design, areaDesigns.fn + areaDesigns.tn > 0, areaDesigns.fp + areaDesigns.tn > 0)
+  }
+  return { areas: results, readings, coveredAreas: covered.length, design }
+}

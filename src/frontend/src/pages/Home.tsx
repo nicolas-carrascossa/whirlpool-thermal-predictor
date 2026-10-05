@@ -101,6 +101,9 @@ function HomeContent() {
   // fica na barra superior (AppShell) e as abas ficam no ResultsPanel. O histórico
   // é uma dessas abas; reabrir uma consulta leva de volta a "resultados".
   const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
+  // Nó da barra lateral onde o mapa térmico põe seus filtros (via portal),
+  // logo abaixo de "Configuração selecionada". Só existe na aba do mapa.
+  const [mapToolbarEl, setMapToolbarEl] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     if (apiMode && auth.sessionExpired) {
@@ -129,7 +132,7 @@ function HomeContent() {
   return (
     <AppShell
       isMock={isMock}
-      title="Thermal Predictor"
+      title={<img src="/logoWhirlpool.png" alt="Whirlpool" className="h-20 w-auto" />}
       section={`${sectionLabel}${sessionLabel}`}
       headerRight={
         <>
@@ -151,7 +154,7 @@ function HomeContent() {
       }
       nav={<NavRail items={NAV_ITEMS} active={resultsTab} onChange={setResultsTab} />}
       configSidebar={
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <UserCard
             name={apiMode ? (auth.user?.display_name ?? 'Usuário') : 'Usuário local'}
             role={apiMode ? (auth.user?.role ?? '') : 'Modo de demonstração'}
@@ -160,7 +163,13 @@ function HomeContent() {
           {store.session !== null && (
             <>
               <hr className="border-wp-gray12" />
-              <StoveConfigPanel />
+              <StoveConfigPanel onFocusVariable={() => setResultsTab('mapa')} />
+              {resultsTab === 'mapa' && store.request !== null && (
+                <>
+                  <hr className="border-wp-gray12" />
+                  <div ref={setMapToolbarEl} />
+                </>
+              )}
             </>
           )}
         </div>
@@ -191,11 +200,13 @@ function HomeContent() {
           draftConfig={store.config}
           hoveredVariable={store.hoveredVariable}
           highlightPart={store.highlightPart}
-          onHoverVariable={store.setHoveredVariable}
+          mapToolbarContainer={mapToolbarEl}
+          focusRequest={store.focusRequest}
           activeTab={resultsTab}
           onTabChange={setResultsTab}
           historySlot={<HistoryPanel onReopen={() => setResultsTab('resultados')} />}
           technicianView={store.technicianView}
+          analysisBases={store.history}
         />
       )}
     </AppShell>
