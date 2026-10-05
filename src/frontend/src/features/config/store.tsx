@@ -73,6 +73,12 @@ export interface ConfigStore extends QueryState {
   highlightPart: PartId | null
   /** Variável cujo select/legenda está sob o cursor — destaque contínuo no 3D. */
   hoveredVariable: keyof StoveConfig | null
+  /**
+   * Pedido para o mapa 3D levar a câmera até uma peça (clique numa linha de
+   * "Configuração selecionada"). `token` muda a cada clique, então clicar de
+   * novo na mesma peça reenquadra.
+   */
+  focusRequest: { part: PartId; token: number } | null
   /** Consultas registradas, na ordem em que foram criadas. */
   history: HistoryEntry[]
   /** Consulta em andamento; `null` na tela de início. */
@@ -90,6 +96,8 @@ export interface ConfigStore extends QueryState {
   /** "Nova consulta": volta à tela de início com a configuração de referência. */
   endSession: () => void
   setHoveredVariable: (field: keyof StoveConfig | null) => void
+  /** Leva o mapa 3D até a peça da variável e a faz pulsar. Sem peça (`losses`), não faz nada. */
+  focusVariable: (field: keyof StoveConfig) => void
   setArchitecture: (value: Architecture) => void
   setField: (field: keyof StoveConfig, value: string) => void
   toggleArea: (area: string) => void
@@ -191,6 +199,7 @@ export function ConfigStoreProvider({
   const [selectedKeyArea, setSelectedKeyArea] = useState<string | null>(null)
   const [hoveredVariable, setHoveredVariable] = useState<keyof StoveConfig | null>(null)
   const [highlightPart, setHighlightPart] = useState<PartId | null>(null)
+  const [focusRequest, setFocusRequest] = useState<{ part: PartId; token: number } | null>(null)
   const highlightSetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const highlightClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -294,6 +303,7 @@ export function ConfigStoreProvider({
       selectedKeyArea,
       highlightPart,
       hoveredVariable,
+      focusRequest,
       history,
       session,
       technicianView,
@@ -308,6 +318,12 @@ export function ConfigStoreProvider({
         }
       },
       setHoveredVariable,
+      focusVariable: (field) => {
+        const part = VARIABLE_TO_PART[field]
+        if (!part) return
+        setFocusRequest((prev) => ({ part, token: (prev?.token ?? 0) + 1 }))
+        pulseHighlight(field)
+      },
       selectKeyArea: (area) => setSelectedKeyArea((current) => (current === area ? null : area)),
       // A arquitetura re-submete na hora (só se já houve previsão): a
       // indisponibilidade do México precisa aparecer sem exigir um novo
@@ -396,7 +412,7 @@ export function ConfigStoreProvider({
       clearSelection: () => setState((prev) => ({ ...prev, areas: allAreas, sensors: [] })),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, metadata, allAreas, request, selectedKeyArea, highlightPart, hoveredVariable, history, session, technicianView])
+  }, [state, metadata, allAreas, request, selectedKeyArea, highlightPart, hoveredVariable, focusRequest, history, session, technicianView])
 
   return <ConfigStoreContext.Provider value={value}>{children}</ConfigStoreContext.Provider>
 }
