@@ -68,8 +68,8 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>src</b>: todo o código do projeto. Execução em <a href="#-execução-dos-projetos">Execução dos projetos</a>, abaixo.
   - <b>src/backend</b>: a API em FastAPI, que carrega os modelos treinados e serve as predições.
-  - <b>src/backend/models</b>: os artefatos treinados (um por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. Gerados por <code>src/scripts/export_models.py</code>.
-  - <b>src/frontend</b>: a interface em React que consome a API.
+  - <b>src/backend/models</b>: os modelos treinados (um <code>.joblib</code> por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. <b>Não são versionados</b>, porque são gerados a partir da base confidencial do parceiro: cada pessoa os gera na própria máquina com <code>npm run modelos:gerar</code> (ver <a href="#-execução-dos-projetos">Execução dos projetos</a>).
+  - <b>src/frontend</b>: a interface em React que consome a API. Os arquivos estáticos da própria aplicação (logo, favicon) ficam em <code>src/frontend/public</code>, de onde o Vite os serve na raiz do site; não são mídia da documentação.
   - <b>src/contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
   - <b>src/scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
 
@@ -80,23 +80,35 @@ nem Docker. São dois processos: a API e a interface.
 
 ### A aplicação (API + interface)
 
+> [!IMPORTANT]
+> **Os modelos treinados não vêm com o repositório.** Os arquivos `.joblib` e o
+> `manifest.json` de `src/backend/models/` são gerados a partir da base
+> confidencial da Whirlpool e, por isso, não são versionados. Antes de subir a
+> API com o modelo real, **gere os modelos na sua máquina com
+> `npm run modelos:gerar`** (passo 3 abaixo). Sem a base, a aplicação roda
+> apenas em modo de demonstração (`MODEL_MODE=mock`), com previsões sintéticas.
+
 Pré-requisitos: Python 3.12+ e Node 20+.
 
 ```bash
-# 1. dependências (na raiz do repositório)
-pip install -r src/backend/requirements.txt
+# 1. dependências (na raiz do repositório, de preferência num ambiente virtual)
+pip install -r requirements.txt               # pandas e scikit-learn, usados para gerar os modelos
+pip install -r src/backend/requirements.txt   # API
 npm run install:frontend
 
 # 2. configuração da API: cria src/backend/.env a partir do exemplo
 cp src/backend/.env.example src/backend/.env
-#    em seguida, abra src/backend/.env e troque MODEL_MODE=mock por
-#    MODEL_MODE=real, para a API usar os modelos treinados de src/backend/models/
+#    o exemplo já vem com MODEL_MODE=real (modelo treinado). Sem a base do
+#    parceiro, troque para MODEL_MODE=mock e pule o passo 3.
 
-# 3. API (terminal 1)
+# 3. gerar os modelos treinados (só com a base do parceiro; ver abaixo)
+npm run modelos:gerar
+
+# 4. API (terminal 1)
 cd src/backend
 python -m uvicorn app.main:app --port 8000
 
-# 4. interface (terminal 2, na raiz do repositório)
+# 5. interface (terminal 2, na raiz do repositório)
 npm run dev:api
 ```
 
@@ -104,6 +116,43 @@ Os comandos valem para qualquer terminal (bash, PowerShell ou cmd), exceto a
 cópia do passo 2: no PowerShell, use
 `Copy-Item src/backend/.env.example src/backend/.env`; no cmd,
 `copy src\backend\.env.example src\backend\.env`.
+
+#### Gerar os modelos treinados (`npm run modelos:gerar`)
+
+O comando roda `python src/scripts/export_models.py`, que treina os sete modelos
+(um por região do fogão) e grava em `src/backend/models/`:
+
+- um arquivo `.joblib` por região, com o modelo treinado;
+- o `manifest.json`, que diz qual algoritmo atende cada região e guarda as
+  métricas e os pares previsto × real da validação, usados pela aba de métricas.
+
+Antes de rodar:
+
+1. **Tenha a base do parceiro.** Ela é confidencial e não está no repositório:
+   peça o `dataset_bruto.csv` ao grupo G03 ou à orientação do projeto e
+   coloque-o em `data/dataset_bruto.csv`.
+2. **Gere as planilhas de treino.** Rode, em ordem, os notebooks
+   `expl_preprocessamenro_hipote.ipynb` e `tratamento_final_dos_dados.ipynb`
+   (etapas 1 e 2 da tabela de [Os notebooks](#os-notebooks-pesquisa-e-treino)).
+   Eles criam `data/<area>_data.csv`, que é o que o script lê.
+3. **Use o Python do ambiente** em que instalou o `requirements.txt`. O npm
+   chama `python`, então ative o ambiente virtual antes (no macOS/Linux, se o
+   comando for `python3`, rode `python3 src/scripts/export_models.py`).
+
+Sem as planilhas de `data/`, o comando para logo no início e avisa o que falta.
+Os modelos gerados ficam só na sua máquina: o `.gitignore` impede que sejam
+enviados ao repositório.
+
+**E se eu subir a API e a interface sem rodar o comando?** Com `MODEL_MODE=real`,
+a API procura os modelos ao iniciar:
+
+- **encontrou as planilhas em `data/`:** ela mesma roda o script em segundo
+  plano. A interface mostra "Gerando os modelos…" e se atualiza sozinha quando
+  termina, em cerca de 1 minuto;
+- **não encontrou as planilhas:** a interface pergunta *"Sem dataset. Deseja
+  utilizar comando de dados mockados?"*. **Sim** passa a API para os dados
+  mockados (previsões sintéticas) até ela ser reiniciada; **Não** mantém tudo
+  como está, sem previsões, até os modelos serem gerados.
 
 A interface sobe em `http://localhost:5173` e fala com a API em
 `http://localhost:8000` (configurado em `src/frontend/.env.api`). Para entrar,
@@ -118,10 +167,11 @@ execução da API:
 São credenciais apenas para uso local; troque-as antes de qualquer uso real
 (ver [`src/backend/README.md`](src/backend/README.md#usuários-de-demonstração)).
 
-Sem `MODEL_MODE=real` a API responde com o preditor mock determinístico, útil
-para desenvolver a interface sem os artefatos treinados. O que está na tela
-diz qual dos dois respondeu — veja a versão do conjunto de modelos no rodapé
-dos resultados.
+Com `MODEL_MODE=mock`, a API responde com o preditor mock determinístico, útil
+para ver a interface sem a base do parceiro e sem os modelos treinados. Nesse
+modo a aba de métricas fica indisponível, porque as métricas vêm do manifesto
+dos modelos. O que está na tela diz qual dos dois respondeu — veja a versão do
+conjunto de modelos no rodapé dos resultados.
 
 ### Os notebooks (pesquisa e treino)
 

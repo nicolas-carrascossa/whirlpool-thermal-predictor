@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { StartGate } from '@/features/session/StartGate'
+import { ModelsGate } from '@/features/system/ModelsGate'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
@@ -204,10 +205,13 @@ function HomeContent() {
 
 export function HomePage() {
   const metadata = useMetadataQuery()
+  // Sem os modelos treinados, a API gera-os a partir do dataset ou oferece o mock.
+  const modelsGate = isApiMode() ? <ModelsGate /> : null
 
   if (metadata.error) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16">
+        {modelsGate}
         <Card>
           <CardContent
             role="alert"
@@ -230,6 +234,7 @@ export function HomePage() {
 
   return (
     <TooltipProvider delayDuration={150}>
+      {modelsGate}
       <ConfigStoreProvider metadata={metadata.data}>
         <HomeContent />
       </ConfigStoreProvider>

@@ -521,6 +521,17 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # A base e confidencial e nao vem com o repositorio: sem as planilhas por
+    # area, falha aqui com instrucao, e nao com um FileNotFoundError no meio do treino.
+    missing = [name for name in AREA_FILES.values() if not (DATA_DIR / name).exists()]
+    if missing:
+        raise SystemExit(
+            "Faltam as planilhas de treino em data/: " + ", ".join(missing) + ".\n"
+            "Elas sao geradas pelos notebooks expl_preprocessamenro_hipote.ipynb e "
+            "tratamento_final_dos_dados.ipynb a partir de data/dataset_bruto.csv, que e "
+            "confidencial e nao esta no repositorio. Veja a secao de execucao do README."
+        )
+
     registry = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     variable_options = json.loads(VARIABLE_OPTIONS_PATH.read_text(encoding="utf-8"))
     trained_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -623,12 +634,14 @@ def main() -> None:
                     "mape_pct": round(data["metrics"]["mape_pct"], 4),
                     "within_ten_pct_rate": round(data["metrics"]["within_ten_pct_rate"], 4),
                     "feature_importance": data["feature_importance"],
-                    # Pares previsto/real reais, tambem no modo offline: a aba de
-                    # metricas nao volta a inventar numero quando a API cai. So o
-                    # rotulo do ensaio viaja; a config crua nao serve ao front.
+                    # Este catalogo e versionado no git, entao NAO leva os pares
+                    # previsto/real: `actual_c` e leitura medida da base
+                    # confidencial do parceiro. Os pares ficam so no manifesto
+                    # local (`models/manifest.json`, ignorado pelo git), de onde
+                    # a API os serve. So o rotulo do ensaio viaja.
                     "validation": {
                         "runs": [{"label": r["label"]} for r in data["validation"]["runs"]],
-                        "points": data["validation"]["points"],
+                        "points": [],
                     },
                 }
                 for area, data in areas.items()
