@@ -7,7 +7,8 @@ import type { SensorPrediction, StoveConfig } from '@/contract/v1'
 
 import type { ZoneAggregate } from './aggregate'
 import { cutZForDepth, DEFAULT_CUT_DEPTH } from './cutPlane'
-import { framingBoundsFor } from './explode'
+import { framingBoundsFor, layerLiftFor } from './explode'
+import type { PartFocus } from './cameraForPart'
 import { ExplodeLayer } from './ExplodeLayer'
 import { cameraPlacementForBounds, type CameraPlacement, type FitOptions } from './fitCamera'
 import { C } from './materials'
@@ -94,8 +95,12 @@ interface ThermalMapSceneProps {
   autoRotate: boolean
   reducedMotion: boolean
   cameraPreset: CameraPreset
-  /** Muda para forçar o reenquadramento no preset atual ("Recentralizar"). */
+  /** Muda para forçar o reenquadramento ("Recentralizar", "ir até a peça"). */
   recenterToken: number
+  /** Região da peça a enquadrar (clique em "Configuração selecionada"); sem ela, vale o preset. */
+  focus?: PartFocus | null
+  /** Muda a cada "Recentralizar": zera o que a cena guarda de rótulos temporários. */
+  resetToken?: number
   /** Rótulos de zona visíveis (já filtrados por "Alertas / Todos / Nenhum"). */
   zoneLabels: ZoneLabelDatum[]
   /** Exibe os textos auxiliares da cena quando o usuário habilita os rótulos. */
@@ -118,14 +123,33 @@ interface ControlsLike {
   update: () => void
 }
 
-/** Enquadramento do preset atual para o tamanho de viewport corrente. */
+/**
+ * Enquadramento para o tamanho de viewport corrente: a região da peça, quando
+ * há um pedido de "ir até a peça" (`focus`), ou o preset atual.
+ */
 function placementFor(
   preset: CameraPreset,
+  focus: PartFocus | null,
   camera: THREE.PerspectiveCamera,
   explodeAmount: number,
   aspect: number,
   tight: boolean,
 ): CameraPlacement {
+  if (focus) {
+    // A região acompanha a camada da vista explodida a que a peça pertence.
+    const lift = focus.layer ? layerLiftFor(focus.layer, explodeAmount) : 0
+    return cameraPlacementForBounds(
+      [focus.bounds.min[0], focus.bounds.min[1] + lift, focus.bounds.min[2]],
+      [focus.bounds.max[0], focus.bounds.max[1] + lift, focus.bounds.max[2]],
+      {
+        azimuthDeg: focus.azimuthDeg,
+        elevationDeg: focus.elevationDeg,
+        margin: tight ? Math.max(1, focus.margin * TIGHT_MARGIN_SCALE) : focus.margin,
+        fovDeg: camera.fov,
+        aspect,
+      },
+    )
+  }
   const p = CAMERA_PRESETS[preset]
   const options: FitOptions = {
     azimuthDeg: p.azimuthDeg,
@@ -144,6 +168,7 @@ function placementFor(
  */
 function CameraRig({
   preset,
+  focus,
   recenterToken,
   interrupted,
   explodeAmount,
@@ -151,6 +176,8 @@ function CameraRig({
   tight,
 }: {
   preset: CameraPreset
+  /** Região da peça a enquadrar no lugar do preset; `null` = enquadra o preset. */
+  focus: PartFocus | null
   recenterToken: number
   interrupted: boolean
   /** Afastamento efetivo da vista explodida (0 quando desligada). */
@@ -183,7 +210,7 @@ function CameraRig({
 
   useEffect(() => {
     const freeAspect = (size.width - inset) / Math.max(size.height, 1)
-    const placement = placementFor(preset, camera, explodeRef.current, freeAspect, tight)
+    const placement = placementFor(preset, focus, camera, explodeRef.current, freeAspect, tight)
     wantPos.current.set(...placement.position)
     wantTarget.current.set(...placement.target)
     animating.current = true
@@ -200,7 +227,7 @@ function CameraRig({
       }
       animating.current = false
     }
-  }, [preset, recenterToken, camera, controls, size.width, size.height, inset, tight])
+  }, [preset, focus, recenterToken, camera, controls, size.width, size.height, inset, tight])
 
   useFrame((_, delta) => {
     if (interrupted) animating.current = false
@@ -243,6 +270,8 @@ export function ThermalMapScene({
   reducedMotion,
   cameraPreset,
   recenterToken,
+  focus = null,
+  resetToken = 0,
   zoneLabels,
   showAnnotations,
   selectedKeyArea,
@@ -360,6 +389,7 @@ export function ThermalMapScene({
       <ClippingSetup enabled={view === 'cutaway'} />
       <CameraRig
         preset={cameraPreset}
+        focus={focus}
         recenterToken={recenterToken}
         interrupted={userInteracted}
         explodeAmount={effectiveExplode}
@@ -417,7 +447,8 @@ export function ThermalMapScene({
       <OvenGlow showBadge={showAnnotations} />
 
       {layerExtras(isBody)}
-      <PartChangeCallout />
+      {/* `key`: ao reiniciar, o callout é remontado e perde o rótulo e os temporizadores. */}
+      <PartChangeCallout key={resetToken} />
     </StoveProvider>
   )
 }

@@ -127,8 +127,6 @@ export function ResultsPanel({
   metadata,
   response,
   request,
-  referenceResponse,
-  isReferenceConfig = false,
   isLoading,
   error,
   hasRequest,
@@ -148,8 +146,6 @@ export function ResultsPanel({
   response: PredictionResponse | undefined
   /** Requisição submetida que gerou `response` — usada para mostrar a config na tela. */
   request?: PredictionRequest | null
-  referenceResponse?: PredictionResponse | undefined
-  isReferenceConfig?: boolean
   isLoading: boolean
   error: unknown
   hasRequest: boolean
@@ -328,8 +324,6 @@ export function ResultsPanel({
         <ThermalMapSlot
           metadata={metadata}
           response={response}
-          referenceResponse={referenceResponse}
-          isReferenceConfig={isReferenceConfig}
           mode={mapMode}
           onModeChange={setMapMode}
           selectedKeyArea={selectedKeyArea}

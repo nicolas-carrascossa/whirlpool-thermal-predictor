@@ -39,6 +39,9 @@ export const CONSOLE = {
   zCenter: BODY_BACK + BACKSPLASH.d / 2, // -7.5
 }
 
+/** Quanto o cooktop sobe quando o console é aberto ("Levantar cooktop"), em unidades de cena. */
+export const CONSOLE_LIFT = 6
+
 /**
  * Cavidade do forno (caixa aberta para +Z). O teto fica em y = 4,5 para abrir
  * a baía da eletrônica acima dela; abaixo do piso (y = -7,5) fica a gaveta.

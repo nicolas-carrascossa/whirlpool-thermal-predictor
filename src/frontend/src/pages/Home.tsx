@@ -26,7 +26,6 @@ import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
 import {
   useMetadataQuery,
   usePredictionQuery,
-  useReferencePredictionQuery,
 } from '@/hooks/useThermalQueries'
 
 const NAV_ITEMS: NavItem<ResultsTab>[] = [
@@ -81,16 +80,8 @@ function ViewModeToggle({ technician, onChange }: { technician: boolean; onChang
 function HomeContent() {
   const store = useConfigStore()
   const prediction = usePredictionQuery(store.request)
-  const referencePrediction = useReferencePredictionQuery(
-    store.request,
-    store.metadata?.reference_config,
-  )
   const apiMode = isApiMode()
   const isMock = !apiMode
-  const isReferenceConfig =
-    !!store.config &&
-    !!store.metadata &&
-    JSON.stringify(store.config) === JSON.stringify(store.metadata.reference_config)
 
   // `AuthProvider` envolve toda a aplicação (ver App.tsx), então o hook é
   // sempre seguro de chamar; seus valores só importam em modo `api`.
@@ -190,8 +181,6 @@ function HomeContent() {
           metadata={store.metadata}
           response={prediction.data}
           request={store.request}
-          referenceResponse={referencePrediction.data}
-          isReferenceConfig={isReferenceConfig}
           isLoading={prediction.isFetching && !prediction.data}
           error={prediction.error}
           hasRequest={store.request !== null}

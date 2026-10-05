@@ -18,7 +18,7 @@ export interface OpeningState {
    * A chave continua `console` por compatibilidade de estado.
    */
   console: boolean
-  /** Painel traseiro afastado: mostra o fundo da baía e o caminho do ar. */
+  /** Painel traseiro afastado: mostra o fundo da baía. */
   rear: boolean
   /** Porta do forno abaixada ~80°: mostra a resistência e o suporte. */
   oven: boolean
@@ -42,7 +42,7 @@ export interface StoveContextValue {
   openings: OpeningState
   /** Peça que deve pulsar em `--wp-accent` (etapa C). */
   highlightPart: PartId | null
-  /** Peça sob o cursor — tinge as setas de ar em `--wp-accent` (etapa B). */
+  /** Peça sob o cursor. */
   hoveredPart: PartId | null
   /** Animações instantâneas quando o usuário pede menos movimento. */
   reducedMotion: boolean

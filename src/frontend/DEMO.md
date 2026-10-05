@@ -59,22 +59,9 @@ Abra o endereço impresso no terminal em qualquer navegador moderno.
      não corresponde a nenhum ensaio) — o banner amarelo aparece acima da
      tabela.
 
-4. **Ativar o modo delta** (`Δ vs. referência`, ao lado do título "Mapa
-   térmico"). As zonas passam para a escala divergente azul/laranja,
-   comparando a consulta atual com a configuração de referência. Este é o
-   gráfico que conta a história da hipótese H1 (abrir o furo do defletor
-   redistribui calor do console para a ventilação):
-
-   Deltas observados (consulta atual − referência):
-   - Compartimento da eletrônica de potência: **+3,4 °C**
-   - Resfriamento da eletrônica: **+3,2 °C**
-   - Interface do forno: **+2,5 °C**
-   - Ventilação principal: **−3,9 °C**
-   - Painel traseiro: **−3,9 °C**
-
-   Com a configuração de referência sem alterações, o alternador de modo
-   fica desabilitado com a dica "A configuração atual é a referência" —
-   comparar a referência com ela mesma não teria informação nova.
+4. *(Removido)* O modo "Δ vs. referência" saiu do mapa 3D: pela decisão de
+   negócio, o usuário informa a própria configuração, então não há
+   configuração de referência para comparar.
 
 5. **Clicar em uma zona do mapa** (ex.: "Compartimento da eletrônica de
    potência", tanto no 3D quanto na lista lateral). A tabela de resultados
@@ -84,14 +71,11 @@ Abra o endereço impresso no terminal em qualquer navegador moderno.
 
 6. **Mudar `run_case` para `Broil C2`** e prever de novo. A hipótese H3
    (Broil aquece mais que Pyro) fica visível tanto na tabela (mais sensores
-   em atenção/excedendo) quanto no delta do mapa:
+   em atenção/excedendo):
 
    Números observados:
    - Excedem o limite: **5** · Em atenção: **7**
    - Pior razão: **133,0 %** — *Oven RTD Connector Body · 199,5 °C / 150,0 °C*
-   - Delta de **Resistências: +105,1 °C** em relação à referência — o
-     salto mais evidente do roteiro, coerente com o cooktop/chapa ligados
-     no Broil C2.
 
    Aponte o banner de confiabilidade acima da tabela: como só `run_case`
    mudou em relação à referência, a classificação continua **Extrapolação
@@ -138,13 +122,10 @@ roteiro de 3 minutos acima:
    barra de gradiente com 5 marcas (mín, 25 %, 50 %, 75 %, máx das médias
    por zona da consulta atual).
 
-4. **Mudar `deflector_hole` (Furo do defletor) para `Open`** e prever, depois
-   trocar para **"Δ vs. referência"**. As setas de fluxo de ar
-   (`AirflowArrows`) já se ramificam antes de prever — parte do fluxo desvia
-   para a carcaça do IPC; depois de prever, o modo delta mostra a escala
-   divergente azul/laranja comparando a consulta atual com a referência,
-   com a legenda trocando para "−Δmáx / 0 / +Δmáx" — é a visualização que
-   conta a história da hipótese H1.
+4. **Mudar `deflector_hole` (Furo do defletor) para `Open`** e prever.
+   Clicar em "Deflector hole" na configuração selecionada leva a câmera até
+   o defletor. A hipótese H1 (abrir o furo redistribui calor do console para
+   a ventilação) aparece nas cores das zonas e nos números da tabela.
 
 5. **Clicar em "Abrir forno"** e **mudar `material_coil_support`** para
    `Plastic` (ou `Aluminium Plate`). A porta do forno abaixa revelando a
@@ -203,10 +184,9 @@ três quadros do roteiro (verificados visualmente na mesma sessão, em
    64 / 2 / 2 / 9 (dentro do limite / atenção / excede / monitor — soma 77);
    resumo da configuração no canto superior direito com as 6 variáveis.
 
-2. **Modo Δ vs. referência após abrir o defletor.** Zonas na escala
-   divergente azul/laranja; legenda trocada para "−Δmáx / 0 / +Δmáx"; pílula
-   "Pré-visualização da configuração" no canto inferior esquerdo enquanto o
-   rascunho ainda não foi enviado com "Prever".
+2. **Rascunho com o defletor aberto.** Pílula "Pré-visualização da
+   configuração" no canto inferior esquerdo enquanto o rascunho ainda não foi
+   enviado com "Prever".
 
 3. **"Câmera segue a peça alterada" ligado, forno aberto.** Ao trocar
    `material_coil_support`, o preset de câmera muda sozinho para "Frente"

@@ -46,7 +46,6 @@ function FpsMeter() {
  */
 export function ThermalMapDevPage() {
   const [metadata, setMetadata] = useState<Metadata | null>(null)
-  const [reference, setReference] = useState<PredictionResponse | null>(null)
   const [current, setCurrent] = useState<PredictionResponse | null>(null)
   // Parte vazio: a configuração inicial é a `reference_config` que o modelo
   // devolve em `metadata`, nunca uma constante embutida no cliente.
@@ -66,11 +65,9 @@ export function ThermalMapDevPage() {
     const source = getPredictionSource()
     source
       .getMetadata()
-      .then(async (meta) => {
-        const ref = await source.predict({ architecture: 'BR', config: meta.reference_config })
+      .then((meta) => {
         if (cancelled) return
         setMetadata(meta)
-        setReference(ref)
         setConfig((prev) => prev ?? { ...meta.reference_config })
       })
       .catch((err: unknown) => {
@@ -130,7 +127,7 @@ export function ThermalMapDevPage() {
     )
   }
 
-  if (!metadata || !reference || !current || !config) {
+  if (!metadata || !current || !config) {
     return (
       <main className="p-8">
         <p>Carregando…</p>
@@ -178,7 +175,6 @@ export function ThermalMapDevPage() {
             [
               ['status', 'Status (limite)'],
               ['absolute', 'Mapa de calor'],
-              ['delta', 'Δ vs. referência'],
             ] as [MapColorMode, string][]
           ).map(([id, label]) => (
             <button
@@ -278,7 +274,6 @@ export function ThermalMapDevPage() {
       <Suspense fallback={<p>Carregando mapa…</p>}>
         <ThermalMap3D
           predictions={currentPredictions}
-          referencePredictions={reference.predictions}
           mode={mode}
           keyAreaLabels={keyAreaLabels}
           selectedKeyArea={selectedKeyArea}

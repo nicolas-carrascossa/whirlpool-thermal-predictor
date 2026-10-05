@@ -10,9 +10,9 @@ import { Card } from '@/components/ui/card'
 import { formatTemp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-import { absoluteRange, aggregateByKeyArea, formatTempPt, maxAbsDelta, type ZoneAggregate } from './aggregate'
-import { cameraForPart } from './cameraForPart'
-import { divergentColorForDelta, heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
+import { absoluteRange, aggregateByKeyArea, formatTempPt, type ZoneAggregate } from './aggregate'
+import { cameraForPart, type PartFocus } from './cameraForPart'
+import { heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
 import { CollapseToggle } from './CollapseToggle'
 import { DEFAULT_CUT_DEPTH } from './cutPlane'
 import { legendModel, type MapColorMode } from './legendModel'
@@ -30,11 +30,12 @@ import { visibleLabelZones, worstSensorOf, zoneStatusColor, zoneStatusOf, type L
 
 export type { MapColorMode }
 
+/** Câmera ao abrir o mapa — e para onde "Recentralizar" devolve o fogão. */
+const INITIAL_CAMERA_PRESET: CameraPreset = 'iso'
+
 export interface ThermalMap3DProps {
   /** Predições da consulta atual. */
   predictions: SensorPrediction[]
-  /** Predições da configuração de referência, usadas no modo `delta`. */
-  referencePredictions?: SensorPrediction[]
   /** Padrão: `status`. */
   mode?: MapColorMode
   /** `key_area` → rótulo em pt-BR (de `Metadata.key_areas`). */
@@ -113,7 +114,6 @@ function TooltipCard({
 
 export function ThermalMap3D({
   predictions,
-  referencePredictions,
   mode = 'status',
   keyAreaLabels,
   selectedKeyArea = null,
@@ -137,12 +137,17 @@ export function ThermalMap3D({
   const [zonePanelOpen, setZonePanelOpen] = useState(true)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
   const [internalView, setInternalView] = useState<StoveView>('solid')
-  const [internalCamera, setInternalCamera] = useState<CameraPreset>('iso')
+  const [internalCamera, setInternalCamera] = useState<CameraPreset>(INITIAL_CAMERA_PRESET)
   const [internalOpenings, setInternalOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
   const [internalLabelMode, setInternalLabelMode] = useState<LabelMode>('none')
   const [cutDepth, setCutDepth] = useState(DEFAULT_CUT_DEPTH)
   const [explodeAmount, setExplodeAmount] = useState(DEFAULT_EXPLODE_AMOUNT)
   const [recenterToken, setRecenterToken] = useState(0)
+  // Região da peça para onde o último clique em "Configuração selecionada" levou a
+  // câmera. Vale no lugar do preset até o usuário escolher um preset ou recentralizar.
+  const [focus, setFocus] = useState<PartFocus | null>(null)
+  // Muda a cada "Recentralizar": a cena descarta os rótulos temporários que guarda.
+  const [resetToken, setResetToken] = useState(0)
   const [cameraFollowsPart, setCameraFollowsPart] = useState(false)
   // Com o painel sobreposto o canvas vai do topo dele até o pé da janela:
   // mede onde o mapa começa e usa o resto da altura da tela.
@@ -199,6 +204,21 @@ export function ThermalMap3D({
     [onLabelModeChange],
   )
 
+  /**
+   * "Recentralizar" é um reinício do mapa: o fogão volta à posição inicial
+   * (câmera isométrica, sem foco numa peça) e todos os rótulos somem — os de
+   * zona, a zona selecionada (com seus pinos e destaque) e o "Peça → valor".
+   */
+  const handleRestart = useCallback(() => {
+    if (!cameraPreset) setInternalCamera(INITIAL_CAMERA_PRESET)
+    setFocus(null)
+    setRecenterToken((n) => n + 1)
+    handleLabelModeChange('none')
+    setHoveredKey(null)
+    onSelectKeyArea?.(null)
+    setResetToken((n) => n + 1)
+  }, [cameraPreset, handleLabelModeChange, onSelectKeyArea])
+
   // "Câmera segue a peça alterada" (Fase 1d, etapa E, padrão OFF): quando a
   // peça pulsa, move o preset (e abre o que for preciso) para o local do
   // fogão onde ela fica visível — só reage a uma peça *nova* pulsando, nunca
@@ -208,6 +228,7 @@ export function ThermalMap3D({
     if (lastFollowedPart.current === highlightPart) return
     lastFollowedPart.current = highlightPart
     const target = cameraForPart(highlightPart)
+    setFocus(null)
     if (!cameraPreset) setInternalCamera(target.preset)
     if (target.openings) {
       setInternalOpenings((prev) => {
@@ -222,13 +243,14 @@ export function ThermalMap3D({
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
 
-  // Clique numa variável de "Configuração selecionada": vai até a peça. Só
-  // reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
+  // Clique numa variável de "Configuração selecionada": a câmera vai até a região da
+  // peça. Só reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
   const handledFocusToken = useRef<number | null>(null)
   useEffect(() => {
     if (!focusRequest || handledFocusToken.current === focusRequest.token) return
     handledFocusToken.current = focusRequest.token
     const target = cameraForPart(focusRequest.part)
+    setFocus(target.focus)
     if (!cameraPreset) setInternalCamera(target.preset)
     if (target.openings) {
       setInternalOpenings((prev) => ({ ...(openings ?? prev), ...target.openings }))
@@ -249,13 +271,12 @@ export function ThermalMap3D({
   }, [explodeOn])
 
   const aggregates = useMemo(
-    () => aggregateByKeyArea(predictions, keyAreaLabels, mode === 'delta' ? referencePredictions : undefined),
-    [predictions, keyAreaLabels, referencePredictions, mode],
+    () => aggregateByKeyArea(predictions, keyAreaLabels),
+    [predictions, keyAreaLabels],
   )
   const aggByKey = useMemo(() => new Map(aggregates.map((a) => [a.key, a])), [aggregates])
 
   const range = useMemo(() => absoluteRange(aggregates), [aggregates])
-  const maxDelta = useMemo(() => maxAbsDelta(aggregates), [aggregates])
 
   const statusByKey = useMemo(() => {
     const map = new Map<string, ZoneStatus>()
@@ -264,17 +285,13 @@ export function ThermalMap3D({
   }, [aggregates, predictions])
 
   const legend = useMemo(
-    () => legendModel(mode, predictions, referencePredictions),
-    [mode, predictions, referencePredictions],
+    () => legendModel(mode, predictions),
+    [mode, predictions],
   )
 
   function colorForAgg(agg: ZoneAggregate): string {
     if (mode === 'status') return zoneStatusColor(predictions, agg.key)
     if (!agg.hasSensors || agg.mean === null) return ZONE_GRAY_HEX
-    if (mode === 'delta') {
-      if (agg.delta === null) return ZONE_GRAY_HEX
-      return divergentColorForDelta(agg.delta, maxDelta)
-    }
     return heatColorForValue(agg.mean, range.min, range.max)
   }
 
@@ -287,9 +304,6 @@ export function ThermalMap3D({
   const valueFor = useCallback(
     (agg: ZoneAggregate): string => {
       if (!agg.hasSensors) return 'sem sensores'
-      if (mode === 'delta') {
-        return agg.delta !== null ? `Δ ${formatTempPt(agg.delta, { withSign: true })}` : '—'
-      }
       if (mode === 'absolute') {
         return agg.mean !== null ? `média ${formatTemp(agg.mean)}` : '—'
       }
@@ -362,8 +376,11 @@ export function ThermalMap3D({
       explodeAmount={explodeAmount}
       onExplodeAmountChange={setExplodeAmount}
       cameraPreset={effectiveCamera}
-      onCameraPresetChange={setInternalCamera}
-      onRecenter={() => setRecenterToken((n) => n + 1)}
+      onCameraPresetChange={(preset) => {
+        setFocus(null)
+        setInternalCamera(preset)
+      }}
+      onRecenter={handleRestart}
       cameraFollowsPart={cameraFollowsPart}
       onCameraFollowsPartChange={setCameraFollowsPart}
       variant={toolbarContainer ? 'panel' : 'overlay'}
@@ -412,9 +429,7 @@ export function ThermalMap3D({
             aria-label={`Mapa térmico 3D ilustrativo do fogão, com as ${aggregates.length} áreas coloridas ${
               mode === 'status'
                 ? 'pelo status do pior sensor em relação ao limite normativo'
-                : mode === 'delta'
-                  ? 'pela temperatura em relação à configuração de referência'
-                  : 'pela temperatura prevista'
+                : 'pela temperatura prevista'
             }. Os valores detalhados de cada área estão na lista ao lado.`}
             className="absolute inset-0"
           >
@@ -445,6 +460,8 @@ export function ThermalMap3D({
                 reducedMotion={prefersReducedMotion}
                 cameraPreset={effectiveCamera}
                 recenterToken={recenterToken}
+                focus={focus}
+                resetToken={resetToken}
                 zoneLabels={zoneLabels}
                 showAnnotations={effectiveLabelMode !== 'none'}
                 selectedKeyArea={selectedKeyArea}

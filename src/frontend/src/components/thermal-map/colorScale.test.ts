@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  divergentColorHex,
-  heatColorHex,
-  heatColorForValue,
-  divergentColorForDelta,
-  ZONE_GRAY_HEX,
-} from './colorScale'
+import { heatColorHex, heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
 
 describe('heatColorHex (escala absoluta)', () => {
   it('nos pontos de parada, reproduz exatamente as cores da escala oficial', () => {
@@ -28,29 +22,6 @@ describe('heatColorHex (escala absoluta)', () => {
 
   it('heatColorForValue não quebra quando min === max', () => {
     expect(heatColorForValue(50, 50, 50)).toBe('#00a0dd')
-  })
-})
-
-describe('divergentColorHex (escala do modo delta)', () => {
-  it('em -1/0/+1 retorna azul-núcleo, branco e laranja de status', () => {
-    expect(divergentColorHex(-1)).toBe('#0d436b')
-    expect(divergentColorHex(0)).toBe('#ffffff')
-    expect(divergentColorHex(1)).toBe('#e08650')
-  })
-
-  it('clampa valores fora de [-1,1]', () => {
-    expect(divergentColorHex(-5)).toBe('#0d436b')
-    expect(divergentColorHex(5)).toBe('#e08650')
-  })
-
-  it('divergentColorForDelta é simétrica em torno de zero', () => {
-    expect(divergentColorForDelta(0, 10)).toBe('#ffffff')
-    expect(divergentColorForDelta(-10, 10)).toBe('#0d436b')
-    expect(divergentColorForDelta(10, 10)).toBe('#e08650')
-  })
-
-  it('divergentColorForDelta não quebra quando maxAbs é zero', () => {
-    expect(divergentColorForDelta(0, 0)).toBe('#ffffff')
   })
 })
 

@@ -184,7 +184,7 @@ const LOOM_Z = -6.3
 const LOOM_XS = [-10, -6, 0, 6, 10]
 
 /** Duto turbo: sobe da saída do blower até a face de baixo da bandeja. */
-function TurboDuct() {
+export function TurboDuct() {
   const outletTop = BLOWER.y + 1.95 + 0.06
   const trayUnder = BAY.yTop
   const h = trayUnder - outletTop

@@ -229,8 +229,6 @@ export function StoveConfigPanel({
           const value = config[field] ?? ''
           const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
           const options = variable.options.filter((o) => !HIDDEN_OPTIONS[field]?.includes(o))
-          const reference = metadata.reference_config?.[field]
-          const changed = reference !== undefined && reference !== value
           return (
             <div
               key={variable.name}
@@ -247,14 +245,6 @@ export function StoveConfigPanel({
                 <span className="flex-1 font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
                   {label}
                 </span>
-                {changed && (
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full bg-wp-accent"
-                    title={`Diferente da referência (${reference})`}
-                    role="img"
-                    aria-label={`Diferente da referência (${reference})`}
-                  />
-                )}
                 <HelpTooltip label={label} text={variable.help_pt} />
               </div>
               {!variable.used_by_model && (

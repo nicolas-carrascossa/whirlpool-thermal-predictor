@@ -137,7 +137,7 @@ function WireRack({ y }: { y: number }) {
  * isoladores cerâmicos e se prendem a uma placa de terminais parafusada.
  * A resistência em si é a zona de dado — aqui só o que a sustenta.
  */
-function BakeElementHardware() {
+export function BakeElementHardware() {
   const wallZ = CAVITY.zCenter - CAVITY.d / 2 + 0.25 // face do fundo (parede de brilho)
   const ringBackZ = COIL.z - Math.sqrt(COIL.radius ** 2 - 1.1 ** 2)
   const tailLen = ringBackZ - (wallZ + 0.55)
@@ -259,7 +259,7 @@ function RearHardware() {
 }
 
 /** Painel traseiro do corpo + fundo do console: saem juntos em "Abrir traseira". */
-function RearPanels() {
+export function RearPanels() {
   return (
     <group>
       <RearHardware />
@@ -472,7 +472,7 @@ function TopVentTrim() {
  * cilindros dos botões são zonas de dado e não são tocados aqui; só o entorno.
  * A tela do forno (`Oven HMI`) não está aqui: fica na faixa frontal (`HmiScreen`).
  */
-function ConsoleCover() {
+export function ConsoleCover() {
   const halfW = BACKSPLASH.w / 2
   const { yCenter, yTop, zFront } = CONSOLE
   return (
