@@ -4,7 +4,7 @@
 > setembro de 2026. Este documento descreve o que está implementado agora; não
 > substitui o plano de evolução em `extras/REFACTORING_AGENT_GUIDE.md`.
 
-![Visão geral da arquitetura](nova_arquitetura_diagrama.svg)
+![Visão geral da arquitetura](../assets/nova_arquitetura_diagrama.svg)
 
 ## Visão geral
 
