@@ -95,22 +95,3 @@ describe('legendModel — absolute', () => {
     expect(model.ticks).toEqual([0, 0, 0, 0, 0])
   })
 })
-
-describe('legendModel — delta', () => {
-  it('maxAbs bate com o maior |delta| entre as zonas', () => {
-    const current = [sensor(1, 'A', 60, 90), sensor(2, 'B', 100, 150)]
-    const reference = [sensor(1, 'A', 50, 90), sensor(2, 'B', 130, 150)]
-    // A: +10, B: -30 → maior |delta| = 30
-    const model = legendModel('delta', current, reference)
-    expect(model.mode).toBe('delta')
-    if (model.mode !== 'delta') throw new Error('unreachable')
-    expect(model.maxAbs).toBeCloseTo(30, 5)
-    expect(model.unit).toBe('°C')
-  })
-
-  it('sem referência: maxAbs zero', () => {
-    const model = legendModel('delta', [sensor(1, 'A', 60, 90)])
-    if (model.mode !== 'delta') throw new Error('unreachable')
-    expect(model.maxAbs).toBe(0)
-  })
-})

@@ -6,10 +6,6 @@
  * `#00a0dd → #eeb111 → #e08650 → #b3261e`. Os pontos de parada em t=0/0.35/0.68/1
  * reproduzem os mesmos t do protótipo original (só as cores mudaram).
  *
- * Escala divergente (modo "comparar com referência"): azul (`--wp-core`,
- * #0d436b) ← branco → laranja (`--status-warn`, #e08650), simétrica em torno
- * de zero.
- *
  * Zona sem sensores selecionados: cinza `--wp-gray-20` (#d1d3d4).
  */
 
@@ -67,23 +63,3 @@ export function heatColorForValue(value: number, min: number, max: number): stri
   return heatColorHex(t)
 }
 
-const DIVERGENT_NEG = hexToRgb('#0d436b') // --wp-core
-const DIVERGENT_MID: RGB = [255, 255, 255]
-const DIVERGENT_POS = hexToRgb('#e08650') // --status-warn
-
-/** Interpola a escala divergente em `tSigned` (-1..1), clampando fora do intervalo. */
-export function divergentColorRgb(tSigned: number): RGB {
-  const t = Math.max(-1, Math.min(1, tSigned))
-  if (t < 0) return lerpRgb(DIVERGENT_MID, DIVERGENT_NEG, -t)
-  return lerpRgb(DIVERGENT_MID, DIVERGENT_POS, t)
-}
-
-export function divergentColorHex(tSigned: number): string {
-  return rgbToHex(divergentColorRgb(tSigned))
-}
-
-/** Cor de uma zona no modo delta, simétrica em torno de zero até `maxAbs`. */
-export function divergentColorForDelta(delta: number, maxAbs: number): string {
-  const t = maxAbs > 0 ? delta / maxAbs : 0
-  return divergentColorHex(t)
-}

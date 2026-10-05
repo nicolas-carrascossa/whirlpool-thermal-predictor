@@ -36,6 +36,11 @@ vi.mock('./AreaMaeBars', () => ({
     <div data-testid="mae-stub" data-selected={selectedKeyArea} />
   ),
 }))
+vi.mock('./ResidualScatter', () => ({
+  default: ({ points, executedRun }: { points: unknown[]; executedRun: number | null }) => (
+    <div data-testid="residual-stub" data-count={points.length} data-executed={String(executedRun)} />
+  ),
+}))
 
 const getMetrics = vi.fn()
 vi.mock('@/sources', () => ({
@@ -133,6 +138,25 @@ describe('MetricsPanel', () => {
     const coil = rows.find((r) => r.getAttribute('data-key-area') === 'Coil Temps') as HTMLElement
     expect(coil).toHaveAttribute('data-kpi-status', 'danger')
     expect(within(coil).getByText('Fora do KPI')).toBeInTheDocument()
+  })
+
+  it('na visão não técnica oculta diagnósticos detalhados de erro', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} technicianView={false} />)
+    expect(await screen.findByText('models-1.0.0')).toBeInTheDocument()
+
+    expect(screen.queryByText(/Resíduo vs\. previsto/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Medidas de erro por área')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('residual-stub')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('mae-stub')).not.toBeInTheDocument()
+    expect(screen.queryAllByRole('row').filter((r) => r.hasAttribute('data-key-area'))).toHaveLength(0)
+  })
+
+  it('na visão técnica mantém os diagnósticos detalhados de erro', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} technicianView />)
+    expect(await screen.findByText(/Resíduo vs\. previsto/)).toBeInTheDocument()
+    expect(screen.getByText('Medidas de erro por área')).toBeInTheDocument()
+    expect(await screen.findByTestId('residual-stub')).toBeInTheDocument()
+    expect(screen.getByTestId('mae-stub')).toBeInTheDocument()
   })
 
   it('identifica o algoritmo de cada área por rótulo textual', async () => {

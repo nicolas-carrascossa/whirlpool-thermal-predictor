@@ -26,7 +26,7 @@ import {
 import { AnalysisPanel, type BaseOption } from '@/features/analysis/AnalysisPanel'
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { AreaStrip } from '@/features/results/AreaStrip'
-import { ResultsSummary } from '@/features/results/ResultsSummary'
+import { ReliabilityApproval, ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { MetricsPanel } from '@/features/metrics/MetricsPanel'
 import { ratioOf } from '@/lib/status'
@@ -128,8 +128,6 @@ export function ResultsPanel({
   metadata,
   response,
   request,
-  referenceResponse,
-  isReferenceConfig = false,
   isLoading,
   error,
   hasRequest,
@@ -150,8 +148,6 @@ export function ResultsPanel({
   response: PredictionResponse | undefined
   /** Requisição submetida que gerou `response` — usada para mostrar a config na tela. */
   request?: PredictionRequest | null
-  referenceResponse?: PredictionResponse | undefined
-  isReferenceConfig?: boolean
   isLoading: boolean
   error: unknown
   hasRequest: boolean
@@ -231,7 +227,11 @@ export function ResultsPanel({
   // resposta não cobre) abre a mais crítica, que `groupByArea` já põe primeiro.
   const shownGroup = groups.find((g) => g.name === chosenArea) ?? groups[0] ?? null
 
-  const body = (() => {
+  // Estados em que ainda não há previsão a mostrar (erro, sem consulta,
+  // carregando, arquitetura sem modelo, recorte vazio). É compartilhado pelas
+  // abas que dependem da previsão: nenhuma delas exibe dado que o usuário não
+  // pediu.
+  const stateView = (() => {
     if (error) {
       const message =
         error instanceof ContractError
@@ -288,7 +288,12 @@ export function ResultsPanel({
       )
     }
 
-    return (
+    return null
+  })()
+
+  const body =
+    stateView ??
+    (response && (
       <>
         <ResultsSummary response={response} />
         <AreaStrip
@@ -305,6 +310,7 @@ export function ResultsPanel({
             technicianView={technicianView}
           />
         )}
+        {!technicianView && <ReliabilityApproval response={response} />}
         {technicianView && shownGroup && metadata && request && (
           <AnalysisPanel
             metadata={metadata}
@@ -316,8 +322,7 @@ export function ResultsPanel({
           />
         )}
       </>
-    )
-  })()
+    ))
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
@@ -334,8 +339,6 @@ export function ResultsPanel({
         <ThermalMapSlot
           metadata={metadata}
           response={response}
-          referenceResponse={referenceResponse}
-          isReferenceConfig={isReferenceConfig}
           mode={mapMode}
           onModeChange={setMapMode}
           selectedKeyArea={selectedKeyArea}
@@ -351,11 +354,15 @@ export function ResultsPanel({
       </TabsContent>
       {/* Métricas reais da validação LOGO, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-0">
-        <MetricsPanel
-          metadata={metadata}
-          keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
-          response={response ?? undefined}
-        />
+        {stateView ??
+          (response && (
+            <MetricsPanel
+              metadata={metadata}
+              keyAreas={[...new Set(response.predictions.map((p) => p.key_area))]}
+              response={response}
+              technicianView={technicianView}
+            />
+          ))}
       </TabsContent>
       {historySlot && (
         <TabsContent value="historico" className="mt-0">

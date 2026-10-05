@@ -6,7 +6,7 @@ import type { MapColorMode } from '@/components/thermal-map/ThermalMap3D'
 import { DEFAULT_OPENINGS, type OpeningState } from '@/components/thermal-map/StoveContext'
 import { LABEL_MODE_LABEL_PT, type LabelMode } from '@/components/thermal-map/zoneStatus'
 import { ovenBadgeText } from '@/components/thermal-map/ovenBadge'
-import { REFERENCE_CONFIG, getPredictionSource } from '@/sources'
+import { getPredictionSource } from '@/sources'
 
 const ThermalMap3D = lazy(() =>
   import('@/components/thermal-map/ThermalMap3D').then((m) => ({ default: m.ThermalMap3D })),
@@ -46,9 +46,10 @@ function FpsMeter() {
  */
 export function ThermalMapDevPage() {
   const [metadata, setMetadata] = useState<Metadata | null>(null)
-  const [reference, setReference] = useState<PredictionResponse | null>(null)
   const [current, setCurrent] = useState<PredictionResponse | null>(null)
-  const [config, setConfig] = useState<StoveConfig>(() => ({ ...REFERENCE_CONFIG }))
+  // Parte vazio: a configuração inicial é a `reference_config` que o modelo
+  // devolve em `metadata`, nunca uma constante embutida no cliente.
+  const [config, setConfig] = useState<StoveConfig | null>(null)
   const [mode, setMode] = useState<MapColorMode>('status')
   const [openings, setOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
   const [labelMode, setLabelMode] = useState<LabelMode>('alerts')
@@ -62,11 +63,12 @@ export function ThermalMapDevPage() {
   useEffect(() => {
     let cancelled = false
     const source = getPredictionSource()
-    Promise.all([source.getMetadata(), source.predict({ architecture: 'BR', config: REFERENCE_CONFIG })])
-      .then(([meta, ref]) => {
+    source
+      .getMetadata()
+      .then((meta) => {
         if (cancelled) return
         setMetadata(meta)
-        setReference(ref)
+        setConfig((prev) => prev ?? { ...meta.reference_config })
       })
       .catch((err: unknown) => {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err))
@@ -77,6 +79,7 @@ export function ThermalMapDevPage() {
   }, [])
 
   useEffect(() => {
+    if (!config) return
     let cancelled = false
     getPredictionSource()
       .predict({ architecture: 'BR', config })
@@ -94,7 +97,7 @@ export function ThermalMapDevPage() {
   useEffect(() => () => (highlightTimer.current ? clearTimeout(highlightTimer.current) : undefined), [])
 
   function updateVariable(name: keyof StoveConfig, value: string) {
-    setConfig((prev) => ({ ...prev, [name]: value }))
+    setConfig((prev) => (prev ? { ...prev, [name]: value } : prev))
     const part = VARIABLE_TO_PART[name]
     setHighlightPart(part)
     if (highlightTimer.current) clearTimeout(highlightTimer.current)
@@ -124,7 +127,7 @@ export function ThermalMapDevPage() {
     )
   }
 
-  if (!metadata || !reference || !current) {
+  if (!metadata || !current || !config) {
     return (
       <main className="p-8">
         <p>Carregando…</p>
@@ -172,7 +175,6 @@ export function ThermalMapDevPage() {
             [
               ['status', 'Status (limite)'],
               ['absolute', 'Mapa de calor'],
-              ['delta', 'Δ vs. referência'],
             ] as [MapColorMode, string][]
           ).map(([id, label]) => (
             <button
@@ -234,7 +236,7 @@ export function ThermalMapDevPage() {
 
         <button
           type="button"
-          onClick={() => setConfig({ ...REFERENCE_CONFIG })}
+          onClick={() => setConfig({ ...metadata.reference_config })}
           className="rounded border border-wp-gray20 px-2 py-1 text-wp-gray85"
         >
           Configuração de referência
@@ -272,7 +274,6 @@ export function ThermalMapDevPage() {
       <Suspense fallback={<p>Carregando mapa…</p>}>
         <ThermalMap3D
           predictions={currentPredictions}
-          referencePredictions={reference.predictions}
           mode={mode}
           keyAreaLabels={keyAreaLabels}
           selectedKeyArea={selectedKeyArea}

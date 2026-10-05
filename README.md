@@ -1,4 +1,4 @@
-# Inteli - Instituto de Tecnologia e Liderança 
+# Inteli - Instituto de Tecnologia e Liderança
 
 <p align="center">
 <a href= "https://www.inteli.edu.br/"><img src="assets/inteli.png" alt="Inteli - Instituto de Tecnologia e Liderança" border="0"></a>
@@ -22,10 +22,10 @@
 - <a href="https://www.linkedin.com/in/fabiocassiosouza/">Fabio Cassio</a>
 ### Instrutores
 - <a href="https://www.linkedin.com/in/roberto-c%C3%A2ndido-450582a0/">Roberto Cândido</a>
-- <a href="https://www.linkedin.com/in/egondaxbacher/">Egon Daxbacher</a> 
-- <a href="https://www.linkedin.com/in/geraldo-magela-severino-vasconcelos-22b1b220/">Geraldo Vasconcelos</a> 
+- <a href="https://www.linkedin.com/in/egondaxbacher/">Egon Daxbacher</a>
+- <a href="https://www.linkedin.com/in/geraldo-magela-severino-vasconcelos-22b1b220/">Geraldo Vasconcelos</a>
 - <a href="https://www.linkedin.com/in/heloisacandello/">Heloisa Candello</a>
-- <a href="https://www.linkedin.com/in/laizaribeiro/">Laíza Ribeiro</a> 
+- <a href="https://www.linkedin.com/in/laizaribeiro/">Laíza Ribeiro</a>
 
 
 ## 📝 Descrição

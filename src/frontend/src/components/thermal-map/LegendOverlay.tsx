@@ -48,24 +48,6 @@ function AbsoluteBar({ model }: { model: Extract<LegendModel, { mode: 'absolute'
   )
 }
 
-function DeltaBar({ model }: { model: Extract<LegendModel, { mode: 'delta' }> }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div
-        className="h-2 w-40 rounded-full"
-        style={{ background: 'linear-gradient(90deg, #0d436b 0%, #ffffff 50%, #e08650 100%)' }}
-        aria-hidden="true"
-      />
-      <div className="tabular flex justify-between text-wp-gray65">
-        <span>−{formatTempPt(model.maxAbs, { withUnit: false })}</span>
-        <span>0</span>
-        <span>+{formatTempPt(model.maxAbs, { withUnit: false })}</span>
-      </div>
-      <p className="text-wp-gray45">delta vs. referência ({model.unit})</p>
-    </div>
-  )
-}
-
 export function LegendOverlay({ model, className }: { model: LegendModel; className?: string }) {
   return (
     <div
@@ -79,7 +61,6 @@ export function LegendOverlay({ model, className }: { model: LegendModel; classN
     >
       {model.mode === 'status' && <StatusRows model={model} />}
       {model.mode === 'absolute' && <AbsoluteBar model={model} />}
-      {model.mode === 'delta' && <DeltaBar model={model} />}
     </div>
   )
 }

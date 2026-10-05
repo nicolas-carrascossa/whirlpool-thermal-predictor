@@ -35,29 +35,6 @@ export function usePredictionQuery(request: PredictionRequest | null) {
 }
 
 /**
- * Predição da configuração de referência (`metadata.reference_config`), com a
- * mesma arquitetura e o mesmo recorte de áreas/sensores da consulta atual —
- * é o que o modo delta do mapa 3D usa como baseline. Barata com o mock (mesma
- * fonte, cacheada por chave); `referenceConfig` vem do metadata para não
- * acoplar este hook a uma fonte de dados específica.
- */
-export function useReferencePredictionQuery(
-  request: PredictionRequest | null,
-  referenceConfig: StoveConfig | undefined,
-) {
-  const referenceRequest: PredictionRequest | null =
-    request && referenceConfig ? { ...request, config: { ...referenceConfig } } : null
-
-  return useQuery<PredictionResponse>({
-    queryKey: ['prediction', 'reference', referenceRequest],
-    queryFn: () => getPredictionSource().predict(referenceRequest as PredictionRequest),
-    enabled: referenceRequest !== null,
-    retry: false,
-    placeholderData: (previous) => previous,
-  })
-}
-
-/**
  * Métricas de validação por área (v1.1). `areas` vazio busca todas; passar o
  * recorte da consulta mantém a aba de Métricas escopada à configuração
  * submetida, como as outras duas abas.
