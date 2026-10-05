@@ -3,7 +3,7 @@
 > **Revisão de 27/09/2026.** Substitui a versão que assumia deploy em
 > containers e tratava a remoção do dashboard Streamlit como pendente de
 > aprovação. As decisões tomadas desde então estão em
-> [`documents/arquitetura_atual_diagnostico.md`](documents/arquitetura_atual_diagnostico.md)
+> [`documents/arquitetura_atual_diagnostico.md`](../arquitetura_atual_diagnostico.md)
 > e incorporadas aqui. O que mudou: **não há deploy nem Docker**, o dashboard
 > Streamlit **foi removido com dispensa explícita do product owner**, e a
 > dependência invertida back-end → front-end **foi corrigida**.
@@ -32,7 +32,7 @@ Estatísticas** are critical product scope.
 
 ## Read first
 
-1. [`documents/arquitetura_atual_diagnostico.md`](documents/arquitetura_atual_diagnostico.md)
+1. [`documents/arquitetura_atual_diagnostico.md`](../arquitetura_atual_diagnostico.md)
    — the diagnosis this guide acts on, with every claim verified against source.
 2. `graphify-out/GRAPH_REPORT.md` — generated architecture graph, dated
    2026-09-26. **Its inventory predates the removals below**; use it to discover

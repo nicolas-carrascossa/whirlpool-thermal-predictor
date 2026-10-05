@@ -7,7 +7,7 @@
 > a rodar exclusivamente em local, sem containers e sem deploy, e todos os
 > arquivos de Docker foram removidos do repositório. Ver
 > [`../arquitetura_atual_diagnostico.md`](../arquitetura_atual_diagnostico.md),
-> seção 7, e o `REFACTORING_AGENT_GUIDE.md` na raiz.
+> seção 7, e o [`REFACTORING_AGENT_GUIDE.md`](REFACTORING_AGENT_GUIDE.md) nesta mesma pasta.
 
 > Plano de execução em fases. Cada fase é uma unidade autônoma para uma sessão do Claude Code: tem **pré-requisitos**, **tarefas**, **ponto de parada** com critérios verificáveis e **comando de verificação**. Executor único: Claude Code (não há divisão de equipe). Revisado em 10/09/2026 com base no brief, na vistoria do repositório, no style guide oficial da Whirlpool (style.whirlpoolcorp.com) e no código-fonte do protótipo 3D.
 
