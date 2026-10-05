@@ -8,7 +8,7 @@
 >
 > Este documento descreve o que existia no repositório e por que essa
 > organização confunde quem chega agora. Ele não propõe a arquitetura alvo —
-> isso já está em [`../REFACTORING_AGENT_GUIDE.md`](../REFACTORING_AGENT_GUIDE.md).
+> isso já está em [`extras/REFACTORING_AGENT_GUIDE.md`](extras/REFACTORING_AGENT_GUIDE.md).
 > Também não substitui o grafo completo gerado em
 > [`../graphify-out/GRAPH_REPORT.md`](../graphify-out/GRAPH_REPORT.md); este
 > documento é o recorte legível desse grafo, com cada afirmação verificada
@@ -231,7 +231,7 @@ adivinhar qual `pip install` corresponde a qual parte do projeto.
    grafo completo (4.970 nós, 10.776 arestas) de onde vieram vários dos
    achados acima, incluindo comunidades e conexões que este documento não
    detalha.
-3. [`../REFACTORING_AGENT_GUIDE.md`](../REFACTORING_AGENT_GUIDE.md) — a
+3. [`extras/REFACTORING_AGENT_GUIDE.md`](extras/REFACTORING_AGENT_GUIDE.md) — a
    arquitetura alvo e o plano de 7 fases para sair daqui para lá.
 
 ## 6. Decisão avaliada: manter só `src/frontend` + `src/backend`
@@ -249,7 +249,7 @@ adivinhar qual `pip install` corresponde a qual parte do projeto.
 > são o pipeline de treino e a documentação que produzem os artefatos que
 > `src/backend` carrega em runtime (`models/manifest.json` e os `.joblib`).
 > Removê-los junto quebraria a Fase 4 do
-> [`REFACTORING_AGENT_GUIDE.md`](../REFACTORING_AGENT_GUIDE.md) antes mesmo
+> [`REFACTORING_AGENT_GUIDE.md`](extras/REFACTORING_AGENT_GUIDE.md) antes mesmo
 > de ela começar. Se a leitura pretendida for outra, este é o ponto para
 > corrigir.
 
@@ -332,7 +332,7 @@ hoje.
 O custo real é apenas a lista da tabela acima: comparação multi-configuração,
 exportação CSV/Excel e uma tela de histórico de acessos (cujo dado de
 back-end já existe, só falta expor). Isso é exatamente o que a Fase 1 do
-[`REFACTORING_AGENT_GUIDE.md`](../REFACTORING_AGENT_GUIDE.md) pede — mover
+[`REFACTORING_AGENT_GUIDE.md`](extras/REFACTORING_AGENT_GUIDE.md) pede — mover
 `dashboard/` para arquivo/remoção — com o detalhe, que o guia não
 quantifica, de quais três capacidades ficam pendentes para alguém decidir se
 valem a pena reconstruir no React.
@@ -434,4 +434,4 @@ flowchart LR
 Nada nas seções 2.3, 2.4, 2.5 e 2.7 foi resolvido — a duplicação do contrato,
 a bifurcação mock/API no cliente, as duas requisições por clique e a ausência
 de CI seguem como estavam. São as Fases 2 a 6 do
-[`REFACTORING_AGENT_GUIDE.md`](../REFACTORING_AGENT_GUIDE.md).
+[`REFACTORING_AGENT_GUIDE.md`](extras/REFACTORING_AGENT_GUIDE.md).

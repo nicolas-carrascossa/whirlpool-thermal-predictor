@@ -131,13 +131,13 @@ class Metadata(StrictModel):
 
 
 class ValidationRun(StrictModel):
-    """A lab run from the area's held-out test set."""
+    """A lab run of the area, used as the test fold in the LOGO validation."""
 
     label: str
 
 
 class ValidationPoint(StrictModel):
-    """One predicted/actual pair from the test set.
+    """One predicted/actual pair from the LOGO validation (out-of-fold).
 
     These are the only real measured values the product has. A configuration
     that never went to the lab has no "actual" to compare against — and cannot.

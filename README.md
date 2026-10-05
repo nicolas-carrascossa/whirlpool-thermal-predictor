@@ -52,17 +52,13 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>.env.api</b> e <b>.env.example</b>: configuração de fonte de dados do front-end, a mesma de <code>src/frontend</code>.
 
-- <b>REFACTORING_AGENT_GUIDE.md</b>: guia de arquitetura e convenções usado na refatoração do software.
-
-- <b>relatorio_dados_nao_treinados.md</b>: auditoria de cobertura de sensores e configurações por região no modelo exportado.
-
 - <b>assets</b>: todas as imagens e mídias utilizadas nos notebooks e na documentação.
 
 - <b>contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
 
 - <b>data</b>: bases de dados do parceiro e derivadas. A pasta e os arquivos de dados não são versionados (ver <code>.gitignore</code>); é preciso criá-la localmente para rodar os notebooks.
 
-- <b>documents</b>: documentação do projeto (<a href="documents/documentacao.md"><code>documentacao.md</code></a>) e documentos de arquitetura. A pasta <b>extras</b> reúne documentos complementares.
+- <b>documents</b>: documentação do projeto (<a href="documents/documentacao.md"><code>documentacao.md</code></a>) e documentos de arquitetura. A pasta <b>extras</b> reúne documentos complementares, entre eles o guia de arquitetura usado na refatoração do software (<code>REFACTORING_AGENT_GUIDE.md</code>) e a auditoria de cobertura de sensores e configurações por região no modelo exportado (<code>relatorio_dados_nao_treinados.md</code>).
 
 - <b>notebooks</b>: Jupyter Notebooks de exploração, pré-processamento, modelagem e comparação de modelos.
 
@@ -126,12 +122,22 @@ dos resultados.
 
 1. Instale as dependências: `pip install -r requirements.txt` (inclui o Jupyter).
 2. Coloque o arquivo bruto do parceiro em `data/dataset_bruto.csv` (não versionado — ver `.gitignore`).
-3. Rode os notebooks nesta ordem, cada um com todas as células **em ordem, do início ao fim** (Run All):
-    1. `notebooks/expl_preprocessamenro_hipote.ipynb` — exploração, pré-processamento e hipóteses. As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
-    2. `notebooks/tratamento_final_dos_dados.ipynb` — gera as sete tabelas por região (`data/<regiao>_data.csv`) usadas pelos modelos.
-    3. `notebooks/Decision_tree_regre.ipynb`, `notebooks/Random_for_regre.ipynb`, `notebooks/Grad_Boosting_Regre.ipynb` e `notebooks/comparacao_modelos.ipynb` — os três modelos candidatos e o comparativo entre eles, em qualquer ordem.
+3. Abra `notebooks/expl_preprocessamenro_hipote.ipynb` e rode todas as células **em ordem, do início ao fim** (Run All). As seções dependem umas das outras e reescrevem `data/dataset_pre_processado.csv` ao longo da execução.
+4. Rode os demais notebooks na ordem abaixo. Cada etapa lê os arquivos gerados pela anterior, e todos leem e gravam em `data/` (um nível acima de `notebooks/`):
 
-Os notebooks de dados sintéticos e de diagnóstico (`geracao_dados_sinteticos_kmeans.ipynb`, `avaliacao_dados_sinteticos.ipynb` e `diagnostico_dados_e_validacao.ipynb`) leem `data/dataset_preprocessado.csv`, uma versão anterior da base pré-processada que o passo 3.1 não gera. Para rodá-los, esse arquivo precisa estar em `data/`.
+| Ordem | Notebook | Lê | Gera | Tempo aproximado |
+|---|---|---|---|---|
+| 1 | `expl_preprocessamenro_hipote.ipynb` | `data/dataset_bruto.csv` | `data/dataset_pre_processado.csv`, `data/classificacao_colunas.csv` | < 1 min |
+| 2 | `tratamento_final_dos_dados.ipynb` | `data/dataset_pre_processado.csv` | `data/<area>_data.csv` (uma planilha por área) | < 1 min |
+| 3 | `Decision_tree_regre.ipynb` | `data/<area>_data.csv` | resultados e previsões do Decision Tree | ~3 min |
+| 3 | `Grad_Boosting_Regre.ipynb` | `data/<area>_data.csv` | resultados do Gradient Boosting | ~20 min |
+| 3 | `Random_for_regre.ipynb` | `data/<area>_data.csv`, `src/backend/data/sensor_registry.json` | resultados do Random Forest | ~30 min |
+| 4 | `comparacao_modelos.ipynb` | `data/<area>_data.csv`, `scripts/export_models.py` | comparação entre os três modelos | ~3 min |
+| 5 | `geracao_dados_sinteticos_kmeans.ipynb` | `data/dataset_pre_processado.csv` | runs sintéticas (ver abaixo) | ~1 min |
+| 5 | `avaliacao_dados_sinteticos.ipynb` | `data/dataset_pre_processado.csv`, `data/<area>_data.csv` | avaliação das runs sintéticas | ~5 min |
+| 5 | `diagnostico_dados_e_validacao.ipynb` | `data/dataset_pre_processado.csv` | diagnóstico de vazamento de dados | ~1 min |
+
+Notebooks com a mesma ordem não dependem uns dos outros. Use o kernel Python do ambiente em que instalou o `requirements.txt`. A célula 16 do `Decision_tree_regre.ipynb` lê `resultados_experimentos_overfitting.csv`, que não é versionado: sem ele a célula é pulada e o gráfico já salvo fica em `assets/graficos/dt_experimentos_overfitting.png`.
 
 **No Google Colab:**
 
@@ -143,7 +149,7 @@ Os notebooks de dados sintéticos e de diagnóstico (`geracao_dados_sinteticos_k
 
 `notebooks/geracao_dados_sinteticos_kmeans.ipynb` agrupa as 56 runs reais por assinatura térmica,
 sorteia 44 configurações de hardware inéditas e gera o perfil de cada uma interpolando runs reais do
-cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_preprocessado.csv`:
+cluster previsto. Ele grava três arquivos e **não altera** `data/dataset_pre_processado.csv`:
 
 - `data/dataset_sintetico.csv` — só as 44 runs sintéticas;
 - `data/dataset_com_sinteticos.csv` — as 100 runs (56 reais + 44 sintéticas);
