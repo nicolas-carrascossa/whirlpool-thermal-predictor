@@ -34,6 +34,10 @@
     - [4.3.1. Organização dos dados](#c4_3_1)
     - [4.3.2. Modelagem para o problema](#c4_3_2)
     - [4.3.3. Métricas de avaliação do modelo](#c4_3_3)
+      - [4.3.3.1. Definição das métricas](#c4_3_3_1)
+      - [4.3.3.2. Justificativa da escolha das métricas](#c4_3_3_2)
+      - [4.3.3.3. Como as métricas são calculadas e resumidas](#c4_3_3_3)
+      - [4.3.3.4. Resultados consolidados](#c4_3_3_4)
     - [4.3.4. Análise e interpretação dos resultados dos modelos candidatos](#c4_3_4)
   - [4.4. Comparação de Modelos](#c4_4)
     - [4.4.1. Decision Tree Regressor](#c4_4_1)
@@ -1013,6 +1017,14 @@ com a cautela prevista na classificação de confiabilidade (R04, Seção 4.1.5)
 
 #### <a name="c4_3_3"></a>4.3.3. Métricas de avaliação do modelo
 
+Esta seção reúne tudo o que se refere às métricas de avaliação: o que cada uma
+mede (Seção 4.3.3.1), por que foi escolhida (Seção 4.3.3.2), como é calculada e
+resumida por região (Seção 4.3.3.3) e os resultados consolidados dos modelos
+candidatos (Seção 4.3.3.4). As demais seções usam essas definições sem
+repeti-las e trazem só a leitura específica de cada modelo.
+
+##### <a name="c4_3_3_1"></a>4.3.3.1. Definição das métricas
+
 A avaliação do Thermal Predictor responde a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
 grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
@@ -1051,13 +1063,32 @@ $$
 o modelo explica, comparando seu erro com o de um preditor que ignora as
 entradas e responde sempre a média do alvo. R² = 1 é previsão perfeita, R² = 0 é
 empate com essa média e R² negativo significa desempenho pior que ela. MAE e
-RMSE informam o tamanho do erro; o R² informa se houve aprendizado.
+RMSE informam o tamanho do erro; o R² informa se houve aprendizado. Nas tabelas
+por modelo (Seções 4.4.1 a 4.4.3), o R² aparece como **poder de distinção**: o
+quanto o modelo diferencia uma configuração de outra dentro da mesma região.
 
 $$
 R^{2} = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
 $$
 
-##### Por que a escolha dessas métricas para avaliar o modelo?
+Duas métricas complementares acompanham as três principais como **leitura
+auxiliar**, sem peso na escolha entre modelos (Seção 4.3.3.2):
+
+**MAPE (Erro Percentual Absoluto Médio)** expressa o erro em proporção da
+temperatura medida, em porcentagem.
+
+$$
+MAPE = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+$$
+
+**Dentro de 10%** é a fração de previsões cujo erro relativo não passa de 10%
+da temperatura medida, a margem acordada com o parceiro (Seção 2.1).
+
+$$
+\text{Dentro de 10\%} = \frac{\#\left\{ i : \left| \frac{y_i - \hat{y}_i}{y_i} \right| \le 0{,}10 \right\}}{n}
+$$
+
+##### <a name="c4_3_3_2"></a>4.3.3.2. Justificativa da escolha das métricas
 
 O MAE é a métrica principal por estar na unidade em que a decisão é tomada: um
 erro em graus Celsius é confrontável com a folga até o limite normativo do
@@ -1103,13 +1134,40 @@ definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
 critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
 em variação relativa, sem converter um no outro.
 
-#### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
+##### <a name="c4_3_3_3"></a>4.3.3.3. Como as métricas são calculadas e resumidas
 
-O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb). Esta subseção resume o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
+Todas as métricas são calculadas **por termopar**, em graus Celsius (exceto R²,
+adimensional, e MAPE e dentro de 10%, em porcentagem), e só depois resumidas
+para a região. Dois protocolos de validação aparecem na documentação:
 
-##### Desempenho comparado
+- **Corte fixo de treino e teste (*holdout* 70/20/10, semente 42)**, usado nas
+  versões de referência dos notebooks de cada algoritmo. Com poucos ensaios por
+  região, o resultado depende de quais ensaios o sorteio reservou para teste.
+- **Leave-One-Group-Out (LOGO)**, a validação oficial: cada uma das 32
+  configurações de uma região serve de teste uma vez, treinando com as outras 31.
+  Como cada configuração aparece uma única vez, equivale a Leave-One-Out.
 
-A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação: LOGO (Leave-One-Group-Out), em que cada uma das 32 configurações de uma região serve de teste uma vez, treinando com as outras 31. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3.3).
+O resumo por região muda conforme a fonte, e isso afeta sobretudo o R²:
+
+| Fonte | MAE, RMSE, MAPE | R² |
+|---|---|---|
+| `notebooks/Random_for_regre.ipynb` (Seção 4.4.2) | Média entre termopares | Média entre termopares |
+| `notebooks/Grad_Boosting_Regre.ipynb` (Seção 4.4.3) | Média entre termopares | Mediana entre termopares |
+| `notebooks/comparacao_modelos.ipynb` (Seção 4.3.3.4) | Mediana entre termopares | Mediana entre termopares |
+
+O R² de um termopar que varia pouco no conjunto avaliado tem denominador perto
+de zero e pode chegar a centenas negativas; numa média, esse único sensor
+dominaria o valor da região sem dizer nada sobre os demais. Por isso o notebook
+do Gradient Boosting resume o R² pela mediana. Como o do Random Forest usa a
+média, os valores de R² das Seções 4.4.2 e 4.4.3 não são comparáveis
+diretamente. O comparativo entre os candidatos sob uma agregação única é o de
+[`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)
+(Seção 3), cujos resultados estão na Seção 4.3.3.4. A fração dentro de 10% é
+calculada sobre todas as previsões da região.
+
+##### <a name="c4_3_3_4"></a>4.3.3.4. Resultados consolidados
+
+A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação LOGO. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3.3.2).
 
 <div align="center">
   <sub>Figura 18 — Comparativo entre os modelos candidatos e o baseline sob validação LOGO, por região</sub><br>
@@ -1126,7 +1184,27 @@ A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um b
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/comparacao_modelos.ipynb` (Seção 5). Média entre as sete regiões; em cada região, mediana entre termopares.</sup>
 
-Random Forest e Gradient Boosting ficam praticamente empatados na média, e ambos superam o baseline nas sete regiões: a diferença de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). O Decision Tree também supera o baseline nas sete regiões, mas fica atrás dos outros dois em todas as métricas. Como o empate na média esconde diferenças região a região, não há um único vencedor: a Seção 4.4.4 escolhe o algoritmo de cada região. Em todos os casos, o R² modesto mostra que os modelos acertam bem o patamar térmico de cada região, mas ainda não distinguem com segurança duas configurações parecidas.
+Por região, a tabela abaixo traz as métricas do algoritmo em produção em cada `key_area` (roteamento decidido na Seção 4.4.4), sob o mesmo protocolo e a mesma agregação.
+
+| `key_area` | Algoritmo em produção | MAE (°C) | RMSE (°C) | R² (adimensional) | n (configurações de teste) |
+|---|---|---|---|---|---|
+| Main Vent Sys | Gradient Boosting | 1,76 | 3,13 | 0,591 | 32 |
+| CT Knobs | Gradient Boosting | 2,08 | 2,94 | 0,397 | 32 |
+| Oven HMI | Gradient Boosting | 2,19 | 2,80 | 0,074 | 32 |
+| Mainback | Random Forest | 3,43 | 5,37 | 0,512 | 32 |
+| IPC Cooling | Random Forest | 3,82 | 5,53 | 0,483 | 32 |
+| IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
+| Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
+
+#### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
+
+O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), e seus resultados numéricos, na Seção 4.3.3.4. Esta subseção interpreta o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
+
+##### Desempenho comparado
+
+Na tabela consolidada (Seção 4.3.3.4), Random Forest e Gradient Boosting ficam praticamente empatados na média, e ambos superam o baseline nas sete regiões: a diferença de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). O Decision Tree também supera o baseline nas sete regiões, mas fica atrás dos outros dois em todas as métricas. Como o empate na média esconde diferenças região a região, não há um único vencedor: a Seção 4.4.4 escolhe o algoritmo de cada região. Em todos os casos, o R² modesto mostra que os modelos acertam bem o patamar térmico de cada região, mas ainda não distinguem com segurança duas configurações parecidas.
 
 As três figuras abaixo documentam a explicabilidade do Gradient Boosting, geradas na Seção 9 de `Grad_Boosting_Regre.ipynb`: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23). A interpretação está na Seção 4.4.3; a explicabilidade do Random Forest e do Decision Tree, nas Seções 4.4.2 e 4.4.1.
 
@@ -1174,7 +1252,7 @@ Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam p
 
 A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁸. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
 
-Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. O desenvolvimento foi feito com semente 42 e divisão 70/20/10, implementado com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), sobre uma versão anterior das planilhas por região, com **19 configurações únicas** cada: 13 linhas para treino, 4 para teste e 2 para verificação. Todos os números desta seção descrevem essa versão e não foram refeitos sobre a base atual, de 32 configurações (Seção 4.2.3), porque o Decision Tree não vai para produção. A comparação atual entre os três candidatos, sob o mesmo protocolo e sobre a base atual, está nas Seções 4.3.4 e 4.4.4.
+Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. O desenvolvimento foi feito com semente 42 e divisão 70/20/10, implementado com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), sobre uma versão anterior das planilhas por região, com **19 configurações únicas** cada: 13 linhas para treino, 4 para teste e 2 para verificação. Todos os números desta seção descrevem essa versão e não foram refeitos sobre a base atual, de 32 configurações (Seção 4.2.3), porque o Decision Tree não vai para produção. A comparação atual entre os três candidatos, sob o mesmo protocolo e sobre a base atual, está nas Seções 4.3.3.4 e 4.4.4.
 
 As mudanças feitas nesta sprint estão registradas no notebook a partir da **Seção 10** ("Decision Tree vs. baseline 'média do termopar'") até o final (Seção 18). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, leitura das regras da árvore e avaliação estatística por termopar e por setor — já existiam antes desta sprint.
 
@@ -1196,12 +1274,7 @@ As três mudanças compõem a **versão atual**, discutida daqui em diante. Os t
 
 ##### Quanto o modelo erra
 
-As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, com os hiperparâmetros padrão do scikit-learn, e a **versão atual**, com as três mudanças, ambas avaliadas no conjunto de teste (4 linhas por região) com a semente 42. Antes delas, o que cada coluna quer dizer:
-
-- **Erro médio absoluto (MAE — Mean Absolute Error)** — de quantos graus a previsão erra, em média. É a métrica principal, por estar na mesma unidade da decisão de engenharia.
-- **Raiz do erro quadrático médio (RMSE — Root Mean Squared Error)** — semelhante ao MAE, mas penaliza erros grandes com peso maior. Quanto mais o RMSE se afasta do MAE, mais concentradas em poucos sensores estão as falhas.
-- **Coeficiente de determinação (R²)**, aqui chamado de poder de distinção — o quanto o modelo diferencia uma configuração de outra dentro da mesma região. O valor 1 é o ideal; 0 significa não fazer melhor do que sempre chutar a média histórica daquela região; abaixo de 0, pior do que isso.
-- **Erro percentual médio absoluto (MAPE — Mean Absolute Percentage Error)** e **dentro de 10%** — o erro em proporção da temperatura medida, e a fatia de previsões que cai dentro da margem acordada com o parceiro.
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, com os hiperparâmetros padrão do scikit-learn, e a **versão atual**, com as três mudanças, ambas avaliadas no conjunto de teste (4 linhas por região) com a semente 42. As colunas são as métricas definidas na Seção 4.3.3.1 — erro médio (MAE), RMSE, poder de distinção (R²), MAPE e dentro de 10% —, calculadas como descrito na Seção 4.3.3.3.
 
 **Versão de referência** — hiperparâmetros padrão do scikit-learn
 
@@ -1323,7 +1396,7 @@ As três últimas mudanças — estimador híbrido, validação LOGO e codifica�
 
 ##### Quanto o modelo erra
 
-As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. As cinco métricas são as definidas na Seção 4.4.1.
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. As cinco métricas são as definidas na Seção 4.3.3.1, com cada uma resumida para a região pela média entre termopares (Seção 4.3.3.3).
 
 **Versão de referência** — separação simples entre treino e teste
 
@@ -1409,7 +1482,7 @@ As mudanças 1, 2, 4 e 5 compõem a **versão atual**, discutida daqui em diante
 
 ##### Quanto o modelo erra
 
-As tabelas usam as mesmas cinco métricas definidas na Seção 4.4.1, na mesma unidade e com o mesmo agrupamento por região, com uma diferença de agregação: cada métrica é calculada por termopar e resumida para a região pela **média** entre termopares, exceto o poder de distinção (R²), resumido pela **mediana**. O R² de um termopar que varia pouco no conjunto avaliado tem denominador perto de zero e pode chegar a centenas negativas; numa média, esse único sensor dominaria o valor da região sem dizer nada sobre os demais. A mesma agregação é usada nas duas tabelas. O notebook do Random Forest (Seção 4.4.2) resume o R² pela média, de modo que os valores de R² das duas seções não são comparáveis diretamente; o comparativo entre os candidatos sob uma agregação única está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 3).
+As tabelas usam as mesmas cinco métricas definidas na Seção 4.3.3.1, na mesma unidade e com o mesmo agrupamento por região. Cada métrica é resumida para a região pela **média** entre termopares, exceto o poder de distinção (R²), resumido pela **mediana**, a mesma agregação nas duas tabelas. O motivo dessa escolha, e por que ela impede comparar diretamente o R² desta seção com o da Seção 4.4.2, está na Seção 4.3.3.3.
 
 **Versão de referência** — separação simples entre treino e teste (holdout 70/20/10), hiperparâmetros escolhidos pelo `GridSearchCV` de cada região
 
@@ -1510,7 +1583,7 @@ Os dois candidatos são comparados sob o mesmo protocolo — codificação one-h
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir da validação LOGO de `notebooks/Random_for_regre.ipynb` (Seção 21) e `notebooks/Grad_Boosting_Regre.ipynb` (Seção 8). O negrito marca o melhor valor entre os dois candidatos em cada métrica.</sup>
 
-**Uma ressalva sobre a comparação do R².** Os dois notebooks de origem agregam o R² dos sensores de formas diferentes: o Random Forest reporta a **média** entre termopares, o Gradient Boosting a **mediana**. Como cada região tem de 4 a 22 sensores e alguns são mal medidos, os dois critérios divergem — a mediana é mais alta justamente quando um sensor ruim puxa a média para baixo. As colunas de R² acima, portanto, não são estritamente comparáveis entre si. O notebook consolidado ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 3) mede o tamanho desse efeito e reavalia os três algoritmos sob uma convenção única. As colunas de MAE, que não dependem dessa escolha, não são afetadas.
+**Uma ressalva sobre a comparação do R².** Os dois notebooks de origem agregam o R² dos sensores de formas diferentes (Seção 4.3.3.3): o Random Forest reporta a **média** entre termopares, o Gradient Boosting a **mediana**. Como cada região tem de 4 a 22 sensores e alguns são mal medidos, os dois critérios divergem — a mediana é mais alta justamente quando um sensor ruim puxa a média para baixo. As colunas de R² acima, portanto, não são estritamente comparáveis entre si. O notebook consolidado ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 3) mede o tamanho desse efeito e reavalia os três algoritmos sob uma convenção única. As colunas de MAE, que não dependem dessa escolha, não são afetadas.
 
 **Uma segunda ressalva, sobre a codificação de `material_coil_support`.** Os dados brutos trazem essa variável com espaço sobrando em duas das três grafias (`"Aluminium "` e `"Plastic "`, com espaço à direita), e nenhum dos três notebooks de origem removia esse espaço antes do one-hot. O `pd.get_dummies` trata `"Aluminium "` e `"Aluminium"` (a forma corrigida de `"Aluminium Plate"`) como duas colunas diferentes para a mesma categoria — sem erro nenhum, só um sensor com peso diluído em duas colunas quase vazias. O efeito é pequeno em Random Forest e Gradient Boosting (modelos de conjunto absorvem uma coluna espúria entre muitas árvores), mas relevante no Decision Tree, mais sensível por depender de uma única árvore: corrigido, ele passa a superar o baseline nas 7 regiões, contra 4 antes da correção, e seu MAE médio cai 0,41 °C. O notebook consolidado normaliza espaços em todas as variáveis categóricas antes de qualquer correção de grafia, e traz uma checagem que falha a execução se alguma categoria com espaço sobrando sobreviver à padronização. **A tabela e o roteamento por região abaixo continuam vindo dos notebooks de origem, que não foram corrigidos** — a correção foi aplicada e verificada só no notebook consolidado. Como o efeito é pequeno em Random Forest e Gradient Boosting, a decisão de roteamento não muda; a divergência de valores entre a tabela abaixo e o notebook consolidado tem, portanto, duas causas somadas: a padronização de categorias tratada aqui e outras fontes de variação entre execuções já registradas nesta seção.
 
@@ -1562,7 +1635,7 @@ O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/co
 
 ### <a name="c4_5"></a>4.5. Avaliação
 
-Esta seção fecha a Seção 4 e responde se o modelo entregue atende ao que a Seção 4.1 pediu. O "como" já está nas Seções 4.2 a 4.4; aqui ficam só a conclusão e o ponteiro para a seção de origem de cada argumento. A unidade de avaliação é a configuração de montagem: os 56 ensaios da base correspondem a 32 configurações distintas por região, cada uma usada uma vez como teste na validação LOGO. Os valores médios das sete regiões vêm do comparativo consolidado da Seção 4.3.4, e os valores por região, da tabela da Seção 4.4.4, que fundamentou o roteamento.
+Esta seção fecha a Seção 4 e responde se o modelo entregue atende ao que a Seção 4.1 pediu. O "como" já está nas Seções 4.2 a 4.4; aqui ficam só a conclusão e o ponteiro para a seção de origem de cada argumento. A unidade de avaliação é a configuração de montagem: os 56 ensaios da base correspondem a 32 configurações distintas por região, cada uma usada uma vez como teste na validação LOGO. Os valores médios das sete regiões vêm do comparativo consolidado da Seção 4.3.3.4, e os valores por região, da tabela da Seção 4.4.4, que fundamentou o roteamento.
 
 #### <a name="c4_5_1"></a>4.5.1. Solução final e justificativa
 
@@ -1571,7 +1644,7 @@ A solução final é um conjunto de **sete modelos de regressão multi-saída, u
 A escolha se sustenta em três argumentos, cada um demonstrado em uma seção anterior:
 
 1. **Um modelo por região, porque as regiões são regimes térmicos distintos.** A amplitude de temperatura varia mais de oito vezes entre a região mais fria e a mais quente (28,37 °C em Oven HMI contra 238,19 °C em Mainback), e a hipótese H1 mostrou que a mesma alteração de montagem aquece uma região e esfria outra (Seções 4.2.4 e 4.3). Um modelo único estimaria um efeito médio que não descreve nenhuma delas.
-2. **Random Forest e Gradient Boosting, porque aprendem algo além do patamar da região.** Sob validação LOGO, os dois superam nas **7 de 7** regiões o baseline que prevê a média do treino, com MAE médio de 4,10 °C e 4,14 °C contra 6,55 °C do baseline. O Decision Tree fica atrás dos dois em todas as métricas médias e permanece apenas como ferramenta de leitura de regras (Seções 4.3.4 e 4.4.1).
+2. **Random Forest e Gradient Boosting, porque aprendem algo além do patamar da região.** Sob validação LOGO, os dois superam nas **7 de 7** regiões o baseline que prevê a média do treino, com MAE médio de 4,10 °C e 4,14 °C contra 6,55 °C do baseline. O Decision Tree fica atrás dos dois em todas as métricas médias e permanece apenas como ferramenta de leitura de regras (Seções 4.3.3.4 e 4.4.1).
 3. **A escolha entre os dois segue um critério explícito.** Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide se a diferença entre os dois for de pelo menos 0,05, e o MAE decide abaixo disso. O limiar está aplicado em código em [`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 4.4.4).
 
 | Região | Algoritmo em produção | MAE (°C) ↓ | R² ↑ | Dentro de 10% ↑ | Solidez da escolha |
@@ -1585,7 +1658,7 @@ A escolha se sustenta em três argumentos, cada um demonstrado em uma seção an
 | Coil Temps | Gradient Boosting | 9,55 | 0,785 | 77,0% | Clara: maior margem de MAE (0,99 °C) |
 | **Média das sete regiões** | — | **3,97** | — | **87,9%** | — |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir da tabela da Seção 4.4.4 (validação LOGO de `notebooks/Random_for_regre.ipynb`, Seção 21, e `notebooks/Grad_Boosting_Regre.ipynb`, Seção 8), com os valores do algoritmo escolhido em cada região. O R² segue a agregação de cada notebook de origem (média entre termopares no Random Forest, mediana no Gradient Boosting; ver ressalva na Seção 4.4.4). A comparação visual dos candidatos por região está na Figura 18 (Seção 4.3.4).</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir da tabela da Seção 4.4.4 (validação LOGO de `notebooks/Random_for_regre.ipynb`, Seção 21, e `notebooks/Grad_Boosting_Regre.ipynb`, Seção 8), com os valores do algoritmo escolhido em cada região. O R² segue a agregação de cada notebook de origem (média entre termopares no Random Forest, mediana no Gradient Boosting; ver ressalva na Seção 4.4.4). A comparação visual dos candidatos por região está na Figura 18 (Seção 4.3.3.4).</sup>
 
 Duas escolhas são fracas, e ficam registradas como tal. Em **Oven HMI**, as margens entre os dois algoritmos são de 0,03 °C no MAE e 0,048 no R²: a escolha reflete a ausência de diferença relevante, não uma vantagem medida. Em **CT Knobs**, o recomputo sob agregação única dá a vantagem ao Random Forest por 0,06 °C; a região segue com Gradient Boosting porque essa diferença está abaixo do que 32 configurações permitem distinguir, e fica marcada para reavaliação (Seção 4.5.5). Nas duas regiões, trocar o algoritmo não mudaria o erro típico, de cerca de 2 °C.
 
@@ -1595,16 +1668,16 @@ A tabela abaixo confronta os objetivos da Seção 2.1 e os requisitos do dashboa
 
 | Requisito ou objetivo | Evidência | Status | Quem se beneficia |
 |---|---|---|---|
-| Margem de erro ≤ 10% (Seção 2.1) | 87,1% das previsões dentro de 10%, tanto no Random Forest quanto no Gradient Boosting, contra 75,9% do baseline; MAE de cerca de 4 °C, ou ~5% da temperatura medida (Seção 4.3.4). Em Coil Temps, a fração cai para 77,0%. | Parcial | Engenheiro de Qualidade, Engenheira de Materiais |
+| Margem de erro ≤ 10% (Seção 2.1) | 87,1% das previsões dentro de 10%, tanto no Random Forest quanto no Gradient Boosting, contra 75,9% do baseline; MAE de cerca de 4 °C, ou ~5% da temperatura medida (Seção 4.3.3.4). Em Coil Temps, a fração cai para 77,0%. | Parcial | Engenheiro de Qualidade, Engenheira de Materiais |
 | Critério de 10% operacionalizado (R06) | O MAE em °C por termopar, primeira das três métricas do plano de ação do R06, é a métrica principal de todas as comparações (Seção 4.3). A fração dentro de 10% é reportada em paralelo, como leitura auxiliar, por ser a margem acordada com o parceiro, conforme o próprio R06 prevê. As outras duas métricas, o erro normalizado pela folga até o limite e a taxa de falsos-negativos de segurança, dependem dos limites de engenharia de cada sensor validados pela Whirlpool e passam a ser reportadas a cada nova versão do modelo (RN21). | Parcial | Engenheiro de Qualidade |
 | Velocidade frente ao CFD (metas de 90% de eficiência e 30% de tempo, Seção 2.1) | Cada consulta devolve as temperaturas em segundos, contra horas de uma simulação CFD (oportunidade R01, Seção 4.1.5). O efeito sobre o ciclo de validação e sobre o tempo total de desenvolvimento ainda não foi medido. | Atendido na consulta; impacto no ciclo não medido | Engenheiro de Produtos, Especialista de Marketing |
 | Previsão por sensor ou região (RF02, RF03) | Os sete modelos multi-saída cobrem todos os termopares de cada região, e a API filtra a resposta pelas regiões e sensores selecionados. Em IPC Comp, os IGBT 1 a 16 são previstos como uma média única (Seção 4.2.3). | Atendido | Engenheiro de Produtos, Engenheira de Materiais |
 | Margem de erro junto da predição (RF04, RN05) | Cada sensor vem acompanhado da margem em °C e em %, igual ao erro médio daquele termopar na validação LOGO do modelo exportado (Seção 4.4.4). | Atendido | Engenheiro de Qualidade, Designer UX/UI |
 | Sinalização de confiabilidade (RF06, RN08) | Os três estados estão implementados, pela quantidade de variáveis em que a configuração consultada difere do ensaio mais próximo daquela região: nenhuma (interpolação), uma (extrapolação moderada), duas ou mais (fora de domínio). No estado fora de domínio, o dashboard ainda exibe o valor, com alerta, em vez de suprimi-lo como pede o RN08. | Parcial | Engenheiro de Produtos, Designer UX/UI |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.1, 4.1.5, 4.3.4 e 6.1 e do código em `src/backend/app/predictors/real.py` e `src/frontend/src/features/results/ResultsSummary.tsx`.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.1, 4.1.5, 4.3.3.4 e 6.1 e do código em `src/backend/app/predictors/real.py` e `src/frontend/src/features/results/ResultsSummary.tsx`.</sup>
 
-O limite mais importante não cabe em nenhuma linha da tabela: o **R² é modesto**, 0,42 no Random Forest e 0,37 no Gradient Boosting (Seção 4.3.4). O modelo acerta bem o patamar térmico de cada região, mas ainda não distingue com segurança duas configurações parecidas. Isso delimita o uso que esta avaliação sustenta: **triagem e priorização de configurações**, e não substituição da simulação CFD ou do ensaio físico na aprovação de um projeto. É o uso que a oportunidade R03 da Matriz de Riscos já antecipava, já que ordenar configurações por criticidade térmica é mais simples do que acertar a temperatura exata de cada uma. A condição que a R03 fixou para propor essa funcionalidade à Whirlpool, a de que a ordem prevista coincida com a real em pelo menos 80% dos pares de configurações, ainda não foi medida e é o próximo teste a fazer.
+O limite mais importante não cabe em nenhuma linha da tabela: o **R² é modesto**, 0,42 no Random Forest e 0,37 no Gradient Boosting (Seção 4.3.3.4). O modelo acerta bem o patamar térmico de cada região, mas ainda não distingue com segurança duas configurações parecidas. Isso delimita o uso que esta avaliação sustenta: **triagem e priorização de configurações**, e não substituição da simulação CFD ou do ensaio físico na aprovação de um projeto. É o uso que a oportunidade R03 da Matriz de Riscos já antecipava, já que ordenar configurações por criticidade térmica é mais simples do que acertar a temperatura exata de cada uma. A condição que a R03 fixou para propor essa funcionalidade à Whirlpool, a de que a ordem prevista coincida com a real em pelo menos 80% dos pares de configurações, ainda não foi medida e é o próximo teste a fazer.
 
 Traduzido para as personas: Rafael (Engenheiro de Produtos) já pode usar o modelo para varrer arquiteturas candidatas e descartar as termicamente inviáveis; Estela (Engenheira de Materiais) e João (Engenheiro de Qualidade) podem usá-lo para decidir quais combinações seguem para teste físico, mas não para aprovar ou reprovar uma configuração sem esse teste enquanto as métricas de segurança do R06 não estiverem sendo reportadas.
 
@@ -1652,19 +1725,7 @@ A regra que une as seis linhas é a mesma: na dúvida, o Thermal Predictor devol
 
 ### <a name="c5_1"></a>5.1. Principais resultados
 
-O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem do fogão com erro típico entre 1,76 °C e 10,64 °C, conforme a região, por meio de sete modelos independentes um por `key_area`, como estabelecido na Seção 4.3, repartidos entre **Gradient Boosting**, em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, e **Random Forest**, em Mainback, IPC Comp e IPC Cooling.
-
-| `key_area` | Algoritmo em produção | MAE (°C) | RMSE (°C) | R² (adimensional) | n (configurações de teste) |
-|---|---|---|---|---|---|
-| Main Vent Sys | Gradient Boosting | 1,76 | 3,13 | 0,591 | 32 |
-| CT Knobs | Gradient Boosting | 2,08 | 2,94 | 0,397 | 32 |
-| Oven HMI | Gradient Boosting | 2,19 | 2,80 | 0,074 | 32 |
-| Mainback | Random Forest | 3,43 | 5,37 | 0,512 | 32 |
-| IPC Cooling | Random Forest | 3,82 | 5,53 | 0,483 | 32 |
-| IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
-| Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
-
-<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
+O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem do fogão com erro típico entre 1,76 °C e 10,64 °C, conforme a região, por meio de sete modelos independentes um por `key_area`, como estabelecido na Seção 4.3, repartidos entre **Gradient Boosting**, em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, e **Random Forest**, em Mainback, IPC Comp e IPC Cooling. As métricas de cada região (MAE, RMSE e R² do algoritmo em produção, sob validação LOGO) estão na tabela por região da [Seção 4.3.3.4](#c4_3_3_4), de onde vêm os valores citados a seguir.
 
 O modelo erra menos em Main Vent Sys (1,76 °C) e mais em Coil Temps (10,64 °C), a região de maior patamar térmico da base a mesma ordem de grandeza separa as duas regiões nas temperaturas medidas, de modo que o erro maior acompanha o nível de temperatura, e não uma falha específica de ajuste. Contra o baseline que prevê a média do treino, os sete modelos reduzem o MAE em todas as sete regiões: a redução vai de 10,2% em Oven HMI (2,19 °C contra 2,44 °C) e 10,9% em IPC Comp (4,76 °C contra 5,34 °C) a 43,6% em Mainback (3,43 °C contra 6,08 °C) e 48,6% em Coil Temps (10,64 °C contra 20,70 °C). Na média das sete regiões, o MAE cai de 6,55 °C para 4,10 °C, uma redução de 37,5%. O R² acompanha essa leitura de forma desigual: chega a 0,785 em Coil Temps e a 0,591 em Main Vent Sys, mas fica em 0,161 em IPC Comp e 0,074 em Oven HMI, regiões em que o modelo acerta o patamar térmico sem distinguir com segurança duas configurações próximas.
 
