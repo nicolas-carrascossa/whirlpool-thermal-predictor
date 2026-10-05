@@ -7,8 +7,8 @@
  * - Z: -9 (traseira) … +9 (frente / porta)
  *
  * As zonas (`ZONE_MESHES`) são superfícies *sobre* o corpo, não blocos
- * flutuantes: painel traseiro, fenda de ventilação, display do console,
- * botões, resistência e os dois compartimentos de eletrônica na baía sob o
+ * flutuantes: painel traseiro, fenda de ventilação, tela do forno na faixa
+ * frontal, botões do console, resistência e os dois compartimentos de eletrônica na baía sob o
  * cooktop.
  * `zoneKey` usa exatamente os valores de `SensorPrediction.key_area`.
  */
@@ -38,6 +38,9 @@ export const CONSOLE = {
   /** Centro em Z da faixa do console. */
   zCenter: BODY_BACK + BACKSPLASH.d / 2, // -7.5
 }
+
+/** Quanto o cooktop sobe quando o console é aberto ("Levantar cooktop"), em unidades de cena. */
+export const CONSOLE_LIFT = 6
 
 /**
  * Cavidade do forno (caixa aberta para +Z). O teto fica em y = 4,5 para abrir
@@ -158,6 +161,31 @@ export const VENT_TRIM = {
   gap: 0.15,
 }
 
+/** Y do topo da porta do forno; daí até o vidro do cooktop é a faixa frontal da tela. */
+export const DOOR_TOP = 5.9
+
+/**
+ * Tela do forno (zona `Oven HMI`) na faixa frontal entre o cooktop e a porta —
+ * o arranjo do KitchenAid KOES630SPS: lâmina de vidro preto com os ícones de
+ * início e cancelar nas pontas e o display no centro. O display é a zona de
+ * dado; o resto da lâmina (`glassW` × `glassH`) é decoração em volta dele.
+ */
+export const HMI_SCREEN = {
+  y: 9.4,
+  w: 7.4,
+  h: 2.6,
+  /** Lâmina de vidro: topo rente à face do corpo, frente em `BODY_FRONT + glassT`. */
+  glassW: 15.4,
+  glassH: 3.7,
+  glassT: 0.25,
+  /** Quanto o display sobressai da frente da lâmina. */
+  proud: 0.09,
+  /** Espessura do box do display. */
+  t: 0.16,
+  /** X dos dois botões que ladeiam a tela (decoração, como os do KitchenAid). */
+  knobX: 10.1,
+}
+
 /** Gaveta de armazenamento sob o forno: frente estática, entre o piso da cavidade e a base. */
 export const DRAWER = {
   /** Topo da gaveta = dobradiça da porta (`DOOR_HINGE_Y` em `Openable.tsx`). */
@@ -167,6 +195,12 @@ export const DRAWER = {
 }
 
 export type ZoneShape = 'box' | 'cylinder' | 'torus'
+
+/**
+ * Textura de relevo da zona (ver `detailTextures.zoneSurface`): estampagem,
+ * venezianas, espiras. Só mexe no valor/relevo — a cor da zona é o dado.
+ */
+export type ZoneSurface = 'mainback' | 'coil' | 'duct' | 'housing' | 'vent'
 
 export interface ZoneMeshDef {
   zoneKey: string
@@ -186,9 +220,12 @@ export interface ZoneMeshDef {
   /**
    * Camada animada a que a zona pertence: `top` sobe com o cooktop (abertura
    * `console` e vista explodida), `bay` sobe com a baía da eletrônica na vista
-   * explodida. Sem valor, a zona fica parada no corpo.
+   * explodida, e `rear` acompanha o painel traseiro (recua em "Abrir traseira" e
+   * na explosão). Sem valor, a zona fica parada no corpo.
    */
-  layer?: 'top' | 'bay'
+  layer?: 'top' | 'bay' | 'rear'
+  /** Relevo procedural da superfície; sem valor, a zona é lisa. */
+  surface?: ZoneSurface
 }
 
 /** X dos 5 botões: dois à esquerda e três à direita do display, como no produto. */
@@ -207,14 +244,13 @@ const ctKnobs: ZoneMeshDef[] = KNOB_XS.map((x) => ({
 
 export const ZONE_MESHES: ZoneMeshDef[] = [
   ...ctKnobs,
-  // Oven HMI — display entre os botões, na faixa de comando do console
+  // Oven HMI — display na faixa frontal, entre a porta do forno e o cooktop
   {
     zoneKey: 'Oven HMI',
     shape: 'box',
-    args: [7, 2.4, 0.35],
-    position: [-1.0, CONSOLE.yCenter, CONSOLE.zFront + 0.18],
+    args: [HMI_SCREEN.w, HMI_SCREEN.h, HMI_SCREEN.t],
+    position: [0, HMI_SCREEN.y, BODY_FRONT + HMI_SCREEN.glassT + HMI_SCREEN.proud - HMI_SCREEN.t / 2],
     facade: true,
-    layer: 'top',
   },
   // Main Vent Sys — fenda do Top Vent Trim, na borda traseira da mesa
   {
@@ -223,9 +259,17 @@ export const ZONE_MESHES: ZoneMeshDef[] = [
     args: [18, 0.9, 1.7],
     position: [0, BODY_TOP + 0.15, -5.0],
     layer: 'top',
+    surface: 'vent',
   },
   // Mainback — face do painel traseiro do corpo
-  { zoneKey: 'Mainback', shape: 'box', args: [24, 20, 0.4], position: [0, 0, BODY_BACK - 0.25] },
+  {
+    zoneKey: 'Mainback',
+    shape: 'box',
+    args: [24, 20, 0.4],
+    position: [0, 0, BODY_BACK - 0.25],
+    layer: 'rear',
+    surface: 'mainback',
+  },
   // IPC Comp — fundo da carcaça da eletrônica (a caixa em volta é a peça
   // `HousingLid`, aberta na frente para deixar ver a placa)
   {
@@ -235,6 +279,7 @@ export const ZONE_MESHES: ZoneMeshDef[] = [
     position: [HOUSING.x, HOUSING.y, HOUSING.z - HOUSING.d / 2],
     interior: true,
     layer: 'bay',
+    surface: 'housing',
   },
   // IPC Cooling — duto de resfriamento ao lado do blower, na baía
   {
@@ -244,15 +289,18 @@ export const ZONE_MESHES: ZoneMeshDef[] = [
     position: [-9.4, BAY.yCenter, BAY.z],
     interior: true,
     layer: 'bay',
+    surface: 'duct',
   },
   // Coil Temps — resistência dentro da cavidade do forno
   {
     zoneKey: 'Coil Temps',
     shape: 'torus',
-    args: [COIL.radius, COIL.tube, 12, 32],
+    // malha fina: o anel de 5 u de raio com 32 segmentos virava um polígono visível
+    args: [COIL.radius, COIL.tube, 16, 96],
     position: [0, COIL.y, COIL.z],
     rotation: [Math.PI / 2, 0, 0],
     interior: true,
+    surface: 'coil',
   },
 ]
 
@@ -263,6 +311,8 @@ export const GEOMETRY_ZONE_KEYS = [...new Set(ZONE_MESHES.map((m) => m.zoneKey))
 export const FACADE_ZONE_KEYS = new Set(ZONE_MESHES.filter((m) => m.facade).map((m) => m.zoneKey))
 /** Zonas da camada do cooktop: sobem com ele (abertura `console` e vista explodida). */
 export const TOP_ZONE_KEYS = new Set(ZONE_MESHES.filter((m) => m.layer === 'top').map((m) => m.zoneKey))
+/** Zonas do painel traseiro: recuam com ele ("Abrir traseira" e vista explodida). */
+export const REAR_ZONE_KEYS = new Set(ZONE_MESHES.filter((m) => m.layer === 'rear').map((m) => m.zoneKey))
 /** Zonas da baía da eletrônica: sobem com ela na vista explodida. */
 export const BAY_ZONE_KEYS = new Set(ZONE_MESHES.filter((m) => m.layer === 'bay').map((m) => m.zoneKey))
 
@@ -271,6 +321,9 @@ export const BAY_ZONE_KEYS = new Set(ZONE_MESHES.filter((m) => m.layer === 'bay'
  * ------------------------------------------------------------------ */
 
 export type Bounds = { min: [number, number, number]; max: [number, number, number] }
+
+/** Quanto a caixa de ligação e o cabo saem do painel traseiro (além da zona Mainback). */
+export const REAR_HARDWARE_DEPTH = 1.5
 
 /** Y do chão (base dos pés). Espelha `FLOOR_Y` de `StoveBody`. */
 export const FLOOR_Y_BOUND = -BODY.h / 2 - 1.8
@@ -282,17 +335,18 @@ export const FLOOR_Y_BOUND = -BODY.h / 2 - 1.8
  * e porque `<Html>`/`InstancedMesh` distorcem o cálculo a partir da cena.
  */
 export const STOVE_BOUNDS: Bounds = {
-  min: [-BODY.w / 2, FLOOR_Y_BOUND, BODY_BACK - 0.6],
+  min: [-BODY.w / 2, FLOOR_Y_BOUND, BODY_BACK - REAR_HARDWARE_DEPTH],
   max: [BODY.w / 2, CONSOLE.yTop, BODY_FRONT + 2.2],
 }
 
 /**
- * Caixa do "andar de cima" — faixa do console, cooktop e a baía da eletrônica
- * sob ele — usada pelo preset de câmera "Console".
+ * Caixa do "andar de cima" — faixa do console, cooktop, a baía da eletrônica
+ * sob ele e a tela do forno na faixa frontal — usada pelo preset de câmera
+ * "Console".
  */
 export const CONSOLE_BOUNDS: Bounds = {
   min: [-BODY.w / 2, BAY.yBottom - 1, CONSOLE.zBack - 0.6],
-  max: [BODY.w / 2, CONSOLE.yTop + 1, BODY_FRONT],
+  max: [BODY.w / 2, CONSOLE.yTop + 1, BODY_FRONT + HMI_SCREEN.glassT + 0.5],
 }
 
 /** Extensão (meia-largura em X/Y/Z) de um mesh de zona, por forma. */

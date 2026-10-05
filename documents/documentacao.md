@@ -256,17 +256,17 @@ Os fatores internos relativos a dados e à concentração de conhecimento foram 
 
 
 #### <a name="c4_1_3"></a>4.1.3. Planejamento Geral da Solução
- 
+
 A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 56 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e material do suporte da bobina, e acompanhada da leitura de temperatura de 77 sensores/termopares (78 na planilha original, um deles sem nenhuma leitura), distribuídos entre as sete áreas-chave do equipamento: Mainback, bobinas (Coil Temps), sistema de ventilação principal (Main Vent Sys), resfriamento e componentes do IPC (IPC Cooling e IPC Comp), comandos do cooktop (CT Knobs) e região de HMI do forno (Oven HMI). Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
- 
+
 A solução proposta é um modelo de machine learning supervisionado, treinado a partir desses dados históricos, capaz de aprender a relação entre a configuração de montagem do fogão e a temperatura resultante em cada sensor. Com isso, torna-se possível estimar a temperatura de uma nova configuração sem a necessidade de executar uma simulação CFD completa ou construir um protótipo físico para testá-la.
- 
+
 Do ponto de vista operacional, o dashboard funciona da seguinte forma: como input, o usuário seleciona os parâmetros de configuração do fogão que deseja avaliar, direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. Como output, o modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada e de uma indicação de confiabilidade, sinalizando se a configuração consultada está dentro da faixa de combinações já testadas pela Whirlpool ou se representa uma extrapolação do modelo, caso em que a estimativa deve ser tratada com mais cautela.
 
 O uso está previsto para múltiplas áreas da Whirlpool identificadas junto ao parceiro no kickoff do projeto, cada uma impactada de forma distinta pela solução. Para o time de Engenharia (CFD), hoje responsável por rodar as simulações numéricas completas, o impacto é a liberação de capacidade: em vez de simular todas as configurações candidatas, a equipe pode usar o dashboard para triar rapidamente quais delas realmente justificam o tempo de uma simulação CFD completa ou de um teste físico, concentrando seu esforço especializado nos casos mais críticos — o que é especialmente relevante diante da disponibilidade limitada já identificada para essa equipe no primeiro semestre de 2026. Para os times de Produtos e Design, o impacto é a redução do tempo de iteração: decisões de posicionamento de componentes que hoje dependem do ciclo completo de simulação ou protótipo passam a poder ser exploradas em minutos ainda na fase conceitual, permitindo avaliar mais alternativas de design dentro do mesmo prazo de projeto. Para o time de Qualidade, o impacto é a priorização mais informada de quais configurações merecem avançar para testes físicos e destrutivos, reduzindo o número de protótipos construídos apenas para serem descartados. Já para o time de Marketing, o impacto é o acesso antecipado a características térmicas do produto, antes da validação final, para embasar posicionamento e comunicação sem depender do cronograma de testes físicos.
 
 Os principais benefícios esperados são a redução do tempo de desenvolvimento em até 30% e a diminuição dos gastos operacionais com protótipos em até 25%, conforme estimado pelo parceiro no Project Charter. Espera-se, ainda, uma contribuição indireta para a redução do desperdício de materiais associado à fabricação de protótipos físicos e à realização de testes destrutivos.
- 
+
 Como critério de sucesso, o modelo deverá prever a temperatura com margem de erro máxima de 10% e apresentar uma eficiência de tempo pelo menos 90% maior do que a simulação numérica tradicional. Por se tratar de uma prova de conceito (PoC), o sucesso desta primeira etapa também será avaliado pela validação consistente do modelo nos sensores e áreas priorizadas em conjunto com o parceiro, e não necessariamente pela cobertura de todos os 77 sensores monitorados.
 
 #### <a name="c4_1_4"></a>4.1.4. Value Proposition Canvas
@@ -279,9 +279,9 @@ Como critério de sucesso, o modelo deverá prever a temperatura com margem de e
 
 **Segmento de clientes.** O cliente primário da solução são as áreas de Engenharia e Qualidade, que operam diretamente o modelo e tomam a decisão técnica a partir da previsão gerada. Produtos, Design e Marketing são beneficiários secundários, que consomem o resultado da previsão sem operar a ferramenta.
 
-**Produtos e Serviços** 
+**Produtos e Serviços**
 
-O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. O dashboard é a interface pela qual Engenharia e Qualidade operam o modelo, tendo em Beatriz (Designer UX/UI) a persona responsável por mantê-la e evoluí-la. 
+O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. O dashboard é a interface pela qual Engenharia e Qualidade operam o modelo, tendo em Beatriz (Designer UX/UI) a persona responsável por mantê-la e evoluí-la.
 
 **Criadores de Ganho**
 
@@ -1731,7 +1731,7 @@ O modelo erra menos em Main Vent Sys (1,76 °C) e mais em Coil Temps (10,64 °C)
 
 A razão RMSE/MAE indica onde os erros grandes se concentram. Ela é mais alta em **Main Vent Sys** (1,78), justamente a região de menor MAE: o erro típico é pequeno, mas algumas configurações concentram desvios bem acima dele. **Mainback** vem em seguida (1,57). Nas demais regiões a razão fica entre 1,28 e 1,45, compatível com erros distribuídos de forma mais homogênea entre as configurações.
 
-Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1. 
+Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1.
 
 <sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`.</sup>
 
@@ -2251,7 +2251,7 @@ consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 Os dados foram analisados via DataFrame em Pandas, a partir do dataset fornecido pelo parceiro. A análise estatística global (sem segmentação por `key_area`) registrou as observações a seguir.
 
 **Conjunto de dados completo (`temp`, n = 4.065)**
- 
+
 | Estatística | Valor |
 |---|---|
 | Valor mínimo | 27,69 °C |
@@ -2432,7 +2432,7 @@ $$
 Verificação com o caso de `IPC Comp`:
 
 $$
-0{,}4277 \times 84{,}05 + 45{,}58 = 35{,}95 + 45{,}58 = 81{,}53 \ ^\circ\text{C} \quad 
+0{,}4277 \times 84{,}05 + 45{,}58 = 35{,}95 + 45{,}58 = 81{,}53 \ ^\circ\text{C} \quad
 $$
 
 Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo — sem eles, as predições não são interpretáveis em unidade física.

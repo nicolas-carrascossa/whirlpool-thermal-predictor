@@ -5,14 +5,14 @@
  *   nunca viu o modelo (cinza, pequenos, sem interação).
  * - `PartChangeCallout`: rótulo temporário "Peça → valor" junto da peça que
  *   acabou de mudar. Usa o mesmo gatilho do pulso (`highlightPart`) e some
- *   sozinho depois de ~2 s — o temporizador vive aqui, não na store.
+ *   sozinho depois de ~2 s — o ciclo vive em `usePartCallout`, não na store.
  */
 
 import { Html } from '@react-three/drei'
-import { useEffect, useState } from 'react'
 
-import { PART_ANCHOR, PART_LABEL_PT, PART_TO_VARIABLE, type PartId } from './parts'
+import { PART_ANCHOR, PART_LABEL_PT, PART_TO_VARIABLE } from './parts'
 import { useStove } from './StoveContext'
+import { PART_CALLOUT_FADE_MS, usePartCallout } from './usePartCallout'
 import { BODY_BACK, BODY_FRONT, FLOOR_Y_BOUND } from './zoneGeometry'
 
 const markerClass =
@@ -41,26 +41,9 @@ export function OrientationMarkers() {
   )
 }
 
-/** Duração do callout da peça alterada, em ms. */
-export const PART_CALLOUT_MS = 2000
-const FADE_MS = 400
-
 export function PartChangeCallout() {
   const { highlightPart, config } = useStove()
-  const [shown, setShown] = useState<PartId | null>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    if (!highlightPart) return
-    setShown(highlightPart)
-    setVisible(true)
-    const fade = setTimeout(() => setVisible(false), PART_CALLOUT_MS)
-    const clear = setTimeout(() => setShown(null), PART_CALLOUT_MS + FADE_MS)
-    return () => {
-      clearTimeout(fade)
-      clearTimeout(clear)
-    }
-  }, [highlightPart])
+  const { shown, visible } = usePartCallout(highlightPart)
 
   if (!shown) return null
   const value = config[PART_TO_VARIABLE[shown]]
@@ -74,7 +57,7 @@ export function PartChangeCallout() {
     >
       <div
         data-testid="part-callout"
-        style={{ opacity: visible ? 1 : 0, transition: `opacity ${FADE_MS}ms ease-out` }}
+        style={{ opacity: visible ? 1 : 0, transition: `opacity ${PART_CALLOUT_FADE_MS}ms ease-out` }}
         className="whitespace-nowrap rounded-md border border-wp-accent bg-wp-accentLt px-2 py-1 font-body text-[12px] font-semibold text-wp-core shadow-sm"
       >
         {PART_LABEL_PT[shown]} → {value}

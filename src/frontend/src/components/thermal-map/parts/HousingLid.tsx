@@ -44,6 +44,22 @@ export function HousingLid() {
           <boxGeometry args={[HOUSING.w + 0.3, 0.4, HOUSING.d + 0.3]} />
           <meshStandardMaterial color={C.bodyMid} roughness={0.55} metalness={0.25} />
         </mesh>
+        {/* nervuras de reforço estampadas na tampa */}
+        {[-1.4, 1.4].map((x) => (
+          <mesh key={x} position={[x, 0.44, HOUSING.d / 2]}>
+            <boxGeometry args={[0.2, 0.08, HOUSING.d - 0.7]} />
+            <meshStandardMaterial color={C.bodyMid} roughness={0.5} metalness={0.3} />
+          </mesh>
+        ))}
+        {/* parafusos de fixação da tampa, nos quatro cantos */}
+        {[-1, 1].map((sx) =>
+          [-1, 1].map((sz) => (
+            <mesh key={`${sx}${sz}`} position={[sx * (HOUSING.w / 2 - 0.25), 0.44, HOUSING.d / 2 + sz * (HOUSING.d / 2 - 0.25)]}>
+              <cylinderGeometry args={[0.14, 0.14, 0.08, 10]} />
+              <meshStandardMaterial color={C.wire} roughness={0.35} metalness={0.8} />
+            </mesh>
+          )),
+        )}
       </group>
 
       {/* paredes da carcaça (fundo = zona IPC Comp, frente aberta) */}
@@ -56,6 +72,20 @@ export function HousingLid() {
           <boxGeometry args={[0.3, HOUSING.h, HOUSING.d]} />
           <meshStandardMaterial color={C.bodyMid} roughness={0.6} metalness={0.2} />
         </mesh>
+      ))}
+
+      {/* orelhas de fixação da carcaça ao fundo da baía, com parafuso */}
+      {[-1, 1].map((s) => (
+        <group key={s} position={[HOUSING.x + s * (HOUSING.w / 2 + 0.38), HOUSING.y - HOUSING.h / 2 + 0.06, HOUSING.z]}>
+          <mesh>
+            <boxGeometry args={[0.78, 0.12, 1.0]} />
+            <meshStandardMaterial color={C.bodyMid} roughness={0.6} metalness={0.2} />
+          </mesh>
+          <mesh position={[0, 0.1, 0]}>
+            <cylinderGeometry args={[0.16, 0.16, 0.1, 10]} />
+            <meshStandardMaterial color={C.wire} roughness={0.35} metalness={0.8} />
+          </mesh>
+        </group>
       ))}
 
       {/* rasgos de ventilação na boca da carcaça (só em "Open - Updated") */}
