@@ -2,7 +2,7 @@
 
 > **Classificação: sensível para qualidade do modelo.**  
 > Auditoria executada em 28 de setembro de 2026 sobre o código, os CSVs por
-> área, o catálogo do backend e `models/manifest.json`. Este documento descreve
+> área, o catálogo do backend e `src/backend/models/manifest.json`. Este documento descreve
 > o modelo atualmente exportado; qualquer novo treino exige regenerar a
 > auditoria.
 >
@@ -93,7 +93,7 @@ Os achados mais críticos são:
 Portanto, a presença de um valor isolado no encoder não prova que uma
 permutação completa foi treinada. A lista das combinações que de fato
 ajustaram cada modelo é emitida por
-`scripts/audit_training_coverage.py --markdown`; este relatório detalha o
+`src/scripts/audit_training_coverage.py --markdown`; este relatório detalha o
 **inverso** dela, que é o que serve à auditoria de features: as configurações
 medidas em laboratório que não chegaram ao ajuste, por sensor e por causa.
 
@@ -108,8 +108,8 @@ comparou os resultados.
 | Afirmação do relatório | Como foi conferida | Resultado |
 | --- | --- | --- |
 | 3.744 combinações na UI | produto das opções de `variable_options.json` (2×3×2×4×13×2×3) | **confirmado** |
-| Linhas no ajuste por área (37, 34, 39, 37, 16, 38, 38) | comparadas com `n_train` de `models/manifest.json`, que vem do treino real | **confirmado nas 7 áreas** |
-| Tabela de cobertura quantitativa | `scripts/audit_training_coverage.py --summary` reexecutado | **reproduz a tabela exatamente** |
+| Linhas no ajuste por área (37, 34, 39, 37, 16, 38, 38) | comparadas com `n_train` de `src/backend/models/manifest.json`, que vem do treino real | **confirmado nas 7 áreas** |
+| Tabela de cobertura quantitativa | `src/scripts/audit_training_coverage.py --summary` reexecutado | **reproduz a tabela exatamente** |
 | Soma das classes = 3.744 por área | somatório por linha | **confirmado nas 7 áreas** |
 | `IPC Comp` bloqueia 3.312 (88,46%) | recontagem independente: 2×3×1×3×8×1×3 = 432 alcançáveis; 3.744 − 432 = 3.312 | **confirmado** |
 | TC 6, 20 e 21 sem saída de modelo | diferença entre `sensor_registry.json` (77) e `sensor_expansion` do manifesto (74) | **confirmado** |
@@ -124,7 +124,7 @@ três achados — ver as ressalvas abaixo e os achados 2 e 5.
 ### Ressalva 1: o relatório audita o exportador, não os notebooks
 
 O escopo correto é o artefato em produção, e é ele que o relatório mede. Mas
-vale registrar que **`scripts/export_models.py` diverge deliberadamente de
+vale registrar que **`src/scripts/export_models.py` diverge deliberadamente de
 `notebooks/Random_for_regre.ipynb`**: o exportador aplica
 `Aluminium Plate → Aluminium` também ao Random Forest, enquanto o notebook de
 RF não aplica (só o de Gradient Boosting aplica). A divergência está comentada
@@ -157,7 +157,7 @@ split, os mesmos 38 ensaios de ajuste e as mesmas 25 configurações.
 
 ## Como a auditoria foi calculada
 
-O cálculo reproduz o caminho de `scripts/export_models.py`:
+O cálculo reproduz o caminho de `src/scripts/export_models.py`:
 
 1. lê o CSV de cada área;
 2. identifica os alvos com pelo menos 50% de cobertura;
@@ -170,7 +170,7 @@ O cálculo reproduz o caminho de `scripts/export_models.py`:
 7. expande as escolhas canônicas da UI pelas tabelas
    `canonical_to_training` do manifesto.
 
-O script reproduzível está em `scripts/audit_training_coverage.py` e não
+O script reproduzível está em `src/scripts/audit_training_coverage.py` e não
 altera nenhum dado. Para recalcular:
 
 ```powershell
@@ -603,7 +603,7 @@ sem terem ajustado o estimador.
    apagaria essa diferença e faria a equipe reabrir periodicamente um caso já
    fechado.
 5. Corrigir o rótulo de confiabilidade para comparar contra o `X_train` real.
-6. Corrigir a docstring de `scripts/export_models.py`, que afirma reproduzir o
+6. Corrigir a docstring de `src/scripts/export_models.py`, que afirma reproduzir o
    pipeline dos notebooks. Isso deixou de ser exato quando o exportador passou
    a normalizar `material_coil_support` também no Random Forest, o que o
    notebook de RF não faz. Enquanto a docstring não disser isso, uma reauditoria
@@ -665,12 +665,12 @@ Uma versão seguinte só deve ser considerada segura quando:
 
 ## Fontes auditadas
 
-- `scripts/export_models.py`
-- `scripts/audit_training_coverage.py`
+- `src/scripts/export_models.py`
+- `src/scripts/audit_training_coverage.py`
 - `src/backend/app/predictors/real.py`
 - `src/backend/data/variable_options.json`
 - `src/backend/data/sensor_registry.json`
-- `models/manifest.json`
+- `src/backend/models/manifest.json`
 - `data/mainback_data.csv`
 - `data/coil_temps_data.csv`
 - `data/main_vent_sys_data.csv`

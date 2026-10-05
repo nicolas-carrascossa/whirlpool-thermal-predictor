@@ -18,8 +18,8 @@ implementacao, sem efeito no numero:
 Como no notebook, as estatisticas usam TODAS as linhas de treino, nao so a
 amostra bootstrap de cada arvore.
 
-Este modulo vive no back-end, e nao em `scripts/`, porque o artefato `.joblib`
-guarda o caminho de importacao da classe: `scripts/export_models.py` e o
+Este modulo vive no back-end, e nao em `src/scripts/`, porque o artefato `.joblib`
+guarda o caminho de importacao da classe: `src/scripts/export_models.py` e o
 `RealPredictor` precisam importa-la do mesmo lugar (`app.hybrid_forest`).
 """
 

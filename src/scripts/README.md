@@ -1,4 +1,4 @@
-# scripts/
+# src/scripts/
 
 ## build_registry.py
 
@@ -26,7 +26,7 @@ A partir da raiz do repositorio, usando o Python do ambiente virtual do
 projeto (3.13, com pandas):
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\build_registry.py
+.\.venv\Scripts\python.exe src\scripts\build_registry.py
 ```
 
 O script imprime um resumo (contagem de sensores por area, opcoes por

@@ -68,9 +68,9 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.multioutput import MultiOutputRegressor
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
-MODEL_DIR = REPO_ROOT / "models"
+MODEL_DIR = REPO_ROOT / "src" / "backend" / "models"
 # Catalogo servido pela API. O manifesto recortado tambem e escrito aqui: o
 # front-end o consome pela API em runtime e so o importa em build/teste, para
 # alimentar o `LocalMockSource`.
@@ -245,7 +245,7 @@ def canonical_to_training(
     """Tabela explicita `opcao canonica da API -> categoria de treino`.
 
     As duas normalizacoes nao coincidem e nao da para deduzi-las em runtime sem
-    heuristica: `scripts/build_registry.py` canonicaliza "To Back" -> "To back"
+    heuristica: `src/scripts/build_registry.py` canonicaliza "To Back" -> "To back"
     para a API, enquanto o treino usa "To Back". Esta funcao resolve a
     correspondencia UMA VEZ, na exportacao, e grava o resultado no manifesto —
     o back-end so consulta a tabela.

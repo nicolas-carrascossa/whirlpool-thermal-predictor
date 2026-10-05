@@ -50,11 +50,7 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>requirements.txt</b>: dependências Python dos notebooks.
 
-- <b>.env.api</b> e <b>.env.example</b>: configuração de fonte de dados do front-end, a mesma de <code>src/frontend</code>.
-
 - <b>assets</b>: todas as imagens e mídias utilizadas nos notebooks e na documentação.
-
-- <b>contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
 
 - <b>data</b>: bases de dados do parceiro e derivadas. A pasta e os arquivos de dados não são versionados (ver <code>.gitignore</code>); é preciso criá-la localmente para rodar os notebooks.
 
@@ -62,11 +58,12 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
 
 - <b>notebooks</b>: Jupyter Notebooks de exploração, pré-processamento, modelagem e comparação de modelos.
 
-- <b>src</b>: a aplicação. <b>src/backend</b> é a API em FastAPI, que carrega os modelos treinados de <code>models/</code> e serve as predições; <b>src/frontend</b> é a interface em React que consome essa API. Execução em <a href="#-execução-dos-projetos">Execução dos projetos</a>, abaixo.
-
-- <b>models</b>: os artefatos treinados (um por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. Gerados por <code>scripts/export_models.py</code>.
-
-- <b>scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
+- <b>src</b>: todo o código do projeto. Execução em <a href="#-execução-dos-projetos">Execução dos projetos</a>, abaixo.
+  - <b>src/backend</b>: a API em FastAPI, que carrega os modelos treinados e serve as predições.
+  - <b>src/backend/models</b>: os artefatos treinados (um por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. Gerados por <code>src/scripts/export_models.py</code>.
+  - <b>src/frontend</b>: a interface em React que consome a API.
+  - <b>src/contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
+  - <b>src/scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
 
 ## 💻 Execução dos projetos
 
@@ -85,7 +82,7 @@ npm run install:frontend
 # 2. configuração da API: cria src/backend/.env a partir do exemplo
 cp src/backend/.env.example src/backend/.env
 #    em seguida, abra src/backend/.env e troque MODEL_MODE=mock por
-#    MODEL_MODE=real, para a API usar os modelos treinados de models/
+#    MODEL_MODE=real, para a API usar os modelos treinados de src/backend/models/
 
 # 3. API (terminal 1)
 cd src/backend
@@ -132,7 +129,7 @@ dos resultados.
 | 3 | `Decision_tree_regre.ipynb` | `data/<area>_data.csv` | resultados e previsões do Decision Tree | ~3 min |
 | 3 | `Grad_Boosting_Regre.ipynb` | `data/<area>_data.csv` | resultados do Gradient Boosting | ~20 min |
 | 3 | `Random_for_regre.ipynb` | `data/<area>_data.csv`, `src/backend/data/sensor_registry.json` | resultados do Random Forest | ~30 min |
-| 4 | `comparacao_modelos.ipynb` | `data/<area>_data.csv`, `scripts/export_models.py` | comparação entre os três modelos | ~3 min |
+| 4 | `comparacao_modelos.ipynb` | `data/<area>_data.csv`, `src/scripts/export_models.py` | comparação entre os três modelos | ~3 min |
 | 5 | `geracao_dados_sinteticos_kmeans.ipynb` | `data/dataset_pre_processado.csv` | runs sintéticas (ver abaixo) | ~1 min |
 | 5 | `avaliacao_dados_sinteticos.ipynb` | `data/dataset_pre_processado.csv`, `data/<area>_data.csv` | avaliação das runs sintéticas | ~5 min |
 | 5 | `diagnostico_dados_e_validacao.ipynb` | `data/dataset_pre_processado.csv` | diagnóstico de vazamento de dados | ~1 min |

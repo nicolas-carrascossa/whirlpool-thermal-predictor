@@ -21,7 +21,7 @@ A fonte de verdade é `src/frontend/src/contract/v1.ts`. O schema é regenerado 
 
 ```bash
 cd src/frontend
-npm run contract:schema     # reescreve ../../contracts/api_v1.schema.json
+npm run contract:schema     # reescreve ../contracts/api_v1.schema.json
 ```
 
 A saída é determinística (chaves ordenadas): rodar o comando sem alterar os tipos

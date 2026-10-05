@@ -2,7 +2,7 @@
  * Contrato v1 do Thermal Predictor.
  *
  * Fonte única de verdade dos tipos trocados entre front-end e back-end.
- * O JSON Schema em `contracts/api_v1.schema.json` é GERADO a partir deste
+ * O JSON Schema em `src/contracts/api_v1.schema.json` é GERADO a partir deste
  * arquivo (`npm run contract:schema`) — não edite o schema à mão.
  *
  * Regra de versionamento: mudanças aditivas (campo opcional novo, opção nova
