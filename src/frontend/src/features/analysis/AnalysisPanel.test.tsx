@@ -98,10 +98,12 @@ describe('AnalysisPanel', () => {
     expect(within(select).queryByRole('option', { name: 'Cópia da atual' })).not.toBeInTheDocument()
   })
 
-  it('sem outra consulta no Histórico, explica como ter uma base', () => {
+  it('sem outra consulta no Histórico, mostra a mensagem curta', () => {
     renderPanel({ baseOptions: [] })
     expect(screen.queryByRole('combobox', { name: /Comparar com/ })).not.toBeInTheDocument()
-    expect(screen.getByText(/Não há outra consulta no Histórico/)).toBeInTheDocument()
+    expect(screen.getByText('Sem um histórico de testes.')).toBeInTheDocument()
+    expect(screen.queryByText(/Escolha uma consulta do Histórico/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Efeito das variáveis na previsão/)).not.toBeInTheDocument()
   })
 
   it('ao escolher a base, prevê a configuração dela com o mesmo recorte e mostra o Δ por área e por sensor', async () => {

@@ -131,8 +131,8 @@ describe('ResultsPanel', () => {
       predictions: FIXTURE_RESPONSE.predictions.map((p) => ({ ...p, reliability: 'moderate_extrapolation' as const })),
     }
     renderPanel({ response: extrapolated, technicianView: false })
-    expect(screen.getByText('Aprovação')).toBeInTheDocument()
-    expect(screen.getByText('Média')).toBeInTheDocument()
+    expect(screen.getByText('Confiabilidade da previsão')).toBeInTheDocument()
+    expect(screen.getByText('Não aprovado')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 

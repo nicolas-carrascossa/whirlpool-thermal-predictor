@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 import { zoneSurface } from './detailTextures'
+import { configureCfdHeatmap } from './cfdHeatmap'
 import { useStove } from './StoveContext'
 import type { ZoneMeshDef } from './zoneGeometry'
 
@@ -34,15 +35,19 @@ export function ZoneMesh({
   const matRef = useRef<THREE.MeshStandardMaterial>(null!)
   const [isPointerOver, setPointerOver] = useState(false)
   const [hoverEnabled, setHoverEnabled] = useState(false)
-  const { view, clipPlanes } = useStove()
+  const { view, clipPlanes, thermalMode } = useStove()
   const surface = useMemo(() => zoneSurface(def.surface), [def.surface])
 
   // Cor só é atualizada quando muda (não a cada frame) — evita recriar material.
   useEffect(() => {
     if (!matRef.current) return
     matRef.current.color.set(color)
-    matRef.current.emissive.set(color)
-  }, [color])
+    matRef.current.emissive.set(thermalMode ? '#000000' : color)
+  }, [color, thermalMode])
+
+  useEffect(() => {
+    if (matRef.current) configureCfdHeatmap(matRef.current, thermalMode)
+  }, [thermalMode])
 
   // Zonas que vivem na fachada do console são fatiadas junto com ela no modo
   // Corte; as demais (traseira, ventilação, interiores) nunca são cortadas.
@@ -56,7 +61,7 @@ export function ZoneMesh({
   useFrame(() => {
     if (!meshRef.current || !matRef.current) return
     const targetScale = isZoneActive ? 1.06 : 1
-    const targetEmissive = isZoneActive ? 0.6 : 0.25
+    const targetEmissive = thermalMode ? 0 : isZoneActive ? 0.6 : 0.25
     meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2)
     matRef.current.emissiveIntensity += (targetEmissive - matRef.current.emissiveIntensity) * 0.2
   })

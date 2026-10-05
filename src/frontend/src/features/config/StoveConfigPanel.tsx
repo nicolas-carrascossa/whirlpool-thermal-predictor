@@ -12,13 +12,6 @@ import { BrazilFlag } from '@/components/BrazilFlag'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { VARIABLE_TO_PART } from '@/components/thermal-map/parts'
 import type { StoveConfig } from '@/contract/v1'
@@ -28,9 +21,6 @@ import { cn } from '@/lib/utils'
 
 /** Até 3 opções cabem numa linha; acima disso vira grade de 2 colunas. */
 const MAX_OPTIONS_PER_ROW = 3
-const LONG_OPTION_CHARS = 18
-/** Acima disso a grade vira um paredão de botões: volta o dropdown. */
-const MAX_SEGMENTED_OPTIONS = 8
 
 function SegmentedOptions({
   label,
@@ -67,12 +57,7 @@ function SegmentedOptions({
       aria-label={label}
       className={cn(
         'gap-1 rounded-xl bg-wp-gray05 p-1 shadow-[inset_0_1px_3px_rgba(17,18,20,0.08)]',
-        // Nomes longos (ex.: opções de losses) não cabem em duas colunas: um botão por linha.
-        options.some((o) => o.length > LONG_OPTION_CHARS)
-          ? 'grid grid-cols-1'
-          : options.length <= MAX_OPTIONS_PER_ROW
-            ? 'flex'
-            : 'grid grid-cols-2',
+        options.length <= MAX_OPTIONS_PER_ROW ? 'flex' : 'grid grid-cols-2',
       )}
     >
       {options.map((option, index) => {
@@ -88,6 +73,7 @@ function SegmentedOptions({
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
               'min-w-0 flex-1 break-words rounded-[10px] px-1.5 py-1.5 text-center font-body text-[11px] font-semibold leading-tight transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              options.length > MAX_OPTIONS_PER_ROW && options.length % 2 === 1 && index === options.length - 1 && 'col-span-2',
               checked
                 ? 'bg-wp-core text-white shadow-press'
                 : 'text-wp-gray65 hover:bg-white hover:text-wp-core',
@@ -252,35 +238,20 @@ export function StoveConfigPanel({
                   informative — not used by the model
                 </Badge>
               )}
-              {options.length > MAX_SEGMENTED_OPTIONS ? (
-                <Select value={value} onValueChange={(next) => store.setField(field, next)}>
-                  <SelectTrigger aria-label={label} className="h-9 text-xs">
-                    <SelectValue placeholder="Selecione…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <SegmentedOptions
-                  label={label}
-                  options={options}
-                  value={value}
-                  onChange={(next) => store.setField(field, next)}
-                />
-              )}
+              <SegmentedOptions
+                label={label}
+                options={options}
+                value={value}
+                onChange={(next) => store.setField(field, next)}
+              />
             </div>
           )
         })}
       </div>
 
-      {/* Abaixo de 1024 px o painel não é um contêiner de rolagem próprio, então
+      {/* Abaixo de 900 px o painel não é um contêiner de rolagem próprio, então
           a barra de ações só gruda no modo de duas colunas. */}
-      <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 lg:sticky lg:bottom-0">
+      <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 min-[900px]:sticky min-[900px]:bottom-0">
         <Button type="submit" disabled={noAreaSelected || store.hasDuplicateHistory}>
           {store.hasDuplicateHistory ? 'Previsão já salva no histórico' : 'Prever'}
         </Button>

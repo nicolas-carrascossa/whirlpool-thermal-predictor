@@ -444,6 +444,7 @@ export function ThermalMap3D({
             >
               <ThermalMapScene
                 colorFor={colorForZoneKey}
+                thermalMode={mode === 'absolute'}
                 isZoneActive={isZoneActive}
                 onHoverZone={setHoveredKey}
                 onUnhoverZone={(key) => setHoveredKey((current) => (current === key ? null : current))}

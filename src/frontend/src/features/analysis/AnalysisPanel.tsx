@@ -17,7 +17,7 @@ import { useMemo, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type {
   Metadata,
   PredictionRequest,
@@ -297,15 +297,9 @@ function BaseSection({
   const baseQuery = useBasePredictionQuery(request, base?.request.config ?? null)
 
   return (
-    <Section
-      title="Comparar com uma base"
-      hint="Escolha uma consulta do Histórico. Δ = temperatura prevista da consulta atual − a da base, em °C."
-    >
+    <Section title="Comparar com uma base">
       {options.length === 0 ? (
-        <p className="text-sm text-wp-gray65">
-          Não há outra consulta no Histórico para comparar. Ao iniciar uma consulta, escolha “Sim, registrar” para
-          guardá-la e usá-la como base depois.
-        </p>
+        <p className="text-sm text-wp-gray65">Sem um histórico de testes.</p>
       ) : (
         <label className="flex flex-wrap items-center gap-2 text-xs text-wp-gray65">
           Comparar com
@@ -524,9 +518,6 @@ export function AnalysisPanel({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Análise técnica — {keyAreaLabel}</CardTitle>
-        <CardDescription>
-          Efeito das variáveis na previsão desta área. Os valores estimam a simulação (CFD), não uma medição física.
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {/* `key` zera a base ao trocar de área ou de configuração. */}

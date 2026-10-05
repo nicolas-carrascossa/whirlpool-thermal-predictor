@@ -3,28 +3,45 @@
  * configuração?" antes de qualquer tabela, mais o aviso de confiabilidade.
  */
 
-import { Activity, OctagonAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
+import {
+  Activity,
+  BadgeCheck,
+  OctagonAlert,
+  ShieldAlert,
+  TriangleAlert,
+  type LucideIcon,
+} from 'lucide-react'
 
 import type { PredictionResponse, Reliability } from '@/contract/v1'
 import { formatCount } from '@/lib/format'
 import { statusOf } from '@/lib/status'
 import { cn } from '@/lib/utils'
 
-const APPROVAL_COPY: Record<Reliability, { label: string; className: string; reason: string }> = {
+const APPROVAL_COPY: Record<
+  Reliability,
+  {
+    label: string
+    detail: string
+    approved: boolean
+  }
+> = {
   interpolation: {
-    label: 'Alta',
-    className: 'text-status-ok-ink',
-    reason: 'a combinação de variáveis consultada já foi ensaiada no conjunto de treino',
+    label: 'Aprovado',
+    approved: true,
+    detail:
+      'Esta combinação já foi testada nos cenários de treino, por isso a previsão tem alta confiabilidade.',
   },
   moderate_extrapolation: {
-    label: 'Média',
-    className: 'text-status-warn-ink',
-    reason: 'uma variável da configuração está em uma combinação que não foi ensaiada',
+    label: 'Não aprovado',
+    approved: false,
+    detail:
+      'Uma variável está em uma combinação ainda não testada. Revise a configuração antes de tomar uma decisão.',
   },
   out_of_domain: {
-    label: 'Baixa',
-    className: 'text-status-danger-ink',
-    reason: 'duas ou mais variáveis estão fora das combinações presentes no conjunto de treino',
+    label: 'Não aprovado',
+    approved: false,
+    detail:
+      'Duas ou mais variáveis estão fora dos cenários de treino. Esta previsão precisa de validação técnica.',
   },
 }
 
@@ -70,7 +87,6 @@ export function ResultsSummary({ response }: { response: PredictionResponse }) {
   const preds = response.predictions
   const exceeding = preds.filter((p) => statusOf(p) === 'danger')
   const warning = preds.filter((p) => statusOf(p) === 'warn')
-  const reliability = preds[0]?.reliability ?? 'interpolation'
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 divide-y divide-wp-gray12 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -97,18 +113,47 @@ export function ResultsSummary({ response }: { response: PredictionResponse }) {
 export function ReliabilityApproval({ response }: { response: PredictionResponse }) {
   const reliability = response.predictions[0]?.reliability ?? 'interpolation'
   const approval = APPROVAL_COPY[reliability]
+  const ApprovalIcon = approval.approved ? BadgeCheck : ShieldAlert
 
   return (
-    <div className="flex flex-col gap-1.5 text-sm">
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold text-wp-gray65">Aprovação</span>
-        <span className={cn('font-bold', approval.className)}>{approval.label}</span>
-      </div>
-      <p className="text-xs leading-relaxed text-wp-gray65">
-        Esta previsão recebeu aprovação {approval.label.toLowerCase()} porque {approval.reason}. Em geral, a
-        aprovação indica o quanto a previsão está apoiada pelos cenários de treino. Isso mede a confiabilidade da
-        previsão, não garante que a temperatura esteja dentro do limite.
-      </p>
+    <div>
+      <section
+        aria-labelledby="reliability-approval-title"
+        className="overflow-hidden rounded-2xl bg-wp-core text-white shadow-raised"
+      >
+        <div className="flex items-center justify-between gap-4 border-b border-white/10 bg-white/[0.06] px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">
+              Confiabilidade da previsão
+            </p>
+            <h3
+              id="reliability-approval-title"
+              className="mt-1 font-display text-xl font-extrabold leading-tight text-white"
+            >
+              {approval.label}
+            </h3>
+          </div>
+          <span
+            aria-hidden="true"
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border',
+              approval.approved
+                ? 'border-status-ok/40 bg-status-ok/15 text-status-ok'
+                : 'border-status-danger/40 bg-status-danger/15 text-status-danger',
+            )}
+          >
+            <ApprovalIcon className="h-6 w-6" strokeWidth={2} />
+          </span>
+        </div>
+
+        <div className="px-5 py-4">
+          <p className="max-w-3xl text-sm leading-relaxed text-white/80">{approval.detail}</p>
+          <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-white/55">
+            <span aria-hidden="true" className="mt-[0.45rem] h-1 w-1 shrink-0 rounded-full bg-white/40" />
+            A aprovação mede o apoio dos dados de treino, não se a temperatura está dentro do limite.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

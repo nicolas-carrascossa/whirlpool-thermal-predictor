@@ -65,7 +65,7 @@ export function NavRail<Id extends string>({
   return (
     <nav
       aria-label="Seções"
-      className="sticky top-0 z-30 flex h-screen w-[76px] shrink-0 flex-col items-center gap-2 bg-[var(--rail-bg)] py-5"
+      className="dashboard-nav-rail sticky top-0 z-30 flex h-screen w-[76px] shrink-0 flex-col items-center gap-2 bg-[var(--rail-bg)] py-5"
     >
       <img src="/TP.png" alt="" aria-hidden="true" className="mb-4 h-10 w-10 object-contain" />
       {/* Ícones no centro vertical da barra; logotipo no topo e Ajuda embaixo. */}
