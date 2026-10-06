@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/system", tags=["sistema"])
 
 
 class ModelStatus(BaseModel):
-    state: Literal["ready", "training", "no_dataset", "failed", "mock"]
+    state: Literal["ready", "training", "pending", "no_dataset", "failed", "mock"]
     message: str
 
 
@@ -30,8 +30,14 @@ def _response(current: model_setup.Status) -> ModelStatus:
 
 @router.get("/models", response_model=ModelStatus)
 def get_models_status(_user: User = Depends(current_user)) -> ModelStatus:
-    """Estado dos modelos. Sem modelos e com as planilhas em `data/`, inicia a geração."""
+    """Estado dos modelos. Só consulta; a geração é iniciada por `POST /models/generate`."""
     return _response(model_setup.status())
+
+
+@router.post("/models/generate", response_model=ModelStatus)
+def generate_models(_user: User = Depends(current_user)) -> ModelStatus:
+    """Gera os modelos a partir das planilhas de `data/`, em segundo plano."""
+    return _response(model_setup.start_generation())
 
 
 @router.post("/mock-mode", response_model=ModelStatus)

@@ -161,7 +161,7 @@ a API procura os modelos ao iniciar:
 
 - **encontrou as planilhas em `data/`:** ela mesma roda o script em segundo
   plano. A interface mostra "Gerando os modelos…" e se atualiza sozinha quando
-  termina, em cerca de 1 minuto;
+  termina, em 5 a 10 minutos;
 - **não encontrou as planilhas:** a interface pergunta *"Sem dataset. Deseja
   utilizar comando de dados mockados?"*. **Sim** passa a API para os dados
   mockados (previsões sintéticas) até ela ser reiniciada; **Não** mantém tudo

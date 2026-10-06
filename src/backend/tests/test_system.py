@@ -1,4 +1,4 @@
-"""API subindo sem os modelos treinados: gera a partir do dataset ou oferece o mock."""
+"""API subindo sem os modelos treinados: gera a pedido a partir do dataset ou oferece o mock."""
 
 from __future__ import annotations
 
@@ -41,6 +41,7 @@ def _put_dataset(root: Path) -> None:
 def test_status_requires_auth(client) -> None:
     assert client.get("/api/v1/system/models").status_code == 401
     assert client.post("/api/v1/system/mock-mode").status_code == 401
+    assert client.post("/api/v1/system/models/generate").status_code == 401
 
 
 def test_mock_mode_from_env_is_reported(client, auth) -> None:
@@ -70,7 +71,32 @@ def test_choosing_mock_switches_the_predictor(client, auth, real_without_models)
     assert client.get("/health").json()["model_mode"] == "mock"
 
 
-def test_dataset_present_generates_the_models(client, auth, real_without_models, monkeypatch) -> None:
+def test_a_new_login_forgets_the_mock_choice(client, auth, real_without_models) -> None:
+    """Quem sai e entra de novo recomeça da pergunta, não da plataforma em mock."""
+    assert client.post("/api/v1/system/mock-mode", headers=auth).json()["state"] == "mock"
+
+    login = client.post("/api/v1/auth/login", data={"username": "engenheiro", "password": "thermal2026"})
+    assert login.status_code == 200
+    fresh = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    assert client.get("/api/v1/system/models", headers=fresh).json()["state"] == "no_dataset"
+
+
+def test_dataset_without_models_waits_for_the_button(client, auth, real_without_models, monkeypatch) -> None:
+    """Com os CSVs e sem modelos, consultar o estado não gera nada sozinho."""
+    _put_dataset(real_without_models)
+    calls: list[Path] = []
+    monkeypatch.setattr(model_setup, "_run_export", lambda model_dir: calls.append(model_dir))
+
+    body = client.get("/api/v1/system/models", headers=auth).json()
+
+    assert body["state"] == "pending"
+    assert calls == []
+
+
+def test_generate_runs_the_script_with_the_configured_model_dir(
+    client, auth, real_without_models, monkeypatch
+) -> None:
     _put_dataset(real_without_models)
     calls: list[Path] = []
 
@@ -82,12 +108,21 @@ def test_dataset_present_generates_the_models(client, auth, real_without_models,
 
     monkeypatch.setattr(model_setup, "_run_export", fake_export)
 
-    first = client.get("/api/v1/system/models", headers=auth).json()
+    first = client.post("/api/v1/system/models/generate", headers=auth).json()
 
-    # O script recebe o MODEL_DIR configurado na API.
     assert calls == [get_settings().model_dir]
     assert first["state"] == "training"
     assert client.get("/api/v1/system/models", headers=auth).json()["state"] == "ready"
+
+
+def test_generate_without_dataset_does_nothing(client, auth, real_without_models, monkeypatch) -> None:
+    calls: list[Path] = []
+    monkeypatch.setattr(model_setup, "_run_export", lambda model_dir: calls.append(model_dir))
+
+    body = client.post("/api/v1/system/models/generate", headers=auth).json()
+
+    assert body["state"] == "no_dataset"
+    assert calls == []
 
 
 def test_missing_library_is_reported_before_running_the_script(
@@ -99,21 +134,21 @@ def test_missing_library_is_reported_before_running_the_script(
     calls: list[Path] = []
     monkeypatch.setattr(model_setup, "_run_export", lambda model_dir: calls.append(model_dir))
 
-    body = client.get("/api/v1/system/models", headers=auth).json()
+    body = client.post("/api/v1/system/models/generate", headers=auth).json()
 
     assert body["state"] == "failed"
     assert "falta pandas no Python da API" in body["message"]
     assert "pip install -r src/backend/requirements.txt" in body["message"]
     assert calls == []
 
-    # Depois do `pip install`, a próxima consulta já inicia a geração, sem reiniciar.
+    # Depois do `pip install`, clicar de novo já inicia a geração, sem reiniciar.
     monkeypatch.setattr(model_setup, "missing_dependencies", lambda: [])
     monkeypatch.setattr(
         model_setup,
         "_run_export",
         lambda _dir: subprocess.CompletedProcess([], 1, stdout="", stderr="erro"),
     )
-    assert client.get("/api/v1/system/models", headers=auth).json()["state"] == "training"
+    assert client.post("/api/v1/system/models/generate", headers=auth).json()["state"] == "training"
 
 
 def test_failed_generation_shows_only_the_last_line(client, auth, real_without_models, monkeypatch) -> None:
@@ -130,7 +165,7 @@ def test_failed_generation_shows_only_the_last_line(client, auth, real_without_m
         lambda _dir: subprocess.CompletedProcess([], 1, stdout="", stderr=traceback),
     )
 
-    client.get("/api/v1/system/models", headers=auth)
+    client.post("/api/v1/system/models/generate", headers=auth)
     body = client.get("/api/v1/system/models", headers=auth).json()
 
     assert body["state"] == "failed"
@@ -138,6 +173,6 @@ def test_failed_generation_shows_only_the_last_line(client, auth, real_without_m
 
 
 def test_the_api_requirements_cover_the_script() -> None:
-    """A geração automática roda o script com o Python da API: ele precisa de pandas."""
+    """A geração a pedido roda o script com o Python da API: ele precisa de pandas."""
     requirements = (Path(model_setup.BACKEND_DIR) / "requirements.txt").read_text(encoding="utf-8")
     assert "pandas" in requirements

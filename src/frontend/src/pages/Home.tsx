@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { StartGate } from '@/features/session/StartGate'
-import { ModelsGate } from '@/features/system/ModelsGate'
+import { ModelsGate, useModelState, useModelsGateActive } from '@/features/system/ModelsGate'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
@@ -207,27 +207,53 @@ export function HomePage() {
   const metadata = useMetadataQuery()
   // Sem os modelos treinados, a API gera-os a partir do dataset ou oferece o mock.
   const modelsGate = isApiMode() ? <ModelsGate /> : null
+  // Enquanto o aviso dos modelos está na tela, o erro de metadados atrás dele só atrapalha.
+  const gateActive = useModelsGateActive(isApiMode())
+  const { loading: modelStateLoading } = useModelState(isApiMode())
+
+  // Ao voltar para a tela, os metadados e o estado dos modelos são consultados de novo.
+  // Até as respostas chegarem, não mostra nem a plataforma nem o erro: o que aparecesse
+  // ali sumiria em milissegundos, quando a resposta trouxesse o estado de verdade.
+  if (metadata.isPending || (metadata.error && modelStateLoading)) {
+    return (
+      <div className="min-h-screen">
+        <header className="px-6 py-4">
+          <img src="/logoWhirlpool.png" alt="Whirlpool Thermal Predictor" className="h-16 w-auto" />
+        </header>
+        <p role="status" className="px-6 py-12 text-center text-sm text-wp-gray65">
+          Carregando…
+        </p>
+      </div>
+    )
+  }
 
   if (metadata.error) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        {modelsGate}
-        <Card>
-          <CardContent
-            role="alert"
-            className="flex flex-col items-center gap-2 px-6 py-14 text-center"
-          >
-            <OctagonAlert className="h-6 w-6 text-status-danger-ink" strokeWidth={1.5} aria-hidden="true" />
-            <h1 className="font-display text-lg font-semibold text-wp-gray85">
-              Não foi possível carregar os metadados
-            </h1>
-            <p className="text-sm leading-relaxed text-wp-gray65">
-              {metadata.error instanceof Error
-                ? metadata.error.message
-                : 'Erro desconhecido ao carregar os metadados.'}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen">
+        <header className="px-6 py-4">
+          <img src="/logoWhirlpool.png" alt="Whirlpool Thermal Predictor" className="h-16 w-auto" />
+        </header>
+        <div className="mx-auto max-w-2xl px-6 py-12">
+          {modelsGate}
+          {gateActive ? null : (
+            <Card>
+              <CardContent
+                role="alert"
+                className="flex flex-col items-center gap-2 px-6 py-14 text-center"
+              >
+                <OctagonAlert className="h-6 w-6 text-status-danger-ink" strokeWidth={1.5} aria-hidden="true" />
+                <h1 className="font-display text-lg font-semibold text-wp-gray85">
+                  Não foi possível carregar os metadados
+                </h1>
+                <p className="text-sm leading-relaxed text-wp-gray65">
+                  {metadata.error instanceof Error
+                    ? metadata.error.message
+                    : 'Erro desconhecido ao carregar os metadados.'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     )
   }

@@ -6,13 +6,15 @@ confidencial do parceiro e sao gerados por `src/scripts/export_models.py`
 script, cai num destes casos:
 
 - ha modelos em `MODEL_DIR` -> `ready`, nada a fazer;
-- nao ha modelos, mas as planilhas de treino estao em `data/` -> a propria API
-  roda o script em segundo plano (`training`) e passa a `ready` ao terminar;
+- nao ha modelos, mas as planilhas de treino estao em `data/` -> `pending`: a
+  interface oferece o botao "Gerar os modelos", que chama `start_generation()`;
+  a API roda o script em segundo plano (`training`) e passa a `ready` ao terminar.
+  Nada comeca sozinho: gerar leva de 5 a 10 minutos de CPU e e escolha da pessoa;
 - nao ha modelos nem planilhas -> `no_dataset`: a interface pergunta se a
   pessoa quer usar os dados mockados, e o "sim" chama `use_mock_mode()`.
 
-A escolha pelo mock vale enquanto o processo da API viver. Reiniciar volta a
-procurar os modelos, para quem colocar a base depois nao ficar preso no mock.
+A escolha pelo mock vale enquanto o processo da API viver ou ate o proximo login
+(`forget_mock_choice()`). Reiniciar volta a procurar os modelos, para quem colocar a base depois nao ficar preso no mock.
 """
 
 from __future__ import annotations
@@ -48,7 +50,7 @@ MANIFEST_NAME = "manifest.json"
 #: Bibliotecas que o script importa, alem das que a API ja usa.
 SCRIPT_DEPENDENCIES = ("pandas", "numpy", "sklearn", "joblib")
 
-State = Literal["ready", "training", "no_dataset", "failed", "mock"]
+State = Literal["ready", "training", "pending", "no_dataset", "failed", "mock"]
 
 
 @dataclass(frozen=True)
@@ -103,7 +105,7 @@ def missing_dependencies() -> list[str]:
 
 def _missing_dependencies_message(missing: list[str]) -> str:
     return (
-        f"Não foi possível gerar os modelos: falta {', '.join(missing)} no Python da API. "
+        f"falta {', '.join(missing)} no Python da API. "
         "Instale com `pip install -r src/backend/requirements.txt` no mesmo ambiente "
         "em que a API roda; a geração começa sozinha em seguida."
     )
@@ -142,8 +144,7 @@ def _train() -> None:
 
 
 def status() -> Status:
-    """Estado atual; inicia a geracao dos modelos quando ha planilhas e nao ha modelos."""
-    global _training
+    """Estado atual. Nao inicia nada: quem inicia a geracao e `start_generation()`."""
     if effective_mode() == "mock":
         return Status("mock", "A API está respondendo com os dados mockados.")
     if models_available():
@@ -153,13 +154,25 @@ def status() -> Status:
             return Status("training", "Gerando os modelos a partir do dataset encontrado em data/.")
         if _error is not None:
             return Status("failed", f"Não foi possível gerar os modelos: {_error}")
-        if not dataset_available():
-            return Status("no_dataset", "Sem dataset. Deseja utilizar comando de dados mockados?")
-        # Conferido antes de rodar, e a cada consulta: depois do `pip install`, a
-        # proxima consulta ja inicia a geracao, sem reiniciar a API.
+    if not dataset_available():
+        return Status("no_dataset", "Sem dataset. Deseja utilizar comando de dados mockados?")
+    return Status("pending", "Os CSVs foram encontrados em data/, mas os modelos ainda não foram gerados.")
+
+
+def start_generation() -> Status:
+    """Inicia a geracao dos modelos em segundo plano (tambem serve para tentar de novo apos uma falha)."""
+    global _training, _error
+    if effective_mode() == "mock" or models_available() or not dataset_available():
+        return status()
+    with _lock:
+        if _training:
+            return status()
+        # Conferido a cada pedido: depois do `pip install`, tentar de novo funciona sem reiniciar a API.
         missing = missing_dependencies()
         if missing:
-            return Status("failed", _missing_dependencies_message(missing))
+            _error = _missing_dependencies_message(missing)
+            return Status("failed", f"Não foi possível gerar os modelos: {_error}")
+        _error = None
         _training = True
     _spawn(_train)
     return Status("training", "Gerando os modelos a partir do dataset encontrado em data/.")
@@ -173,10 +186,23 @@ def use_mock_mode() -> Status:
     return status()
 
 
+def forget_mock_choice() -> None:
+    """Desfaz a escolha do mock feita pela interface (nao o `MODEL_MODE=mock` do `.env`).
+
+    Chamado a cada login: quem entra de novo recomeca da pergunta dos modelos,
+    em vez de cair direto na plataforma por causa de uma escolha de outra sessao.
+    """
+    global _mode_override
+    if _mode_override is None:
+        return
+    _mode_override = None
+    _clear_caches()
+
+
 def unavailable_message(original: str) -> str:
     """Mensagem para o 503 de quando o preditor real não pode ser criado."""
     if _training:
-        return "Os modelos estão sendo gerados a partir do dataset. Aguarde cerca de 1 minuto."
+        return "Os modelos estão sendo gerados a partir do dataset. Aguarde de 5 a 10 minutos."
     return original
 
 

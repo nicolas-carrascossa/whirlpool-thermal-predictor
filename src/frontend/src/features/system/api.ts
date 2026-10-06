@@ -9,11 +9,13 @@ import { getToken } from '@/features/auth/tokenStore'
 /**
  * - `ready`: modelos treinados carregados;
  * - `training`: a API está gerando os modelos a partir do dataset de `data/`;
+ * - `pending`: os CSVs estão em `data/`, mas os modelos ainda não foram gerados — a interface
+ *   oferece o botão "Gerar os modelos";
  * - `no_dataset`: não há modelos nem dataset — a interface oferece o mock;
- * - `failed`: a geração falhou;
+ * - `failed`: a geração falhou (o botão tenta de novo);
  * - `mock`: a API responde com os dados mockados.
  */
-export type ModelState = 'ready' | 'training' | 'no_dataset' | 'failed' | 'mock'
+export type ModelState = 'ready' | 'training' | 'pending' | 'no_dataset' | 'failed' | 'mock'
 
 export interface ModelStatus {
   state: ModelState
@@ -42,9 +44,14 @@ async function request(path: string, method: 'GET' | 'POST'): Promise<ModelStatu
   return (await response.json()) as ModelStatus
 }
 
-/** `GET /api/v1/system/models`. Sem modelos e com dataset, a chamada já dispara a geração. */
+/** `GET /api/v1/system/models`. Só consulta; não inicia a geração. */
 export function fetchModelStatus(): Promise<ModelStatus> {
   return request('/models', 'GET')
+}
+
+/** `POST /api/v1/system/models/generate` — inicia a geração dos modelos em segundo plano. */
+export function generateModels(): Promise<ModelStatus> {
+  return request('/models/generate', 'POST')
 }
 
 /** `POST /api/v1/system/mock-mode` — passa a API para os dados mockados até ela reiniciar. */

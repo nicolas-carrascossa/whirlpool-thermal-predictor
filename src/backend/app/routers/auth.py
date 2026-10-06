@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 
+from app import model_setup
 from app.db import User, get_session
 from app.deps import current_user
 from app.schemas import TokenResponse, UserPublic
@@ -30,6 +31,8 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Cada login recomeca da pergunta dos modelos, sem herdar o mock de outra sessao.
+    model_setup.forget_mock_choice()
     token, expires_in = create_access_token(user.username)
     # Successful login is attributed to the user in the access log.
     request.state.username = user.username
