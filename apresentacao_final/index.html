@@ -211,6 +211,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .brand .fog::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.62) 42%, var(--paper) 80%); }
 .brand__copy { position: relative; z-index: 3; display: grid; justify-items: center; gap: clamp(0.8rem, 2vh, 1.4rem); }
 .brand-title { font-family: var(--font-display); font-weight: 500; font-size: var(--t-brand); line-height: 0.86; letter-spacing: -0.025em; white-space: nowrap; }
+.brand__logo { width: min(64vw, 60rem); height: auto; display: block; }
 .brand__line { font-size: var(--t-sub); font-weight: 500; letter-spacing: 0.01em; color: var(--mute); }
 
 /* ---------------------------------------------------------------- 2 · tensão: custo de mudança × tempo */
@@ -290,8 +291,22 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .map__world { position: absolute; inset: 0; transition: transform 2.6s var(--wd); }
 .slide--mapa[data-step="1"] .map__world { transform: translateY(-3.5vh); }
 .map__land { position: absolute; pointer-events: none; user-select: none; }
-.map__land--start { top: 0; left: 56%; width: min(40vw, 74vh); transform: translateX(-50%); }
-.map__land--end { bottom: 0; left: 58%; width: min(78vw, 150vh); transform: translateX(-50%); }
+.map__land--start { top: 0; left: 56%; width: min(40vw, 74vh); aspect-ratio: 1200 / 520; transform: translateX(-50%); }
+.map__clip { position: absolute; inset: 0; overflow: hidden; clip-path: polygon(0 0, 100% 0, 100% 78%, 96% 86%, 92% 83%, 88% 94%, 80% 90%, 74% 100%, 66% 93%, 60% 98%, 52% 91%, 44% 99%, 36% 92%, 28% 97%, 20% 90%, 13% 95%, 7% 86%, 0 90%); }
+.map__damage { position: absolute; inset: 0; width: 100%; height: 100%; display: none; mix-blend-mode: normal; }
+.is-stand-in ~ .map__damage { display: block; }
+.map__embers circle { animation: ember 2.2s ease-in-out infinite alternate; }
+.map__embers circle:nth-child(2n) { animation-duration: 1.7s; animation-delay: -.8s; }
+.map__embers circle:nth-child(3n) { animation-duration: 2.9s; animation-delay: -1.4s; }
+@keyframes ember { from { opacity: .35; } to { opacity: 1; } }
+.no-motion .map__embers circle { animation: none; }
+.map__smoke { position: absolute; left: -15%; top: 0; width: 130%; height: 135%; pointer-events: none; z-index: 2; }
+.map__land--start img { position: relative; display: block; width: 100%; height: auto; transform: translateY(-66.667%) rotate(180deg); filter: grayscale(.55) contrast(.95) brightness(1.15) sepia(.35); }
+.map__land--start img.is-stand-in { filter: grayscale(.85) contrast(.9) brightness(1.45) sepia(.55) url(#warp); }
+.map__land--end { bottom: 0; left: 58%; width: min(78vw, 150vh); aspect-ratio: 1800 / 640; transform: translateX(-50%); overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+.map__monitor { position: relative; width: 76%; padding: 1.1% 1.1% 0; border-radius: 1.4rem 1.4rem 0 0; background: linear-gradient(180deg, #2a2d33, #16181c); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.1), 0 0 80px rgba(0,160,221,.18); margin-bottom: calc(-0.76 * 0.64 * 0.66 * min(78vw, 150vh)); }
+.map__screen { aspect-ratio: 16 / 10; overflow: hidden; border-radius: .7rem .7rem 0 0; background: var(--paper); }
+.map__screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
 .map__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .map__route-base { fill: none; stroke: rgba(255,255,255,.32); stroke-width: 1.5; stroke-dasharray: 2 7; }
 .map__route-flown { fill: none; stroke: url(#routeGrad); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(0,160,221,.55)); }
@@ -307,8 +322,8 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .map__place { position: absolute; z-index: 2; display: grid; gap: .3rem; color: var(--on-night); white-space: nowrap; }
 .map__place i { font-family: var(--font-display); font-style: italic; font-size: var(--t-lead); color: var(--on-night-mute); }
 .map__place b { font-weight: 700; font-size: var(--t-body); letter-spacing: .04em; text-transform: uppercase; }
-.map__place--end { opacity: .35; transition: opacity .8s ease; color: var(--ink); text-align: center; transform: translateX(-50%); }
-.map__place--end i { color: #4a5059; }
+.map__place--end { opacity: .35; transition: opacity .8s ease; color: var(--on-night); text-align: left; }
+.map__place--end i { color: var(--on-night-mute); }
 .slide--mapa[data-arrived="1"] .map__place--end { opacity: 1; }
 .map__panel { position: absolute; z-index: 4; left: var(--gutter); top: calc(var(--pad-top) - 1rem); width: min(31vw, 34rem); display: grid; gap: clamp(1rem, 3vh, 1.8rem); }
 .map__panel .h1 { font-size: clamp(2rem, min(3.6vw, 7vh), 4.2rem); max-width: 14ch; }
@@ -345,10 +360,11 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .sol__stove { height: min(76vh, 58rem); }
 
 /* ---------------------------------------------------------------- 4 · dashboard */
-.slide--dashboard { background: var(--mist); }
-.dash .h1 { max-width: none; }
+.slide--dashboard { background: var(--mist); padding-top: clamp(1.4rem, 4vh, 2.6rem); padding-bottom: clamp(3.4rem, 8vh, 4.6rem); }
+.dash .tabs li { font-size: clamp(1rem, 1.5vw, 1.4rem); }
+.dash .h1 { max-width: none; font-size: clamp(1.7rem, min(2.8vw, 5.2vh), 3.2rem); }
 .dash { grid-template-rows: auto minmax(0, 1fr) auto; gap: clamp(1rem, 3vh, 2rem); }
-.frame { position: relative; justify-self: center; height: 100%; max-height: 70vh; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 12px; overflow: hidden; background: var(--paper); box-shadow: 0 2px 4px rgba(17,18,20,.06), 0 30px 70px rgba(17,18,20,.16); display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.frame { position: relative; justify-self: center; height: 100%; max-height: 100%; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 12px; overflow: hidden; background: var(--paper); box-shadow: 0 2px 4px rgba(17,18,20,.06), 0 30px 70px rgba(17,18,20,.16); display: grid; grid-template-rows: auto minmax(0, 1fr); }
 .is-in .frame { animation: frameOpen 1.5s var(--expo) both 0.25s; }
 @keyframes frameOpen { from { clip-path: inset(8% 16% 0 16% round 28px); transform: translateY(5vh); } to { clip-path: inset(0 0 0 0 round 12px); transform: none; } }
 .no-motion .frame { animation: none; }
@@ -384,10 +400,10 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 
 /* ---------------------------------------------------------------- 5 · confiabilidade: cartões sobre o gelo */
 .ice { position: absolute; inset: 0; overflow: hidden; --i: 0; --cw: min(60vw, 84vh * 1.36, 1250px); --gap: 6vw; }
-.ice__bg { position: absolute; inset: -6%; background: url('assets/gelo.webp') center / cover no-repeat; transform: translateX(calc(var(--i) * 2.6vw)) scale(1.06); transition: transform 1.5s var(--expo); }
-.ice__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,40,58,.45) 0%, rgba(5,40,58,0) 30%, rgba(5,40,58,0) 75%, rgba(5,40,58,.35) 100%); }
+.ice__bg { position: absolute; inset: -6%; width: 112%; height: 112%; background: var(--night); transform: translateX(calc(var(--i) * 2.6vw)) scale(1.06); transition: transform 1.5s var(--expo); }
+.ice__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,12,16,.62) 0%, rgba(10,12,16,0) 34%, rgba(10,12,16,0) 80%, rgba(10,12,16,.3) 100%); }
 .ice__head { position: absolute; z-index: 6; left: var(--gutter); top: calc(var(--pad-top) - 1.2rem); display: grid; gap: .9rem; color: #fff; transform-origin: left top; }
-.ice__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(2.2rem, min(4vw, 7.4vh), 4.6rem); line-height: 1; letter-spacing: -0.01em; text-shadow: 0 2px 24px rgba(0,40,60,.35); }
+.ice__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(2.2rem, min(4vw, 7.4vh), 4.6rem); line-height: 1; letter-spacing: -0.01em; text-shadow: 0 2px 24px rgba(0,0,0,.45); }
 .ice__title em { font-style: italic; }
 .ice__viewport { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--pad-top) + clamp(3.4rem, 9vh, 6.4rem)); bottom: calc(var(--pad-bottom) - 1.4rem); }
 .ice__track { position: absolute; top: 0; bottom: 0; left: var(--gutter); display: flex; gap: var(--gap); transform: translateX(calc(var(--i) * -1 * (var(--cw) + var(--gap)))); transition: transform 1.3s var(--expo); }
@@ -395,7 +411,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .ice.is-dealt.is-dealing .ice__track { transition: transform 1.5s var(--expo); }
 .camp { flex: 0 0 var(--cw); height: 100%; transition: transform 1.2s var(--expo), opacity 1.2s ease; transform: scale(.93); opacity: .72; }
 .camp.is-active { transform: none; opacity: 1; }
-.camp__frame { height: 100%; padding: clamp(.9rem, 2.2vh, 1.6rem); background: rgba(235,248,252,.22); -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), 0 30px 60px rgba(0,30,45,.25); }
+.camp__frame { height: 100%; padding: clamp(.9rem, 2.2vh, 1.6rem); background: rgba(235,248,252,.22); -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), 0 30px 60px rgba(0,0,0,.35); }
 .camp__paper { height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; justify-items: center; gap: clamp(.4rem, 1.2vh, .8rem); padding: clamp(.8rem, 2.4vh, 1.6rem) clamp(1rem, 2vw, 2rem) clamp(.7rem, 1.6vh, 1.2rem); background: #fbfcfd; text-align: center; }
 .camp__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.7rem, min(2.7vw, 5vh), 3.1rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .camp__text { font-size: var(--t-body); color: var(--mute); max-width: 52ch; text-wrap: balance; }
@@ -464,6 +480,14 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .no-motion .lane--tradicional li { background: var(--ink); border-color: var(--ink); }
 .no-motion .lane--predictor li { background: var(--h); border-color: var(--h); opacity: 0.22; }
 .no-motion .lane li.is-crit { background: var(--danger); border-color: var(--danger); opacity: 1; }
+
+/* ---------------------------------------------------------------- 6 · diferencial: dois níveis de leitura */
+.pub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.2rem, 3vw, 3.4rem); align-items: start; }
+.pub__col { display: grid; gap: clamp(.7rem, 1.8vh, 1.1rem); min-width: 0; }
+.pub__frame { position: relative; aspect-ratio: 8 / 5; max-height: 56vh; justify-self: center; width: 100%; border-radius: 10px; overflow: hidden; background: var(--paper); border-top: 4px solid var(--c); box-shadow: 0 2px 4px rgba(17,18,20,.06), 0 24px 56px rgba(17,18,20,.16); }
+.pub__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.pub__col figcaption { display: grid; gap: .3rem; justify-items: start; }
+.pub__q { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: var(--t-h3); line-height: 1.1; }
 
 /* ---------------------------------------------------------------- 7 · virada */
 .flip { font-family: var(--font-display); font-weight: 500; font-size: clamp(2.6rem, min(6.2vw, 11.5vh), 7.4rem); line-height: 1.04; letter-spacing: -0.015em; max-width: 16ch; text-wrap: balance; }
@@ -579,6 +603,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 <main class="deck" id="deck" aria-roledescription="apresentação"></main>
 
 <div class="chapter" id="chapter" aria-hidden="true">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="warp" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
   <canvas id="chapterCanvas"></canvas>
   <div class="chapter__title" id="chapterTitle"><span class="chapter__n" id="chapterN"></span><span class="chapter__rule"></span><span class="chapter__name" id="chapterName"></span></div>
 </div>
@@ -779,8 +804,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
         <div class="stove brand__stove"><div class="stove__bob"><canvas data-turntable role="img" aria-label="Fogão do mapa térmico 3D; arraste para girar"></canvas></div></div>
         ${fog('')}
         <div class="brand__copy">
-          <h1 class="brand-title" style="--base:.25s">${words(c.titulo)}</h1>
-          <p class="brand__line r" style="--d:.9">${esc(c.linha)}</p>
+          <img class="brand__logo r" style="--d:.5" src="${esc(c.logo)}" alt="${esc(c.alt)}">
         </div>
       </div>`,
 
@@ -864,8 +888,36 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     mapa: (c, p) => `
       <div class="map" data-map>
         <div class="map__world">
-          <img class="map__land map__land--start" src="assets/terra-partida.webp" alt="">
-          <img class="map__land map__land--end" src="assets/terra-destino.webp" alt="">
+          <div class="map__land map__land--start">
+            <div class="map__clip">
+              <img src="${esc(c.partida.imagem)}" alt="Fogão danificado depois de ciclos de teste físico" onerror="this.onerror=null;this.src='${esc(c.partida.reserva)}';this.classList.add('is-stand-in')">
+              <svg class="map__damage" viewBox="0 0 1200 520" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <radialGradient id="soot"><stop offset="0" stop-color="#050505" stop-opacity=".92"/><stop offset=".6" stop-color="#0a0a0a" stop-opacity=".55"/><stop offset="1" stop-color="#0a0a0a" stop-opacity="0"/></radialGradient>
+                  <filter id="emberBlur" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="5"/></filter>
+                </defs>
+                <ellipse cx="300" cy="360" rx="230" ry="130" fill="url(#soot)"/>
+                <ellipse cx="860" cy="300" rx="260" ry="150" fill="url(#soot)"/>
+                <ellipse cx="600" cy="500" rx="360" ry="110" fill="url(#soot)"/>
+                <ellipse cx="1080" cy="470" rx="150" ry="100" fill="url(#soot)"/>
+                <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M588 520 L612 452 L571 398 L626 344 L598 282 L652 226 L631 160" stroke="#050505" stroke-width="5"/>
+                  <path d="M612 452 L668 431 L690 376" stroke="#050505" stroke-width="3.5"/>
+                  <path d="M626 344 L560 322 L536 262" stroke="#050505" stroke-width="3.5"/>
+                  <path d="M931 520 L903 463 L952 421 L929 357 L985 318" stroke="#050505" stroke-width="4.5"/>
+                  <path d="M903 463 L850 450 L826 402" stroke="#050505" stroke-width="3"/>
+                  <path d="M212 520 L238 466 L196 424 L246 380" stroke="#050505" stroke-width="4"/>
+                  <path d="M590 520 L614 452 L573 398 L628 344 L600 282" stroke="rgba(255,255,255,.28)" stroke-width="1.4"/>
+                  <path d="M933 520 L905 463 L954 421 L931 357" stroke="rgba(255,255,255,.28)" stroke-width="1.4"/>
+                </g>
+                <g class="map__embers" filter="url(#emberBlur)">
+                  <circle cx="612" cy="452" r="11" fill="#ff7a1a"/><circle cx="626" cy="344" r="9" fill="#ff5a14"/><circle cx="903" cy="463" r="12" fill="#ff7a1a"/><circle cx="952" cy="421" r="8" fill="#ffb02e"/><circle cx="238" cy="466" r="9" fill="#ff5a14"/>
+                </g>
+              </svg>
+            </div>
+            <canvas class="map__smoke" data-smoke aria-hidden="true"></canvas>
+          </div>
+          <div class="map__land map__land--end"><div class="map__monitor"><div class="map__screen"><img src="${esc(c.destino.imagem)}" alt="Dashboard do Thermal Predictor com a previsão do fogão"></div></div></div>
           <svg class="map__svg" aria-hidden="true">
             <defs><linearGradient id="routeGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1000">
               <stop offset="0" stop-color="#b3261e"/><stop offset=".35" stop-color="#e08650"/><stop offset=".62" stop-color="#eeb111"/><stop offset="1" stop-color="#00a0dd"/>
@@ -931,7 +983,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 
     confianca: (c, p) => `
       <div class="ice" data-ice>
-        <div class="ice__bg"></div>
+        <canvas class="ice__bg" data-flame aria-hidden="true"></canvas>
         <div class="ice__shade"></div>
         <header class="ice__head"><h2 class="ice__title">${rich(c.titulo)}</h2></header>
         <div class="ice__viewport">
@@ -956,7 +1008,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
         <div class="kpis">
           ${c.erro ? `
             <section class="kpi r" style="--d:.35">
-              <p class="kpi__num"><span data-count="${num(c.erro.reducao)}" data-dec="1">${esc(c.erro.reducao.replace('%', ''))}</span>%</p>
+              <p class="kpi__num"><span data-count="${num(c.erro.destaque)}" data-dec="1">${esc(c.erro.destaque)}</span><small>${esc(c.erro.sufixo)}</small></p>
               <p class="kpi__label">${esc(c.erro.rotulo)}</p>
               <div class="mini" aria-label="Erro médio: baseline ${fmtNum(c.erro.de, 2)} ${esc(c.erro.unidade)}, Thermal Predictor ${fmtNum(c.erro.para, 2)} ${esc(c.erro.unidade)}">
                 <div class="mini__row" style="--k:0"><span>Baseline</span><i style="--w:1"></i><b>${fmtNum(c.erro.de, 2)} ${esc(c.erro.unidade)}</b></div>
@@ -1001,6 +1053,18 @@ body.is-idle, body.is-idle * { cursor: none !important; }
         </div>
       </div>`
     },
+
+    publicos: (c, p) => `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="pub">
+          ${c.colunas.map((k, i) => `
+            <figure class="pub__col r" style="--d:${0.45 + i * 0.3}; --c:${hex(heatRGB(i ? 0.82 : 0.2))}">
+              <div class="pub__frame"><video class="pub__video" src="${esc(k.video)}" muted loop playsinline preload="auto" aria-label="${esc(k.rotulo)}: ${esc(k.descricao)}"></video></div>
+              <figcaption><span class="label">${esc(k.rotulo)}</span><span class="pub__q">${esc(k.pergunta)}</span></figcaption>
+            </figure>`).join('')}
+        </div>
+      </div>`,
 
     virada: (c) => `
       <div class="slide__inner layout-center">
@@ -1239,6 +1303,76 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     return { draw }
   })()
 
+
+  // ------------------------------------------------------------------ confiabilidade: calor subindo da boca do fogão
+  const FLAME = (() => {
+    const GW = 176, GH = 99
+    const off = document.createElement('canvas'); off.width = GW; off.height = GH
+    const octx = off.getContext('2d'), img = octx.createImageData(GW, GH)
+    const N = 64, rnd = mulberry32(23), lat = Float32Array.from({ length: N * N }, () => rnd())
+    const vn = (x, y) => {
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0
+      const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy)
+      const i0 = ((x0 % N) + N) % N, j0 = ((y0 % N) + N) % N, i1 = (i0 + 1) % N, j1 = (j0 + 1) % N
+      const a = lat[j0 * N + i0], b = lat[j0 * N + i1], c = lat[j1 * N + i0], d = lat[j1 * N + i1]
+      return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy
+    }
+    const fbm = (x, y) => 0.58 * vn(x, y) + 0.28 * vn(x * 2.1 + 5.2, y * 2.1 + 1.3) + 0.14 * vn(x * 4.3 + 9.1, y * 4.3 + 7.7)
+    const bocas = [{ u: 0.05, w: 0.07, a: 0.9, f: 0 }, { u: 0.31, w: 0.075, a: 0.8, f: 1 }, { u: 0.62, w: 0.08, a: 0.9, f: 2 }, { u: 0.95, w: 0.07, a: 0.85, f: 3 }]
+    const asp = GW / GH
+    function draw(cv, t) {
+      const d = img.data
+      for (let j = 0; j < GH; j++) {
+        const v = (j + 0.5) / GH, h = 1 - v
+        for (let i = 0; i < GW; i++) {
+          const u = (i + 0.5) / GW
+          // o ar quente sobe girando: o domínio é deslocado por dois campos de ruído que andam para cima
+          const wx = (fbm(u * 3.2 * asp * 0.55, v * 2.4 - t * 0.35) - 0.5) * 0.34 * (0.25 + h)
+          const wy = (fbm(u * 2.6 * asp * 0.55 + 31, v * 2.1 - t * 0.28) - 0.5) * 0.2
+          let T = 0
+          for (const b of bocas) {
+            const dx = u + wx - b.u + 0.03 * Math.sin(t * 0.8 + b.f * 2.1 + h * 5), w = b.w * (0.55 + 1.7 * Math.pow(h, 0.85))
+            T += b.a * Math.exp(-(dx * dx) / (w * w)) * (1 - smoothstep(0.04, 1.05, h + wy))
+          }
+          const n = fbm(u * 5.4 * asp * 0.55 + wx * 3, v * 4.2 - t * 0.85 + wy * 3)
+          T = (T * (0.2 + 1.15 * n) + 0.42 * Math.exp(-h * 13) * (0.6 + 0.6 * n)) * 0.95
+          const q = (j * GW + i) * 4, c = HEAT_LUT[Math.min(255, Math.max(0, Math.round(Math.min(T, 1) * 255)))]
+          d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; d[q + 3] = Math.round(smoothstep(0.1, 0.5, T) * 235)
+        }
+      }
+      octx.putImageData(img, 0, 0)
+      const ctx = fitCanvas(cv, 1), W = cv.width, H = cv.height
+      ctx.fillStyle = getComputedStyle(cv).backgroundColor || '#111214'; ctx.fillRect(0, 0, W, H)
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(off, 0, 0, W, H)
+    }
+    return { draw }
+  })()
+
+
+  // ------------------------------------------------------------------ fumaça saindo do fogão (partícula = função do tempo, sem estado)
+  const SMOKE = (() => {
+    const N = 34
+    const P = Array.from({ length: N }, (_, i) => { const r = mulberry32(100 + i); return { x: 0.16 + 0.68 * r(), ph: r(), sp: 0.7 + 0.6 * r(), sw: 0.5 + r(), sz: 0.7 + 0.8 * r(), a: 0.5 + 0.5 * r() } })
+    function draw(cv, t) {
+      const ctx = fitCanvas(cv, 1.5), W = cv.width, H = cv.height
+      ctx.clearRect(0, 0, W, H)
+      const u = W / 832, y0 = H * 0.66, rise = H * 0.7
+      for (const p of P) {
+        const age = (((t * 0.11 * p.sp) + p.ph) % 1 + 1) % 1
+        const x = W * (0.115 + 0.77 * p.x) + Math.sin(t * 0.7 * p.sw + p.ph * 9) * 26 * u * (0.3 + age) + age * 40 * u * (p.x - 0.5)
+        const y = y0 - age * rise
+        const r = (30 + age * 120) * p.sz * u
+        const a = Math.sin(Math.PI * Math.min(1, age * 1.05)) * 0.62 * p.a
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+        const c = Math.round(150 + 70 * age)
+        g.addColorStop(0, `rgba(${c},${c},${c + 4},${a})`); g.addColorStop(1, `rgba(${c},${c},${c + 4},0)`)
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill()
+      }
+    }
+    return { draw }
+  })()
+
   // ------------------------------------------------------------------ laço de desenho: só as páginas visíveis
   const visible = (sl) => sl.classList.contains('is-current') || sl.classList.contains('is-entering') || sl.classList.contains('is-leaving')
   function frame(now) {
@@ -1247,6 +1381,10 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       sl.querySelectorAll('canvas[data-turntable]').forEach((cv) => drawTurntable(cv, giroAt(now)))
       const sq = sl.querySelector('canvas[data-sequence]')
       if (sq) drawSequence(sq)
+      const sm = sl.querySelector('canvas[data-smoke]')
+      if (sm) SMOKE.draw(sm, reduced ? 3 : now / 1000)
+      const fl = sl.querySelector('canvas[data-flame]')
+      if (fl) FLAME.draw(fl, reduced ? 4 : now / 1000)
       const hf = sl.querySelector('canvas[data-heatfield]')
       if (hf) {
         if (heat.t0 == null) heat.t0 = now
@@ -1297,8 +1435,9 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     world.style.transform = prev; void world.offsetWidth; world.style.transition = ''
     if (!box.width || !a.height || !b.height) return null
     const W = box.width, H = box.height
-    const S = [a.left - box.left + a.width * 0.5, a.top - box.top + a.height * 0.76]
-    const E = [b.left - box.left + b.width * 0.47, b.top - box.top + b.height * 0.56]
+    const mon = map.querySelector('.map__monitor').getBoundingClientRect()
+    const S = [a.left - box.left + a.width * 0.5, a.top - box.top + a.height * 0.9]
+    const E = [mon.left - box.left + mon.width * 0.5, mon.top - box.top - 14]
     const c1 = [S[0] - W * 0.2, S[1] + (E[1] - S[1]) * 0.3]
     const c2 = [E[0] - W * 0.24, E[1] - (E[1] - S[1]) * 0.28]
     const d = `M${S[0]} ${S[1]} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${E[0]} ${E[1]}`
@@ -1312,8 +1451,8 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     flown.style.strokeDasharray = `${L} ${L}`
     svg.querySelectorAll('.map__end-ring').forEach((r) => { r.setAttribute('cx', E[0]); r.setAttribute('cy', E[1]) })
     const st = map.querySelector('.map__place--start'), en = map.querySelector('.map__place--end')
-    st.style.left = `${S[0] + 34}px`; st.style.top = `${S[1] + 84}px`
-    en.style.left = `${E[0]}px`; en.style.top = `${E[1] + 30}px`
+    st.style.left = `${S[0] + 34}px`; st.style.top = `${S[1] + 40}px`
+    en.style.left = `${E[0] + 40}px`; en.style.top = `${E[1] - 66}px`
     const state = { flown, L, p: MAP.get(sl)?.p ?? 0, dot: map.querySelector('.map__dot') }
     MAP.set(sl, state)
     setRoute(sl, state.p)
@@ -1394,9 +1533,14 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       flyRoute(sl, step >= 1 ? 1 : 0, true)
     }
     if (page.tipo === 'confianca') enterIce(sl, step > 0)
+    if (page.tipo === 'publicos') {
+      const vids = [...sl.querySelectorAll('video')]
+      vids.forEach((v) => { v.currentTime = 0 })
+      later(sl, 900, () => vids.forEach((v) => { v.currentTime = 0; if (!reduced) v.play().catch(() => {}) }))
+    }
     if (page.tipo === 'dashboard') {
       const imgs = [...sl.querySelectorAll('[data-carousel] img')], tabs = [...sl.querySelectorAll('.tabs li')]
-      const cycle = 3400
+      const cycle = 8000
       let cur = 0
       sl.style.setProperty('--cycle', cycle + 'ms')
       imgs.forEach((im, i) => { im.classList.toggle('is-on', i === 0); im.style.zIndex = '' })
@@ -1418,6 +1562,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
   function leave(sl) {
     clearTimers(sl)
     sl.classList.remove('is-in')
+    sl.querySelectorAll('video').forEach((v) => v.pause())
     ;(sl._anims || []).forEach((a) => a.cancel()); sl._anims = []
     const st = MAP.get(sl); if (st) cancelAnimationFrame(st.raf)
   }
