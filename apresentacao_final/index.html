@@ -416,7 +416,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .camp__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.7rem, min(2.7vw, 5vh), 3.1rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .camp__text { font-size: var(--t-body); color: var(--mute); max-width: 52ch; text-wrap: balance; }
 .camp__shot { position: relative; min-height: 0; width: 100%; }
-.camp__shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.camp__shot img, .camp__shot video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .camp__data { font-weight: 700; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 .camp__data::before { content: '[ '; color: var(--mute); }
 .camp__data::after { content: ' ]'; color: var(--mute); }
@@ -969,7 +969,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
             ${c.telas.map((t, i) => `<img src="${esc(t.imagem)}" alt="Tela do ${esc(C.meta.produto)}: ${esc(t.rotulo)}" class="${i === 0 ? 'is-on' : ''}">`).join('')}
           </div>
         </figure>
-        <ol class="tabs r" style="--d:.9">${c.telas.map((t, i) => `<li class="${i === 0 ? 'is-on' : ''}"><span>${esc(t.rotulo)}</span><i></i></li>`).join('')}</ol>
+        <ol class="tabs r" style="--d:.9">${c.telas.map((t, i) => `<li class="${i === 0 ? 'is-on' : ''}" data-ms="${(t.segundos || 8) * 1000}"><span>${esc(t.rotulo)}</span><i></i></li>`).join('')}</ol>
       </div>`,
 
     dominio: (c, p) => `
@@ -993,7 +993,9 @@ body.is-idle, body.is-idle * { cursor: none !important; }
                 <div class="camp__frame"><div class="camp__paper">
                   <h3 class="camp__title">${esc(k.titulo)}</h3>
                   <p class="camp__text">${esc(k.texto)}</p>
-                  <figure class="camp__shot"><img src="${esc(k.imagem)}" alt="Aba Métricas Estatísticas do ${esc(C.meta.produto)}: ${esc(k.titulo)}"></figure>
+                  <figure class="camp__shot">${k.video
+                    ? `<video src="${esc(k.video)}" muted loop playsinline preload="auto" aria-label="Aba Métricas Estatísticas do ${esc(C.meta.produto)} em uso"></video>`
+                    : `<img src="${esc(k.imagem)}" alt="Aba Métricas Estatísticas do ${esc(C.meta.produto)}: ${esc(k.titulo)}">`}</figure>
                   <p class="camp__data">${esc(k.dado)}</p>
                 </div></div>
               </li>`).join('')}
@@ -1093,7 +1095,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     return `<section class="slide slide--${esc(p.tipo)}${p.fundo === 'escuro' ? ' is-dark' : ''}${bleed ? ' slide--bleed' : ''}" id="${esc(p.id)}" data-i="${i}" aria-roledescription="página" aria-label="${pad2(i + 1)} de ${pad2(pages.length)}: ${esc(titleOf(p))}">${body}</section>`
   }).join('')
   const slides = [...deck.querySelectorAll('.slide')]
-  const stepsOf = (i) => (pages[i].tipo === 'confianca' ? (pages[i].conteudo.cartoes || []).length || 1 : ({ tensao: 2, mapa: 2, virada: 2 })[pages[i].tipo] || 1)
+  const stepsOf = (i) => (pages[i].tipo === 'confianca' ? (pages[i].conteudo.cartoes || []).length || 1 : pages[i].tipo === 'solucao' ? (pages[i].conteudo.etapas || []).length || 1 : ({ tensao: 2, mapa: 2, virada: 2 })[pages[i].tipo] || 1)
 
   // ------------------------------------------------------------------ névoa (textura gerada aqui)
   function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
@@ -1488,7 +1490,11 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     const ice = sl.querySelector('[data-ice]')
     if (!ice) return
     ice.style.setProperty('--i', i)
-    ice.querySelectorAll('.camp').forEach((c, k) => c.classList.toggle('is-active', k === i))
+    ice.querySelectorAll('.camp').forEach((c, k) => {
+      c.classList.toggle('is-active', k === i)
+      const v = c.querySelector('video')
+      if (v) { if (k === i && !reduced) { v.currentTime = 0; v.play().catch(() => {}) } else v.pause() }
+    })
   }
   function enterIce(sl, instant) {
     const ice = sl.querySelector('[data-ice]')
@@ -1518,16 +1524,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       tween(sl, 600, 1500, (k) => { el.textContent = fmtNum(to * k, dec) }, easeOutExpo)
     })
     if (page.tipo === 'calor') heat.t0 = null
-    if (page.tipo === 'solucao') {
-      const items = [...sl.querySelectorAll('[data-steps] li')]
-      const mark = (n) => items.forEach((li, i) => { li.classList.toggle('is-active', i === n); li.classList.toggle('is-done', i < n) })
-      seq.p = 0; seq.x = 0; mark(0)
-      later(sl, 1400, () => mark(1))
-      tween(sl, 1400, 1900, (k) => { seq.p = k })
-      later(sl, 3500, () => mark(2))
-      tween(sl, 3500, 1100, (k) => { seq.x = k })
-      later(sl, 5000, () => mark(3))
-    }
+    if (page.tipo === 'solucao') solStep(sl, step, true)
     if (page.tipo === 'mapa') {
       layoutMap(sl)
       flyRoute(sl, step >= 1 ? 1 : 0, true)
@@ -1540,11 +1537,10 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     }
     if (page.tipo === 'dashboard') {
       const imgs = [...sl.querySelectorAll('[data-carousel] img')], tabs = [...sl.querySelectorAll('.tabs li')]
-      const cycle = 8000
       let cur = 0
-      sl.style.setProperty('--cycle', cycle + 'ms')
       imgs.forEach((im, i) => { im.classList.toggle('is-on', i === 0); im.style.zIndex = '' })
-      tabs.forEach((t, i) => t.classList.toggle('is-on', i === 0))
+      const durs = tabs.map((t) => Number(t.dataset.ms) || 8000)
+      tabs.forEach((t, i) => { t.classList.toggle('is-on', i === 0); t.style.setProperty('--cycle', durs[i] + 'ms') })
       const show = (n) => {
         const prevImg = imgs[cur], nextImg = imgs[n]
         cur = n
@@ -1556,8 +1552,21 @@ body.is-idle, body.is-idle * { cursor: none !important; }
         }
         setTimeout(() => prevImg.classList.remove('is-on'), reduced ? 0 : 1000)
       }
-      later(sl, 0, () => { sl._carousel = setInterval(() => show((cur + 1) % imgs.length), cycle) })
+      const step = () => { sl._carousel = setTimeout(() => { show((cur + 1) % imgs.length); step() }, durs[cur]) }
+      step()
     }
+  }
+  /** Página da solução: cada seta acende o número seguinte e leva o fogão ao estado daquela etapa. */
+  const SOL = [{ p: 0, x: 0 }, { p: 1, x: 0 }, { p: 1, x: 1 }, { p: 1, x: 1 }]
+  function solStep(sl, n, instant) {
+    const items = [...sl.querySelectorAll('[data-steps] li')]
+    items.forEach((li, i) => { li.classList.toggle('is-active', i === n); li.classList.toggle('is-done', i < n) })
+    const to = SOL[Math.min(n, SOL.length - 1)]
+    cancelAnimationFrame(sl._solRaf)
+    if (instant || reduced) { seq.p = to.p; seq.x = to.x; return }
+    const p0 = seq.p, x0 = seq.x, t0 = performance.now(), D = 1700
+    const run = (now) => { const k = easeInOut(clamp01((now - t0) / D)); seq.p = p0 + (to.p - p0) * k; seq.x = x0 + (to.x - x0) * k; if (k < 1) sl._solRaf = requestAnimationFrame(run) }
+    sl._solRaf = requestAnimationFrame(run)
   }
   function leave(sl) {
     clearTimers(sl)
@@ -1572,6 +1581,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     sl.dataset.step = String(step)
     if (page.tipo === 'mapa') flyRoute(sl, step >= 1 ? 1 : 0, false)
     if (page.tipo === 'confianca') setIce(sl, step)
+    if (page.tipo === 'solucao') solStep(sl, step, false)
   }
 
   // ------------------------------------------------------------------ navegação
@@ -1732,6 +1742,37 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       const world = inn.querySelector('.map__world')
       if (world) world.animate([{ transform: 'translateY(-16vh)' }, { transform: 'none' }], { duration: D + 500, easing: E_EXPO })
       setTimeout(() => enter(inn, innPage), 420)
+    } else if (kind === 'fogao') {
+      // o mesmo fogão atravessa as duas páginas: encolhe e vai de uma posição para a outra
+      const D = 1700
+      const srcEl = out.querySelector(forward ? '.brand__stove' : '.sol__stove')
+      const dstEl = inn.querySelector(forward ? '.sol__stove' : '.brand__stove')
+      inn.classList.add('is-entering')
+      out.classList.add('is-on-top')
+      if (!srcEl || !dstEl) {
+        done.push(inn.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400 }).finished)
+        setTimeout(() => enter(inn, innPage), 100)
+      } else {
+        const reveal = dstEl.classList.contains('r')
+        if (reveal) { dstEl.style.transform = 'none'; dstEl.style.animation = 'none'; dstEl.style.opacity = '1' }
+        const s0 = srcEl.getBoundingClientRect(), d0 = dstEl.getBoundingClientRect()
+        const k = d0.height / s0.height
+        const dx = (d0.left + d0.width / 2) - (s0.left + s0.width / 2) - (srcEl.classList.contains('brand__stove') ? 0.5 * s0.width * (1 - k) : 0)
+        const dy = (d0.top + d0.height / 2) - (s0.top + s0.height / 2)
+        const base = getComputedStyle(srcEl).transform
+        const from = base === 'none' ? 'none' : base
+        const lead = srcEl.classList.contains('brand__stove') ? ' translateX(-50%)' : ''
+        out.style.background = 'transparent'
+        dstEl.style.visibility = 'hidden'
+        const fades = [...out.querySelectorAll('.brand__copy, .fog, .sol__copy')].map((n) => n.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 700, easing: 'ease', fill: 'forwards' }))
+        const fly = srcEl.animate([{ transform: from }, { transform: `translate(${dx}px, ${dy}px) scale(${k})${lead}` }], { duration: D, easing: E_WD, fill: 'forwards' })
+        let out2 = null
+        out._cleanup = () => { fly.cancel(); if (out2) out2.cancel(); fades.forEach((a) => a.cancel()); out.style.background = ''; dstEl.style.visibility = ''; if (reveal) { dstEl.style.transform = 'none'; dstEl.style.animation = 'none'; dstEl.style.opacity = '1' } }
+        // pousa exatamente no lugar do fogão da outra página e só então troca, com uma dissolução curta (sem corte)
+        done.push(fly.finished.then(() => { dstEl.style.visibility = ''; out2 = srcEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, easing: 'ease', fill: 'forwards' }); return out2.finished }))
+        setTimeout(() => enter(inn, innPage), 500)
+      }
+      done.push(out.animate([{ opacity: 1 }, { opacity: 1 }], { duration: D }).finished.then(() => { out.classList.remove('is-on-top'); out.style.background = '' }))
     } else if (kind === 'descida') {
       const D = 1200
       inn.classList.add('is-entering')
@@ -1753,6 +1794,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     return Promise.all(done.map((d) => Promise.resolve(d).catch(() => {}))).then(() => {
       leave(out)
       out.classList.remove('is-leaving')
+      if (out._cleanup) { out._cleanup(); out._cleanup = null }
       inn.classList.remove('is-entering'); inn.classList.add('is-current')
     })
   }

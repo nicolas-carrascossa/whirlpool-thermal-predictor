@@ -70,7 +70,7 @@ window.PITCH_CONFIG = {
       tipo: 'calor',
       fundo: 'claro',
       calor: 0,
-      segundos: 12,
+      segundos: 14,
       notas:
         '[Os queimadores acendem um a um.] No desenvolvimento de um novo fogão, uma mudança de arquitetura pode exigir uma nova simulação CFD e, em etapas críticas, novos protótipos e testes físicos. Isso significa tempo, custo e uso de recursos especializados antes mesmo de saber se aquela configuração é termicamente viável. [transição] Para entender o valor da nossa solução, primeiro precisamos entender onde está esse gargalo.',
       conteudo: {
@@ -84,7 +84,7 @@ window.PITCH_CONFIG = {
       tipo: 'fluxo',
       fundo: 'claro',
       calor: 0.85,
-      segundos: 13,
+      segundos: 17,
       notas:
         'Validar termicamente uma nova configuração depende de ciclos que envolvem simulações CFD, capacidade computacional e profissionais especializados. Determinadas decisões ainda precisam de protótipos e testes físicos. [aponte para a volta] Quanto mais configurações a engenharia deseja comparar, mais esse processo precisa se repetir.',
       conteudo: {
@@ -100,7 +100,7 @@ window.PITCH_CONFIG = {
       tipo: 'custo',
       fundo: 'claro',
       calor: 1,
-      segundos: 14,
+      segundos: 18,
       notas:
         'E simular custa caro. Mesmo em ferramentas de entrada, a capacidade de simulação representa milhares de dólares por usuário, por ano. Em ambientes industriais, uma única sessão adicional de CFD passa de 19 mil dólares por ano, sem contar infraestrutura e horas de engenharia. [Ansys Fluent e COMSOL não publicam preço: sob cotação.] [pausa] Então a engenharia precisa escolher: qual combinação vale testar?',
       conteudo: {
@@ -120,7 +120,7 @@ window.PITCH_CONFIG = {
       tipo: 'tensao',
       fundo: 'claro',
       calor: 0.85,
-      segundos: 15,
+      segundos: 20,
       notas:
         '[Curva apresentada no kickoff da Divisão de Fogões.] Para a Whirlpool, velocidade é competitividade: o mercado pede renovação constante de arquiteturas, sob pressão de margem e de concorrência. E quanto mais tarde uma decisão de projeto acontece, mais cara fica qualquer mudança. [aponte para "hoje"] Hoje, a evidência térmica chega tarde, na fase de testes e protótipos. [avance] O Thermal Predictor leva essa evidência para o começo do projeto, onde mudar ainda é barato.',
       conteudo: {
@@ -128,7 +128,7 @@ window.PITCH_CONFIG = {
         fases: ['Definição / Escopo', 'Desenvolvimento (CAD)', 'Testes & Protótipos', 'Produção (SOP)'],
         curvas: { custo: 'Custo de alteração no projeto', liberdade: 'Liberdade de design' },
         hoje: 'Hoje, a evidência térmica chega aqui',
-        depois: 'Com o Thermal Predictor, aqui',
+        depois: 'E se viéssemos para cá',
       },
     },
     {
@@ -136,13 +136,14 @@ window.PITCH_CONFIG = {
       secao: 2,
       secaoNome: 'Problema',
       tipo: 'decisoes',
+      ativa: false,
       fundo: 'claro',
       calor: 0.6,
       segundos: 25,
       notas:
         'O Thermal Predictor pode apoiar diferentes profissionais. A equipe de Produtos precisa comparar arquiteturas antes de congelar o design. Materiais precisa entender se determinado componente suporta a temperatura esperada. E Qualidade precisa identificar configurações de maior risco que justificam uma validação mais completa. [pausa] Apesar de decisões diferentes, todos precisam da mesma coisa: informação térmica confiável mais cedo no processo. [transição] E é essa informação que o tempo de espera de hoje atrasa.',
       conteudo: {
-        titulo: 'Uma previsão tardia *trava várias decisões.*',
+        titulo: 'Uma simulação tardia *trava várias decisões.*',
         decisoes: [
           { area: 'Produtos', pergunta: 'Qual arquitetura devemos seguir?' },
           { area: 'Materiais', pergunta: 'Esse componente suporta a temperatura?' },
@@ -158,7 +159,7 @@ window.PITCH_CONFIG = {
       fundo: 'escuro',
       calor: 0.68,
       transicao: 'subida',
-      segundos: 18,
+      segundos: 28,
       notas:
         'E há o tempo. [aponte para a partida] Hoje, resultados térmicos definitivos levam de semanas a meses, e um assessment térmico leva cerca de três semanas. [avance: a rota se desenha] A meta da Divisão de Fogões é chegar a menos de um dia. Nosso desafio era usar os dados históricos da Whirlpool para encurtar esse caminho. [transição] Foi a partir desse problema da Divisão de Fogões que desenvolvemos o Thermal Predictor.',
       conteudo: {
@@ -193,11 +194,12 @@ window.PITCH_CONFIG = {
       secao: 3,
       secaoNome: 'Solução',
       tipo: 'solucao',
+      transicao: 'fogao',
       fundo: 'claro',
       calor: 0.35,
       segundos: 22,
       notas:
-        'O Thermal Predictor é um sistema baseado em Machine Learning que aprende com o histórico de simulações térmicas da Whirlpool. O engenheiro informa características da configuração do fogão, como direção do fluxo de ar, housing, posição de componentes e materiais utilizados. [o fogão se abre] A partir dessas informações, o sistema estima as temperaturas nas sete regiões térmicas monitoradas. Como cada região tem um comportamento térmico próprio, são sete modelos: Gradient Boosting em quatro regiões e Random Forest em três.',
+        'O Thermal Predictor é um sistema baseado em Machine Learning que aprende com o histórico de simulações térmicas da Whirlpool. [número 1] O engenheiro informa características da configuração do fogão, como direção do fluxo de ar, housing, posição de componentes e materiais utilizados. [avance: o fogão se abre, número 2] A partir dessas informações, o sistema estima as temperaturas nas sete regiões térmicas monitoradas. Como cada região tem um comportamento térmico próprio, são sete modelos: Gradient Boosting em quatro regiões e Random Forest em três. [avance: número 3] Cada região vem com a temperatura, a margem de erro e a confiabilidade da previsão. [avance: número 4] E o engenheiro decide com essa evidência.',
       conteudo: {
         titulo: 'Da configuração à previsão *em segundos.*',
         etapas: ['Configuração do fogão', 'Thermal Predictor', 'Temperatura + margem de erro + confiabilidade', 'Decisão'],
@@ -210,15 +212,15 @@ window.PITCH_CONFIG = {
       tipo: 'dashboard',
       fundo: 'claro',
       calor: 0.45,
-      segundos: 24,
+      segundos: 28,
       notas:
         'Essas previsões chegam num dashboard: o veredito por área, o mapa térmico 3D e o histórico de consultas, que organiza e dá rastreabilidade ao que já foi avaliado. Times não técnicos também conseguem testar hipóteses mais cedo. [transição] Mas para essa solução ter valor, precisávamos responder a uma pergunta fundamental: essas previsões realmente são confiáveis?',
       conteudo: {
         titulo: 'A previsão chega *pronta para decidir.*',
         telas: [
-          { imagem: 'assets/tela-resultados.webp', rotulo: 'Veredito por área' },
-          { imagem: 'assets/tela-mapa.webp', rotulo: 'Mapa térmico 3D' },
-          { imagem: 'assets/tela-historico.webp', rotulo: 'Histórico de consultas' },
+          { imagem: 'assets/tela-resultados.webp', rotulo: 'Veredito por área', segundos: 10 },
+          { imagem: 'assets/tela-mapa.webp', rotulo: 'Mapa térmico 3D', segundos: 10 },
+          { imagem: 'assets/tela-historico.webp', rotulo: 'Histórico de consultas', segundos: 8 },
         ],
       },
     },
@@ -229,12 +231,18 @@ window.PITCH_CONFIG = {
       tipo: 'confianca',
       fundo: 'escuro',
       calor: 0,
-      segundos: 44,
+      segundos: 54,
       notas:
-        'Mas essas previsões são confiáveis? Para verificar, comparamos o modelo com o laboratório, em configurações que ele não viu no treino. É a aba de Métricas Estatísticas do produto; o exemplo é a região Mainback. [cartão 1] Cada ponto é uma medição real: quanto mais perto da diagonal, melhor a previsão. [avance] A previsão é explicável: nesta região, o modo de operação responde por 47% do que o modelo usa. [avance] E contra o limite de engenharia, 310 das 320 decisões batem com o laboratório. Onde o modelo erra, a própria tela mostra, e é por isso que os casos perto do limite seguem para validação.',
+        'Mas essas previsões são confiáveis? Para verificar, comparamos o modelo com o laboratório, em configurações que ele não viu no treino. [vídeo] É a aba de Métricas Estatísticas do produto: tudo o que vamos mostrar vem dela. [avance: cartão 1] Cada ponto é uma medição real: quanto mais perto da diagonal, melhor a previsão. [avance] A previsão é explicável: nesta região, o modo de operação responde por 47% do que o modelo usa. [avance] E contra o limite de engenharia, 310 das 320 decisões batem com o laboratório. Onde o modelo erra, a própria tela mostra, e é por isso que os casos perto do limite seguem para validação.',
       conteudo: {
         titulo: 'Por que *confiar?*',
         cartoes: [
+          {
+            titulo: 'Métricas estatísticas',
+            texto: 'A aba da plataforma que mostra o quanto o modelo acerta.',
+            video: 'assets/videos/metricas-estatisticas.webm',
+            dado: 'Plataforma · aba Métricas Estatísticas',
+          },
           {
             titulo: 'Previsto × real',
             texto: 'Cada ponto é uma medição real. Perto da diagonal, acerto.',
@@ -263,11 +271,11 @@ window.PITCH_CONFIG = {
       tipo: 'kpis',
       fundo: 'escuro',
       calor: 0,
-      segundos: 24,
+      segundos: 20,
       notas:
         'Comparamos o modelo com um baseline que usa só a média histórica. Esse baseline errava, em média, 6,55 graus; o Thermal Predictor erra cerca de 4,10 graus. Além disso, cerca de 87% das previsões ficaram dentro da margem de 10%, contra 76% do baseline. E uma previsão das sete áreas leva cerca de 479 milissegundos. [transição] E essa precisão só vale se chegar a quem decide, de formas diferentes. [transição]',
       conteudo: {
-        titulo: 'Os dados mostram que *o modelo aprendeu.*',
+        titulo: 'Os dados mostram que *o modelo é eficiente.*',
         erro: { de: 6.55, para: 4.1, destaque: '4,1', sufixo: ' °C', rotulo: 'de erro médio em cada previsão de temperatura', unidade: '°C' },
         kpis: [
           { valor: 87, prefixo: '≈ ', sufixo: '%', rotulo: 'das previsões dentro da margem de 10%', comparacao: 'baseline: 76%', anel: 0.87, anelComparacao: 0.76 },
@@ -284,7 +292,7 @@ window.PITCH_CONFIG = {
       tipo: 'publicos',
       fundo: 'claro',
       calor: 0.62,
-      segundos: 36,
+      segundos: 28,
       notas:
         'E tem um diferencial que costuma faltar em ferramentas de engenharia: o Thermal Predictor fala com dois públicos, na mesma tela. [vídeo da esquerda] Na visão não técnica, o overview mostra o resumo, só os sensores que pedem atenção e o veredito de confiabilidade, Aprovado ou não: dá para testar uma hipótese sem depender de um especialista. [vídeo da direita] Basta alternar para a visão técnica: aparecem todos os sensores, inclusive os dentro do limite, e a análise técnica logo abaixo, com comparação com o histórico e sensibilidade. [pausa] Mesma previsão, mesmo modelo: só muda o nível de detalhe. Assim, cada área decide no seu nível, e o time técnico concentra o esforço onde a incerteza é maior.',
       conteudo: {
@@ -304,7 +312,7 @@ window.PITCH_CONFIG = {
       tipo: 'virada',
       fundo: 'escuro',
       calor: 1,
-      segundos: 26,
+      segundos: 24,
       notas:
         'Os próximos passos passam por ampliar a cobertura de dados, comparar cada vez mais as previsões com medições físicas e retreinar os modelos conforme novos dados forem produzidos. O Thermal Predictor transforma informações históricas em uma ferramenta para apoiar decisões futuras. [pausa] No final, queremos ajudar a engenharia a mudar uma pergunta. Em vez de perguntar: “Qual configuração devemos testar?” [avance: a pergunta muda] poder perguntar: “Qual configuração realmente precisamos testar?”',
       conteudo: {
