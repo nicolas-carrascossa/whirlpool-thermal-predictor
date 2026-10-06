@@ -5,15 +5,14 @@
  * motivo do `<MapToolbar>`: não precisa girar com a câmera.
  */
 
-import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 import { formatTempPt } from './aggregate'
 import type { LegendModel } from './legendModel'
-import { CollapseToggle } from './CollapseToggle'
 
 function StatusRows({ model }: { model: Extract<LegendModel, { mode: 'status' }> }) {
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
       {model.rows.map((row) => (
         <li key={row.status} className="flex items-center gap-1.5 whitespace-nowrap">
           <span
@@ -22,7 +21,7 @@ function StatusRows({ model }: { model: Extract<LegendModel, { mode: 'status' }>
             aria-hidden="true"
           />
           <span className="text-wp-gray65">{row.label}</span>
-          <span className="tabular ml-auto pl-2 font-semibold text-wp-gray85">{row.count}</span>
+          <span className="tabular font-semibold text-wp-gray85">{row.count}</span>
         </li>
       ))}
     </ul>
@@ -49,41 +48,19 @@ function AbsoluteBar({ model }: { model: Extract<LegendModel, { mode: 'absolute'
   )
 }
 
-function DeltaBar({ model }: { model: Extract<LegendModel, { mode: 'delta' }> }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div
-        className="h-2 w-40 rounded-full"
-        style={{ background: 'linear-gradient(90deg, #0d436b 0%, #ffffff 50%, #e08650 100%)' }}
-        aria-hidden="true"
-      />
-      <div className="tabular flex justify-between text-wp-gray65">
-        <span>−{formatTempPt(model.maxAbs, { withUnit: false })}</span>
-        <span>0</span>
-        <span>+{formatTempPt(model.maxAbs, { withUnit: false })}</span>
-      </div>
-      <p className="text-wp-gray45">delta vs. referência ({model.unit})</p>
-    </div>
-  )
-}
-
-export function LegendOverlay({ model }: { model: LegendModel }) {
-  const [expanded, setExpanded] = useState(false)
-
+export function LegendOverlay({ model, className }: { model: LegendModel; className?: string }) {
   return (
     <div
       role="group"
       aria-label="Legenda do mapa térmico"
-      className="absolute bottom-3 right-3 z-10 rounded-md border border-wp-gray12 bg-white/95 px-2.5 py-2 font-body text-[12px] shadow-sm backdrop-blur"
-    >
-      <CollapseToggle label="Legenda" expanded={expanded} onClick={() => setExpanded(!expanded)} />
-      {expanded && (
-        <div className="mt-1">
-          {model.mode === 'status' && <StatusRows model={model} />}
-          {model.mode === 'absolute' && <AbsoluteBar model={model} />}
-          {model.mode === 'delta' && <DeltaBar model={model} />}
-        </div>
+      className={cn(
+        // Barra horizontal com os itens em linha.
+        'flex flex-wrap items-center gap-x-5 gap-y-1 px-5 py-2 font-body text-[12px]',
+        className,
       )}
+    >
+      {model.mode === 'status' && <StatusRows model={model} />}
+      {model.mode === 'absolute' && <AbsoluteBar model={model} />}
     </div>
   )
 }

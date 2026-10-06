@@ -23,9 +23,10 @@ import {
   type PredictionResponse,
   type StoveConfig,
 } from '@/contract/v1'
+import { AnalysisPanel, type BaseOption } from '@/features/analysis/AnalysisPanel'
 import { AreaCard, type AreaGroup, type SensorFocus } from '@/features/results/AreaCard'
 import { AreaStrip } from '@/features/results/AreaStrip'
-import { ResultsSummary } from '@/features/results/ResultsSummary'
+import { ReliabilityApproval, ResultsSummary } from '@/features/results/ResultsSummary'
 import { ThermalMapSlot } from '@/features/results/ThermalMapSlot'
 import { MetricsPanel } from '@/features/metrics/MetricsPanel'
 import { ratioOf } from '@/lib/status'
@@ -127,8 +128,6 @@ export function ResultsPanel({
   metadata,
   response,
   request,
-  referenceResponse,
-  isReferenceConfig = false,
   isLoading,
   error,
   hasRequest,
@@ -137,18 +136,18 @@ export function ResultsPanel({
   draftConfig = null,
   hoveredVariable = null,
   highlightPart = null,
-  onHoverVariable,
+  mapToolbarContainer = null,
+  focusRequest = null,
   activeTab,
   onTabChange,
   historySlot,
   technicianView = true,
+  analysisBases = [],
 }: {
   metadata: Metadata | undefined
   response: PredictionResponse | undefined
   /** Requisição submetida que gerou `response` — usada para mostrar a config na tela. */
   request?: PredictionRequest | null
-  referenceResponse?: PredictionResponse | undefined
-  isReferenceConfig?: boolean
   isLoading: boolean
   error: unknown
   hasRequest: boolean
@@ -158,7 +157,10 @@ export function ResultsPanel({
   draftConfig?: StoveConfig | null
   hoveredVariable?: keyof StoveConfig | null
   highlightPart?: PartId | null
-  onHoverVariable?: (field: keyof StoveConfig | null) => void
+  /** Onde o mapa térmico renderiza seus filtros (barra lateral direita). */
+  mapToolbarContainer?: HTMLElement | null
+  /** Pedido de "ir até a peça" (clique em "Configuração selecionada"). */
+  focusRequest?: { part: PartId; token: number } | null
   /** Aba ativa. Sem a prop, o painel controla a aba sozinho (começa em "resultados"). */
   activeTab?: ResultsTab
   onTabChange?: (tab: ResultsTab) => void
@@ -166,6 +168,8 @@ export function ResultsPanel({
   historySlot?: ReactNode
   /** `false` = visão "não técnico": tabela de sensor só mostra quem pede atenção. Padrão `true`. */
   technicianView?: boolean
+  /** Consultas do Histórico oferecidas como base de comparação na análise técnica. */
+  analysisBases?: BaseOption[]
 }) {
   // Etapa B: "Status (limite)" é o modo padrão — a pergunta do engenheiro é
   // onde o limite estoura, não onde está mais quente.
@@ -223,7 +227,11 @@ export function ResultsPanel({
   // resposta não cobre) abre a mais crítica, que `groupByArea` já põe primeiro.
   const shownGroup = groups.find((g) => g.name === chosenArea) ?? groups[0] ?? null
 
-  const body = (() => {
+  // Estados em que ainda não há previsão a mostrar (erro, sem consulta,
+  // carregando, arquitetura sem modelo, recorte vazio). É compartilhado pelas
+  // abas que dependem da previsão: nenhuma delas exibe dado que o usuário não
+  // pediu.
+  const stateView = (() => {
     if (error) {
       const message =
         error instanceof ContractError
@@ -280,7 +288,12 @@ export function ResultsPanel({
       )
     }
 
-    return (
+    return null
+  })()
+
+  const body =
+    stateView ??
+    (response && (
       <>
         <ResultsSummary response={response} />
         <AreaStrip
@@ -297,9 +310,19 @@ export function ResultsPanel({
             technicianView={technicianView}
           />
         )}
+        {!technicianView && <ReliabilityApproval response={response} />}
+        {technicianView && shownGroup && metadata && request && (
+          <AnalysisPanel
+            metadata={metadata}
+            request={request}
+            response={response}
+            baseOptions={analysisBases}
+            keyArea={shownGroup.name}
+            keyAreaLabel={shownGroup.label_pt}
+          />
+        )}
       </>
-    )
-  })()
+    ))
 
   return (
     <Tabs value={tab} onValueChange={(value) => setTab(value as ResultsTab)}>
@@ -316,8 +339,6 @@ export function ResultsPanel({
         <ThermalMapSlot
           metadata={metadata}
           response={response}
-          referenceResponse={referenceResponse}
-          isReferenceConfig={isReferenceConfig}
           mode={mapMode}
           onModeChange={setMapMode}
           selectedKeyArea={selectedKeyArea}
@@ -327,16 +348,21 @@ export function ResultsPanel({
           submittedConfig={submittedConfig}
           highlightPart={highlightPart}
           hoveredVariable={hoveredVariable}
-          onHoverVariable={onHoverVariable}
+          toolbarContainer={mapToolbarContainer}
+          focusRequest={focusRequest}
         />
       </TabsContent>
-      {/* Métricas reais do conjunto de teste, recortadas a ESTA previsão. */}
+      {/* Métricas reais da validação LOGO, recortadas a ESTA previsão. */}
       <TabsContent value="metricas" className="mt-0">
-        <MetricsPanel
-          metadata={metadata}
-          keyAreas={[...new Set(response?.predictions.map((p) => p.key_area) ?? [])]}
-          response={response ?? undefined}
-        />
+        {stateView ??
+          (response && (
+            <MetricsPanel
+              metadata={metadata}
+              keyAreas={[...new Set(response.predictions.map((p) => p.key_area))]}
+              response={response}
+              technicianView={technicianView}
+            />
+          ))}
       </TabsContent>
       {historySlot && (
         <TabsContent value="historico" className="mt-0">

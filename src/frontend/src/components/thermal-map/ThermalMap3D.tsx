@@ -1,7 +1,8 @@
 import { algorithmLabel } from '@/lib/algorithms'
 import type { AlgorithmCode } from '@/contract/v1'
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import * as THREE from 'three'
 
 import type { SensorPrediction, StoveConfig } from '@/contract/v1'
@@ -9,11 +10,10 @@ import { Card } from '@/components/ui/card'
 import { formatTemp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-import { absoluteRange, aggregateByKeyArea, formatTempPt, maxAbsDelta, type ZoneAggregate } from './aggregate'
-import { cameraForPart } from './cameraForPart'
-import { divergentColorForDelta, heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
+import { absoluteRange, aggregateByKeyArea, formatTempPt, type ZoneAggregate } from './aggregate'
+import { cameraForPart, type PartFocus } from './cameraForPart'
+import { heatColorForValue, ZONE_GRAY_HEX } from './colorScale'
 import { CollapseToggle } from './CollapseToggle'
-import { ConfigSummaryOverlay } from './ConfigSummaryOverlay'
 import { DEFAULT_CUT_DEPTH } from './cutPlane'
 import { legendModel, type MapColorMode } from './legendModel'
 import { LegendOverlay } from './LegendOverlay'
@@ -30,11 +30,12 @@ import { visibleLabelZones, worstSensorOf, zoneStatusColor, zoneStatusOf, type L
 
 export type { MapColorMode }
 
+/** Câmera ao abrir o mapa — e para onde "Recentralizar" devolve o fogão. */
+const INITIAL_CAMERA_PRESET: CameraPreset = 'iso'
+
 export interface ThermalMap3DProps {
   /** Predições da consulta atual. */
   predictions: SensorPrediction[]
-  /** Predições da configuração de referência, usadas no modo `delta`. */
-  referencePredictions?: SensorPrediction[]
   /** Padrão: `status`. */
   mode?: MapColorMode
   /** `key_area` → rótulo em pt-BR (de `Metadata.key_areas`). */
@@ -62,10 +63,21 @@ export interface ThermalMap3DProps {
   cameraPreset?: CameraPreset
   /** Peça que deve pulsar em `--wp-accent` (~1 s) — usado ao mudar um select. */
   highlightPart?: PartId | null
-  /** Empilha a lista de áreas abaixo do mapa em vez de exibi-la à direita. */
-  stackZoneList?: boolean
-  /** Conteúdo exibido entre o mapa e a lista de áreas quando ela está empilhada. */
-  belowMap?: ReactNode
+  /**
+   * Põe a lista de áreas num painel sobre o canvas, à direita (abaixo de
+   * "Configuração"), e faz o mapa ocupar a altura da tela: tudo fica visível
+   * sem rolar a página. Abaixo de 900 px a lista volta para baixo do mapa.
+   */
+  overlayZoneList?: boolean
+  /** Controles exibidos no topo do painel de áreas (ex.: modo de cor). */
+  zonePanelControls?: ReactNode
+  /**
+   * Elemento fora do canvas (barra lateral) onde os filtros do mapa são
+   * renderizados. Sem ele, os filtros ficam no canto do canvas.
+   */
+  toolbarContainer?: HTMLElement | null
+  /** Leva a câmera até a peça (abrindo o que for preciso); muda `token` a cada pedido. */
+  focusRequest?: { part: PartId; token: number } | null
   className?: string
 }
 
@@ -102,7 +114,6 @@ function TooltipCard({
 
 export function ThermalMap3D({
   predictions,
-  referencePredictions,
   mode = 'status',
   keyAreaLabels,
   selectedKeyArea = null,
@@ -117,21 +128,44 @@ export function ThermalMap3D({
   onLabelModeChange,
   cameraPreset,
   highlightPart = null,
-  stackZoneList = false,
-  belowMap,
+  overlayZoneList = false,
+  zonePanelControls,
+  toolbarContainer = null,
+  focusRequest = null,
   className,
 }: ThermalMap3DProps) {
+  const [zonePanelOpen, setZonePanelOpen] = useState(true)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
-  const [hoveredPart, setHoveredPart] = useState<PartId | null>(null)
   const [internalView, setInternalView] = useState<StoveView>('solid')
-  const [internalCamera, setInternalCamera] = useState<CameraPreset>('iso')
+  const [internalCamera, setInternalCamera] = useState<CameraPreset>(INITIAL_CAMERA_PRESET)
   const [internalOpenings, setInternalOpenings] = useState<OpeningState>(DEFAULT_OPENINGS)
   const [internalLabelMode, setInternalLabelMode] = useState<LabelMode>('none')
   const [cutDepth, setCutDepth] = useState(DEFAULT_CUT_DEPTH)
   const [explodeAmount, setExplodeAmount] = useState(DEFAULT_EXPLODE_AMOUNT)
   const [recenterToken, setRecenterToken] = useState(0)
+  // Região da peça para onde o último clique em "Configuração selecionada" levou a
+  // câmera. Vale no lugar do preset até o usuário escolher um preset ou recentralizar.
+  const [focus, setFocus] = useState<PartFocus | null>(null)
+  // Muda a cada "Recentralizar": a cena descarta os rótulos temporários que guarda.
+  const [resetToken, setResetToken] = useState(0)
   const [cameraFollowsPart, setCameraFollowsPart] = useState(false)
-  const [helpOpen, setHelpOpen] = useState(false)
+  // Com o painel sobreposto o canvas vai do topo dele até o pé da janela:
+  // mede onde o mapa começa e usa o resto da altura da tela.
+  const mapRef = useRef<HTMLDivElement>(null)
+  const [fillHeight, setFillHeight] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    if (!overlayZoneList) return
+    const measure = () => {
+      const el = mapRef.current
+      if (!el || window.innerWidth < 900) return setFillHeight(null)
+      const top = el.getBoundingClientRect().top + window.scrollY
+      // Vai até o pé da janela: o card sangra sobre o recuo de baixo (ver `style`).
+      setFillHeight(Math.max(460, window.innerHeight - top))
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [overlayZoneList])
   const prefersReducedMotion = usePrefersReducedMotion()
   const lastFollowedPart = useRef<PartId | null>(null)
 
@@ -170,6 +204,21 @@ export function ThermalMap3D({
     [onLabelModeChange],
   )
 
+  /**
+   * "Recentralizar" é um reinício do mapa: o fogão volta à posição inicial
+   * (câmera isométrica, sem foco numa peça) e todos os rótulos somem — os de
+   * zona, a zona selecionada (com seus pinos e destaque) e o "Peça → valor".
+   */
+  const handleRestart = useCallback(() => {
+    if (!cameraPreset) setInternalCamera(INITIAL_CAMERA_PRESET)
+    setFocus(null)
+    setRecenterToken((n) => n + 1)
+    handleLabelModeChange('none')
+    setHoveredKey(null)
+    onSelectKeyArea?.(null)
+    setResetToken((n) => n + 1)
+  }, [cameraPreset, handleLabelModeChange, onSelectKeyArea])
+
   // "Câmera segue a peça alterada" (Fase 1d, etapa E, padrão OFF): quando a
   // peça pulsa, move o preset (e abre o que for preciso) para o local do
   // fogão onde ela fica visível — só reage a uma peça *nova* pulsando, nunca
@@ -179,6 +228,7 @@ export function ThermalMap3D({
     if (lastFollowedPart.current === highlightPart) return
     lastFollowedPart.current = highlightPart
     const target = cameraForPart(highlightPart)
+    setFocus(null)
     if (!cameraPreset) setInternalCamera(target.preset)
     if (target.openings) {
       setInternalOpenings((prev) => {
@@ -193,6 +243,22 @@ export function ThermalMap3D({
     if (!highlightPart) lastFollowedPart.current = null
   }, [highlightPart])
 
+  // Clique numa variável de "Configuração selecionada": vai até a peça. Só
+  // reage a um token novo; o reenquadramento vale mesmo se o preset já for o atual.
+  const handledFocusToken = useRef<number | null>(null)
+  useEffect(() => {
+    if (!focusRequest || handledFocusToken.current === focusRequest.token) return
+    handledFocusToken.current = focusRequest.token
+    const target = cameraForPart(focusRequest.part)
+    setFocus(target.focus)
+    if (!cameraPreset) setInternalCamera(target.preset)
+    if (target.openings) {
+      setInternalOpenings((prev) => ({ ...(openings ?? prev), ...target.openings }))
+      onOpeningsChange?.({ ...effectiveOpenings, ...target.openings })
+    }
+    setRecenterToken((n) => n + 1)
+  }, [focusRequest, cameraPreset, openings, onOpeningsChange, effectiveOpenings])
+
   // Ligar/desligar a vista explodida muda a altura do fogão: reenquadra uma
   // vez no toggle (o slider em si não reenquadra — ver `CameraRig`).
   const explodeOn = effectiveOpenings.explode
@@ -205,13 +271,12 @@ export function ThermalMap3D({
   }, [explodeOn])
 
   const aggregates = useMemo(
-    () => aggregateByKeyArea(predictions, keyAreaLabels, mode === 'delta' ? referencePredictions : undefined),
-    [predictions, keyAreaLabels, referencePredictions, mode],
+    () => aggregateByKeyArea(predictions, keyAreaLabels),
+    [predictions, keyAreaLabels],
   )
   const aggByKey = useMemo(() => new Map(aggregates.map((a) => [a.key, a])), [aggregates])
 
   const range = useMemo(() => absoluteRange(aggregates), [aggregates])
-  const maxDelta = useMemo(() => maxAbsDelta(aggregates), [aggregates])
 
   const statusByKey = useMemo(() => {
     const map = new Map<string, ZoneStatus>()
@@ -220,17 +285,13 @@ export function ThermalMap3D({
   }, [aggregates, predictions])
 
   const legend = useMemo(
-    () => legendModel(mode, predictions, referencePredictions),
-    [mode, predictions, referencePredictions],
+    () => legendModel(mode, predictions),
+    [mode, predictions],
   )
 
   function colorForAgg(agg: ZoneAggregate): string {
     if (mode === 'status') return zoneStatusColor(predictions, agg.key)
     if (!agg.hasSensors || agg.mean === null) return ZONE_GRAY_HEX
-    if (mode === 'delta') {
-      if (agg.delta === null) return ZONE_GRAY_HEX
-      return divergentColorForDelta(agg.delta, maxDelta)
-    }
     return heatColorForValue(agg.mean, range.min, range.max)
   }
 
@@ -243,9 +304,6 @@ export function ThermalMap3D({
   const valueFor = useCallback(
     (agg: ZoneAggregate): string => {
       if (!agg.hasSensors) return 'sem sensores'
-      if (mode === 'delta') {
-        return agg.delta !== null ? `Δ ${formatTempPt(agg.delta, { withSign: true })}` : '—'
-      }
       if (mode === 'absolute') {
         return agg.mean !== null ? `média ${formatTemp(agg.mean)}` : '—'
       }
@@ -305,26 +363,73 @@ export function ThermalMap3D({
     )
   }
 
+  const toolbar = (
+    <MapToolbar
+      openings={effectiveOpenings}
+      onToggleOpening={handleToggleOpening}
+      labelMode={effectiveLabelMode}
+      onLabelModeChange={handleLabelModeChange}
+      view={effectiveView}
+      onViewChange={handleViewChange}
+      cutDepth={cutDepth}
+      onCutDepthChange={setCutDepth}
+      explodeAmount={explodeAmount}
+      onExplodeAmountChange={setExplodeAmount}
+      cameraPreset={effectiveCamera}
+      onCameraPresetChange={(preset) => {
+        setFocus(null)
+        setInternalCamera(preset)
+      }}
+      onRecenter={handleRestart}
+      cameraFollowsPart={cameraFollowsPart}
+      onCameraFollowsPartChange={setCameraFollowsPart}
+      variant={toolbarContainer ? 'panel' : 'overlay'}
+    />
+  )
+
+  const zoneList = (
+    <ZoneListPanel
+      aggregates={aggregates}
+      mode={mode}
+      hoveredKey={hoveredKey}
+      selectedKeyArea={selectedKeyArea}
+      onHover={setHoveredKey}
+      onSelect={handleSelect}
+      colorFor={colorForAgg}
+      valueFor={valueFor}
+      statusFor={(key) => statusByKey.get(key) ?? 'none'}
+    />
+  )
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <div
         className={cn(
           'grid gap-4',
-          !stackZoneList && 'min-[900px]:grid-cols-[1fr_280px]',
+          !overlayZoneList && 'min-[900px]:grid-cols-[1fr_280px]',
         )}
       >
         <Card
-          className="relative overflow-hidden bg-wp-gray05"
-          style={{ aspectRatio: '4 / 3', minHeight: 460 }}
+          ref={mapRef}
+          // Sangra sobre o recuo da coluna (esquerda, deixando uma fresta da barra de navegação,
+          // direita e base) para o canvas ocupar toda a área branca.
+          style={
+            fillHeight
+              ? { height: fillHeight, marginLeft: -32, marginRight: -20, marginBottom: -32 }
+              : undefined
+          }
+          className={cn(
+            'relative min-h-[460px] overflow-hidden bg-wp-gray05',
+            overlayZoneList ? (fillHeight ? '' : 'aspect-[4/3]') : 'aspect-[4/3]',
+            overlayZoneList && 'border-0 shadow-none',
+          )}
         >
           <div
             role="img"
             aria-label={`Mapa térmico 3D ilustrativo do fogão, com as ${aggregates.length} áreas coloridas ${
               mode === 'status'
                 ? 'pelo status do pior sensor em relação ao limite normativo'
-                : mode === 'delta'
-                  ? 'pela temperatura em relação à configuração de referência'
-                  : 'pela temperatura prevista'
+                : 'pela temperatura prevista'
             }. Os valores detalhados de cada área estão na lista ao lado.`}
             className="absolute inset-0"
           >
@@ -339,6 +444,7 @@ export function ThermalMap3D({
             >
               <ThermalMapScene
                 colorFor={colorForZoneKey}
+                thermalMode={mode === 'absolute'}
                 isZoneActive={isZoneActive}
                 onHoverZone={setHoveredKey}
                 onUnhoverZone={(key) => setHoveredKey((current) => (current === key ? null : current))}
@@ -350,70 +456,72 @@ export function ThermalMap3D({
                 config={effectiveConfig}
                 openings={effectiveOpenings}
                 highlightPart={highlightPart}
-                onHoverPart={setHoveredPart}
+                onHoverPart={() => {}}
                 autoRotate={false}
                 reducedMotion={prefersReducedMotion}
                 cameraPreset={effectiveCamera}
                 recenterToken={recenterToken}
+                focus={focus}
+                resetToken={resetToken}
                 zoneLabels={zoneLabels}
                 showAnnotations={effectiveLabelMode !== 'none'}
                 selectedKeyArea={selectedKeyArea}
                 sensorPins={sensorPins}
                 onSelectSensor={onSelectSensor}
+                tightFraming={overlayZoneList}
               />
             </Canvas>
           </div>
 
-          <MapToolbar
-            openings={effectiveOpenings}
-            onToggleOpening={handleToggleOpening}
-            labelMode={effectiveLabelMode}
-            onLabelModeChange={handleLabelModeChange}
-            view={effectiveView}
-            onViewChange={handleViewChange}
-            cutDepth={cutDepth}
-            onCutDepthChange={setCutDepth}
-            explodeAmount={explodeAmount}
-            onExplodeAmountChange={setExplodeAmount}
-            cameraPreset={effectiveCamera}
-            onCameraPresetChange={setInternalCamera}
-            onRecenter={() => setRecenterToken((n) => n + 1)}
-            cameraFollowsPart={cameraFollowsPart}
-            onCameraFollowsPartChange={setCameraFollowsPart}
-          />
+          {!toolbarContainer && toolbar}
 
-          <ConfigSummaryOverlay config={effectiveConfig} highlightPart={highlightPart} />
-          <LegendOverlay model={legend} />
-
-          <div className="absolute bottom-3 left-3 z-10 rounded-md border border-wp-gray12 bg-white/90 px-2 py-1 font-body text-[11px] text-wp-gray65 shadow-sm backdrop-blur">
-            <CollapseToggle label="Ajuda" expanded={helpOpen} onClick={() => setHelpOpen(!helpOpen)} />
-            {helpOpen && (
-              <p className="mt-1 whitespace-nowrap">
-                Arraste para girar · scroll para zoom
-                {hoveredPart ? ' · peça em foco' : ''}
-              </p>
+          {/* Coluna direita sobre o canvas: painel de áreas no topo (rola por
+              dentro) e legenda no rodapé. O vazio entre eles deixa os eventos
+              passarem para o canvas. */}
+          <div
+            className={cn(
+              'pointer-events-none absolute bottom-14 right-3 top-3 z-10 flex flex-col items-end gap-2',
+              overlayZoneList && 'min-[900px]:w-[19rem]',
+            )}
+          >
+            {overlayZoneList && (
+              <section
+                aria-label="Áreas do mapa"
+                className="pointer-events-auto hidden min-h-0 w-full flex-col gap-2 rounded-md border border-wp-gray12 bg-white/95 px-2 py-1.5 shadow-sm backdrop-blur min-[900px]:flex"
+              >
+                <CollapseToggle label="Áreas" expanded={zonePanelOpen} onClick={() => setZonePanelOpen(!zonePanelOpen)} />
+                {zonePanelOpen && (
+                  <>
+                    {zonePanelControls}
+                    <div className="-mx-1 min-h-0 overflow-y-auto px-1 [scrollbar-width:thin]">{zoneList}</div>
+                  </>
+                )}
+              </section>
             )}
           </div>
+
+          <LegendOverlay
+            model={legend}
+            className="absolute bottom-3 left-3 z-10 w-fit max-w-[calc(100%-1.5rem)] rounded-md bg-white backdrop-blur"
+          />
         </Card>
 
-        {stackZoneList && belowMap}
-
-        <div className="flex flex-col gap-2">
-          <ZoneListPanel
-            aggregates={aggregates}
-            mode={mode}
-            hoveredKey={hoveredKey}
-            selectedKeyArea={selectedKeyArea}
-            onHover={setHoveredKey}
-            onSelect={handleSelect}
-            colorFor={colorForAgg}
-            valueFor={valueFor}
-            statusFor={(key) => statusByKey.get(key) ?? 'none'}
-          />
-        </div>
+        {overlayZoneList ? (
+          // Telas estreitas: o painel sobreposto cobriria o fogão, então a
+          // lista volta para baixo do mapa.
+          <div className="flex flex-col gap-2 min-[900px]:hidden">
+            {zonePanelControls}
+            {zoneList}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">{zoneList}</div>
+        )}
       </div>
 
-      <p className="tabular text-xs text-wp-gray45">Geometria ilustrativa — não é CAD</p>
+      {/* Com o painel sobreposto o aviso já está no rodapé da página. */}
+      {toolbarContainer && createPortal(toolbar, toolbarContainer)}
+
+      {!overlayZoneList && <p className="tabular text-xs text-wp-gray45">Geometria ilustrativa — não é CAD</p>}
     </div>
   )
 }

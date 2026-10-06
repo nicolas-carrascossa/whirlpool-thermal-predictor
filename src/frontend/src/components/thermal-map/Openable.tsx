@@ -16,13 +16,11 @@ import { useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 
 import { damp, useStove, type OpeningState } from './StoveContext'
-import { BODY, BODY_FRONT } from './zoneGeometry'
+import { BODY, BODY_FRONT, CONSOLE_LIFT } from './zoneGeometry'
 
 /** Aberturas físicas (com transformação); `explode` é da `<ExplodeLayer>`, não daqui. */
 export type OpeningKind = Exclude<keyof OpeningState, 'explode'>
 
-/** Quanto a tampa do console sobe quando aberta, em unidades de cena. */
-export const CONSOLE_LIFT = 6
 /** Quanto o painel traseiro recua quando aberto. */
 export const REAR_SLIDE = 9
 /** Ângulo da porta do forno aberta (~80°). */

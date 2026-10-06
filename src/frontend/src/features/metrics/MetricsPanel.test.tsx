@@ -36,6 +36,11 @@ vi.mock('./AreaMaeBars', () => ({
     <div data-testid="mae-stub" data-selected={selectedKeyArea} />
   ),
 }))
+vi.mock('./ResidualScatter', () => ({
+  default: ({ points, executedRun }: { points: unknown[]; executedRun: number | null }) => (
+    <div data-testid="residual-stub" data-count={points.length} data-executed={String(executedRun)} />
+  ),
+}))
 
 const getMetrics = vi.fn()
 vi.mock('@/sources', () => ({
@@ -135,6 +140,25 @@ describe('MetricsPanel', () => {
     expect(within(coil).getByText('Fora do KPI')).toBeInTheDocument()
   })
 
+  it('na visão não técnica oculta diagnósticos detalhados de erro', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} technicianView={false} />)
+    expect(await screen.findByText('models-1.0.0')).toBeInTheDocument()
+
+    expect(screen.queryByText(/Resíduo vs\. previsto/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Medidas de erro por área')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('residual-stub')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('mae-stub')).not.toBeInTheDocument()
+    expect(screen.queryAllByRole('row').filter((r) => r.hasAttribute('data-key-area'))).toHaveLength(0)
+  })
+
+  it('na visão técnica mantém os diagnósticos detalhados de erro', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} technicianView />)
+    expect(await screen.findByText(/Resíduo vs\. previsto/)).toBeInTheDocument()
+    expect(screen.getByText('Medidas de erro por área')).toBeInTheDocument()
+    expect(await screen.findByTestId('residual-stub')).toBeInTheDocument()
+    expect(screen.getByTestId('mae-stub')).toBeInTheDocument()
+  })
+
   it('identifica o algoritmo de cada área por rótulo textual', async () => {
     renderWithQuery(<MetricsPanel metadata={METADATA} />)
     const rows = await screen.findAllByRole('row')
@@ -158,6 +182,14 @@ describe('MetricsPanel', () => {
     fireEvent.click(await screen.findByRole('option', { name: 'Resistências' }))
     expect(screen.getByTestId('mae-stub')).toHaveAttribute('data-selected', 'Coil Temps')
     expect(screen.getByText(/Previsto vs\. real — Resistências/)).toBeInTheDocument()
+  })
+
+  it('mostra as matrizes de decisão por leitura e por design', async () => {
+    renderWithQuery(<MetricsPanel metadata={METADATA} />)
+    expect(await screen.findByText(/Decisão por leitura — Painel traseiro/)).toBeInTheDocument()
+    expect(screen.getByText(/Decisão por design — Painel traseiro/)).toBeInTheDocument()
+    expect(screen.getByText('Como ler as matrizes de decisão')).toBeInTheDocument()
+    expect(screen.queryByText('Decisão por área')).not.toBeInTheDocument()
   })
 
   it('não exibe mais aviso de dado simulado: os quatro cartões são reais', async () => {

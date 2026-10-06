@@ -6,27 +6,26 @@ does not know which one is answering — `MODEL_MODE` is the only switch, and
 
 Routing. Each area is served by a fixed algorithm, chosen by the performance it
 showed in that area. **The mapping is not hardcoded here**: it lives in
-`models/manifest.json` and is exposed to the front-end in
+`src/backend/models/manifest.json` and is exposed to the front-end in
 `Metadata.area_algorithms`. Changing the algorithm of an area is a re-export,
 not a deploy.
 
-Encoding dictionaries. The 7 variables are categorical, ordinally encoded after
-spelling standardisation. The dictionary is read PER ARTIFACT from the manifest
-and applied by the model that is going to answer — never a global one. A global
-de-para is unsafe by construction: one algorithm collapsing a category is enough
-for the codes to stop matching, and the error comes out as a plausible number
-with no exception at all. (Both notebooks now fold "Aluminium Plate" into
-"Aluminium "; they did not always, which is exactly why this is per artifact.)
-A category outside the dictionary is handled in two different ways, because
-there are two different situations:
+Encoding. The 7 variables are categorical, one-hot encoded after spelling
+standardisation (one 0/1 column per category seen in training). The ordered
+column list (`feature_columns`) is read PER ARTIFACT from the manifest and
+applied by the model that is going to answer — never a global one: one extra
+category in an area shifts every column after it, and the error comes out as a
+plausible number with no exception at all. A category outside the area's
+training set is handled in two different ways, because there are two different
+situations:
 
 - value outside the canonical options of the contract -> `ContractError` (422),
   same as the mock. The request is wrong.
-- value that IS canonical but that a given area never saw in training (its
-  `dropna` removed the runs carrying it) -> that AREA is omitted from the
-  response, and the others answer normally. Failing the whole request because
-  one of seven areas cannot answer would throw away six valid predictions; the
-  interface already renders an area without data in grey.
+- value that IS canonical but that a given area never saw in training -> that
+  AREA is omitted from the response, and the others answer normally. Failing
+  the whole request because one of seven areas cannot answer would throw away
+  six valid predictions; the interface already renders an area without data in
+  grey.
 
 Sensor expansion. `tratamento_final_dos_dados.ipynb` fuses `IGBT 1`..`IGBT 16`
 into a single `IGBT` column, so the `IPC Comp` model outputs 22 values for 37
@@ -140,9 +139,10 @@ class RealPredictor:
         path = self.model_dir / MANIFEST_NAME
         if not path.exists():
             raise RuntimeError(
-                f"Manifesto de modelos não encontrado em {path}. "
-                "Rode `python scripts/export_models.py` ou aponte MODEL_DIR para o "
-                "diretório dos artefatos."
+                f"Manifesto de modelos não encontrado em {path}. Os modelos não vêm "
+                "com o repositório: gere-os com `npm run modelos:gerar` (na raiz, com a "
+                "base do parceiro em data/), aponte MODEL_DIR para o diretório dos "
+                "artefatos ou use MODEL_MODE=mock."
             )
         with path.open("r", encoding="utf-8") as handle:
             return json.load(handle)
@@ -194,15 +194,13 @@ class RealPredictor:
     def _to_training(self, key_area: str, config: dict[str, str]) -> dict[str, str]:
         """Canonical contract spelling -> spelling used when training that area.
 
-        The two are NOT the same, and inverse of each other: `build_registry.py`
-        canonicalises "To Back" -> "To back" and strips trailing spaces for the
-        API, while the notebooks canonicalise "To back" -> "To Back" and keep
-        "Aluminium ". The correspondence is resolved once at export time and
-        recorded per area in `canonical_to_training`; here it is a lookup.
+        The two are NOT the same: `build_registry.py` canonicalises
+        "To Back" -> "To back" for the API, while training uses "To Back". The
+        correspondence is resolved once at export time and recorded per area in
+        `canonical_to_training`; here it is a lookup.
 
         An option missing from the table is one this area never saw in training
-        (its `dropna` removed the runs that carried it) — `_encode` turns that
-        into a 422 rather than a plausible, wrong number.
+        — `_encode` turns that into a 422 rather than a plausible, wrong number.
         """
         table: dict[str, dict[str, str]] = self._areas[key_area].get("canonical_to_training", {})
         return {
@@ -210,29 +208,26 @@ class RealPredictor:
         }
 
     def _encode(self, key_area: str, config: dict[str, str]) -> list[int]:
-        """Encodes the config with the dictionary OF THE MODEL that will answer.
+        """One-hot row in the column order OF THE MODEL that will answer.
 
-        Applies the same spelling fixes recorded at training time, then the
-        ordinal dictionary. Anything outside it is a contract violation.
+        Applies the same spelling fixes recorded at training time, then sets to
+        1 the column of each chosen category. A category the area never saw is
+        a contract violation.
         """
         entry = self._areas[key_area]
-        encoding: dict[str, dict[str, int]] = entry["encoding"]
+        categories: dict[str, list[str]] = entry["encoding"]
         trained = self._to_training(key_area, config)
 
-        row: list[int] = []
         for field in CONFIG_FIELDS:
-            value = trained[field]
-            table = encoding.get(field, {})
-            if value not in table:
-                accepted = ", ".join(sorted(table))
+            known = categories.get(field, [])
+            if trained[field] not in known:
                 raise ContractError(
                     f'Valor inválido para "{field}": "{config[field]}". '
-                    f"O modelo de {key_area} conhece apenas: {accepted}.",
+                    f"O modelo de {key_area} conhece apenas: {', '.join(known)}.",
                     field,
                     config[field],
                 )
-            row.append(table[value])
-        return row
+        return [int(trained[field] == category) for field, category in entry["feature_columns"]]
 
     # --- reliability -------------------------------------------------------
 

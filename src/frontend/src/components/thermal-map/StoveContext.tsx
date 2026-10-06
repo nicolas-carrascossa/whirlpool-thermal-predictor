@@ -18,7 +18,7 @@ export interface OpeningState {
    * A chave continua `console` por compatibilidade de estado.
    */
   console: boolean
-  /** Painel traseiro afastado: mostra o fundo da baía e o caminho do ar. */
+  /** Painel traseiro afastado: mostra o fundo da baía. */
   rear: boolean
   /** Porta do forno abaixada ~80°: mostra a resistência e o suporte. */
   oven: boolean
@@ -31,6 +31,8 @@ export const DEFAULT_OPENINGS: OpeningState = { console: true, rear: false, oven
 
 export interface StoveContextValue {
   view: StoveView
+  /** Campo térmico CFD aplicado às superfícies; exclusivo do modo Mapa de calor. */
+  thermalMode: boolean
   /** Plano de corte compartilhado (mutado no lugar pelo slider, sem re-render). */
   clipPlanes: THREE.Plane[]
   /** Profundidade do corte em % — usada pela tampa escura da face cortada. */
@@ -42,7 +44,7 @@ export interface StoveContextValue {
   openings: OpeningState
   /** Peça que deve pulsar em `--wp-accent` (etapa C). */
   highlightPart: PartId | null
-  /** Peça sob o cursor — tinge as setas de ar em `--wp-accent` (etapa B). */
+  /** Peça sob o cursor. */
   hoveredPart: PartId | null
   /** Animações instantâneas quando o usuário pede menos movimento. */
   reducedMotion: boolean

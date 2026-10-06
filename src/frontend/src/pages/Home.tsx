@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
 import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { StartGate } from '@/features/session/StartGate'
+import { ModelsGate, useModelState, useModelsGateActive } from '@/features/system/ModelsGate'
 import { HistoryPanel } from '@/features/history/HistoryPanel'
 import { useAuth } from '@/features/auth/authStore'
 import { isApiMode } from '@/features/auth/RequireAuth'
@@ -26,7 +27,6 @@ import { ResultsPanel, type ResultsTab } from '@/features/results/ResultsPanel'
 import {
   useMetadataQuery,
   usePredictionQuery,
-  useReferencePredictionQuery,
 } from '@/hooks/useThermalQueries'
 
 const NAV_ITEMS: NavItem<ResultsTab>[] = [
@@ -81,16 +81,8 @@ function ViewModeToggle({ technician, onChange }: { technician: boolean; onChang
 function HomeContent() {
   const store = useConfigStore()
   const prediction = usePredictionQuery(store.request)
-  const referencePrediction = useReferencePredictionQuery(
-    store.request,
-    store.metadata?.reference_config,
-  )
   const apiMode = isApiMode()
   const isMock = !apiMode
-  const isReferenceConfig =
-    !!store.config &&
-    !!store.metadata &&
-    JSON.stringify(store.config) === JSON.stringify(store.metadata.reference_config)
 
   // `AuthProvider` envolve toda a aplicação (ver App.tsx), então o hook é
   // sempre seguro de chamar; seus valores só importam em modo `api`.
@@ -101,6 +93,9 @@ function HomeContent() {
   // fica na barra superior (AppShell) e as abas ficam no ResultsPanel. O histórico
   // é uma dessas abas; reabrir uma consulta leva de volta a "resultados".
   const [resultsTab, setResultsTab] = useState<ResultsTab>('resultados')
+  // Nó da barra lateral onde o mapa térmico põe seus filtros (via portal),
+  // logo abaixo de "Configuração selecionada". Só existe na aba do mapa.
+  const [mapToolbarEl, setMapToolbarEl] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     if (apiMode && auth.sessionExpired) {
@@ -129,7 +124,7 @@ function HomeContent() {
   return (
     <AppShell
       isMock={isMock}
-      title="Thermal Predictor"
+      title={<img src="/logoWhirlpool.png" alt="Whirlpool" className="h-20 w-auto" />}
       section={`${sectionLabel}${sessionLabel}`}
       headerRight={
         <>
@@ -151,7 +146,7 @@ function HomeContent() {
       }
       nav={<NavRail items={NAV_ITEMS} active={resultsTab} onChange={setResultsTab} />}
       configSidebar={
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <UserCard
             name={apiMode ? (auth.user?.display_name ?? 'Usuário') : 'Usuário local'}
             role={apiMode ? (auth.user?.role ?? '') : 'Modo de demonstração'}
@@ -160,7 +155,13 @@ function HomeContent() {
           {store.session !== null && (
             <>
               <hr className="border-wp-gray12" />
-              <StoveConfigPanel />
+              <StoveConfigPanel onFocusVariable={() => setResultsTab('mapa')} />
+              {resultsTab === 'mapa' && store.request !== null && (
+                <>
+                  <hr className="border-wp-gray12" />
+                  <div ref={setMapToolbarEl} />
+                </>
+              )}
             </>
           )}
         </div>
@@ -181,8 +182,6 @@ function HomeContent() {
           metadata={store.metadata}
           response={prediction.data}
           request={store.request}
-          referenceResponse={referencePrediction.data}
-          isReferenceConfig={isReferenceConfig}
           isLoading={prediction.isFetching && !prediction.data}
           error={prediction.error}
           hasRequest={store.request !== null}
@@ -191,11 +190,13 @@ function HomeContent() {
           draftConfig={store.config}
           hoveredVariable={store.hoveredVariable}
           highlightPart={store.highlightPart}
-          onHoverVariable={store.setHoveredVariable}
+          mapToolbarContainer={mapToolbarEl}
+          focusRequest={store.focusRequest}
           activeTab={resultsTab}
           onTabChange={setResultsTab}
           historySlot={<HistoryPanel onReopen={() => setResultsTab('resultados')} />}
           technicianView={store.technicianView}
+          analysisBases={store.history}
         />
       )}
     </AppShell>
@@ -204,32 +205,62 @@ function HomeContent() {
 
 export function HomePage() {
   const metadata = useMetadataQuery()
+  // Sem os modelos treinados, a API gera-os a partir do dataset ou oferece o mock.
+  const modelsGate = isApiMode() ? <ModelsGate /> : null
+  // Enquanto o aviso dos modelos está na tela, o erro de metadados atrás dele só atrapalha.
+  const gateActive = useModelsGateActive(isApiMode())
+  const { loading: modelStateLoading } = useModelState(isApiMode())
+
+  // Ao voltar para a tela, os metadados e o estado dos modelos são consultados de novo.
+  // Até as respostas chegarem, não mostra nem a plataforma nem o erro: o que aparecesse
+  // ali sumiria em milissegundos, quando a resposta trouxesse o estado de verdade.
+  if (metadata.isPending || (metadata.error && modelStateLoading)) {
+    return (
+      <div className="min-h-screen">
+        <header className="px-6 py-4">
+          <img src="/logoWhirlpool.png" alt="Whirlpool Thermal Predictor" className="h-16 w-auto" />
+        </header>
+        <p role="status" className="px-6 py-12 text-center text-sm text-wp-gray65">
+          Carregando…
+        </p>
+      </div>
+    )
+  }
 
   if (metadata.error) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <Card>
-          <CardContent
-            role="alert"
-            className="flex flex-col items-center gap-2 px-6 py-14 text-center"
-          >
-            <OctagonAlert className="h-6 w-6 text-status-danger-ink" strokeWidth={1.5} aria-hidden="true" />
-            <h1 className="font-display text-lg font-semibold text-wp-gray85">
-              Não foi possível carregar os metadados
-            </h1>
-            <p className="text-sm leading-relaxed text-wp-gray65">
-              {metadata.error instanceof Error
-                ? metadata.error.message
-                : 'Erro desconhecido ao carregar os metadados.'}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen">
+        <header className="px-6 py-4">
+          <img src="/logoWhirlpool.png" alt="Whirlpool Thermal Predictor" className="h-16 w-auto" />
+        </header>
+        <div className="mx-auto max-w-2xl px-6 py-12">
+          {modelsGate}
+          {gateActive ? null : (
+            <Card>
+              <CardContent
+                role="alert"
+                className="flex flex-col items-center gap-2 px-6 py-14 text-center"
+              >
+                <OctagonAlert className="h-6 w-6 text-status-danger-ink" strokeWidth={1.5} aria-hidden="true" />
+                <h1 className="font-display text-lg font-semibold text-wp-gray85">
+                  Não foi possível carregar os metadados
+                </h1>
+                <p className="text-sm leading-relaxed text-wp-gray65">
+                  {metadata.error instanceof Error
+                    ? metadata.error.message
+                    : 'Erro desconhecido ao carregar os metadados.'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     )
   }
 
   return (
     <TooltipProvider delayDuration={150}>
+      {modelsGate}
       <ConfigStoreProvider metadata={metadata.data}>
         <HomeContent />
       </ConfigStoreProvider>

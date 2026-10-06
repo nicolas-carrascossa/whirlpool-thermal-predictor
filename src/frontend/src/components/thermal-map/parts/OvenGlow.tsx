@@ -55,10 +55,10 @@ export function OvenGlow({ showBadge = true }: { showBadge?: boolean }) {
         decay={1.6}
       />
 
-      {/* selo do forno junto à porta: a informação que o brilho antes tentava dar */}
+      {/* selo do forno junto à porta, sob a tela: a informação que o brilho antes tentava dar */}
       {showBadge && (
         <Html
-          position={[0, 7.6, BODY_FRONT + 1.6]}
+          position={[0, 6.95, BODY_FRONT + 1.6]}
           center
           zIndexRange={[8, 0]}
           style={{ pointerEvents: 'none' }}

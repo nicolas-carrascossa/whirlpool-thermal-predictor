@@ -1,6 +1,6 @@
 """Pydantic v2 models mirroring `src/frontend/src/contract/v1.ts`.
 
-Structural parity with `contracts/api_v1.schema.json` is enforced by
+Structural parity with `src/contracts/api_v1.schema.json` is enforced by
 `tests/test_schema_drift.py`: same property names and same required fields for
 every object of the contract.
 """
@@ -131,13 +131,13 @@ class Metadata(StrictModel):
 
 
 class ValidationRun(StrictModel):
-    """A lab run from the area's held-out test set."""
+    """A lab run of the area, used as the test fold in the LOGO validation."""
 
     label: str
 
 
 class ValidationPoint(StrictModel):
-    """One predicted/actual pair from the test set.
+    """One predicted/actual pair from the LOGO validation (out-of-fold).
 
     These are the only real measured values the product has. A configuration
     that never went to the lab has no "actual" to compare against — and cannot.

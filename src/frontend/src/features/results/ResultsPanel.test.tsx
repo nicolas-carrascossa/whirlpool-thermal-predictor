@@ -60,6 +60,12 @@ describe('ResultsPanel', () => {
     expect(await screen.findByLabelText('Área do modelo')).toBeInTheDocument()
   })
 
+  it('não mostra métricas antes de haver uma previsão', () => {
+    renderPanel({ activeTab: 'metricas', response: undefined, hasRequest: false })
+    expect(screen.getByText('Esperando previsão')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Área do modelo')).not.toBeInTheDocument()
+  })
+
   it('monta o mapa térmico na seção "mapa"', () => {
     const { container } = renderPanel({ activeTab: 'mapa' })
     expect(container.querySelector('[data-slot="thermal-map"]')).toBeInTheDocument()
@@ -115,7 +121,7 @@ describe('ResultsPanel', () => {
     expect(screen.queryByText('Sensores previstos')).not.toBeInTheDocument()
   })
 
-  it('interpolação não ganha banner; extrapolação continua avisando', () => {
+  it('mostra a aprovação apenas para a visão não técnica', () => {
     const { unmount } = renderPanel()
     expect(screen.queryByText(/Confiabilidade:/)).not.toBeInTheDocument()
     unmount()
@@ -124,8 +130,10 @@ describe('ResultsPanel', () => {
       ...FIXTURE_RESPONSE,
       predictions: FIXTURE_RESPONSE.predictions.map((p) => ({ ...p, reliability: 'moderate_extrapolation' as const })),
     }
-    renderPanel({ response: extrapolated })
-    expect(screen.getByRole('alert')).toHaveTextContent('Confiabilidade: Extrapolação moderada')
+    renderPanel({ response: extrapolated, technicianView: false })
+    expect(screen.getByText('Confiabilidade da previsão')).toBeInTheDocument()
+    expect(screen.getByText('Não aprovado')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('a tabela não tem mais as colunas Razão e Confiável, nem o círculo de pior razão', () => {

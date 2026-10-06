@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { StoveConfigPanel } from '@/features/config/StoveConfigPanel'
 import { ConfigStoreProvider, useConfigStore } from '@/features/config/store'
-import { VARIABLE_LABEL_EN } from '@/features/config/variableLabels'
+import { HIDDEN_OPTIONS, VARIABLE_LABEL_EN } from '@/features/config/variableLabels'
 import type { Metadata, StoveConfig } from '@/contract/v1'
 import { FIXTURE_METADATA } from '@/test/fixtures'
 
@@ -86,13 +86,11 @@ describe('StoveConfigPanel', () => {
     )
   })
 
-  it('sinaliza o que mudou em relação à configuração de referência', () => {
+  it('não compara com uma configuração de referência: mudar uma variável não ganha marcador', () => {
     renderPanel()
-    expect(screen.queryByRole('img', { name: /Diferente da referência/ })).not.toBeInTheDocument()
     fireEvent.click(within(group('Operating mode')).getByRole('radio', { name: 'Broil C2' }))
-    expect(screen.getByRole('img', { name: 'Diferente da referência (Pyro)' })).toBeInTheDocument()
-    fireEvent.click(within(group('Operating mode')).getByRole('radio', { name: 'Pyro' }))
-    expect(screen.queryByRole('img', { name: /Diferente da referência/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /referência/i })).not.toBeInTheDocument()
+    expect(screen.queryByTitle(/referência/i)).not.toBeInTheDocument()
   })
 
   it('passar o mouse na variável destaca a variável no mapa 3D', () => {
@@ -104,7 +102,7 @@ describe('StoveConfigPanel', () => {
     expect(snapshot().hoveredVariable).toBeNull()
   })
 
-  it('variável com muitas opções volta a ser um dropdown, em vez de um paredão de botões', () => {
+  it('variável com muitas opções mantém o padrão de botões em duas colunas', () => {
     const options = Array.from({ length: 9 }, (_, i) => `Perfil ${i + 1}`)
     const many: Metadata = {
       ...FIXTURE_METADATA,
@@ -112,10 +110,11 @@ describe('StoveConfigPanel', () => {
       reference_config: { ...FIXTURE_METADATA.reference_config, losses: 'Perfil 1' },
     }
     renderPanel(many)
-    expect(screen.queryByRole('radiogroup', { name: 'Losses' })).not.toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Losses' })).toHaveTextContent('Perfil 1')
-    // As demais variáveis continuam com as opções visíveis.
-    expect(screen.getAllByRole('radiogroup')).toHaveLength(FIXTURE_METADATA.variables.length - 1)
+    const losses = screen.getByRole('radiogroup', { name: 'Losses' })
+    expect(losses.className).toMatch(/grid-cols-2/)
+    expect(within(losses).getAllByRole('radio')).toHaveLength(9)
+    expect(within(losses).getByRole('radio', { name: 'Perfil 1' })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByRole('combobox', { name: 'Losses' })).not.toBeInTheDocument()
   })
 
   it('não tem ícone de variável nem texto em português nos rótulos', () => {
@@ -128,7 +127,7 @@ describe('StoveConfigPanel', () => {
     expect(screen.getByRole('img', { name: 'Brasil' })).toBeInTheDocument()
   })
 
-  it('esconde as opções que o processamento unifica (Open - Updated, Aluminium Plate) e as de losses não treinadas', () => {
+  it('esconde só as opções que o processamento unifica (Open - Updated, Aluminium Plate) e mostra todas as de losses', () => {
     const meta: Metadata = {
       ...FIXTURE_METADATA,
       variables: FIXTURE_METADATA.variables.map((v) =>
@@ -146,10 +145,30 @@ describe('StoveConfigPanel', () => {
       within(group(label)).getAllByRole('radio').map((r) => r.textContent)
     expect(optionsOf('Electronics housing')).toEqual(['Closed', 'Open'])
     expect(optionsOf('Coil support material')).toEqual(['Aluminium', 'Plastic'])
-    expect(optionsOf('Losses')).toEqual(['No losses', 'Miro - Front Order'])
+    expect(optionsOf('Losses')).toEqual(['No losses', 'Simone Losses', 'Miro', 'Miro - Front Order'])
   })
 
-  it('losses fica em botões (um por linha, nomes longos), não em dropdown', () => {
+  it('oferece as 13 categorias de losses do catálogo, sem esconder nenhuma', () => {
+    const real = [
+      'Broil C2 Simone - 240/145/180/180', 'Broil C2 Simone - Front Order', 'Broil Miro - Front Order',
+      'C1 Simone - 240/145/180/180', 'Miro', 'Miro - Front Order', 'Miro Qualitative  - Back Order',
+      'Miro Qualitative  - Front Order', 'No losses', 'Qual Simone - Front Order', 'Simone',
+      'Simone Losses', 'Simone Modified - Back Order',
+    ]
+    expect(HIDDEN_OPTIONS.losses).toBeUndefined()
+    renderPanel({
+      ...FIXTURE_METADATA,
+      variables: FIXTURE_METADATA.variables.map((v) => (v.name === 'losses' ? { ...v, options: real } : v)),
+      reference_config: { ...FIXTURE_METADATA.reference_config, losses: 'No losses' },
+    })
+    const losses = screen.getByRole('radiogroup', { name: 'Losses' })
+    expect(within(losses).getAllByRole('radio').map((o) => o.textContent?.replace(/\s+/g, ' '))).toEqual(
+      real.map((o) => o.replace(/\s+/g, ' ')),
+    )
+    expect(losses.className).toMatch(/grid-cols-2/)
+  })
+
+  it('losses fica em botões, no mesmo padrão dos demais campos', () => {
     const meta: Metadata = {
       ...FIXTURE_METADATA,
       variables: FIXTURE_METADATA.variables.map((v) =>
@@ -160,7 +179,7 @@ describe('StoveConfigPanel', () => {
     }
     renderPanel(meta)
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-    expect(group('Losses').className).toMatch(/grid-cols-1/)
+    expect(group('Losses').className).toMatch(/flex/)
     // O espaço duplo do dataset não aparece na tela, mas o valor enviado continua o original.
     fireEvent.click(within(group('Losses')).getByRole('radio', { name: 'Miro Qualitative - Back Order' }))
     expect(snapshot().config.losses).toBe('Miro Qualitative  - Back Order')

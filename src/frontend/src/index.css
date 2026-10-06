@@ -65,6 +65,61 @@
   }
 }
 
+/* Densidade adaptativa para notebooks. A composição do dashboard continua
+   horizontal; tipografia, controles e espaçamentos diminuem juntos antes que
+   qualquer painel precise mudar de linha. */
+@media (min-width: 900px) and (max-width: 1366px) {
+  html {
+    font-size: 14px;
+  }
+
+  .dashboard-nav-rail {
+    width: 60px;
+    padding-block: 1rem;
+  }
+
+  .dashboard-layout {
+    gap: 0.75rem;
+    padding-inline: 0.75rem;
+  }
+
+  .dashboard-header {
+    column-gap: 0.75rem;
+    padding-inline: 1rem;
+  }
+
+  .dashboard-header-actions {
+    gap: 0.5rem;
+  }
+
+  .dashboard-results {
+    padding-inline: 1rem;
+  }
+
+  .dashboard-config-sidebar {
+    padding-left: 1rem;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  html {
+    font-size: 13px;
+  }
+
+  .dashboard-nav-rail {
+    width: 54px;
+  }
+
+  .dashboard-layout {
+    gap: 0.625rem;
+    padding-inline: 0.5rem;
+  }
+
+  .dashboard-header-actions {
+    flex-wrap: nowrap;
+  }
+}
+
 @layer utilities {
   /* Números alinhados em coluna, na mesma fonte do resto (teste de padronização
      tipográfica: antes eram monoespaçados). */

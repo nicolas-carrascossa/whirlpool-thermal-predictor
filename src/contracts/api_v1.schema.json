@@ -1,0 +1,632 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inteli.whirlpool/thermal-predictor/contracts/api_v1.schema.json",
+  "title": "Thermal Predictor — contrato da API v1",
+  "description": "Gerado por npm run contract:schema a partir de src/frontend/src/contract/v1.ts. Não editar à mão.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/PredictionRequest"
+    },
+    {
+      "$ref": "#/$defs/PredictionResponse"
+    },
+    {
+      "$ref": "#/$defs/Metadata"
+    },
+    {
+      "$ref": "#/$defs/MetricsResponse"
+    }
+  ],
+  "$defs": {
+    "AlgorithmCode": {
+      "description": "Família de modelo que atende uma `key_area` (v1.1).\n\nO algoritmo **não é escolhido pelo cliente**: cada área é atendida por um algoritmo fixo, definido pelo desempenho medido naquela área e servido em `Metadata.area_algorithms`. Por isso não existe campo de algoritmo em `PredictionRequest` — só de saída.",
+      "enum": [
+        "random_forest",
+        "gradient_boosting"
+      ],
+      "type": "string"
+    },
+    "AlgorithmMeta": {
+      "additionalProperties": false,
+      "description": "Família de modelo disponível no conjunto de artefatos (v1.1).",
+      "properties": {
+        "available": {
+          "description": "`false` quando o artefato do algoritmo não pôde ser carregado.",
+          "type": "boolean"
+        },
+        "code": {
+          "$ref": "#/$defs/AlgorithmCode"
+        },
+        "label_pt": {
+          "type": "string"
+        },
+        "model_version": {
+          "description": "Versão do artefato deste algoritmo — distinta de `PredictionResponse.model_version`.",
+          "type": "string"
+        },
+        "trained_at": {
+          "description": "Timestamp ISO-8601 do treino, quando o manifesto o registra.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "label_pt",
+        "available",
+        "model_version"
+      ],
+      "type": "object"
+    },
+    "Architecture": {
+      "description": "Arquitetura de produto. Hoje só BR possui dados de treino.",
+      "enum": [
+        "BR",
+        "MX"
+      ],
+      "type": "string"
+    },
+    "ArchitectureMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "code": {
+          "$ref": "#/$defs/Architecture"
+        },
+        "label_pt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "available",
+        "label_pt"
+      ],
+      "type": "object"
+    },
+    "AreaMetrics": {
+      "additionalProperties": false,
+      "description": "Métricas de validação de uma área (v1.1) — `GET /api/v1/metrics`.",
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/AlgorithmCode",
+          "description": "Algoritmo que atende a área; vem junto porque comparar MAE entre áreas atendidas por modelos diferentes exige a procedência à vista."
+        },
+        "feature_importance": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Importância das 7 variáveis de configuração; soma 1,0.",
+          "type": "object"
+        },
+        "key_area": {
+          "type": "string"
+        },
+        "mae": {
+          "description": "Erro absoluto médio, em °C.",
+          "type": "number"
+        },
+        "mape_pct": {
+          "description": "Erro percentual absoluto médio, em %.",
+          "type": "number"
+        },
+        "r2": {
+          "description": "Coeficiente de determinação no conjunto de validação.",
+          "type": "number"
+        },
+        "rmse": {
+          "description": "Raiz do erro quadrático médio, em °C.",
+          "type": "number"
+        },
+        "validation": {
+          "$ref": "#/$defs/AreaValidation",
+          "description": "Pares previsto/real da validação LOGO desta área (v1.2). Alimentam a dispersão e o mapa de calor da aba de métricas, que antes liam dado simulado."
+        },
+        "within_ten_pct_rate": {
+          "description": "Fração (0..1) das predições com erro ≤ 10 % — o KPI do projeto.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "key_area",
+        "algorithm",
+        "mae",
+        "rmse",
+        "r2",
+        "mape_pct",
+        "within_ten_pct_rate",
+        "feature_importance",
+        "validation"
+      ],
+      "type": "object"
+    },
+    "AreaValidation": {
+      "additionalProperties": false,
+      "properties": {
+        "points": {
+          "items": {
+            "$ref": "#/$defs/ValidationPoint"
+          },
+          "type": "array"
+        },
+        "runs": {
+          "items": {
+            "$ref": "#/$defs/ValidationRun"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "runs",
+        "points"
+      ],
+      "type": "object"
+    },
+    "KeyAreaMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "label_pt": {
+          "type": "string"
+        },
+        "n_sensors": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "label_pt",
+        "n_sensors"
+      ],
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithms": {
+          "description": "Famílias de modelo do conjunto de artefatos (v1.1).",
+          "items": {
+            "$ref": "#/$defs/AlgorithmMeta"
+          },
+          "type": "array"
+        },
+        "architectures": {
+          "items": {
+            "$ref": "#/$defs/ArchitectureMeta"
+          },
+          "type": "array"
+        },
+        "area_algorithms": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AlgorithmCode"
+          },
+          "description": "Mapeamento completo `key_area` → algoritmo (v1.1), servido pelo back-end a partir do manifesto. **O front-end nunca duplica este mapa**: trocar o algoritmo de uma área é edição de configuração, não deploy de interface.",
+          "type": "object"
+        },
+        "contract_version": {
+          "type": "string"
+        },
+        "key_areas": {
+          "items": {
+            "$ref": "#/$defs/KeyAreaMeta"
+          },
+          "type": "array"
+        },
+        "reference_config": {
+          "$ref": "#/$defs/StoveConfig",
+          "description": "Configuração real do dataset, usada como preset inicial da demo."
+        },
+        "sensors": {
+          "items": {
+            "$ref": "#/$defs/SensorMeta"
+          },
+          "type": "array"
+        },
+        "variables": {
+          "items": {
+            "$ref": "#/$defs/VariableMeta"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "contract_version",
+        "architectures",
+        "variables",
+        "sensors",
+        "key_areas",
+        "reference_config",
+        "algorithms",
+        "area_algorithms"
+      ],
+      "type": "object"
+    },
+    "MetricsResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "description": "Uma linha por área pedida (ou todas, sem filtro).",
+          "items": {
+            "$ref": "#/$defs/AreaMetrics"
+          },
+          "type": "array"
+        },
+        "generated_at": {
+          "type": "string"
+        },
+        "model_version": {
+          "description": "Versão do conjunto de artefatos — mesma semântica de `PredictionResponse.model_version`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_version",
+        "areas",
+        "generated_at"
+      ],
+      "type": "object"
+    },
+    "PredictionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "$ref": "#/$defs/Architecture"
+        },
+        "config": {
+          "$ref": "#/$defs/StoveConfig"
+        },
+        "targets": {
+          "$ref": "#/$defs/PredictionTargets"
+        }
+      },
+      "required": [
+        "architecture",
+        "config"
+      ],
+      "type": "object"
+    },
+    "PredictionResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm_by_area": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AlgorithmCode"
+          },
+          "description": "Mapa de conveniência `key_area` → algoritmo das áreas presentes NESTA resposta (v1.1) — deixa a interface montar cabeçalhos por área sem varrer as 76 predições. Vazio quando `predictions` está vazio.",
+          "type": "object"
+        },
+        "architecture": {
+          "$ref": "#/$defs/Architecture"
+        },
+        "architecture_available": {
+          "description": "`false` quando não há modelo treinado para a arquitetura pedida.",
+          "type": "boolean"
+        },
+        "generated_at": {
+          "description": "Timestamp ISO-8601 da geração.",
+          "type": "string"
+        },
+        "ignored_fields": {
+          "description": "Campos da config recebidos e deliberadamente ignorados pelo modelo.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "model_version": {
+          "description": "Versão do CONJUNTO de artefatos que respondeu (ex.: `\"models-1.0.0\"`).\n\nMUDANÇA DE SEMÂNTICA EM v1.1: até a v1.0 este campo identificava o único preditor da resposta (`\"mock-0.1.0\"`). Com dois algoritmos respondendo na mesma chamada, uma string só não identifica mais quem produziu o quê: passou a ser a versão do manifesto de modelos, e a versão por algoritmo vive em `AlgorithmMeta.model_version`. O modo mock continua devolvendo `\"mock-0.1.0\"`, que é a versão do seu próprio \"conjunto\".",
+          "type": "string"
+        },
+        "predictions": {
+          "description": "Vazio quando `architecture_available` é `false`.",
+          "items": {
+            "$ref": "#/$defs/SensorPrediction"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "description": "Identificador determinístico da consulta (mesma request → mesmo id).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "model_version",
+        "architecture",
+        "architecture_available",
+        "ignored_fields",
+        "predictions",
+        "algorithm_by_area",
+        "generated_at"
+      ],
+      "type": "object"
+    },
+    "PredictionTargets": {
+      "additionalProperties": false,
+      "description": "Recorte da consulta. Ambos vazios/ausentes = todos os 77 sensores.",
+      "properties": {
+        "key_areas": {
+          "description": "Nomes de `key_area` (ex.: \"IPC Comp\").",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sensors": {
+          "description": "Números de termopar (`tc_number`).",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Reliability": {
+      "description": "Confiabilidade da estimativa, por distância de Hamming entre a configuração consultada e as combinações presentes no conjunto de treino, considerando as variáveis que o modelo no ar usa — 5 no mock da Fase 1 (H2), as 7 nos modelos treinados. Medir sobre menos variáveis do que o modelo usa faz duas entradas distintas parecerem a mesma e devolve o rótulo de maior confiança para uma combinação inédita.\n- `interpolation`: combinação existe no treino (distância 0).\n- `moderate_extrapolation`: exatamente 1 variável diferente.\n- `out_of_domain`: 2 ou mais variáveis diferentes.",
+      "enum": [
+        "interpolation",
+        "moderate_extrapolation",
+        "out_of_domain"
+      ],
+      "type": "string"
+    },
+    "SensorMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "active_limit_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "is_monitor": {
+          "type": "boolean"
+        },
+        "key_area": {
+          "type": "string"
+        },
+        "monitor_reference_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tc_name": {
+          "type": "string"
+        },
+        "tc_number": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "tc_number",
+        "tc_name",
+        "key_area",
+        "active_limit_c",
+        "is_monitor",
+        "monitor_reference_c"
+      ],
+      "type": "object"
+    },
+    "SensorPrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "active_limit_c": {
+          "description": "Limite normativo do componente, em °C. `null` para sensores de monitoramento.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "algorithm": {
+          "$ref": "#/$defs/AlgorithmCode",
+          "description": "Algoritmo que produziu esta predição (v1.1). É a fonte de verdade da procedência: viaja com cada predição e sobrevive a qualquer filtro que a interface aplique depois. Decorre da `key_area`, nunca de escolha do cliente."
+        },
+        "error_margin_c": {
+          "description": "Margem de erro absoluta, em °C (± temp_c).",
+          "type": "number"
+        },
+        "error_margin_pct": {
+          "description": "Margem de erro relativa, em % de `temp_c`.",
+          "type": "number"
+        },
+        "exceeds_limit": {
+          "description": "`true` quando `temp_c` > `active_limit_c`. Sempre `false` sem limite.",
+          "type": "boolean"
+        },
+        "is_monitor": {
+          "description": "Sensor apenas de monitoramento, sem limite normativo aplicável.",
+          "type": "boolean"
+        },
+        "key_area": {
+          "type": "string"
+        },
+        "limit_ratio": {
+          "description": "`temp_c / active_limit_c`. `null` quando não há limite.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "monitor_reference_c": {
+          "description": "Referência informativa (°C) anotada para sensores de monitoramento.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reliability": {
+          "$ref": "#/$defs/Reliability"
+        },
+        "tc_name": {
+          "type": "string"
+        },
+        "tc_number": {
+          "type": "number"
+        },
+        "temp_c": {
+          "description": "Temperatura prevista, em °C.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "tc_number",
+        "tc_name",
+        "key_area",
+        "temp_c",
+        "error_margin_c",
+        "error_margin_pct",
+        "active_limit_c",
+        "exceeds_limit",
+        "limit_ratio",
+        "is_monitor",
+        "monitor_reference_c",
+        "reliability",
+        "algorithm"
+      ],
+      "type": "object"
+    },
+    "StoveConfig": {
+      "additionalProperties": false,
+      "description": "Configuração do fogão: as 7 colunas categóricas do dataset. Os valores devem ser exatamente as opções canônicas devolvidas por `getMetadata().variables[].options`.",
+      "properties": {
+        "blower_direction": {
+          "description": "Direção em que o blower de resfriamento empurra o ar.",
+          "type": "string"
+        },
+        "board_position": {
+          "description": "Posição da placa eletrônica.",
+          "type": "string"
+        },
+        "deflector_hole": {
+          "description": "Furo do defletor de ar.",
+          "type": "string"
+        },
+        "housing": {
+          "description": "Estado da carcaça da eletrônica.",
+          "type": "string"
+        },
+        "losses": {
+          "description": "Perfil de perdas térmicas assumido na simulação.",
+          "type": "string"
+        },
+        "material_coil_support": {
+          "description": "Material do suporte da resistência.",
+          "type": "string"
+        },
+        "run_case": {
+          "description": "Modo de operação simulado.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "blower_direction",
+        "housing",
+        "board_position",
+        "run_case",
+        "losses",
+        "deflector_hole",
+        "material_coil_support"
+      ],
+      "type": "object"
+    },
+    "ValidationPoint": {
+      "additionalProperties": false,
+      "description": "Um par previsto/real da validação LOGO: a temperatura que o laboratório mediu e a que o modelo previu para **a mesma configuração**.\n\nSão os únicos valores reais medidos que o produto tem. Uma configuração que nunca foi ao laboratório não tem — e não pode ter — um \"real\" para comparar.",
+      "properties": {
+        "active_limit_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "actual_c": {
+          "description": "Temperatura medida em laboratório, em °C.",
+          "type": "number"
+        },
+        "predicted_c": {
+          "description": "Temperatura prevista pelo modelo para a configuração do ensaio, em °C.",
+          "type": "number"
+        },
+        "run": {
+          "description": "Índice do ensaio em `AreaValidation.runs`.",
+          "type": "number"
+        },
+        "target": {
+          "description": "Coluna-alvo do modelo; pode cobrir vários termopares (IGBT fundido).",
+          "type": "string"
+        },
+        "tc_name": {
+          "type": "string"
+        },
+        "tc_numbers": {
+          "description": "Termopares cobertos por esta coluna — 16 no caso do IGBT fundido. É **um** ponto, não 16: replicar a observação inventaria amostras independentes e achataria as estatísticas de erro.",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "target",
+        "run",
+        "tc_numbers",
+        "tc_name",
+        "active_limit_c",
+        "actual_c",
+        "predicted_c"
+      ],
+      "type": "object"
+    },
+    "ValidationRun": {
+      "additionalProperties": false,
+      "description": "Um ensaio de laboratório da área, usado como teste na validação LOGO.",
+      "properties": {
+        "label": {
+          "description": "Rótulo curto do ensaio, montado com as variáveis que mais o distinguem. Serve para o tooltip identificar de qual ensaio veio o ponto.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "type": "object"
+    },
+    "VariableMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "help_pt": {
+          "type": "string"
+        },
+        "label_pt": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "used_by_model": {
+          "description": "Se o modelo que respondeu usa esta variável. **Não é constante**: depende do preditor no ar. O mock da Fase 1 exclui `losses` e `board_position` (H2), mas os modelos treinados usam as 7 — e em `IPC Cooling` e `IPC Comp` `losses` é a variável mais importante. A interface tem de ler este campo, nunca uma lista fixa.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "label_pt",
+        "help_pt",
+        "options",
+        "used_by_model"
+      ],
+      "type": "object"
+    }
+  }
+}

@@ -4,7 +4,7 @@ Bit-for-bit equivalent: same FNV-1a 32-bit hash, same mulberry32 PRNG (32-bit
 wraparound and `Math.imul` semantics reproduced explicitly), same clamping and
 the same `Math.round(v * 100) / 100` rounding. Parity against the TypeScript
 implementation is asserted by `tests/test_parity.py` over the fixture
-`contracts/fixtures/mock_parity_v1.json`.
+`src/contracts/fixtures/mock_parity_v1.json`.
 
 It is not a model: it is a deterministic generator calibrated by the real
 dataset statistics and by the H1/H3/H4 signals. Fase 3 replaces it with

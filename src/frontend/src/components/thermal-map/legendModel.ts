@@ -10,11 +10,11 @@
 import type { SensorPrediction } from '@/contract/v1'
 import { statusOf, type SensorStatus } from '@/lib/status'
 
-import { absoluteRange, aggregateByKeyArea, maxAbsDelta } from './aggregate'
+import { absoluteRange, aggregateByKeyArea } from './aggregate'
 import { ZONE_STATUS_COLOR } from './zoneStatus'
 
-/** Os três modos de cor do mapa (fonte canônica — `ThermalMap3D` reexporta). */
-export type MapColorMode = 'status' | 'absolute' | 'delta'
+/** Os dois modos de cor do mapa (fonte canônica — `ThermalMap3D` reexporta). */
+export type MapColorMode = 'status' | 'absolute'
 
 export interface StatusLegendRow {
   status: SensorStatus
@@ -37,19 +37,13 @@ export interface AbsoluteLegendModel {
   unit: string
 }
 
-export interface DeltaLegendModel {
-  mode: 'delta'
-  maxAbs: number
-  unit: string
-}
-
-export type LegendModel = StatusLegendModel | AbsoluteLegendModel | DeltaLegendModel
+export type LegendModel = StatusLegendModel | AbsoluteLegendModel
 
 const STATUS_LABEL_PT: Record<SensorStatus, string> = {
   ok: 'Dentro do limite',
   warn: 'Atenção ≥ 90 %',
   danger: 'Excede o limite',
-  monitor: 'Monitor (sem limite)',
+  monitor: 'Sem limite',
 }
 
 const STATUS_COLOR_HEX: Record<SensorStatus, string> = {
@@ -99,22 +93,13 @@ function absoluteTicks(predictions: SensorPrediction[]): { min: number; max: num
 /**
  * Constrói a legenda in-canvas do modo ativo.
  * - `status`: contagem de **sensores** (não zonas) em cada status normativo,
- *   mais "Monitor (sem limite)" — a soma das 4 linhas é sempre o total de
+ *   mais "Sem limite" — a soma das 4 linhas é sempre o total de
  *   sensores no recorte da consulta.
  * - `absolute`: faixa mín/máx e 5 ticks (quantis) das médias por zona da
  *   consulta atual.
- * - `delta`: maior |delta| entre as zonas, contra `referencePredictions`.
  */
-export function legendModel(
-  mode: MapColorMode,
-  predictions: SensorPrediction[],
-  referencePredictions?: SensorPrediction[],
-): LegendModel {
+export function legendModel(mode: MapColorMode, predictions: SensorPrediction[]): LegendModel {
   if (mode === 'status') return { mode: 'status', rows: statusRows(predictions) }
-  if (mode === 'delta') {
-    const aggregates = aggregateByKeyArea(predictions, {}, referencePredictions)
-    return { mode: 'delta', maxAbs: maxAbsDelta(aggregates), unit: '°C' }
-  }
   const { min, max, ticks } = absoluteTicks(predictions)
   return { mode: 'absolute', min, max, ticks, unit: '°C' }
 }

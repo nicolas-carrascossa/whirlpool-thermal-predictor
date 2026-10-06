@@ -2,7 +2,7 @@
  * Contrato v1 do Thermal Predictor.
  *
  * Fonte única de verdade dos tipos trocados entre front-end e back-end.
- * O JSON Schema em `contracts/api_v1.schema.json` é GERADO a partir deste
+ * O JSON Schema em `src/contracts/api_v1.schema.json` é GERADO a partir deste
  * arquivo (`npm run contract:schema`) — não edite o schema à mão.
  *
  * Regra de versionamento: mudanças aditivas (campo opcional novo, opção nova
@@ -182,7 +182,7 @@ export interface AlgorithmMeta {
   trained_at?: string
 }
 
-/** Um ensaio de laboratório do conjunto de teste da área. */
+/** Um ensaio de laboratório da área, usado como teste na validação LOGO. */
 export interface ValidationRun {
   /**
    * Rótulo curto do ensaio, montado com as variáveis que mais o distinguem.
@@ -192,7 +192,7 @@ export interface ValidationRun {
 }
 
 /**
- * Um par previsto/real do conjunto de teste: a temperatura que o laboratório
+ * Um par previsto/real da validação LOGO: a temperatura que o laboratório
  * mediu e a que o modelo previu para **a mesma configuração**.
  *
  * São os únicos valores reais medidos que o produto tem. Uma configuração que
@@ -241,7 +241,7 @@ export interface AreaMetrics {
   /** Importância das 7 variáveis de configuração; soma 1,0. */
   feature_importance: Record<string, number>
   /**
-   * Pares previsto/real do conjunto de teste desta área (v1.2). Alimentam a
+   * Pares previsto/real da validação LOGO desta área (v1.2). Alimentam a
    * dispersão e o mapa de calor da aba de métricas, que antes liam dado
    * simulado.
    */

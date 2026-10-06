@@ -76,4 +76,18 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Usuário ou senha inválidos')
     expect(getSession()).toBeNull()
   })
+
+  it('permite mostrar e ocultar a senha digitada', () => {
+    renderLogin()
+
+    const password = screen.getByLabelText('Senha')
+    expect(password).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar senha' }))
+    expect(password).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'Ocultar senha' })).toHaveAttribute('aria-pressed', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar senha' }))
+    expect(password).toHaveAttribute('type', 'password')
+  })
 })

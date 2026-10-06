@@ -1,16 +1,20 @@
 /**
- * Guarda de rota. Fora do modo `api` (Fase 1, `VITE_DATA_SOURCE=local`) é um
- * passthrough — a demo offline continua sem login. Em modo `api`, redireciona
- * para `/login` preservando a rota de origem em `state.from`.
+ * Guarda de rota. Em modo `api` (o padrão do produto), redireciona para
+ * `/login` preservando a rota de origem em `state.from`. Só nos testes
+ * automatizados a fonte é o mock local e a guarda vira um passthrough.
+ * O modo vem de `getDataSourceName()`, a mesma decisão que escolhe a fonte de
+ * dados — duas leituras da variável de ambiente com padrões diferentes já
+ * deixaram a interface sem login falando com a API.
  */
 
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth/authStore'
+import { getDataSourceName } from '@/sources'
 
 export function isApiMode(): boolean {
-  return (import.meta.env.VITE_DATA_SOURCE ?? 'local') === 'api'
+  return getDataSourceName() === 'api'
 }
 
 export function RequireAuth({ children }: { children: ReactNode }) {

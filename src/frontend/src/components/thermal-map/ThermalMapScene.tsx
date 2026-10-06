@@ -7,11 +7,14 @@ import type { SensorPrediction, StoveConfig } from '@/contract/v1'
 
 import type { ZoneAggregate } from './aggregate'
 import { cutZForDepth, DEFAULT_CUT_DEPTH } from './cutPlane'
-import { framingBoundsFor } from './explode'
+import { framingBoundsFor, layerLiftFor } from './explode'
+import type { PartFocus } from './cameraForPart'
 import { ExplodeLayer } from './ExplodeLayer'
 import { cameraPlacementForBounds, type CameraPlacement, type FitOptions } from './fitCamera'
 import { C } from './materials'
 import { OrientationMarkers, PartChangeCallout } from './SceneAnnotations'
+import { CoolingDuctTrim } from './CoolingDuctTrim'
+import { VentBayParts } from './MainVentParts'
 import { Blower } from './parts/Blower'
 import { CoilSupport } from './parts/CoilSupport'
 import { ControlBoard } from './parts/ControlBoard'
@@ -24,7 +27,15 @@ import { StoveProvider, type OpeningState, type StoveView } from './StoveContext
 import { FLOOR_Y, StoveBody } from './StoveBody'
 import { ZoneCallout } from './ZoneCallout'
 import type { ZoneStatus } from './zoneStatus'
-import { BAY_ZONE_KEYS, CONSOLE_BOUNDS, STOVE_BOUNDS, TOP_ZONE_KEYS, ZONE_MESHES, type Bounds } from './zoneGeometry'
+import {
+  BAY_ZONE_KEYS,
+  CONSOLE_BOUNDS,
+  REAR_ZONE_KEYS,
+  STOVE_BOUNDS,
+  TOP_ZONE_KEYS,
+  ZONE_MESHES,
+  type Bounds,
+} from './zoneGeometry'
 import { ZoneMesh } from './ZoneMesh'
 
 export type CameraPreset = 'front' | 'back' | 'console' | 'iso'
@@ -56,6 +67,9 @@ export const CAMERA_PRESETS: Record<
   iso: { azimuthDeg: 35, elevationDeg: 22, bounds: FRAMING_BOUNDS, margin: 1.28 },
 }
 
+/** A margem dos presets é uma esfera folgada; no enquadramento justo ela encolhe a ~1,0. */
+const TIGHT_MARGIN_SCALE = 0.78
+
 export interface ZoneLabelDatum {
   zoneKey: string
   label: string
@@ -65,6 +79,8 @@ export interface ZoneLabelDatum {
 
 interface ThermalMapSceneProps {
   colorFor: (zoneKey: string) => string
+  /** Ativa a textura CFD somente nos meshes que representam áreas medidas. */
+  thermalMode: boolean
   isZoneActive: (zoneKey: string) => boolean
   onHoverZone: (key: string) => void
   onUnhoverZone: (key: string) => void
@@ -81,8 +97,12 @@ interface ThermalMapSceneProps {
   autoRotate: boolean
   reducedMotion: boolean
   cameraPreset: CameraPreset
-  /** Muda para forçar o reenquadramento no preset atual ("Recentralizar"). */
+  /** Muda para forçar o reenquadramento ("Recentralizar", "ir até a peça"). */
   recenterToken: number
+  /** Região da peça a enquadrar (clique em "Configuração selecionada"); sem ela, vale o preset. */
+  focus?: PartFocus | null
+  /** Muda a cada "Recentralizar": zera o que a cena guarda de rótulos temporários. */
+  resetToken?: number
   /** Rótulos de zona visíveis (já filtrados por "Alertas / Todos / Nenhum"). */
   zoneLabels: ZoneLabelDatum[]
   /** Exibe os textos auxiliares da cena quando o usuário habilita os rótulos. */
@@ -90,6 +110,14 @@ interface ThermalMapSceneProps {
   selectedKeyArea: string | null
   sensorPins: SensorPin[]
   onSelectSensor?: (tcNumber: number) => void
+  /**
+   * Largura (px) coberta por um painel sobre a borda direita do canvas. O
+   * centro óptico é deslocado para o meio da área livre, e o enquadramento
+   * usa só essa área: o fogão não fica atrás do painel.
+   */
+  rightInset?: number
+  /** Enquadramento justo: o fogão preenche a área livre (sem folga para callouts). */
+  tightFraming?: boolean
 }
 
 interface ControlsLike {
@@ -97,19 +125,40 @@ interface ControlsLike {
   update: () => void
 }
 
-/** Enquadramento do preset atual para o tamanho de viewport corrente. */
+/**
+ * Enquadramento para o tamanho de viewport corrente: a região da peça, quando
+ * há um pedido de "ir até a peça" (`focus`), ou o preset atual.
+ */
 function placementFor(
   preset: CameraPreset,
+  focus: PartFocus | null,
   camera: THREE.PerspectiveCamera,
   explodeAmount: number,
+  aspect: number,
+  tight: boolean,
 ): CameraPlacement {
+  if (focus) {
+    // A região acompanha a camada da vista explodida a que a peça pertence.
+    const lift = focus.layer ? layerLiftFor(focus.layer, explodeAmount) : 0
+    return cameraPlacementForBounds(
+      [focus.bounds.min[0], focus.bounds.min[1] + lift, focus.bounds.min[2]],
+      [focus.bounds.max[0], focus.bounds.max[1] + lift, focus.bounds.max[2]],
+      {
+        azimuthDeg: focus.azimuthDeg,
+        elevationDeg: focus.elevationDeg,
+        margin: tight ? Math.max(1, focus.margin * TIGHT_MARGIN_SCALE) : focus.margin,
+        fovDeg: camera.fov,
+        aspect,
+      },
+    )
+  }
   const p = CAMERA_PRESETS[preset]
   const options: FitOptions = {
     azimuthDeg: p.azimuthDeg,
     elevationDeg: p.elevationDeg,
-    margin: p.margin,
+    margin: tight ? Math.max(1, p.margin * TIGHT_MARGIN_SCALE) : p.margin,
     fovDeg: camera.fov,
-    aspect: camera.aspect,
+    aspect,
   }
   const bounds = framingBoundsFor(p.bounds, explodeAmount)
   return cameraPlacementForBounds(bounds.min, bounds.max, options)
@@ -121,15 +170,22 @@ function placementFor(
  */
 function CameraRig({
   preset,
+  focus,
   recenterToken,
   interrupted,
   explodeAmount,
+  rightInset,
+  tight,
 }: {
   preset: CameraPreset
+  /** Região da peça a enquadrar no lugar do preset; `null` = enquadra o preset. */
+  focus: PartFocus | null
   recenterToken: number
   interrupted: boolean
   /** Afastamento efetivo da vista explodida (0 quando desligada). */
   explodeAmount: number
+  rightInset: number
+  tight: boolean
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   const controls = useThree((s) => s.controls) as unknown as ControlsLike | null
@@ -145,8 +201,18 @@ function CameraRig({
     explodeRef.current = explodeAmount
   }, [explodeAmount])
 
+  // Desloca a projeção em vez de mover a câmera: a órbita continua em torno
+  // do fogão, só a imagem é empurrada para a área livre.
+  const inset = Math.min(Math.max(rightInset, 0), size.width * 0.6)
   useEffect(() => {
-    const placement = placementFor(preset, camera, explodeRef.current)
+    if (inset > 0) camera.setViewOffset(size.width, size.height, inset / 2, 0, size.width, size.height)
+    else camera.clearViewOffset()
+    camera.updateProjectionMatrix()
+  }, [camera, inset, size.width, size.height])
+
+  useEffect(() => {
+    const freeAspect = (size.width - inset) / Math.max(size.height, 1)
+    const placement = placementFor(preset, focus, camera, explodeRef.current, freeAspect, tight)
     wantPos.current.set(...placement.position)
     wantTarget.current.set(...placement.target)
     animating.current = true
@@ -163,7 +229,7 @@ function CameraRig({
       }
       animating.current = false
     }
-  }, [preset, recenterToken, camera, controls, size.width, size.height])
+  }, [preset, focus, recenterToken, camera, controls, size.width, size.height, inset, tight])
 
   useFrame((_, delta) => {
     if (interrupted) animating.current = false
@@ -190,6 +256,7 @@ function ClippingSetup({ enabled }: { enabled: boolean }) {
 
 export function ThermalMapScene({
   colorFor,
+  thermalMode,
   isZoneActive,
   onHoverZone,
   onUnhoverZone,
@@ -206,11 +273,15 @@ export function ThermalMapScene({
   reducedMotion,
   cameraPreset,
   recenterToken,
+  focus = null,
+  resetToken = 0,
   zoneLabels,
   showAnnotations,
   selectedKeyArea,
   sensorPins,
   onSelectSensor,
+  rightInset = 0,
+  tightFraming = false,
 }: ThermalMapSceneProps) {
   const clipPlanes = useMemo(
     () => [new THREE.Plane(new THREE.Vector3(0, 0, -1), cutZForDepth(DEFAULT_CUT_DEPTH))],
@@ -241,6 +312,7 @@ export function ThermalMapScene({
   const ctx = useMemo(
     () => ({
       view,
+      thermalMode,
       clipPlanes,
       cutDepth,
       explodeAmount,
@@ -254,6 +326,7 @@ export function ThermalMapScene({
     }),
     [
       view,
+      thermalMode,
       clipPlanes,
       cutDepth,
       explodeAmount,
@@ -297,7 +370,8 @@ export function ThermalMapScene({
 
   const isTop = (key: string) => TOP_ZONE_KEYS.has(key)
   const isBay = (key: string) => BAY_ZONE_KEYS.has(key)
-  const isBody = (key: string) => !isTop(key) && !isBay(key)
+  const isRear = (key: string) => REAR_ZONE_KEYS.has(key)
+  const isBody = (key: string) => !isTop(key) && !isBay(key) && !isRear(key)
 
   // Zonas, rótulos e pinos de cada camada animada entram no mesmo grupo da
   // peça — o `<Openable>`/camada do cooktop (via `topExtras`) ou a camada da
@@ -320,9 +394,12 @@ export function ThermalMapScene({
       <ClippingSetup enabled={view === 'cutaway'} />
       <CameraRig
         preset={cameraPreset}
+        focus={focus}
         recenterToken={recenterToken}
         interrupted={userInteracted}
         explodeAmount={effectiveExplode}
+        rightInset={rightInset}
+        tight={tightFraming}
       />
       <OrbitControls
         makeDefault
@@ -357,7 +434,7 @@ export function ThermalMapScene({
         resolution={512}
       />
 
-      <StoveBody topExtras={layerExtras(isTop)} />
+      <StoveBody topExtras={layerExtras(isTop)} rearExtras={layerExtras(isRear)} />
       {showAnnotations && <OrientationMarkers />}
 
       {/* Baía da eletrônica sob o cooktop: peças + zonas IPC sobem juntas na vista explodida. */}
@@ -366,6 +443,8 @@ export function ThermalMapScene({
         <ControlBoard />
         <Blower />
         <DeflectorPlate />
+        <CoolingDuctTrim />
+        <VentBayParts />
         {layerExtras(isBay)}
       </ExplodeLayer>
 
@@ -373,7 +452,8 @@ export function ThermalMapScene({
       <OvenGlow showBadge={showAnnotations} />
 
       {layerExtras(isBody)}
-      <PartChangeCallout />
+      {/* `key`: ao reiniciar, o callout é remontado e perde o rótulo e os temporizadores. */}
+      <PartChangeCallout key={resetToken} />
     </StoveProvider>
   )
 }

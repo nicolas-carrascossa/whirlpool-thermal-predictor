@@ -12,14 +12,8 @@ import { BrazilFlag } from '@/components/BrazilFlag'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { VARIABLE_TO_PART } from '@/components/thermal-map/parts'
 import type { StoveConfig } from '@/contract/v1'
 import { useConfigStore } from '@/features/config/store'
 import { HIDDEN_OPTIONS, VARIABLE_LABEL_EN } from '@/features/config/variableLabels'
@@ -27,9 +21,6 @@ import { cn } from '@/lib/utils'
 
 /** Até 3 opções cabem numa linha; acima disso vira grade de 2 colunas. */
 const MAX_OPTIONS_PER_ROW = 3
-const LONG_OPTION_CHARS = 18
-/** Acima disso a grade vira um paredão de botões: volta o dropdown. */
-const MAX_SEGMENTED_OPTIONS = 8
 
 function SegmentedOptions({
   label,
@@ -66,12 +57,7 @@ function SegmentedOptions({
       aria-label={label}
       className={cn(
         'gap-1 rounded-xl bg-wp-gray05 p-1 shadow-[inset_0_1px_3px_rgba(17,18,20,0.08)]',
-        // Nomes longos (ex.: opções de losses) não cabem em duas colunas: um botão por linha.
-        options.some((o) => o.length > LONG_OPTION_CHARS)
-          ? 'grid grid-cols-1'
-          : options.length <= MAX_OPTIONS_PER_ROW
-            ? 'flex'
-            : 'grid grid-cols-2',
+        options.length <= MAX_OPTIONS_PER_ROW ? 'flex' : 'grid grid-cols-2',
       )}
     >
       {options.map((option, index) => {
@@ -87,6 +73,7 @@ function SegmentedOptions({
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
               'min-w-0 flex-1 break-words rounded-[10px] px-1.5 py-1.5 text-center font-body text-[11px] font-semibold leading-tight transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              options.length > MAX_OPTIONS_PER_ROW && options.length % 2 === 1 && index === options.length - 1 && 'col-span-2',
               checked
                 ? 'bg-wp-core text-white shadow-press'
                 : 'text-wp-gray65 hover:bg-white hover:text-wp-core',
@@ -100,8 +87,11 @@ function SegmentedOptions({
   )
 }
 
-/** Resumo somente leitura da configuração já prevista. */
-function ConfigSummary() {
+/**
+ * Resumo da configuração já prevista. Cada linha com peça no 3D é um botão:
+ * passar o mouse destaca a peça e clicar leva a câmera até ela.
+ */
+function ConfigSummary({ onFocusVariable }: { onFocusVariable?: (field: keyof StoveConfig) => void }) {
   const store = useConfigStore()
   const { metadata, config } = store
   if (!metadata || !config) return null
@@ -109,7 +99,7 @@ function ConfigSummary() {
     metadata.architectures.find((a) => a.code === store.architecture)?.label_pt ?? store.architecture
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-wp-core">
           Configuração selecionada
@@ -123,16 +113,46 @@ function ConfigSummary() {
           const field = variable.name as keyof StoveConfig
           const value = config[field] ?? ''
           const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
-          return (
-            <div
-              key={variable.name}
-              className="flex items-center justify-between gap-2 border-b border-wp-gray12 py-3 first:pt-0 last:border-b-0"
-            >
+          const row = 'flex items-center justify-between gap-2 border-b border-wp-gray12 py-1.5 last:border-b-0'
+          const content = (
+            <>
               <span className="font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
                 {label}
               </span>
               <span className="text-right text-xs font-semibold text-wp-gray85">{value}</span>
-            </div>
+            </>
+          )
+          // `losses` não tem peça no 3D: fica como linha comum.
+          if (!VARIABLE_TO_PART[field]) {
+            return (
+              <div key={variable.name} className={row}>
+                {content}
+              </div>
+            )
+          }
+          const active = store.hoveredVariable === field
+          return (
+            <button
+              key={variable.name}
+              type="button"
+              title="Ver no mapa térmico"
+              aria-label={`${label}: ${value} — ver no mapa térmico`}
+              onMouseEnter={() => store.setHoveredVariable(field)}
+              onMouseLeave={() => store.setHoveredVariable(null)}
+              onFocus={() => store.setHoveredVariable(field)}
+              onBlur={() => store.setHoveredVariable(null)}
+              onClick={() => {
+                store.focusVariable(field)
+                onFocusVariable?.(field)
+              }}
+              className={cn(
+                row,
+                'rounded-md text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                active ? 'bg-wp-accentLt' : 'hover:bg-wp-gray05',
+              )}
+            >
+              {content}
+            </button>
           )
         })}
       </div>
@@ -140,7 +160,12 @@ function ConfigSummary() {
   )
 }
 
-export function StoveConfigPanel() {
+export function StoveConfigPanel({
+  onFocusVariable,
+}: {
+  /** Clique numa linha do resumo (após "Prever"): ex. abrir a aba do mapa. */
+  onFocusVariable?: (field: keyof StoveConfig) => void
+} = {}) {
   const store = useConfigStore()
   const { metadata, config } = store
   const headingId = useId()
@@ -156,7 +181,7 @@ export function StoveConfigPanel() {
   }
 
   if (store.request !== null) {
-    return <ConfigSummary />
+    return <ConfigSummary onFocusVariable={onFocusVariable} />
   }
 
   const noAreaSelected = store.areas.length === 0
@@ -190,8 +215,6 @@ export function StoveConfigPanel() {
           const value = config[field] ?? ''
           const label = VARIABLE_LABEL_EN[field] ?? variable.label_pt
           const options = variable.options.filter((o) => !HIDDEN_OPTIONS[field]?.includes(o))
-          const reference = metadata.reference_config?.[field]
-          const changed = reference !== undefined && reference !== value
           return (
             <div
               key={variable.name}
@@ -208,14 +231,6 @@ export function StoveConfigPanel() {
                 <span className="flex-1 font-body text-xs font-semibold uppercase tracking-wide text-wp-gray65">
                   {label}
                 </span>
-                {changed && (
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full bg-wp-accent"
-                    title={`Diferente da referência (${reference})`}
-                    role="img"
-                    aria-label={`Diferente da referência (${reference})`}
-                  />
-                )}
                 <HelpTooltip label={label} text={variable.help_pt} />
               </div>
               {!variable.used_by_model && (
@@ -223,35 +238,20 @@ export function StoveConfigPanel() {
                   informative — not used by the model
                 </Badge>
               )}
-              {options.length > MAX_SEGMENTED_OPTIONS ? (
-                <Select value={value} onValueChange={(next) => store.setField(field, next)}>
-                  <SelectTrigger aria-label={label} className="h-9 text-xs">
-                    <SelectValue placeholder="Selecione…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <SegmentedOptions
-                  label={label}
-                  options={options}
-                  value={value}
-                  onChange={(next) => store.setField(field, next)}
-                />
-              )}
+              <SegmentedOptions
+                label={label}
+                options={options}
+                value={value}
+                onChange={(next) => store.setField(field, next)}
+              />
             </div>
           )
         })}
       </div>
 
-      {/* Abaixo de 1024 px o painel não é um contêiner de rolagem próprio, então
+      {/* Abaixo de 900 px o painel não é um contêiner de rolagem próprio, então
           a barra de ações só gruda no modo de duas colunas. */}
-      <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 lg:sticky lg:bottom-0">
+      <div className="flex flex-col gap-2 border-t border-wp-gray12 bg-white pb-1 pt-4 min-[900px]:sticky min-[900px]:bottom-0">
         <Button type="submit" disabled={noAreaSelected || store.hasDuplicateHistory}>
           {store.hasDuplicateHistory ? 'Previsão já salva no histórico' : 'Prever'}
         </Button>

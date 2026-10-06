@@ -47,6 +47,33 @@ export function DeflectorPlate() {
         <mesh geometry={geometry}>
           <meshStandardMaterial color={C.metalDark} roughness={0.45} metalness={0.65} side={THREE.DoubleSide} />
         </mesh>
+        {/* abas dobradas nas bordas de cima e de baixo (enrijecem a chapa) */}
+        {[-1, 1].map((s) => (
+          <mesh key={s} position={[0, (s * DEFLECTOR.h) / 2, 0.15]}>
+            <boxGeometry args={[DEFLECTOR.d, 0.1, 0.8]} />
+            <meshStandardMaterial color={C.metalDark} roughness={0.45} metalness={0.65} />
+          </mesh>
+        ))}
+        {/* cordão estampado em volta do furo, nas duas faces */}
+        {[-1, 1].map((s) => (
+          <mesh key={s} position={[0, 0, s * (DEFLECTOR.t / 2 + 0.01)]}>
+            <torusGeometry args={[DEFLECTOR.holeR + 0.2, 0.05, 8, 40]} />
+            <meshStandardMaterial color={C.metal} roughness={0.4} metalness={0.7} />
+          </mesh>
+        ))}
+        {/* parafusos de fixação nos quatro cantos */}
+        {[-1, 1].map((sx) =>
+          [-1, 1].map((sy) => (
+            <mesh
+              key={`${sx}${sy}`}
+              position={[sx * (DEFLECTOR.d / 2 - 0.3), sy * (DEFLECTOR.h / 2 - 0.35), DEFLECTOR.t / 2 + 0.04]}
+              rotation={[Math.PI / 2, 0, 0]}
+            >
+              <cylinderGeometry args={[0.1, 0.1, 0.08, 8]} />
+              <meshStandardMaterial color={C.wire} roughness={0.35} metalness={0.8} />
+            </mesh>
+          )),
+        )}
         <mesh ref={plug} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[DEFLECTOR.holeR, DEFLECTOR.holeR, DEFLECTOR.t, 24]} />
           <meshStandardMaterial color={C.metalDark} roughness={0.45} metalness={0.65} />

@@ -1,6 +1,6 @@
 # Back-end — Thermal Predictor (Fase 2)
 
-API FastAPI que serve o **contrato v1** (`contracts/api_v1.schema.json`) com o
+API FastAPI que serve o **contrato v1** (`src/contracts/api_v1.schema.json`) com o
 preditor **mock** portado do front-end, mais autenticação JWT e registro de
 acessos. O modelo real entra na Fase 3 atrás da mesma interface.
 
@@ -47,7 +47,11 @@ Para o front-end falar com esta API, rode-o com `VITE_DATA_SOURCE=api` e
 | `engenheiro` | `thermal2026` | `engineer` | João — Engenharia Térmica |
 | `admin` | `admin2026` | `admin` | Administrador |
 
-São credenciais de demonstração; troque-as antes de qualquer uso real.
+> **Atenção:** estas credenciais, assim como o `JWT_SECRET` padrão de
+> `app/config.py`, existem **apenas para demonstração local** e são públicas por
+> estarem neste repositório. Elas não dão acesso a nenhum sistema real nem a
+> dados de pessoas. Troque-as antes de qualquer uso fora da máquina de
+> desenvolvimento.
 
 ## Variáveis de ambiente
 
@@ -57,8 +61,8 @@ Lidas de `src/backend/.env` (ou do ambiente). Ver `.env.example`.
 |---|---|---|
 | `JWT_SECRET` | `dev-secret-change-me` | Assinatura dos tokens. Troque em produção. |
 | `JWT_EXPIRES_MIN` | `480` | Validade do token, em minutos. |
-| `MODEL_MODE` | `mock` | `mock` (demo offline da Fase 1) ou `real` (modelos treinados). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
-| `MODEL_DIR` | `<raiz>/models` | Artefatos `.joblib` + `manifest.json`, gerados por `scripts/export_models.py`. Só é lido com `MODEL_MODE=real`. |
+| `MODEL_MODE` | `real` | `real` (modelos treinados, padrão) ou `mock` (gerador determinístico, só para testes/demos). É a **única** chave de operação: o algoritmo de cada área vem do manifesto, nunca da requisição. |
+| `MODEL_DIR` | `src/backend/models` | Artefatos `.joblib` + `manifest.json`, gerados localmente com `npm run modelos:gerar` (na raiz; roda `src/scripts/export_models.py`). Não são versionados, porque vêm da base confidencial do parceiro. Só é lido com `MODEL_MODE=real`. |
 | `DATA_DIR` | `../frontend/src/data` | Pasta dos JSONs do dataset (e do `model_manifest.json`). O back-end lê **os mesmos arquivos** do front; nada é duplicado. |
 | `DB_PATH` | `./thermal.db` | Arquivo SQLite (usuários + `access_log`), relativo a `src/backend/`. |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:5174,http://localhost:4173` | Origens liberadas, separadas por vírgula. |
@@ -141,7 +145,7 @@ Um único preditor carrega os 7 artefatos e roteia por `key_area`, conforme o
 Cobrem: `/health`, login ok/falha, 401 sem token, formato do metadata,
 predição validada contra o JSON Schema do contrato, opção inválida → 422,
 MX indisponível, escrita no `access_log`, ausência de drift entre os modelos
-Pydantic e `contracts/api_v1.schema.json`, e a paridade com o mock do front.
+Pydantic e `src/contracts/api_v1.schema.json`, e a paridade com o mock do front.
 
 ## Paridade com o mock do navegador
 
@@ -151,7 +155,7 @@ PRNG mulberry32 (com a aritmética de 32 bits sem sinal e a semântica de
 `Math.imul` reproduzidas) e o mesmo arredondamento `Math.round(v*100)/100`.
 
 A fixture de comparação é gerada pelo front e versionada em
-`contracts/fixtures/mock_parity_v1.json` (25 configurações determinísticas):
+`src/contracts/fixtures/mock_parity_v1.json` (25 configurações determinísticas):
 
 ```powershell
 cd src\frontend

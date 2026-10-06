@@ -1,11 +1,18 @@
-# Documentação Modelo Preditivo - Inteli
-
+# Documentação Modelo Preditivo - Módulo 3 - Inteli
+---
 ## Whirlpool Thermal Predictor
-
+---
 ### FOG - A predição que nasce da névoa dos dados do Dataset
+---
+#### Integrantes
 
-#### Felipe Sodré Pessôa, Gabriel Lorenzo Baglioli de Loyola, Lucas Andrade Silva, Nícolas Rigolin Carrascossa, Samuel Yenyu Chen, Vitor Medrado Lisbôa, William Martins Moraes
-
+- <a href="https://www.linkedin.com/in/felipe-sodr%C3%A9-pess%C3%B4a/">Felipe Sodré Pessôa</a>
+- <a href="https://www.linkedin.com/in/gabriel-lorenzo-baglioli-de-loyola/">Gabriel Lorenzo Baglioli de Loyola</a>
+- <a href="https://www.linkedin.com/in/lucas-andrade-sva/">Lucas Andrade Silva</a> 
+- <a href="https://www.linkedin.com/in/nicolas-rigolin-carrascossa-4492b2261/">Nicolas Rigolin Carrascossa</a> 
+- <a href="https://www.linkedin.com/in/samuel-chen-7244893b6/">Samuel Yenyu Chen</a>
+- <a href="https://www.linkedin.com/in/lisboavitor/">Vitor Medrado Lisboa</a> 
+- <a href="https://www.linkedin.com/in/william-moraes-34b35b26b/">William Martins Moraes</a>
 
 ## Sumário
 
@@ -34,6 +41,10 @@
     - [4.3.1. Organização dos dados](#c4_3_1)
     - [4.3.2. Modelagem para o problema](#c4_3_2)
     - [4.3.3. Métricas de avaliação do modelo](#c4_3_3)
+      - [4.3.3.1. Definição das métricas](#c4_3_3_1)
+      - [4.3.3.2. Justificativa da escolha das métricas](#c4_3_3_2)
+      - [4.3.3.3. Como as métricas são calculadas e resumidas](#c4_3_3_3)
+      - [4.3.3.4. Resultados consolidados](#c4_3_3_4)
     - [4.3.4. Análise e interpretação dos resultados dos modelos candidatos](#c4_3_4)
   - [4.4. Comparação de Modelos](#c4_4)
     - [4.4.1. Decision Tree Regressor](#c4_4_1)
@@ -41,14 +52,16 @@
     - [4.4.3. Gradient Boosting](#c4_4_3)
     - [4.4.4. Comparação entre os candidatos e escolha do algoritmo por região](#c4_4_4)
   - [4.5. Avaliação](#c4_5)
-    - [4.5.1. Solução final](#c4_5_1)
-    - [4.5.2. Plano de contingência](#c4_5_2)
+    - [4.5.1. Solução final e justificativa](#c4_5_1)
+    - [4.5.2. Atendimento aos objetivos, aos requisitos e às personas](#c4_5_2)
     - [4.5.3. Explicabilidade](#c4_5_3)
     - [4.5.4. Verificação das hipóteses](#c4_5_4)
+    - [4.5.5. Plano de contingência](#c4_5_5)
 - [5. Conclusões e Recomendações](#c5)
   - [5.1. Principais resultados](#c5_1)
-  - [5.2. Recomendações ao parceiro](#c5_2)
-  - [5.3. Pessoas afetadas e uso ético](#c5_3)
+  - [5.2. Verificação das hipóteses](#c5_2)
+  - [5.3. Recomendações ao parceiro](#c5_3)
+  - [5.4. Pessoas afetadas e uso ético](#c5_4)
 - [6. Estrutura da Solução Visual e Acesso ao Modelo Preditivo](#c6)
   - [6.1. Requisitos funcionais](#c6_1)
     - [6.1.1. Requisitos funcionais do dashboard](#c6_1_1)
@@ -62,7 +75,7 @@
 
 ## <a name="c1"></a>1. Introdução
 
-A Whirlpool Corporation é uma multinacional fundada nos EUA em 1911, inicialmente com o propósito de fabricar máquinas de lavar roupa manuais. Atualmente, ela é conhecida como empresa líder global na fabricação de eletrodomésticos para cozinha e lavanderia, com operações em cerca de 170 países e faturamento de R$12,9 bilhões no Brasil em 2024²¹. Ela já está presente no Brasil há mais de 70 anos por meio de marcas amplamente reconhecidas no mercado brasileiro, como Brastemp, Consul, KitchenAid, B.blend etc, detendo cerca de 38% de participação no mercado de linha branca. A parceira direta no caso deste trabalho é a Divisão de Fogões da companhia, responsável pelo desenvolvimento de produtos para os mercados do Brasil e do México, com atuação voltada à engenharia e à pesquisa e desenvolvimento (P&D) de eletrodomésticos.
+A Whirlpool Corporation é uma multinacional fundada nos EUA em 1911, inicialmente com o propósito de fabricar máquinas de lavar roupa manuais. Atualmente, ela é conhecida como empresa líder global na fabricação de eletrodomésticos para cozinha e lavanderia, com operações em cerca de 170 países e faturamento de R$12,9 bilhões no Brasil em 2024¹. Ela já está presente no Brasil há mais de 70 anos por meio de marcas amplamente reconhecidas no mercado brasileiro, como Brastemp, Consul, KitchenAid, B.blend etc, detendo cerca de 38% de participação no mercado de linha branca. A parceira direta no caso deste trabalho é a Divisão de Fogões da companhia, responsável pelo desenvolvimento de produtos para os mercados do Brasil e do México, com atuação voltada à engenharia e à pesquisa e desenvolvimento (P&D) de eletrodomésticos.
 
 Nesse setor, o desenvolvimento de novos modelos de fogões de piso depende diretamente da construção de protótipos físicos e da realização de testes destrutivos para validar o comportamento térmico dos equipamentos. Esse processo é indispensável para validar se o fogão desenvolvido realmente se enquadra nos padrões de qualidade, segurança e desempenho exigidos. Porém, o desenvolvimento desses protótipos demanda grandes investimentos e é bem demorado, já que cada teste exige novos protótipos e ciclos completos de testes físicos. Portanto, o processo de um novo lançamento de um fogão é caro e lento, o que pode ser considerado uma fraqueza para esse setor do mercado, levantando um obstáculo que necessita de uma solução.
 
@@ -76,35 +89,63 @@ Reduzir o custo e o tempo do ciclo de validação térmica de novos fogões de p
 
 **Objetivos específicos**
 
-- Reduzir em até 30% o tempo total de desenvolvimento de um novo fogão de piso, do início do projeto ao lançamento³³.
-- Elevar a eficiência de tempo do ciclo de validação térmica (simulação CFD e ensaio físico) em até 90% em relação ao processo tradicional³³. Essa é a etapa de maior peso sobre o lead time de desenvolvimento.
-- Reduzir em 25% os gastos operacionais com protótipos físicos e testes destrutivos³³, incluindo material, fabricação e o uso de malha, HPC e especialista dedicado por rodada de validação.
-- Manter a temperatura prevista pelo modelo dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico³³, garantindo que a validação térmica acelerada não comprometa a confiabilidade exigida para certificação e aprovação de projeto.
+Os objetivos específicos estão divididos em dois grupos, porque cada grupo é verificado por pessoas diferentes e em momentos diferentes. As **metas de negócio** foram estimadas pelo parceiro no Project Charter² e só podem ser medidas pela Whirlpool depois que a ferramenta estiver em uso em projetos reais. As **metas do projeto** são as que a equipe se compromete a entregar e a verificar até a entrega final do módulo (Sprint 5). A Seção 4.5.2 confronta cada uma delas com a evidência obtida.
+
+<div align="center"><sub>Quadro 1 — Metas de negócio, estimadas pelo parceiro²</sub></div>
+
+| ID | Meta | Indicador | Referência de comparação |
+|---|---|---|---|
+| N1 | Reduzir em até 30% o tempo total de desenvolvimento de um novo fogão de piso | Duração do projeto, do início ao lançamento | Projetos de fogão de piso conduzidos sem a ferramenta |
+| N2 | Elevar em até 90% a eficiência de tempo do ciclo de validação térmica (simulação CFD e ensaio físico), a etapa de maior peso sobre o lead time de desenvolvimento | Tempo gasto para avaliar termicamente cada configuração candidata | Tempo de uma rodada de validação no processo tradicional |
+| N3 | Reduzir em 25% os gastos operacionais com protótipos físicos e testes destrutivos, incluindo material, fabricação e o uso de malha, HPC e especialista dedicado por rodada de validação | Gasto com protótipos e rodadas de validação por projeto | Projetos de fogão de piso conduzidos sem a ferramenta |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir do Project Charter².</sup>
+
+Nas metas N1 e N2, o "até" indica o potencial máximo que o parceiro estimou para a abordagem, e não um resultado mínimo garantido. Os percentuais servem para dimensionar o ganho esperado e orientar a medição que a Whirlpool fará depois da adoção.
+
+<div align="center"><sub>Quadro 2 — Metas do projeto, a cumprir até a entrega final do módulo</sub></div>
+
+| ID | Meta | Indicador e critério de sucesso | Origem |
+|---|---|---|---|
+| P1 | Manter a temperatura prevista dentro de uma margem de erro máxima de 10% em relação aos dados de simulação e ensaio físico, para que a validação térmica acelerada não comprometa a confiabilidade exigida na certificação e aprovação de projeto | Fração das previsões com erro relativo de até 10%, medida em configurações que o modelo não viu no treino (validação LOGO). Meta: 100% das previsões | Project Charter²; risco R06 (Seção 4.1.5) |
+| P2 | Fazer o modelo aprender o efeito da montagem, e não apenas o patamar térmico de cada região | Erro médio absoluto (MAE) menor que o de um baseline que prevê a média do treino, sob validação LOGO. Meta: as sete regiões | Risco R03 (Seção 4.1.5) |
+| P3 | Entregar um dashboard que mostre, para cada sensor consultado, a temperatura estimada, a margem de erro, o limite de engenharia e um indicador de confiabilidade em três estados | Requisitos RF02, RF03, RF04, RF06 e RF07 atendidos no software entregue | Seção 6.1 |
+| P4 | Tornar o modelo auditável pela Engenharia | Importância das variáveis de montagem exibida no dashboard para cada região, com a decomposição das previsões por SHAP³ documentada nos notebooks | Risco R08 (Seção 4.1.5) |
+| P5 | Distribuir a solução sem custo de licenciamento | Uso exclusivo de bibliotecas de código aberto (RF14) | Seção 6.1 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir do Project Charter², da Matriz de Riscos (Seção 4.1.5) e dos requisitos da Seção 6.1.</sup>
 
 ### <a name="c2_2"></a>2.2. Proposta de solução
 
-O **Thermal Predictor** aprende, a partir do histórico de ensaios já realizados pelo Dataset de testes CFDs, a relação entre a forma como o fogão é montado e a temperatura que cada sensor atinge. O engenheiro informa uma configuração de montagem (direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, sem construir um protótipo nem rodar uma simulação CFD completa, desde que a configuração esteja dentro do que já foi ensaiado.
+O **Thermal Predictor** aprende a relação entre a forma como o fogão é montado e a temperatura que cada sensor atinge. O aprendizado parte da base de simulações CFD e testes físicos fornecida pela Whirlpool, cujos 56 ensaios correspondem a 32 configurações de montagem distintas por região (Seção 4.1.3). O engenheiro informa uma configuração de montagem (direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina, presença do furo do defletor, entre outras) e recebe em segundos a temperatura estimada nos pontos monitorados, sem construir um protótipo nem executar uma simulação CFD completa. A previsão vale para configurações próximas das já ensaiadas, isto é, para combinações novas das mesmas variáveis de montagem. O próprio sistema mede essa proximidade e avisa quando a configuração consultada se afasta demais dos ensaios existentes.
 
-Não se trata de um único modelo para o fogão inteiro. O equipamento foi dividido nas **sete regiões** monitoradas pelos ensaios (Mainback, Coil Temps, IPC Comp, IPC Cooling, Main Vent Sys, CT Knobs e Oven HMI), cada uma com seu próprio modelo, porque elas se comportam de maneiras muito diferentes: a região mais quente varia em uma faixa de temperatura mais de oito vezes maior que a mais fria. Dos três algoritmos testados, dois ficaram em produção, cada um nas regiões em que se saiu melhor: **Random Forest** em três delas e **Gradient Boosting** nas outras quatro, ambos baseados em árvores de decisão, o que permite explicar quais características da montagem mais pesaram em cada previsão. O modelo é o mesmo para Brasil e México; o que muda entre os dois países são apenas os limites de temperatura aceitáveis com os quais a previsão é comparada.
+Não se trata de um único modelo para o fogão inteiro. O equipamento foi dividido nas **sete regiões** monitoradas pelos ensaios (Mainback, Coil Temps, IPC Comp, IPC Cooling, Main Vent Sys, CT Knobs e Oven HMI), cada uma com seu próprio modelo, porque elas se comportam de maneiras muito diferentes: a faixa de temperatura da região de maior amplitude térmica é mais de oito vezes maior que a da região de menor amplitude. Dos três algoritmos testados, dois ficaram em produção, cada um nas regiões em que se saiu melhor: **Random Forest** em três delas e **Gradient Boosting** nas outras quatro, ambos baseados em árvores de decisão, o que permite explicar quais características da montagem mais pesaram em cada previsão. O modelo é o mesmo para Brasil e México. Entre os dois países, mudam apenas os limites de temperatura aceitáveis com que a previsão é comparada. Na versão atual, os dados de treino cobrem a arquitetura brasileira. A arquitetura mexicana passa a receber previsões quando seus ensaios forem incorporados e validados sob o mesmo protocolo (Seção 4.5.5).
 
-A entrega é um **sistema único e inteiramente open source**: um núcleo preditivo em Python, que reúne pré-processamento, modelos treinados e rotina de predição, exposto por uma API que também alimenta o **dashboard interativo**. Nele, o usuário escolhe a configuração, o país e as regiões de interesse, e recebe a temperatura estimada, a margem de erro, o limite de engenharia aplicável e um indicador de confiabilidade que avisa quando a configuração consultada está fora do que já foi ensaiado, sinal de que a validação física ou uma nova rodada de CFD completa ainda é necessária nesse caso. A equipe de Engenharia pode chamar o mesmo núcleo diretamente para prever vários cenários de uma vez ou retreinar os modelos com novos ensaios, sempre com o resultado idêntico ao da tela, sem custo de licenciamento.
+A entrega é um **sistema único e inteiramente open source**: um núcleo preditivo em Python, que reúne pré-processamento, modelos treinados e rotina de predição, exposto por uma API que também alimenta o **dashboard interativo**. Nele, o usuário escolhe a configuração, o país e as regiões de interesse, e recebe a temperatura estimada, a margem de erro, o limite de engenharia aplicável e um indicador de confiabilidade. O indicador classifica a configuração consultada em três estados, conforme sua distância ao ensaio mais próximo: interpolação, extrapolação moderada ou fora de domínio. No estado fora de domínio, a validação física ou uma nova rodada de CFD completa continua necessária. A equipe de Engenharia pode chamar o mesmo núcleo pela API, fora do dashboard, e recebe o mesmo resultado da tela, sem custo de licenciamento. Os modelos são retreinados com novos ensaios por um script do próprio repositório, sem alteração de código. A predição em lote e a automação completa do retreinamento estão previstas nos requisitos do software (RF16 e RF17, Seção 6.1.2).
 
-Os resultados obtidos até aqui, detalhados nas Seções 4 e 5, sustentam essa proposta: avaliados sob o mesmo protocolo, os modelos erram em média cerca de **4 °C** (≈5% da temperatura medida) e mantêm **87%** das previsões dentro da margem de 10% acordada com o parceiro. Esse número ainda está abaixo dos 100% perseguidos pela meta de confiabilidade da Seção 2.1, mas já é muito acima do baseline (76% dentro da margem, erro de 6,55 °C), evidência de que o modelo aprendeu a reagir à montagem, e não apenas a decorar o patamar térmico de cada região. O retreinamento contínuo previsto no software é o mecanismo para fechar essa distância à medida que novos ensaios forem incorporados.
+Os resultados obtidos até aqui sustentam essa proposta (Seções 4.3.3.4 e 4.5.2). Avaliados em configurações que não foram vistas no treino (validação LOGO), os modelos erram em média cerca de **4 °C** (≈5% da temperatura medida) e mantêm **87%** das previsões dentro da margem de 10%. Esse número ainda está abaixo dos 100% perseguidos pela meta P1. Ainda assim, é bem superior ao do baseline que prevê a média do treino (76% dentro da margem, erro de 6,55 °C), e o modelo supera esse baseline nas sete regiões (meta P2). Ou seja, ele aprendeu a reagir à montagem, e não apenas a decorar o patamar térmico de cada região. Já o poder de distinguir duas configurações parecidas, medido pelo R², ainda é modesto: 0,42 no Random Forest e 0,37 no Gradient Boosting. É por isso que a aprovação final de um projeto continua passando pela validação física (Seção 2.3). O retreinamento com novos ensaios (RF16, Seção 6.1.2) é o mecanismo para reduzir essas duas distâncias à medida que os ensaios forem incorporados.
 
-Cada elemento da proposta atende a um dos objetivos da Seção 2.1: a predição em segundos, no lugar da simulação CFD completa, é o que viabiliza o ganho de até 90% de eficiência no ciclo de validação térmica e sustenta a redução de até 30% no tempo total de desenvolvimento; eliminar a necessidade de protótipo físico a cada configuração testada é o que permite a redução de 25% nos gastos operacionais; e a margem de erro reportada acima mede o progresso, ainda parcial, em direção à meta de confiabilidade de erro máximo de 10%.
+Cada elemento da proposta atende a um dos objetivos da Seção 2.1:
+
+- A predição em segundos, no lugar da rodada completa de simulação, é o mecanismo da meta N2 e, por meio dela, da meta N1.
+- Dispensar o protótipo e a rodada de CFD na avaliação das configurações exploradas ao longo do projeto é o mecanismo da meta N3. Protótipo e CFD ficam reservados às configurações que o indicador sinaliza e à aprovação final.
+- A margem de erro e o desempenho frente ao baseline, reportados acima, respondem às metas P1 e P2.
+- O dashboard com margem de erro, limite de engenharia e indicador de confiabilidade cumpre a P3.
+- A importância das variáveis exibida no dashboard, com a leitura complementar por SHAP, cumpre a P4.
+- A base inteiramente open source cumpre a P5.
 
 ### <a name="c2_3"></a>2.3. Justificativa
 
-A proposta se apoia em evidência de mercado, não apenas na lógica interna do projeto. Substituir ciclos físicos por simulação preditiva já é uma estratégia consolidada na indústria: iniciativas de gêmeos digitais chegam a reduzir em até 50% o prazo de desenvolvimento relatado por líderes de P&D¹⁹, um teto que ilustra o potencial da abordagem, embora a meta que o parceiro definiu para este projeto seja mais conservadora, 30% (Seção 2.1). A literatura de gestão de produto associa ainda velocidade de lançamento a maior taxa de sucesso do novo produto²⁰, e a redução de custo de desenvolvimento com acesso antecipado ao mercado é um ganho documentado dessa mesma abordagem¹⁸. O Thermal Predictor aplica essa lógica ao caso específico da validação térmica de fogões de piso, onde o alto lead time e o custo de protótipos já são as dores centrais identificadas pela Whirlpool (Seção 1).
+A proposta se apoia em evidência de mercado, não apenas na lógica interna do projeto. Substituir ciclos físicos por simulação preditiva já é uma estratégia consolidada na indústria. Segundo líderes de P&D ouvidos pela McKinsey, gêmeos digitais reduziram o tempo total de desenvolvimento em 20% a 50% em parte das empresas que os adotaram, com redução de custo no mesmo processo⁴. A meta que o parceiro estimou para este projeto, de até 30% (N1, Seção 2.1), fica dentro dessa faixa. A literatura de gestão de produto associa ainda a velocidade de lançamento a maior sucesso do novo produto. Um estudo com 692 projetos de desenvolvimento mostrou que esse efeito é mais forte quando a incerteza de mercado é alta⁵, como no cenário de concorrência intensa e de mudança de hábitos do consumidor descrito na Seção 4.1.1. O Thermal Predictor aplica essa lógica ao caso específico da validação térmica de fogões de piso, onde o alto lead time e o custo de protótipos já são as dores centrais identificadas pela Whirlpool (Seção 1).
 
-Os ganhos de tempo e custo trazidos por essa abordagem importam porque a pressão competitiva do setor já comprime o orçamento com que a Whirlpool poderia simplesmente investir em mais capacidade de simulação: a margem EBIT caiu de 6,0% para 3,0% em um ano (Seção 4.1.1), e a elasticidade preço-demanda do setor deixa pouco espaço para repassar custo extra de desenvolvimento (T5, Seção 4.1.2). A proposta ataca o gargalo de tempo e custo sem exigir investimento adicional em capacidade de simulação, o que a torna viável mesmo sob o orçamento apertado que o próprio setor impõe. E, como o modelo é validado sob o mesmo protocolo para Brasil e México, o investimento em dados e treinamento se paga nos dois mercados ao mesmo tempo, capturando a oportunidade de padronização de engenharia entre os dois países (O3, Seção 4.1.2).
+Os ganhos de tempo e custo trazidos por essa abordagem importam porque a pressão competitiva do setor já comprime o orçamento com que a Whirlpool poderia simplesmente investir em mais capacidade de simulação: a margem EBIT caiu de 6,0% para 3,0% em um ano (Seção 4.1.1), e a elasticidade preço-demanda do setor deixa pouco espaço para repassar custo extra de desenvolvimento (T5, Seção 4.1.2). A proposta ataca o gargalo de tempo e custo sem exigir investimento adicional em capacidade de simulação, o que a torna viável mesmo sob o orçamento apertado que o próprio setor impõe. E o mesmo modelo atende aos dois países, mudando apenas a tabela de limites (RN03). Por isso, assim que os ensaios mexicanos forem incorporados e validados sob o mesmo protocolo, o investimento em dados e treinamento servirá aos dois mercados. É a oportunidade de padronização de engenharia entre os dois países (O3, Seção 4.1.2).
 
-O contraste mais direto não é com um concorrente hipotético, mas com o próprio processo que a Whirlpool já usa. Hoje, cada simulação CFD completa exige malha, HPC e um especialista dedicado por rodada (W1, Seção 4.1.2), o que limita quantas alternativas de projeto cabem no cronograma. O Thermal Predictor não elimina esse processo, que continua sendo a fonte dos dados de treino, mas reduz quantas vezes ele precisa se repetir: para as configurações já cobertas pelo histórico de ensaios, a predição substitui a rodada completa de simulação; para as que o indicador de confiabilidade sinaliza como fora do que já foi ensaiado, a validação física continua sendo necessária, limitação assumida da proposta, não uma promessa de substituição total. Frente a um modelo de caixa-preta, como uma rede neural, a escolha por Random Forest e Gradient Boosting troca algum poder de generalização por interpretabilidade: a equipe de Engenharia enxerga quais variáveis de montagem mais pesaram em cada previsão, em vez de confiar num número sem explicação, o que importa num contexto de certificação térmica e de segurança. E frente a plataformas comerciais de gêmeo digital, que cobram por licença de uso ou por simulação, a entrega inteiramente open source remove uma barreira orçamentária permanente, que pesa mais quanto mais anos a ferramenta for usada.
+O contraste mais direto não é com um concorrente hipotético, mas com o próprio processo que a Whirlpool já usa. Hoje, cada simulação CFD completa exige malha, HPC e um especialista dedicado por rodada (W1, Seção 4.1.2), o que limita quantas alternativas de projeto cabem no cronograma. O Thermal Predictor não elimina esse processo, que continua sendo a fonte dos dados de treino, mas reduz quantas vezes ele precisa se repetir: para as configurações próximas das já ensaiadas, a predição substitui a rodada completa de simulação; para as que o indicador de confiabilidade sinaliza como fora de domínio, a validação física continua sendo necessária. A aprovação final de cada projeto também continua passando por ela, como exige a certificação. É uma limitação assumida da proposta, e não uma promessa de substituição total. Frente a um modelo de caixa-preta, como uma rede neural, a escolha por Random Forest e Gradient Boosting se apoia em duas razões. A primeira é o tamanho da base: com 32 configurações por região, descritas por variáveis categóricas, não há volume de dados para treinar com segurança um modelo com tantos parâmetros quanto uma rede neural. A segunda é a interpretabilidade: com a técnica SHAP³, a equipe de Engenharia enxerga quais variáveis de montagem mais pesaram em cada previsão, em vez de confiar num número sem explicação, o que importa num contexto de certificação térmica e de segurança. E frente a soluções proprietárias de simulação e gêmeo digital, cujo uso depende de licença, a entrega inteiramente open source remove uma barreira orçamentária recorrente, que pesa mais quanto mais anos a ferramenta for usada.
 
 ## <a name="c3"></a>3. Metodologia
 
-O desenvolvimento deste projeto segue o CRISP-DM (Cross Industry Standard Process for Data Mining), metodologia amplamente reconhecida como a mais utilizada em projetos de mineração de dados, análise de dados e ciência de dados no mundo, sendo consistentemente apontada como a abordagem mais adotada em pesquisas conduzidas ao longo de mais de uma década. Seu objetivo é oferecer uma abordagem sistemática que garanta que projetos de dados sejam bem definidos, geridos de forma estruturada e capazes de entregar resultados de valor, reduzindo o risco de erros custosos e mantendo o alinhamento com os objetivos de negócio²⁵.
-A metodologia consiste em seis fases, que embora normalmente sigam uma sequência lógica, podem ser revisitadas de forma iterativa ao longo do projeto, já que o resultado de uma fase frequentemente indica a necessidade de retornos²⁴:
+O desenvolvimento deste projeto segue o CRISP-DM (Cross Industry Standard Process for Data Mining), metodologia amplamente reconhecida como a mais utilizada em projetos de mineração de dados, análise de dados e ciência de dados no mundo, sendo consistentemente apontada como a abordagem mais adotada em pesquisas conduzidas ao longo de mais de uma década. Seu objetivo é oferecer uma abordagem sistemática que garanta que projetos de dados sejam bem definidos, geridos de forma estruturada e capazes de entregar resultados de valor, reduzindo o risco de erros custosos e mantendo o alinhamento com os objetivos de negócio⁶.
+A metodologia consiste em seis fases, que embora normalmente sigam uma sequência lógica, podem ser revisitadas de forma iterativa ao longo do projeto, já que o resultado de uma fase frequentemente indica a necessidade de retornos⁷:
 1. Entendimento do Negócio (Business Understanding): fase inicial voltada a compreender, sob a perspectiva do negócio, os objetivos e requisitos do projeto. Envolve determinar os objetivos de negócio, avaliar a situação (recursos, riscos e restrições disponíveis), traduzir esses objetivos em metas técnicas de mineração de dados e produzir um plano de projeto.
 2. Entendimento dos Dados (Data Understanding): etapa de coleta, descrição, exploração e verificação da qualidade dos dados disponíveis. Inclui identificar e acessar as fontes de dados relevantes, compreender o significado de cada variável, aplicar técnicas de visualização e análise estatística para identificar padrões e relações, e identificar problemas de qualidade, como valores ausentes ou outliers.
 3. Preparação dos Dados (Data Preparation): é conhecida como a fase mais demorada do processo, na qual os dados brutos são selecionados, limpos, transformados e organizados em um formato adequado à modelagem. Contempla o tratamento de valores ausentes, a identificação e correção de outliers, a padronização de formatos e rótulos, a construção de novas variáveis (feature engineering), a normalização/padronização de escalas e a codificação de variáveis categóricas.
@@ -122,7 +163,7 @@ O setor de linha branca no Brasil e no México é dominado por um pequeno grupo 
 
 ##### 4.1.1.1. Concorrentes identificados
 
-Três empresas atuam como concorrentes diretos da Whirlpool. A Electrolux é a marca com maior penetração domiciliar do país, presente em mais de 67% dos lares brasileiros⁹, e inaugurou em agosto de 2025 sua quinta planta no país, em São José dos Pinhais (PR), com investimento de R$ 700 milhões, para reduzir a dependência de importação asiática e nacionalizar categorias hoje importadas¹⁰. A Midea, multinacional chinesa, já não deve ser tratada apenas como ameaça potencial de entrada (Força 4): ocupa hoje a terceira posição no mercado brasileiro de eletrodomésticos, com cerca de 8% de participação em refrigeradores¹¹, e converteu sua estratégia de importação para manufatura local ao inaugurar em Pouso Alegre (MG) sua primeira planta 100% própria no país, investimento de R$ 630 milhões¹². Por fim, a Mabe, grupo mexicano com planta dedicada a fogões e produtos de cocção a gás em Durango, é historicamente o concorrente mais diretamente sobreposto ao escopo do Thermal Predictor: já deteve cerca de 70% de participação em eletrodomésticos na América Latina (excluindo Estados Unidos e México) e anuncia US$ 668 milhões em investimento para 2025–2027¹³.
+Três empresas atuam como concorrentes diretos da Whirlpool. A Electrolux é a marca com maior penetração domiciliar do país, presente em mais de 67% dos lares brasileiros⁸, e inaugurou em agosto de 2025 sua quinta planta no país, em São José dos Pinhais (PR), com investimento de R$ 700 milhões, para reduzir a dependência de importação asiática e nacionalizar categorias hoje importadas⁹. A Midea, multinacional chinesa, já não deve ser tratada apenas como ameaça potencial de entrada (Força 4): ocupa hoje a terceira posição no mercado brasileiro de eletrodomésticos, com cerca de 8% de participação em refrigeradores¹⁰, e converteu sua estratégia de importação para manufatura local ao inaugurar em Pouso Alegre (MG) sua primeira planta 100% própria no país, investimento de R$ 630 milhões¹¹. Por fim, a Mabe, grupo mexicano com planta dedicada a fogões e produtos de cocção a gás em Durango, é historicamente o concorrente mais diretamente sobreposto ao escopo do Thermal Predictor: já deteve cerca de 70% de participação em eletrodomésticos na América Latina (excluindo Estados Unidos e México) e anuncia US$ 668 milhões em investimento para 2025–2027¹².
 
 ##### 4.1.1.2. Análise do modelo de negócio do parceiro
 
@@ -141,11 +182,11 @@ A Whirlpool Latin America lidera a região com Brastemp, Consul e KitchenAid, ma
 - **Fabricantes nacionais robustos:** Esmaltec (líder em fogões no Nordeste), Mueller, Britânia, Philco, Atlas e Continental (marca do grupo Mabe).
 - **Entrantes chinesas em expansão acelerada:** Hisense, TCL e Gree, competindo agressivamente por preço.
 
-A evidência mais forte de rivalidade é financeira: a compressão de margem EBIT de 6,0% para 3,0% em um ano, atribuída pela própria Whirlpool a "intensidade promocional" no Brasil¹. Em 2023, a Whirlpool reportava recuperação de quase 4 pontos de *market share* em refrigeradores, lavadoras e fogões em um único trimestre, evidência de disputa constante por participação². O setor de linha branca no Brasil recuou 1% em vendas em 2025, segundo a Eletros³, mercado maduro em que o crescimento de um player passa a depender da erosão da fatia dos concorrentes.
+A evidência mais forte de rivalidade é financeira: a compressão de margem EBIT de 6,0% para 3,0% em um ano, atribuída pela própria Whirlpool a "intensidade promocional" no Brasil¹³. Em 2023, a Whirlpool reportava recuperação de quase 4 pontos de *market share* em refrigeradores, lavadoras e fogões em um único trimestre, evidência de disputa constante por participação¹⁴. O setor de linha branca no Brasil recuou 1% em vendas em 2025, segundo a Eletros¹⁵, mercado maduro em que o crescimento de um player passa a depender da erosão da fatia dos concorrentes.
 
 ###### 2. Poder de negociação dos fornecedores — Moderado, com concentração pontual em componentes eletrônicos
 
-A Whirlpool Latin America mantém uma base ampla de 3.730 fornecedores (750 de materiais diretos, 2.980 de indiretos), concentrados nos estados onde possui plantas — Amazonas, Santa Catarina e São Paulo⁴. Essa diversificação dilui o poder da maioria dos fornecedores, mas não de forma homogênea entre categorias de insumo:
+A Whirlpool Latin America mantém uma base ampla de 3.730 fornecedores (750 de materiais diretos, 2.980 de indiretos), concentrados nos estados onde possui plantas — Amazonas, Santa Catarina e São Paulo¹⁶. Essa diversificação dilui o poder da maioria dos fornecedores, mas não de forma homogênea entre categorias de insumo:
 
 - **Componentes eletrônicos (placas, sensores, semicondutores):** segmento sujeito a choques globais de oferta, elevando o poder de barganha de fornecedores especializados em ciclos de escassez, à medida que a Whirlpool amplia a eletrônica embarcada de seus produtos.
 - **Aço e insumos de commodity:** menor poder de barganha, dado o caráter padronizado e substituível do material.
@@ -157,7 +198,7 @@ O volume de compra da própria Whirlpool, como maior fabricante de eletrodomést
 Como o modelo é B2C indireto, o comprador relevante para fins de precificação e condição comercial é o canal varejista, não o consumidor final isolado:
 
 - No Brasil, Magazine Luiza e Grupo Casas Bahia (via Via Varejo, ~1.073 lojas) concentram parcela relevante do volume de eletrodomésticos, com lojas físicas ainda decisivas em 87% da jornada de compra.
-- A fragilidade financeira recente de grandes varejistas — Americanas em recuperação judicial, desvalorizações acionárias expressivas de Casas Bahia e Magazine Luiza — eleva, paradoxalmente, o poder de barganha de curto prazo desses varejistas, que passam a exigir condições comerciais mais favoráveis².
+- A fragilidade financeira recente de grandes varejistas — Americanas em recuperação judicial, desvalorizações acionárias expressivas de Casas Bahia e Magazine Luiza — eleva, paradoxalmente, o poder de barganha de curto prazo desses varejistas, que passam a exigir condições comerciais mais favoráveis¹⁴.
 - No México, cadeias como Liverpool e Elektra cumprem função equivalente.
 - O baixo custo de troca do consumidor final entre marcas no segmento econômico reforça o papel do varejo como intermediário capaz de colocar fabricantes concorrentes em disputa direta.
 
@@ -169,13 +210,13 @@ As barreiras tradicionais de entrada permanecem relevantes — intensidade de ca
 
 A ameaça de substituição é alta e estruturalmente crescente, com quatro camadas atuando sobre o portfólio de cocção e refrigeração da Whirlpool na América Latina.
 
-**a) Substituição tecnológica intra-categoria — fogão a gás por indução.** A indução ganha tração em 2026 por eficiência energética, segurança e queda de preço de entrada, com modelos compactos a partir de R$ 180–350. A própria Whirlpool responde com início de produção nacional de fogões por indução em Manaus a partir do segundo semestre de 2026, migração de capacidade fabril, não apenas de portfólio de importação⁶.
+**a) Substituição tecnológica intra-categoria — fogão a gás por indução.** A indução ganha tração em 2026 por eficiência energética, segurança e queda de preço de entrada, com modelos compactos a partir de R$ 180–350. A própria Whirlpool responde com início de produção nacional de fogões por indução em Manaus a partir do segundo semestre de 2026, migração de capacidade fabril, não apenas de portfólio de importação¹⁷.
 
-**b) *Unbundling* funcional do fogão por eletroportáteis — a air fryer.** A penetração de air fryers nos domicílios brasileiros saltou de 36,2% para 64% entre 2022 e 2025, com o mercado da categoria crescendo 340% no período⁷. As ocasiões de preparo rápido já respondem por mais de 30% dos preparos domésticos, enquanto a fritura tradicional caiu para 17% das ocasiões. Não é substituição de compra, mas de **uso e intensidade de uso**: funções do fogão migram para um eletroportátil dedicado, o que tende a alongar o ciclo de reposição e a pressionar para baixo a demanda por capacidade e robustez térmica do produto principal.
+**b) *Unbundling* funcional do fogão por eletroportáteis — a air fryer.** A penetração de air fryers nos domicílios brasileiros saltou de 36,2% para 64% entre 2022 e 2025, com o mercado da categoria crescendo 340% no período¹⁸. As ocasiões de preparo rápido já respondem por mais de 30% dos preparos domésticos, enquanto a fritura tradicional caiu para 17% das ocasiões. Não é substituição de compra, mas de **uso e intensidade de uso**: funções do fogão migram para um eletroportátil dedicado, o que tende a alongar o ciclo de reposição e a pressionar para baixo a demanda por capacidade e robustez térmica do produto principal.
 
-**c) Substituição do próprio ato de cozinhar — aplicativos de delivery.** A penetração de pedidos por aplicativo entre consumidores brasileiros passou de 80% em 2020 para 89% em 2022, e "não querer cozinhar" é a motivação declarada por 24% dos usuários, a razão mais citada⁸. O efeito líquido sobre a demanda por eletrodomésticos é ambíguo: o consumo doméstico agregado de alimentos ainda cresceu 3,09% entre 2022 e 2023, sugerindo complementaridade mais do que substituição direta na média da população. Ainda assim, evidencia redução na frequência de uso do fogão em domicílios urbanos menores e unipessoais.
+**c) Substituição do próprio ato de cozinhar — aplicativos de delivery.** A penetração de pedidos por aplicativo entre consumidores brasileiros passou de 80% em 2020 para 89% em 2022, e "não querer cozinhar" é a motivação declarada por 24% dos usuários, a razão mais citada¹⁹. O efeito líquido sobre a demanda por eletrodomésticos é ambíguo: o consumo doméstico agregado de alimentos ainda cresceu 3,09% entre 2022 e 2023, sugerindo complementaridade mais do que substituição direta na média da população. Ainda assim, evidencia redução na frequência de uso do fogão em domicílios urbanos menores e unipessoais.
 
-**d) Substituição por mudança de hábito alimentar e de moradia — o efeito GLP-1 e a compactação urbana.** Segundo executivos da Whirlpool entrevistados em janeiro de 2026, a disseminação de impacto de medicamentos GLP-1 (Ozempic, Mounjaro, Wegovy), cuja importação cresceu 88% em 2025 já altera o padrão de compra de eletrodomésticos: consumidores priorizam freezers maiores e **migram para fogões menores, com menos bocas**, "as pessoas não querem mais aqueles fogões enormes", nas palavras do diretor de marketing de categoria da companhia. Em resposta, a Whirlpool renovou por completo as linhas de cooktop de Consul e Brastemp, e reposicionou o frigobar Brastemp Retrô como solução de armazenamento fora da cozinha. O relatório *Home Appliances Outlook 2026*, da NielsenIQ, corrobora a tendência: o consumidor latino-americano já prioriza conveniência, multifuncionalidade e bem-estar acima de preço puro, com o valor das vendas globais de eletrodomésticos crescendo 5% no primeiro semestre de 2025 mesmo com volume estável (+1%)⁵.
+**d) Substituição por mudança de hábito alimentar e de moradia — o efeito GLP-1 e a compactação urbana.** Segundo executivos da Whirlpool entrevistados em janeiro de 2026, a disseminação de impacto de medicamentos GLP-1 (Ozempic, Mounjaro, Wegovy), cuja importação cresceu 88% em 2025 já altera o padrão de compra de eletrodomésticos: consumidores priorizam freezers maiores e **migram para fogões menores, com menos bocas**, "as pessoas não querem mais aqueles fogões enormes", nas palavras do diretor de marketing de categoria da companhia. Em resposta, a Whirlpool renovou por completo as linhas de cooktop de Consul e Brastemp, e reposicionou o frigobar Brastemp Retrô como solução de armazenamento fora da cozinha. O relatório *Home Appliances Outlook 2026*, da NielsenIQ, corrobora a tendência: o consumidor latino-americano já prioriza conveniência, multifuncionalidade e bem-estar acima de preço puro, com o valor das vendas globais de eletrodomésticos crescendo 5% no primeiro semestre de 2025 mesmo com volume estável (+1%)²⁰.
 
 ###### Síntese e implicações estratégicas
 
@@ -202,9 +243,9 @@ A análise delimita-se à Divisão de Fogões da Whirlpool — engenharia e P&D 
 ##### S: Forças (internas)
 
 - **S1. Parque industrial integrado nas Américas** — Joinville (SC), Rio Claro (SP), Manaus (AM); cinco unidades no México (três em Apodaca/Nuevo León, uma em Celaya/Guanajuato, uma em Ramos Arizpe/Coahuila), 3º país mais relevante em manufatura do grupo: escala que dilui o custo fixo de investimento em ferramentas de engenharia por um volume grande de unidades.
-- **S2. Investimento contínuo em P&D e manufatura avançada** — cerca de R$500 milhões/ano em pesquisa, desenvolvimento e automação; centro de capacitação em manufatura avançada em Rio Claro¹⁴: reduz o risco de rejeição cultural à tecnologia digital.
+- **S2. Investimento contínuo em P&D e manufatura avançada** — cerca de R$500 milhões/ano em pesquisa, desenvolvimento e automação; centro de capacitação em manufatura avançada em Rio Claro²¹: reduz o risco de rejeição cultural à tecnologia digital.
 - **S3. Acervo proprietário de simulações CFD e ensaios térmicos** — matéria-prima que viabiliza o aprendizado de máquina e barreira de entrada de difícil replicação por concorrentes sem a mesma longevidade na categoria.
-- **S4. Cultura de melhoria contínua consolidada (WCM)** — planta de Ramos Arizpe é referência na América do Norte¹⁵: favorece disciplina de dados e versionamento.
+- **S4. Cultura de melhoria contínua consolidada (WCM)** — planta de Ramos Arizpe é referência na América do Norte²²: favorece disciplina de dados e versionamento.
 - **S5. Engenharia térmica e laboratórios de validação próprios** — permitem confrontar internamente a saída do modelo com dados reais e encurtar o ciclo de verificação.
 - **S6. Portfólio multimarca reaproveitável em BR/MX** — Brastemp, Consul, KitchenAid e Whirlpool desenvolvem simultaneamente famílias com requisitos térmicos distintos, multiplicando o retorno de uma mesma ferramenta.
 
@@ -215,11 +256,11 @@ A análise delimita-se à Divisão de Fogões da Whirlpool — engenharia e P&D 
 - **W3. Baixo volume amostral por família de produto** — cada registro é uma simulação custosa; eleva o risco de sobreajuste e limita a generalização para geometrias não observadas no treino.
 - **W4. Conhecimento térmico concentrado em poucos especialistas** — risco de descontinuidade e gargalo de agenda, pois a validação do modelo compete com as demais demandas dessas pessoas.
 - **W5. Confidencialidade restringe a colaboração externa** — geometrias, materiais e desempenho são informação sensível, tensionando entregas em repositório público com a proteção dos dados do parceiro.
-- **W6. Reestruturação da rede fabril em curso** — encerramento de planta em Apodaca até o 2T2027, custo estimado de US$165 milhões¹⁶: desloca linhas, exige revalidação e disputa capex e atenção gerencial com projetos de inovação.
+- **W6. Reestruturação da rede fabril em curso** — encerramento de planta em Apodaca até o 2T2027, custo estimado de US$165 milhões²³: desloca linhas, exige revalidação e disputa capex e atenção gerencial com projetos de inovação.
 
 ##### O: Oportunidades (externas)
 
-- **O1. Regulação de eficiência energética em endurecimento** — Etiquetagem INMETRO¹⁷ e Selo PROCEL como critério de compra e de acesso a programas habitacionais: favorece quem itera mais alternativas por unidade de tempo.
+- **O1. Regulação de eficiência energética em endurecimento** — Etiquetagem INMETRO²⁴ e Selo PROCEL como critério de compra e de acesso a programas habitacionais: favorece quem itera mais alternativas por unidade de tempo.
 - **O2. Nacionalização de linhas e crescimento das exportações** — amplia a variedade de produtos desenvolvidos no Brasil; cada nova configuração é um caso de uso adicional para a ferramenta.
 - **O3. Padronização de engenharia entre Brasil e México** — modelo validado no Brasil, transferível ao portfólio mexicano a custo marginal baixo, convertendo entrega local em ativo regional.
 - **O4. Ecossistema acadêmico e incentivos fiscais à P&D** — testam hipóteses tecnológicas a custo e risco baixos e dão acesso a métodos e literatura recentes sobre modelos substitutos aplicados à engenharia.
@@ -227,19 +268,23 @@ A análise delimita-se à Divisão de Fogões da Whirlpool — engenharia e P&D 
 ##### T: Ameaças (externas)
 
 - **T1. Escassez e disputa por talentos de dados e ML** — perfil necessário para monitorar, retreinar e evoluir o modelo, remunerado acima da média da indústria.
-- **T2. Elevação contínua dos patamares normativos** — resoluções do CGIEE e revisões das portarias do INMETRO¹⁷: erro de previsão térmica em fase de projeto pode gerar reprovação em certificação, retrabalho ou risco de campo.
+- **T2. Elevação contínua dos patamares normativos** — resoluções do CGIEE e revisões das portarias do INMETRO²⁴: erro de previsão térmica em fase de projeto pode gerar reprovação em certificação, retrabalho ou risco de campo.
 - **T3. Avanço de importados e de fabricantes asiáticos** — Samsung, LG e Midea operam com estruturas de P&D de escala global, encurtando janelas de lançamento e reduzindo a tolerância a ciclos longos.
-- **T4. Exposição da produção mexicana à política tarifária dos EUA** — Ramos Arizpe destina quase toda a produção aos mercados norte-americanos¹⁵; alterações tarifárias redirecionam prioridades de investimento.
+- **T4. Exposição da produção mexicana à política tarifária dos EUA** — Ramos Arizpe destina quase toda a produção aos mercados norte-americanos²²; alterações tarifárias redirecionam prioridades de investimento.
 - **T5. Elasticidade preço-demanda comprime o orçamento de P&D** — cada 1% de aumento de custo reduz a demanda em 0,7% a 1%; juros elevados deixam pouco espaço para repassar custos.
 
 ---
 
 ##### Matriz TOWS
 
+<div align="center"><sub>Quadro 3 — Matriz TOWS da Divisão de Fogões</sub></div>
+
 | | **Forças (S)** | **Fraquezas (W)** |
 |:---|:---|:---|
 | **Oportunidades (O)** | **SO —** Usar o acervo de CFD (S3) e a validação própria (S5) para maximizar a classe de eficiência energética (O1) antes de comprometer horas de CFD, estendendo o ganho às linhas nacionalizadas (O2) e ao portfólio mexicano (O3). | **WO —** Estruturar o dicionário de dados, padronizar a saída das simulações e planejar novas rodadas por DOE nas regiões de maior incerteza (W2, W3), apoiando-se na parceria acadêmica e nos incentivos à P&D (O4). |
 | **Ameaças (T)** | **ST —** Encurtar o ciclo de concepção e validação com escala industrial (S1), cultura de melhoria contínua (S4) e engenharia própria (S5), respondendo à concorrência asiática (T3), preservando margem (T5) e mitigando exposição de propriedade intelectual. | **🛡 WT —** Posicionar o modelo como ferramenta de triagem e priorização, não substituto do CFD na homologação, reportando faixa de erro explícita e critério objetivo de escalonamento para simulação completa, para conter o risco normativo (T2); documentar o pipeline e automatizar o retreino reduz a dependência de especialistas (W4) e a exposição à rotatividade de talentos (T1). |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir da análise SWOT desta seção.</sup>
 
 ##### Implicação para o projeto
 
@@ -251,44 +296,44 @@ Os fatores internos relativos a dados e à concentração de conhecimento foram 
 
 
 #### <a name="c4_1_3"></a>4.1.3. Planejamento Geral da Solução
- 
+
 A base de dados disponibilizada pela Whirlpool reúne o histórico de simulações numéricas (CFD) e de testes físicos internos referentes aos fogões de piso (Freestanding) das arquiteturas do Brasil e do México. Ao todo, são 56 rodadas de teste (Runs), cada uma definida por sete variáveis de configuração, como direção do fluxo de ar do blower, estado do housing, posição da placa e material do suporte da bobina, e acompanhada da leitura de temperatura de 77 sensores/termopares (78 na planilha original, um deles sem nenhuma leitura), distribuídos entre as sete áreas-chave do equipamento: Mainback, bobinas (Coil Temps), sistema de ventilação principal (Main Vent Sys), resfriamento e componentes do IPC (IPC Cooling e IPC Comp), comandos do cooktop (CT Knobs) e região de HMI do forno (Oven HMI). Trata-se de um conjunto de dados confidencial, de uso interno da Whirlpool, que deverá ser complementado e corrigido ao longo do projeto conforme alinhado com o parceiro.
- 
+
 A solução proposta é um modelo de machine learning supervisionado, treinado a partir desses dados históricos, capaz de aprender a relação entre a configuração de montagem do fogão e a temperatura resultante em cada sensor. Com isso, torna-se possível estimar a temperatura de uma nova configuração sem a necessidade de executar uma simulação CFD completa ou construir um protótipo físico para testá-la.
- 
+
 Do ponto de vista operacional, o dashboard funciona da seguinte forma: como input, o usuário seleciona os parâmetros de configuração do fogão que deseja avaliar, direção do fluxo de ar do blower, estado do housing, posição da placa, material do suporte da bobina e presença do furo do defletor. Como output, o modelo retorna a temperatura estimada para os sensores/termopares das áreas-chave selecionadas, acompanhada de sua margem de erro esperada e de uma indicação de confiabilidade, sinalizando se a configuração consultada está dentro da faixa de combinações já testadas pela Whirlpool ou se representa uma extrapolação do modelo, caso em que a estimativa deve ser tratada com mais cautela.
 
 O uso está previsto para múltiplas áreas da Whirlpool identificadas junto ao parceiro no kickoff do projeto, cada uma impactada de forma distinta pela solução. Para o time de Engenharia (CFD), hoje responsável por rodar as simulações numéricas completas, o impacto é a liberação de capacidade: em vez de simular todas as configurações candidatas, a equipe pode usar o dashboard para triar rapidamente quais delas realmente justificam o tempo de uma simulação CFD completa ou de um teste físico, concentrando seu esforço especializado nos casos mais críticos — o que é especialmente relevante diante da disponibilidade limitada já identificada para essa equipe no primeiro semestre de 2026. Para os times de Produtos e Design, o impacto é a redução do tempo de iteração: decisões de posicionamento de componentes que hoje dependem do ciclo completo de simulação ou protótipo passam a poder ser exploradas em minutos ainda na fase conceitual, permitindo avaliar mais alternativas de design dentro do mesmo prazo de projeto. Para o time de Qualidade, o impacto é a priorização mais informada de quais configurações merecem avançar para testes físicos e destrutivos, reduzindo o número de protótipos construídos apenas para serem descartados. Já para o time de Marketing, o impacto é o acesso antecipado a características térmicas do produto, antes da validação final, para embasar posicionamento e comunicação sem depender do cronograma de testes físicos.
 
 Os principais benefícios esperados são a redução do tempo de desenvolvimento em até 30% e a diminuição dos gastos operacionais com protótipos em até 25%, conforme estimado pelo parceiro no Project Charter. Espera-se, ainda, uma contribuição indireta para a redução do desperdício de materiais associado à fabricação de protótipos físicos e à realização de testes destrutivos.
- 
+
 Como critério de sucesso, o modelo deverá prever a temperatura com margem de erro máxima de 10% e apresentar uma eficiência de tempo pelo menos 90% maior do que a simulação numérica tradicional. Por se tratar de uma prova de conceito (PoC), o sucesso desta primeira etapa também será avaliado pela validação consistente do modelo nos sensores e áreas priorizadas em conjunto com o parceiro, e não necessariamente pela cobertura de todos os 77 sensores monitorados.
 
 #### <a name="c4_1_4"></a>4.1.4. Value Proposition Canvas
 
 <div align="center">
   <sub>Figura 2 — Canvas de Proposta de Valor da Whirlpool</sub><br>
-  <img src="../assets/caanvasSolucao.png" width="800" alt="Canvas"><br>
+  <img src="../assets/canvasSolucao.png" width="800" alt="Canvas"><br>
   <sup>Fonte: Elaborado pelos autores (2026).</sup>
 </div>
 
 **Segmento de clientes.** O cliente primário da solução são as áreas de Engenharia e Qualidade, que operam diretamente o modelo e tomam a decisão técnica a partir da previsão gerada. Produtos, Design e Marketing são beneficiários secundários, que consomem o resultado da previsão sem operar a ferramenta.
 
-**Produtos e Serviços** 
+**Produtos e Serviços**
 
-O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. O dashboard é a interface pela qual Engenharia e Qualidade operam o modelo, tendo em Beatriz (Designer UX/UI) a persona responsável por mantê-la e evoluí-la. 
+O bloco reúne os três entregáveis definidos: o modelo preditivo de Machine Learning, o software distribuído em formato open source e o dashboard interativo. O dashboard é a interface pela qual Engenharia e Qualidade operam o modelo, tendo em Beatriz (Designer UX/UI) a persona responsável por mantê-la e evoluí-la.
 
 **Criadores de Ganho**
 
-Os dois criadores centrais — eliminação de retrabalho entre arquiteturas BR/MX e democratização de decisões técnicas — sustentam a necessidade de Estela (Engenheira de Materiais), operadora direta do modelo, de comparar diferentes materiais e espessuras sem depender de um novo protótipo para cada opção. Em posição de apoio, os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento sustentam as necessidades da persona Geraldo (Especialista de Marketing), cuja dor central é depender do cronograma de testes físicos para saber quando o produto estará pronto para divulgação. A pesquisa de gestão de produto reforça essa relação: reduz diretamente os custos de desenvolvimento, permite acesso antecipado ao potencial de mercado e garante vantagens de pioneirismo¹⁸.
+Os dois criadores centrais — eliminação de retrabalho entre arquiteturas BR/MX e democratização de decisões técnicas — sustentam a necessidade de Estela (Engenheira de Materiais), operadora direta do modelo, de comparar diferentes materiais e espessuras sem depender de um novo protótipo para cada opção. Em posição de apoio, os indicadores de 90% de eficiência frente à simulação tradicional e de 30% de redução no tempo de desenvolvimento sustentam as necessidades da persona Geraldo (Especialista de Marketing), cuja dor central é depender do cronograma de testes físicos para saber quando o produto estará pronto para divulgação. A pesquisa de gestão de produto reforça essa relação: reduz diretamente os custos de desenvolvimento, permite acesso antecipado ao potencial de mercado e garante vantagens de pioneirismo²⁵.
 
 **Aliviadores de Dor**
 
-Este bloco tem aderência direta às dores das personas técnicas do projeto. A eliminação da dependência de protótipos físicos e testes destrutivos responde precisamente à dor relatada por João (Engenheiro de Qualidade), que depende de testes físicos destrutivos, lentos e caros, para validar a segurança térmica, e por Estela, que enfrenta o mesmo gargalo ao validar resistência de materiais. Estudos sobre simulação digital no desenvolvimento de produto sustentam esse ganho: uma pesquisa da McKinsey, em conversas com líderes de P&D, mostra que gêmeos digitais já reduziram os prazos de desenvolvimento em até 50% para alguns usuários, com redução de custo associada, validando a lógica de que substituir ciclos físicos por simulação preditiva é uma estratégia de negócio consolidada, não apenas uma escolha técnica pontual do projeto¹⁹.
+Este bloco tem aderência direta às dores das personas técnicas do projeto. A eliminação da dependência de protótipos físicos e testes destrutivos responde precisamente à dor relatada por João (Engenheiro de Qualidade), que depende de testes físicos destrutivos, lentos e caros, para validar a segurança térmica, e por Estela, que enfrenta o mesmo gargalo ao validar resistência de materiais. Estudos sobre simulação digital no desenvolvimento de produto sustentam esse ganho: uma pesquisa da McKinsey, em conversas com líderes de P&D, mostra que gêmeos digitais já reduziram os prazos de desenvolvimento em até 50% para alguns usuários, com redução de custo associada, validando a lógica de que substituir ciclos físicos por simulação preditiva é uma estratégia de negócio consolidada, não apenas uma escolha técnica pontual do projeto⁴.
 
 **Ganhos do Cliente**
 
-O ganho de tomar decisões de engenharia baseadas em dados, e não em intuição, conecta-se diretamente a João (Engenheiro de Qualidade) e Estela (Engenheira de Materiais), que passam a aprovar ou priorizar configurações com base em um número verificável, em vez de aguardar o ciclo completo de teste físico. Em posição de apoio, o ganho de lançar produtos mais rapidamente sem perder qualidade térmica conecta-se à persona Geraldo, cuja necessidade central é alinhar o cronograma de campanha à data real de validação do produto — relação sustentada por pesquisa publicada no IEEE Transactions on Engineering Management: em estudo com 692 projetos de desenvolvimento de novos produtos, a velocidade de lançamento mostrou-se geralmente associada de forma positiva ao sucesso do novo produto²⁰. O ganho de custo zero de licenciamento, por sua vez, sustenta a viabilidade orçamentária da solução como um todo.
+O ganho de tomar decisões de engenharia baseadas em dados, e não em intuição, conecta-se diretamente a João (Engenheiro de Qualidade) e Estela (Engenheira de Materiais), que passam a aprovar ou priorizar configurações com base em um número verificável, em vez de aguardar o ciclo completo de teste físico. Em posição de apoio, o ganho de lançar produtos mais rapidamente sem perder qualidade térmica conecta-se à persona Geraldo, cuja necessidade central é alinhar o cronograma de campanha à data real de validação do produto — relação sustentada por pesquisa publicada no IEEE Transactions on Engineering Management: em estudo com 692 projetos de desenvolvimento de novos produtos, a velocidade de lançamento mostrou-se geralmente associada de forma positiva ao sucesso do novo produto⁵. O ganho de custo zero de licenciamento, por sua vez, sustenta a viabilidade orçamentária da solução como um todo.
 
 **Dores do Cliente**
 
@@ -316,7 +361,7 @@ Trata-se de um risco de natureza tecnológica. Sua probabilidade de ocorrência 
 
 **2. Volume amostral insuficiente de simulações (R02):**
 
-Trata-se de um risco de natureza de dados e Machine Learning. Sua probabilidade de ocorrência foi estimada em 70%, pois a obtenção de execuções históricas adicionais depende de extração nos servidores internos da Whirlpool e da priorização do parceiro, condição favorável à ocorrência mas ainda não confirmada, uma vez que o mapeamento do acervo disponível não foi concluído. O impacto foi classificado como muito alto porque a escassez de amostras impede estimar o erro de generalização com significância estatística e inviabiliza sustentar contratualmente a margem de 10% exigida no Project Charter. A combinação desses fatores resulta em uma classificação geral alta. A base disponibilizada contém cinquenta e seis execuções independentes, e não as mais de quatro mil leituras que ela soma, pois os termopares de uma mesma simulação compartilham geometria, malha e solver. Como plano de ação, a equipe solicitará formalmente ao Sponsor a extração de execuções adicionais, priorizará algoritmos de baixa variância — Ridge, Random Forest raso e Gradient Boosting regularizado — em vez de redes neurais, adotará validação cruzada Leave-One-Group-Out aninhada com agrupamento por configuração física e reportará toda métrica acompanhada de intervalo de confiança de 95%. Caso o número de execuções utilizáveis permaneça abaixo de sessenta, o escopo será renegociado com o Sponsor para um modelo restrito às condições de operação com maior densidade de dados.
+Trata-se de um risco de natureza de dados e Machine Learning. Sua probabilidade de ocorrência foi estimada em 70%, pois a obtenção de execuções históricas adicionais depende de extração nos servidores internos da Whirlpool e da priorização do parceiro, condição favorável à ocorrência mas ainda não confirmada, uma vez que o mapeamento do acervo disponível não foi concluído. O impacto foi classificado como muito alto porque a escassez de amostras impede estimar o erro de generalização com significância estatística e inviabiliza sustentar contratualmente a margem de 10% exigida no Project Charter. A combinação desses fatores resulta em uma classificação geral alta. A base disponibilizada contém cinquenta e seis execuções independentes, que formam 32 configurações distintas por região (Seção 4.2.3), e não as mais de quatro mil leituras que ela soma, pois os termopares de uma mesma simulação compartilham geometria, malha e solver. Como plano de ação, a equipe solicitará formalmente ao Sponsor a extração de execuções adicionais, priorizará algoritmos de baixa variância — Ridge, Random Forest raso e Gradient Boosting regularizado — em vez de redes neurais, adotará validação cruzada Leave-One-Group-Out aninhada com agrupamento por configuração física e reportará toda métrica acompanhada de intervalo de confiança de 95%. Caso o número de execuções utilizáveis permaneça abaixo de sessenta, o escopo será renegociado com o Sponsor para um modelo restrito às condições de operação com maior densidade de dados.
 
 **3. Superajuste do modelo com estimativa de erro otimista (R03):**
 
@@ -589,6 +634,8 @@ Essa jornada atual evidencia os gargalos que o Thermal Predictor busca endereça
 
 As duas jornadas foram construídas pela própria equipe do projeto, como exercício analítico de UX, e não a partir de entrevista ou observação direta de um engenheiro de qualidade real; a leitura a seguir deve ser tratada como uma síntese comparativa das fases descritas acima, não como medição validada de ganho. A tabela abaixo organiza lado a lado o que já está descrito em cada fase, para facilitar a leitura cruzada.
 
+<div align="center"><sub>Quadro 4 — Comparação entre as jornadas As Is e To Be do Engenheiro de Qualidade</sub></div>
+
 | Dimensão | Cenário Atual (As Is) | Cenário com o Thermal Predictor (To Be) |
 |---|---|---|
 | Ponto de partida | Nenhuma estimativa disponível antes de acionar CFD e/ou teste físico (Fase 1) | Previsão térmica disponível assim que a configuração é preenchida (Fase 2) |
@@ -598,6 +645,8 @@ As duas jornadas foram construídas pela própria equipe do projeto, como exerc�
 | Granularidade da decisão | Tudo-ou-nada por rodada de teste: uma reprovação reinicia fila, protótipo e ensaio (Fase 5) | Por componente: aprova por previsão o que está dentro do limite e marca como pendente só o que exige confirmação física (Fase 5) |
 | Fase de maior tensão | Fase 5 — Triagem Limitada e Retrabalho | Fase 2 — Configurar Parâmetros e Fase 4 — Conferir o Ponto Crítico |
 | Registro e encerramento | Combinações aprovadas/excluídas registradas pelo próprio João; conhecimento fica com ele (Fase 6) | Parecer, decisões parciais e retorno do teste físico registrados no dashboard até o encerramento (Fase 6) |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das jornadas da Seção 4.1.7.</sup>
 
 A leitura cruzada aponta três diferenças descritas nas próprias jornadas: menor dependência de fila de terceiros para obter uma primeira estimativa, decisão por componente em vez de tudo-ou-nada, e um registro centralizado no lugar do conhecimento disperso em planilhas pessoais. Essas diferenças coincidem com as oportunidades já listadas para as Fases 1 e 5 da jornada To Be, o que é esperado, já que ambas as jornadas partem da mesma análise.
 
@@ -617,7 +666,7 @@ Projeto Thermal Predictor
 
 **Informações Gerais:**
 
-Esta política de privacidade informa como o projeto Thermal Predictor, desenvolvido pelo grupo FOG em parceria com a Whirlpool (Divisão de Fogões BR/MX), trata os dados pessoais coletados durante o uso da solução. Está em conformidade com a Lei nº 13.709/2018 – LGPD²².
+Esta política de privacidade informa como o projeto Thermal Predictor, desenvolvido pelo grupo FOG em parceria com a Whirlpool (Divisão de Fogões BR/MX), trata os dados pessoais coletados durante o uso da solução. Está em conformidade com a Lei nº 13.709/2018 – LGPD²⁶.
 
 A solução envolve duas naturezas de dados, submetidas a regimes jurídicos distintos. Os dados técnicos e operacionais de produto, temperaturas de sensores, limites de engenharia, configurações de teste e identificadores de componentes que compõem o dataset, não são dados pessoais e, portanto, não estão sob a incidência da LGPD; sua proteção decorre dos acordos de confidencialidade e de propriedade intelectual firmados com a Whirlpool. Os dados pessoais, únicos regidos por esta política, limitam-se às informações de identificação dos usuários que operam o sistema. Nenhum registro do dataset de temperatura se refere a pessoa natural identificada ou identificável, nos termos do art. 5º, I, da LGPD.
 
@@ -645,7 +694,7 @@ Prazo: durante a vigência do módulo acadêmico, com eliminação ao término, 
 
 Equipe do projeto, orientadores e supervisores acadêmicos do Inteli e Whirlpool. Não há venda, cessão ou compartilhamento com terceiros.
 
-Como o parceiro desenvolve produtos para as arquiteturas de Brasil e México, dados de engenharia podem transitar entre as duas jurisdições. Os dados técnicos de produto são regidos pelos acordos de confidencialidade corporativos da Whirlpool. Eventual transferência internacional de dados pessoais observaria os arts. 33 a 36 da LGPD, que a condicionam a país com grau de proteção adequado ou à adoção de garantias contratuais específicas, como cláusulas-padrão contratuais ou normas corporativas globais; no México, aplica-se a Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)²³. No escopo atual, os dados pessoais permanecem armazenados no Brasil e não há transferência internacional ativa; caso o piloto seja estendido às equipes mexicanas, a base de transferência será formalizada antes da liberação de acesso.
+Como o parceiro desenvolve produtos para as arquiteturas de Brasil e México, dados de engenharia podem transitar entre as duas jurisdições. Os dados técnicos de produto são regidos pelos acordos de confidencialidade corporativos da Whirlpool. Eventual transferência internacional de dados pessoais observaria os arts. 33 a 36 da LGPD, que a condicionam a país com grau de proteção adequado ou à adoção de garantias contratuais específicas, como cláusulas-padrão contratuais ou normas corporativas globais; no México, aplica-se a Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)²⁷. No escopo atual, os dados pessoais permanecem armazenados no Brasil e não há transferência internacional ativa; caso o piloto seja estendido às equipes mexicanas, a base de transferência será formalizada antes da liberação de acesso.
 
 **Segurança dos Dados:**
 
@@ -671,6 +720,8 @@ E-mail: felipe.pessoa@sou.inteli.edu.br
 
 A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, seguida de revisão manual para corrigir casos ambíguos (ex.: identificadores numéricos que não são quantidades, colunas com sujeira de formatação). Fonte: `data/dataset_pre_processado.csv` (formato tidy, uma linha por combinação Run x TC), gerado na Seção 0 e classificado na Seção 1.1 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
+<div align="center"><sub>Quadro 5 — Classificação das colunas da base de dados</sub></div>
+
 | Coluna | Tipo |
 |---|---|
 | run_id | Categórica |
@@ -688,6 +739,8 @@ A classificação abaixo foi obtida com `df.dtypes` como ponto de partida, segui
 | deflector_hole | Categórica |
 | material_coil_support | Categórica |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.1).</sup>
+
 **Observações da revisão manual:**
 
 - `tc_number` parece numérico mas é um **identificador** do sensor (rótulo), não uma quantidade — não faz sentido calcular média/desvio dele, por isso ficou como Categórica apesar de o `dtype` bruto ser inteiro.
@@ -702,6 +755,8 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 
 ###### Colunas numéricas
 
+<div align="center"><sub>Tabela 1 — Estatística descritiva das colunas numéricas</sub></div>
+
 | Estatística | temp | active_limit |
 |---|---|---|
 | Contagem | 4065 | 4009 |
@@ -713,7 +768,11 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Q3 (75%) | 96,02 | 150,00 |
 | Máximo | 273,60 | 1000,00 |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.2).</sup>
+
 ###### Colunas categóricas — resumo
+
+<div align="center"><sub>Tabela 2 — Resumo das colunas categóricas</sub></div>
 
 | Coluna | Moda | Nulos | Valores únicos |
 |---|---|---|---|
@@ -730,9 +789,13 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | `deflector_hole` | Closed | 0 | 2 |
 | `material_coil_support` | Aluminium | 0 | 3 |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.2).</sup>
+
 ###### Distribuição das principais categóricas
 
 **`key_area`** (região do fogão onde o sensor está):
+
+<div align="center"><sub>Tabela 3 — Distribuição das leituras por key_area</sub></div>
 
 | Valor | Frequência |
 |---|---|
@@ -744,7 +807,11 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Oven HMI | 220 |
 | IPC Cooling | 218 |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.2).</sup>
+
 **`housing`** (configuração da carcaça):
+
+<div align="center"><sub>Tabela 4 — Distribuição das leituras por housing</sub></div>
 
 | Valor | Frequência |
 |---|---|
@@ -752,7 +819,11 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Open | 1328 |
 | Open - Updated | 674 |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.2).</sup>
+
 **`run_case`** (tipo de caso de teste):
+
+<div align="center"><sub>Tabela 5 — Distribuição das leituras por run_case</sub></div>
 
 | Valor | Frequência |
 |---|---|
@@ -763,6 +834,8 @@ Para cada coluna já classificada, foram calculadas as métricas descritivas cor
 | Qualitative | 225 |
 | Broil C1 | 148 |
 | Broil Qual | 148 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 1.2).</sup>
 
 ###### Gráficos exploratórios — relação entre variáveis
 
@@ -820,6 +893,8 @@ Como tratamento pontual, o valor textual `Monitor (150 C)` da coluna `active_lim
 
 Por fim, foi feita a **padronização das grafias** das variáveis de configuração, já que a mesma categoria aparecia escrita de formas diferentes:
 
+<div align="center"><sub>Quadro 6 — Padronização das grafias das variáveis de configuração</sub></div>
+
 | Variável | Antes | Depois |
 |---|---|---|
 | `blower_direction` | `To Back`, `To Front` | `To back`, `To front` |
@@ -828,6 +903,8 @@ Por fim, foi feita a **padronização das grafias** das variáveis de configura�
 | `housing` | `Open - Updated` | `Open` |
 | `losses` | `No Losses` | `No losses` |
 | `board_position` | `Center ` (com espaço) | `Center` |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 2).</sup>
 
 Após a padronização, restam 2 categorias em `blower_direction`, `housing`, `board_position` e `deflector_hole`, 4 em `run_case`, 14 em `losses` e 3 em `material_coil_support`. As sete variáveis receberam então uma codificação ordinal em ordem alfabética. Essa foi a codificação do primeiro modelo candidato (Seção 4.3); as versões atuais dos modelos usam codificação one-hot (Seção 4.4).
 
@@ -842,6 +919,10 @@ O processamento final transforma a base pré-processada, com uma linha por combi
 5. **Consolidação dos IGBTs.** Em IPC Comp, os 16 termopares `IGBT 1` a `IGBT 16` são substituídos por uma única coluna `IGBT`, com a média dos 16 em cada run.
 6. **Unificação de configurações repetidas.** Runs com as sete variáveis de configuração idênticas são unificados, e a temperatura de cada termopar passa a ser a média das repetições. Cada região passa a ter uma linha por configuração distinta, e essas são as linhas de treino de todos os modelos.
 
+A consolidação dos IGBTs (item 5) não tem o motivo registrado no notebook, mas os dados a sustentam: os dezesseis foram medidos em todos os 56 ensaios, têm o mesmo limite de engenharia (110 °C) e variam juntos de um ensaio para outro: a correlação entre pares de IGBTs vai de 0,80 a praticamente 1, com mediana de 0,93. Mantidos separados, eles seriam 16 dos 37 termopares da região, quase redundantes entre si, para as mesmas 32 configurações. Com a fusão, o modelo de IPC Comp prevê uma temperatura representativa do conjunto, e o dashboard a exibe para cada um dos dezesseis sensores. O custo é perder a diferença entre eles: a média por sensor vai de 86,9 °C no `IGBT 1`, o mais frio, a 99,7 °C no `IGBT 12`. Por isso um efeito medido em um IGBT específico, como o da H4 (Seção 4.2.4), não pode ser verificado diretamente no modelo (Seção 4.5.4).
+
+A unificação das réplicas (item 6) define o tamanho da base usada no treino: os 56 ensaios resultam em **32 configurações distintas** por região, e cada linha das tabelas por área passa a ser uma configuração única. É sobre essas 32 configurações que os modelos são validados e treinados (Seções 4.3 e 4.4).
+
 Na modelagem (Seção 4.3), essa estrutura se traduz em um problema de regressão multi-saída: o vetor das sete variáveis de configuração (x₁, ..., x₇) é usado para prever simultaneamente o vetor de temperaturas de todos os termopares da região (y₁, ..., yₙ).
 
 #### <a name="c4_2_4"></a>4.2.4. Hipóteses
@@ -852,12 +933,16 @@ Sobre o projeto, a temperatura observada em cada sensor do fogão depende de um 
 
 O resumo abaixo apresenta o que cada hipótese afirma e a conclusão obtida; os testes, gráficos e valores completos estão na Seção 3 de [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb).
 
+<div align="center"><sub>Quadro 7 — Resumo das hipóteses e de seus resultados</sub></div>
+
 | # | Hipótese | Resultado |
 |---|---|---|
 | **H1** | O efeito de uma configuração muda de sinal conforme a área do produto: a mesma alteração aquece uma área e resfria outra. | Confirmada |
 | **H2** | As sete configurações não são variáveis independentes — o desenho dos 56 ensaios as confunde, ao ponto de `losses` ser quase redundante com `deflector_hole`. | Confirmada |
 | **H3** | A temperatura depende do modo de operação: `run_case` varia a média de ~71 °C (Pyro) a ~84 °C (Broil Qualitative). | Confirmada |
 | **H4** | A carcaça aberta eleva a temperatura do IGBT 1: com o housing aberto, o componente opera ~9,6 °C mais quente que fechado, o contrário do esperado. | Confirmada |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/expl_preprocessamenro_hipote.ipynb (Seção 3).</sup>
 
 ##### H1 — Configurações redistribuem calor, não o eliminam
 
@@ -873,7 +958,7 @@ A consequência direta para a modelagem (Seção 4.3) é que a predição precis
 
 A hipótese é de que as configurações estão confundidas no desenho experimental, porque os 56 ensaios não vêm de um experimento fatorial planejado: são um histórico de testes, em que cada run respondia a uma pergunta específica e mudanças em uma peça vinham acompanhadas de mudanças em outras.
 
-A hipótese se confirmou. Doze das quatorze categorias de `losses` correspondem a um único valor de `deflector_hole` (V de Cramér = 0,89): é uma associação quase perfeita, mas não uma identidade literal. As duas exceções são `No losses` (8 runs, 5 com o deflector fechado e 3 aberto) e `Não informado` (6 runs, 5 fechado e 1 aberto). Uma regra que prevê `deflector_hole` pela categoria de `losses` acerta 92,9% dos runs, o que basta para que nenhum modelo consiga separar o efeito de uma variável do da outra. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 36 combinações possíveis entre `blower_direction`, `housing`, `deflector_hole` e `material_coil_support`, apenas 11 foram ensaiadas, e 27 dos 56 runs se concentram em duas delas.
+A hipótese se confirmou. Doze das quatorze categorias de `losses` correspondem a um único valor de `deflector_hole` (V de Cramér = 0,89): é uma associação quase perfeita, mas não uma identidade literal. As duas exceções são `No losses` (8 runs, 5 com o deflector fechado e 3 aberto) e `Não informado` (6 runs, 5 fechado e 1 aberto). Uma regra que prevê `deflector_hole` pela categoria de `losses` acerta 92,9% dos runs, o que basta para que nenhum modelo consiga separar o efeito de uma variável do da outra. Outros pares também aparecem fortemente associados (`run_case` com `losses`, `housing` com `losses`, `blower_direction` com `deflector_hole`), e o espaço de combinações é esparso: das 24 combinações possíveis entre `blower_direction`, `housing`, `deflector_hole` e `material_coil_support`, apenas 10 foram ensaiadas, e 27 dos 56 runs se concentram em duas delas.
 
 Isso não invalida a H1, mas delimita o que ela mede: os efeitos são reais e reproduzíveis, porém pertencem a blocos de configuração inteiros, não a peças isoladas. A base permite identificar configurações de risco, não atribuir a causa a um componente específico.
 
@@ -917,11 +1002,11 @@ O Thermal Predictor é um modelo supervisionado: a variável a ser prevista (tem
 
 #### <a name="c4_3_1"></a>4.3.1. Organização dos dados
 
-Antes do treinamento, as sete variáveis de configuração de entrada são codificadas ordinalmente: cada categoria de uma variável recebe um número inteiro (0, 1, 2...) em ordem alfabética. Essa codificação não atribui significado ao valor numérico em si, o que não é um problema para um modelo baseado em árvores como o `RandomForestRegressor`: a árvore aprende limiares de decisão sobre esse número, não uma relação linear com ele. A justificativa da escolha de cada uma das sete features está detalhada em Features de entrada, abaixo.
+A base de cada `key_area` tem 32 linhas, uma por configuração distinta (Seção 4.2.3). Antes do treinamento, as grafias das categorias são padronizadas e as sete variáveis de configuração são codificadas em **one-hot**: cada categoria vira uma coluna própria, com 1 quando o ensaio usa aquela categoria e 0 caso contrário. A primeira versão do pipeline usava codificação ordinal, que numerava as categorias em ordem alfabética e fazia o modelo enxergar uma hierarquia inexistente entre elas, como se um modo de operação fosse "maior" que outro. O one-hot não impõe essa ordem (Seções 4.4.2 e 4.4.3). A justificativa da escolha de cada uma das sete features está detalhada em Features de entrada, abaixo.
 
-Os dados de cada `key_area` são então divididos em três conjuntos disjuntos: 70% para treino, 20% para teste e 10% para verificação. O treino é o único conjunto usado para ajustar o modelo. Teste e verificação ficam totalmente fora do treinamento e são avaliados apenas ao final, sobre dados que o modelo nunca viu.
+A avaliação usa **validação Leave-One-Group-Out (LOGO)**, com grupo = configuração. Em cada região, o modelo é treinado 32 vezes, deixando de fora uma configuração por vez e prevendo justamente ela. Como cada linha é uma configuração distinta, o LOGO equivale a Leave-One-Out: toda configuração serve de teste exatamente uma vez, sempre prevista por um modelo que não a viu. A primeira versão do pipeline usava um corte fixo de 70% para treino, 20% para teste e 10% para verificação. Com cerca de seis configurações de teste por região, o resultado dependia do sorteio, e por isso o LOGO passou a ser a avaliação oficial (Seção 4.4). Depois da validação, o modelo final de cada região é treinado com as 32 configurações, e o erro medido no LOGO é a estimativa do erro desse modelo em configurações novas (Seção 4.4.4).
 
-Dentro do conjunto de treino, os hiperparâmetros do modelo (número de árvores, profundidade máxima, mínimo de amostras por folha, número de features consideradas em cada divisão) são escolhidos por validação cruzada via `GridSearchCV`: o treino é dividido internamente em partições, o modelo é treinado e avaliado em cada combinação de hiperparâmetros da grade, e a combinação com melhor erro médio absoluto (MAE) entre as partições é escolhida. Esse processo nunca toca os dados de teste ou verificação. O número de partições é reduzido automaticamente quando o conjunto de treino de uma `key_area` é pequeno demais para o número de partições padrão.
+Os hiperparâmetros vêm dos notebooks de cada algoritmo. No Random Forest, foram escolhidos por busca em grade (`GridSearchCV`, com o erro médio absoluto como critério). No Gradient Boosting, são os valores oficiais do grupo, confirmados por uma busca em grade avaliada pelo próprio LOGO. Nos dois casos, ficam fixos na validação e no treino final: buscá-los de novo sobre o mesmo LOGO que depois é reportado deixaria a métrica otimista. As grades e os valores escolhidos estão na Seção 4.4.
 
 #### <a name="c4_3_2"></a>4.3.2. Modelagem para o problema
 
@@ -929,22 +1014,24 @@ Dentro do conjunto de treino, os hiperparâmetros do modelo (número de árvores
 
 O modelo precisa prever a temperatura de cada termopar, uma variável numérica contínua, não uma categoria. Por isso o problema é enquadrado como **regressão**, não classificação: o objetivo é estimar um valor em °C, não decidir entre rótulos discretos.
 
-Dentro de cada `key_area`, cada ensaio produz uma leitura simultânea de vários termopares para a mesma configuração de entrada. Chegou a se cogitar treinar **um modelo por termopar**, mas essa abordagem foi descartada: tratar cada sensor como um problema isolado ignoraria que todos os termopares de uma mesma região respondem à mesma física de transferência de calor e à mesma configuração de ensaio, desperdiçando o sinal que um sensor carrega sobre os demais da sua área. Por isso o problema foi modelado como **regressão multi-output**: um único `RandomForestRegressor` por `key_area`, cuja saída é um vetor com a temperatura de todos os termopares daquela região simultaneamente — cada folha da árvore armazena um vetor de médias, uma por termopar, em vez de uma única média.
+Dentro de cada `key_area`, cada ensaio produz uma leitura simultânea de vários termopares para a mesma configuração de entrada. Chegou a se cogitar treinar **um modelo por termopar**, mas essa abordagem foi descartada: tratar cada sensor como um problema isolado ignoraria que todos os termopares de uma mesma região respondem à mesma física de transferência de calor e à mesma configuração de ensaio, desperdiçando o sinal que um sensor carrega sobre os demais da sua área. Por isso o problema foi modelado como **regressão multi-output**: um único modelo por `key_area`, cuja saída é um vetor com a temperatura de todos os termopares daquela região simultaneamente. O algoritmo de cada região é Random Forest ou Gradient Boosting, conforme o comparativo da Seção 4.4.4. No Random Forest, cada folha da árvore armazena um vetor de valores, um por termopar, em vez de um único valor. O Gradient Boosting não aceita várias saídas: nele, o `MultiOutputRegressor` treina um regressor por termopar, reunidos sob o mesmo modelo da região (Seção 4.4.3).
 
 **Por que um modelo por `key_area`**
 
 As sete `key_area` do produto correspondem a regimes térmicos distintos, não a um recorte arbitrário do conjunto de dados. A hipótese H1, confirmada na Seção 4.2.4, mostra isso diretamente: o efeito de uma mesma configuração de montagem muda de sinal conforme a área. Uma alteração que aquece um componente em uma região esfria outro em outra região. Um modelo único, treinado sobre o conjunto completo, estimaria um efeito médio entre as áreas, que não descreveria corretamente nenhuma delas e erraria o sinal do efeito em pelo menos uma.
 
-A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) quantifica essa heterogeneidade: a amplitude de temperatura vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`, uma diferença de 8,4 vezes, e o coeficiente de variação varia de 0,068 a 0,590 entre as sete regiões. Por isso o pipeline treina **um `RandomForestRegressor` por `key_area`** (sete modelos), em vez de um único modelo global: cada modelo aprende a relação entre configuração e temperatura dentro do regime térmico da sua própria região, sem que esse sinal seja diluído ou invertido pelas demais áreas. A justificativa para cada modelo prever, de uma vez, todos os termopares da sua área (abordagem multi-output) já foi apresentada em Enquadramento do problema, acima.
+A tabela de parâmetros por `key_area` (Anexos, subseção de Escalonamento) quantifica essa heterogeneidade: a amplitude de temperatura vai de 28,37 °C em `Oven HMI` a 238,19 °C em `Mainback`, uma diferença de 8,4 vezes, e o coeficiente de variação varia de 0,068 a 0,590 entre as sete regiões. Por isso o pipeline treina **um modelo por `key_area`** (sete modelos, Random Forest ou Gradient Boosting conforme a região), em vez de um único modelo global: cada modelo aprende a relação entre configuração e temperatura dentro do regime térmico da sua própria região, sem que esse sinal seja diluído ou invertido pelas demais áreas. A justificativa para cada modelo prever, de uma vez, todos os termopares da sua área (abordagem multi-output) já foi apresentada em Enquadramento do problema, acima.
 
 
 **Features de entrada**
 
 O modelo recebe como entrada as sete variáveis de configuração registradas no
-dataset, todas categóricas e codificadas ordinalmente antes do treinamento
-(Célula 3 de `notebooks/Random_for_regre.ipynb`). A variável-alvo é `temp`, a
+dataset, todas categóricas e codificadas em one-hot antes do treinamento
+(Seção 1 de `notebooks/comparacao_modelos.ipynb`). A variável-alvo é `temp`, a
 temperatura em graus Celsius, prevista simultaneamente para todos os termopares
 da `key_area`, conforme a modelagem multi-output descrita acima.
+
+<div align="center"><sub>Quadro 8 — Variáveis de entrada dos modelos</sub></div>
 
 | Variável | O que descreve | Categorias |
 | --- | --- | --- |
@@ -952,15 +1039,17 @@ da `key_area`, conforme a modelagem multi-output descrita acima.
 | `housing` | Estado do compartimento, aberto ou fechado | 2 |
 | `board_position` | Posição da placa eletrônica | 2 |
 | `run_case` | Modo de operação ensaiado | 4 |
-| `losses` | Perfil de perdas térmicas do ensaio | 14 |
+| `losses` | Perfil de perdas térmicas do ensaio | 13 |
 | `deflector_hole` | Presença do furo no defletor | 2 |
-| `material_coil_support` | Material do suporte da bobina | 3 |
+| `material_coil_support` | Material do suporte da bobina | 2 |
 
-A contagem acima é a observada dentro de cada `key_area` — a granularidade em
-que o modelo é de fato treinado (Célula 3 dos notebooks de modelagem) — e por
-isso é menor do que a contagem sobre a base completa apresentada na Seção
-4.2.1: nem toda categoria de uma variável aparece em toda região do produto,
-reflexo do desenho não fatorial dos ensaios já discutido na H2 (Seção 4.2.4).
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+A contagem acima é a que o modelo de fato recebe, igual nas sete `key_area`:
+é contada depois do tratamento da Seção 4.2.3 e da padronização de grafias, em
+que, por exemplo, `Aluminium Plate` é incorporado a `Aluminium` (Seção 4.4.3).
+Por isso é menor do que a contagem sobre a base completa apresentada na Seção
+4.2.1.
 
 Todas descrevem decisões de montagem que alteram a troca de calor no interior do
 produto, e as hipóteses da Seção 4.2.4 confirmam esse efeito com dados. A H1
@@ -973,20 +1062,21 @@ secundário. As demais variáveis descrevem geometria e material no caminho tér
 e seu efeito é discutido adiante à luz da importância atribuída pelos modelos.
 
 Não houve, portanto, seleção de um subconjunto: as sete disponíveis são mantidas,
-apesar de a hipótese H2 ter recomendado retirar `losses` e `board_position`.
+como decidido na H2 (Seção 4.2.4).
 
-O confundimento que motivou aquela recomendação é real e está medido. A associação
+O confundimento medido pela H2 é real e, à primeira vista, sugeriria retirar
+alguma variável. A associação
 entre `losses` e `deflector_hole` alcança V de Cramér de 0,89: doze das quatorze
 categorias de `losses` correspondem a um único valor de `deflector_hole`, e as
 outras duas misturam os dois valores, de modo que a relação é de associação quase
-perfeita, não de identidade. Apenas onze das trinta e seis combinações possíveis
+perfeita, não de identidade. Apenas dez das vinte e quatro combinações possíveis
 entre as quatro variáveis principais foram ensaiadas. Ocorre que retirar uma
 variável por redundância pressupõe que a redundância seja do fenômeno, e não do
 desenho experimental. Com esse nível de cobertura, não há como distinguir as duas
 coisas: as variáveis aparecem associadas porque nunca foram ensaiadas em
 combinações que as separassem. Remover antes de medir eliminaria a evidência
-necessária para decidir a remoção. Este primeiro candidato mantém as sete para
-observar o comportamento de cada uma, decisão a ser revista quando o espaço de
+necessária para decidir a remoção. Os modelos mantêm as sete para observar o
+comportamento de cada uma, decisão a ser revista quando o espaço de
 configurações estiver mais preenchido.
 
 A importância de variáveis não decide a questão. No primeiro candidato de
@@ -1000,23 +1090,29 @@ descartar uma variável. A retirada de variáveis foi testada diretamente no Ran
 Forest (Seção 4.4.2) e piorou o erro na maioria das regiões.
 
 Duas categorias são raras no conjunto, `board_position` igual a *Right* (5,5% das
-leituras) e `material_coil_support` igual a *Aluminium Plate* (1,8%); predições que
-dependam delas apoiam-se em poucos ensaios e devem ser lidas com a cautela
-prevista na classificação de confiabilidade (R04, Seção 4.1.5). A codificação
-atribui a cada categoria um inteiro sequencial em ordem alfabética; optou-se pela
-forma ordinal porque modelos baseados em árvores aprendem limiares sobre o valor
-codificado, sem pressupor ordem entre os códigos.
+leituras) e `material_coil_support` igual a *Aluminium Plate* (1,8%), esta última
+incorporada a *Aluminium* na padronização. Predições que dependam de
+`board_position` igual a *Right* apoiam-se em poucos ensaios e devem ser lidas
+com a cautela prevista na classificação de confiabilidade (R04, Seção 4.1.5).
 
 #### <a name="c4_3_3"></a>4.3.3. Métricas de avaliação do modelo
+
+Esta seção reúne tudo o que se refere às métricas de avaliação: o que cada uma
+mede (Seção 4.3.3.1), por que foi escolhida (Seção 4.3.3.2), como é calculada e
+resumida por região (Seção 4.3.3.3) e os resultados consolidados dos modelos
+candidatos (Seção 4.3.3.4). As demais seções usam essas definições sem
+repeti-las e trazem só a leitura específica de cada modelo.
+
+##### <a name="c4_3_3_1"></a>4.3.3.1. Definição das métricas
 
 A avaliação do Thermal Predictor responde a três perguntas distintas, e
 nenhuma métrica isolada responde às três: se o erro médio é pequeno, se há erros
 grandes escondidos atrás desse erro médio, e se o modelo aprendeu a relação entre
 configuração e temperatura ou apenas reproduz o comportamento médio de cada
 sensor. As três métricas abaixo cobrem uma pergunta cada e são reportadas em
-conjunto, sempre por termopar (`tc_name`), sobre o conjunto de teste e em graus
-Celsius, a unidade em que a decisão de engenharia é tomada. Estão implementadas
-com a biblioteca scikit-learn²⁶ na seção de métricas do notebook do modelo
+conjunto, sempre por termopar (`tc_name`), sobre as previsões da validação LOGO
+e em graus Celsius, a unidade em que a decisão de engenharia é tomada. Estão implementadas
+com a biblioteca scikit-learn²⁸ na seção de métricas do notebook do modelo
 candidato, que acompanha ainda o afastamento entre o erro de treino e o de teste,
 indicador de sobreajuste, risco elevado aqui pelo número reduzido de execuções
 disponíveis (R02, Seção 4.1.5).
@@ -1037,7 +1133,7 @@ $$
 cada erro ao quadrado antes da média, com a raiz devolvendo o resultado à unidade
 do alvo. Erros grandes passam a pesar desproporcionalmente, o que expõe previsões
 pontualmente ruins que uma média simples esconderia. É sempre maior ou igual ao
-MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²⁷.
+MAE, e a igualdade só ocorre quando todos os erros têm a mesma magnitude²⁹.
 
 $$
 RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^2}
@@ -1047,13 +1143,32 @@ $$
 o modelo explica, comparando seu erro com o de um preditor que ignora as
 entradas e responde sempre a média do alvo. R² = 1 é previsão perfeita, R² = 0 é
 empate com essa média e R² negativo significa desempenho pior que ela. MAE e
-RMSE informam o tamanho do erro; o R² informa se houve aprendizado.
+RMSE informam o tamanho do erro; o R² informa se houve aprendizado. Nas tabelas
+por modelo (Seções 4.4.1 a 4.4.3), o R² aparece como **poder de distinção**: o
+quanto o modelo diferencia uma configuração de outra dentro da mesma região.
 
 $$
 R^{2} = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
 $$
 
-##### Por que a escolha dessas métricas para avaliar o modelo?
+Duas métricas complementares acompanham as três principais como **leitura
+auxiliar**, sem peso na escolha entre modelos (Seção 4.3.3.2):
+
+**MAPE (Erro Percentual Absoluto Médio)** expressa o erro em proporção da
+temperatura medida, em porcentagem.
+
+$$
+MAPE = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+$$
+
+**Dentro de 10%** é a fração de previsões cujo erro relativo não passa de 10%
+da temperatura medida, a margem acordada com o parceiro (Seção 2.1).
+
+$$
+\text{Dentro de 10\%} = \frac{\#\left\{ i : \left| \frac{y_i - \hat{y}_i}{y_i} \right| \le 0{,}10 \right\}}{n}
+$$
+
+##### <a name="c4_3_3_2"></a>4.3.3.2. Justificativa da escolha das métricas
 
 O MAE é a métrica principal por estar na unidade em que a decisão é tomada: um
 erro em graus Celsius é confrontável com a folga até o limite normativo do
@@ -1099,13 +1214,44 @@ definir a grandeza sobre a qual o percentual incide, ambiguidade análoga à do
 critério de 10%, razão pela qual o afastamento é reportado em graus Celsius e
 em variação relativa, sem converter um no outro.
 
-#### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
+##### <a name="c4_3_3_3"></a>4.3.3.3. Como as métricas são calculadas e resumidas
 
-O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb). Esta subseção resume o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
+Todas as métricas são calculadas **por termopar**, em graus Celsius (exceto R²,
+adimensional, e MAPE e dentro de 10%, em porcentagem), e só depois resumidas
+para a região. Dois protocolos de validação aparecem na documentação:
 
-##### Desempenho comparado
+- **Corte fixo de treino e teste (*holdout* 70/20/10, semente 42)**, usado nas
+  versões de referência dos notebooks de cada algoritmo. Com poucos ensaios por
+  região, o resultado depende de quais ensaios o sorteio reservou para teste.
+- **Leave-One-Group-Out (LOGO)**, a validação oficial: cada uma das 32
+  configurações de uma região serve de teste uma vez, treinando com as outras 31.
+  Como cada configuração aparece uma única vez, equivale a Leave-One-Out.
 
-A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação: LOGO (Leave-One-Group-Out), em que cada uma das 32 configurações de uma região serve de teste uma vez, treinando com as outras 31. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3.3).
+O resumo por região muda conforme a fonte, e isso afeta sobretudo o R²:
+
+<div align="center"><sub>Quadro 9 — Agregação das métricas por região, conforme a fonte</sub></div>
+
+| Fonte | MAE, RMSE, MAPE | R² |
+|---|---|---|
+| `notebooks/Random_for_regre.ipynb` (Seção 4.4.2) | Média entre termopares | Média entre termopares |
+| `notebooks/Grad_Boosting_Regre.ipynb` (Seção 4.4.3) | Média entre termopares | Mediana entre termopares |
+| `notebooks/comparacao_modelos.ipynb` (Seção 4.3.3.4) | Mediana entre termopares | Mediana entre termopares |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
+O R² de um termopar que varia pouco no conjunto avaliado tem denominador perto
+de zero e pode chegar a centenas negativas; numa média, esse único sensor
+dominaria o valor da região sem dizer nada sobre os demais. Por isso o notebook
+do Gradient Boosting resume o R² pela mediana. Como o do Random Forest usa a
+média, os valores de R² das Seções 4.4.2 e 4.4.3 não são comparáveis
+diretamente. O comparativo entre os candidatos sob uma agregação única é o de
+[`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)
+(Seção 3), cujos resultados estão na Seção 4.3.3.4. A fração dentro de 10% é
+calculada sobre todas as previsões da região.
+
+##### <a name="c4_3_3_4"></a>4.3.3.4. Resultados consolidados
+
+A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um baseline que prevê sempre a média do treino, ignorando a configuração de entrada. A comparação é direta porque os quatro são avaliados no mesmo processo, sobre as mesmas planilhas, com a mesma codificação one-hot e a mesma validação LOGO. Cada métrica é calculada por termopar e resumida para a região pela **mediana** entre termopares, a mesma agregação para os quatro; a tabela traz a média dessas medianas entre as sete regiões. O MAPE fica de fora por ser apenas leitura auxiliar (Seção 4.3.3.2).
 
 <div align="center">
   <sub>Figura 18 — Comparativo entre os modelos candidatos e o baseline sob validação LOGO, por região</sub><br>
@@ -1113,36 +1259,42 @@ A Figura 18 e a tabela abaixo trazem as métricas dos três candidatos e de um b
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/comparacao_modelos.ipynb (Seção 5).</sup>
 </div>
 
+<div align="center"><sub>Tabela 6 — Métricas médias dos modelos candidatos e do baseline sob validação LOGO</sub></div>
+
 | Modelo | MAE (°C) ↓ | RMSE (°C) ↓ | R² ↑ | Dentro de 10% ↑ | Regiões em que supera o baseline (MAE) |
 |---|---|---|---|---|---|
-| **Random Forest** | **4,08** | **5,79** | **0,412** | **87,6%** | 7 de 7 |
-| Gradient Boosting | 4,12 | 5,89 | 0,368 | 86,9% | 7 de 7 |
-| Decision Tree | 5,14 | 6,80 | 0,060 | 82,3% | 4 de 7 |
+| **Random Forest** | **4,10** | **5,81** | **0,416** | **87,1%** | 7 de 7 |
+| Gradient Boosting | 4,14 | 5,90 | 0,370 | **87,1%** | 7 de 7 |
+| Decision Tree | 4,73 | 6,66 | 0,153 | 83,6% | 7 de 7 |
 | Baseline (média do treino) | 6,55 | 9,49 | −0,066 | 75,9% | — |
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/comparacao_modelos.ipynb` (Seção 5). Média entre as sete regiões; em cada região, mediana entre termopares.</sup>
 
-Random Forest e Gradient Boosting ficam praticamente empatados na média, e ambos superam o baseline nas sete regiões: a diferença de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). O Decision Tree fica atrás em todas as métricas e supera o baseline em só quatro regiões. Como o empate na média esconde diferenças região a região, não há um único vencedor: a Seção 4.4.4 escolhe o algoritmo de cada região. Em todos os casos, o R² modesto mostra que os modelos acertam bem o patamar térmico de cada região, mas ainda não distinguem com segurança duas configurações parecidas.
+Por região, a tabela abaixo traz as métricas do algoritmo em produção em cada `key_area` (roteamento decidido na Seção 4.4.4), sob o mesmo protocolo e a mesma agregação.
 
-As três figuras abaixo documentam a explicabilidade do Gradient Boosting, geradas na Seção 9 de `Grad_Boosting_Regre.ipynb`: importância por impureza (Figura 19), validação independente com SHAP (Figura 20) e a mesma leitura SHAP estendida às sete áreas (Figura 23). A interpretação está na Seção 4.4.3; a explicabilidade do Random Forest e do Decision Tree, nas Seções 4.4.2 e 4.4.1.
+<div align="center"><sub>Tabela 7 — Métricas do algoritmo em produção, por região, sob validação LOGO</sub></div>
 
-<div align="center">
-  <sub>Figura 19 — Explicabilidade do Gradient Boosting: importância das variáveis na área Mainback</sub><br>
-  <img src="../assets/graficos/modelo_candidato_explicabilidade.png" alt="Gráfico de barras horizontais com a importância média de cada variável de configuração para o Gradient Boosting na área Mainback, indicando o termopar mais sensível a cada variável" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
-</div>
+| `key_area` | Algoritmo em produção | MAE (°C) | RMSE (°C) | R² (adimensional) | n (configurações de teste) |
+|---|---|---|---|---|---|
+| Main Vent Sys | Gradient Boosting | 1,76 | 3,13 | 0,591 | 32 |
+| CT Knobs | Gradient Boosting | 2,08 | 2,94 | 0,397 | 32 |
+| Oven HMI | Gradient Boosting | 2,19 | 2,80 | 0,074 | 32 |
+| Mainback | Random Forest | 3,43 | 5,37 | 0,512 | 32 |
+| IPC Cooling | Random Forest | 3,82 | 5,53 | 0,483 | 32 |
+| IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
+| Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
 
-<div align="center">
-  <sub>Figura 20 — Validação da explicabilidade com SHAP: contribuição média das variáveis na área Mainback, em °C</sub><br>
-  <img src="../assets/graficos/modelo_candidato_shap.png" alt="Gráfico de barras horizontais com a contribuição média de cada variável de configuração, em graus Celsius, segundo valores SHAP para o Gradient Boosting na área Mainback" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
-</div>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`src/scripts/export_models.py`](../src/scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
 
-<div align="center">
-  <sub>Figura 23 — Participação de cada variável na importância SHAP, por área (Gradient Boosting)</sub><br>
-  <img src="../assets/graficos/modelo_candidato_shap_por_area.png" alt="Mapa de calor mostrando a participação percentual de cada variável de configuração na importância SHAP total de cada uma das sete áreas do produto" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
-</div>
+#### <a name="c4_3_4"></a>4.3.4. Análise e interpretação dos resultados dos modelos candidatos
+
+O Thermal Predictor tem três modelos candidatos, todos de regressão multi-saída e treinados em sete instâncias independentes, uma por `key_area`: Decision Tree, Random Forest e Gradient Boosting. Cada algoritmo tem notebook próprio, com o histórico de experimentos e os hiperparâmetros escolhidos por busca em grade ([`Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), [`Random_for_regre.ipynb`](../notebooks/Random_for_regre.ipynb) e [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb)). A comparação entre os três, sob um único protocolo, está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), e seus resultados numéricos, na Seção 4.3.3.4. Esta subseção interpreta o que esse comparativo mostra; a leitura detalhada de cada algoritmo está nas Seções 4.4.1 a 4.4.3, e a escolha do algoritmo por região, na Seção 4.4.4.
+
+##### Desempenho comparado
+
+Na tabela consolidada (Seção 4.3.3.4), Random Forest e Gradient Boosting ficam praticamente empatados na média, e ambos superam o baseline nas sete regiões: a diferença de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). O Decision Tree também supera o baseline nas sete regiões, mas fica atrás dos outros dois em todas as métricas. Como o empate na média esconde diferenças região a região, não há um único vencedor: a Seção 4.4.4 escolhe o algoritmo de cada região. Em todos os casos, o R² modesto mostra que os modelos acertam bem o patamar térmico de cada região, mas ainda não distinguem com segurança duas configurações parecidas.
+
+A explicabilidade de cada modelo — o que pesa em suas decisões — está junto da leitura de cada algoritmo: a do Decision Tree na Seção 4.4.1, a do Random Forest na Seção 4.4.2 e a do Gradient Boosting na [Seção 4.4.3](#c4_4_3), em "O que o modelo olha para decidir". É lá que estão as três figuras de explicabilidade do Gradient Boosting, geradas na Seção 9 de `Grad_Boosting_Regre.ipynb`: a leitura SHAP em Mainback (Figura 24), a mesma leitura estendida às sete áreas (Figura 25) e a importância por impureza (Figura 26), validada de forma independente pelo SHAP.
 
 A discussão a seguir cobre os três modelos candidatos treinados para prever a temperatura de cada termopar do fogão:
 
@@ -1156,7 +1308,9 @@ Os três foram treinados e avaliados sobre a mesma base, as sete planilhas em fo
 
 A comparação entre os três candidatos está consolidada em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), que recalcula todas as métricas desta seção no mesmo processo, a partir das mesmas planilhas. Os notebooks por algoritmo seguem como referência do histórico de experimentos de cada modelo; o comparativo abaixo e o roteamento por região da Seção 4.4.4 vêm do notebook consolidado.
 
-Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação (Seção 4.3.1). As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
+Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada de forma independente para cada uma das sete `key_area` e com `neg_mean_absolute_error` como critério de seleção — nunca tocando os conjuntos de teste ou verificação do corte fixo usado nos notebooks de origem. As grades variam conforme os hiperparâmetros relevantes a cada algoritmo:
+
+<div align="center"><sub>Quadro 10 — Hiperparâmetros buscados para cada modelo candidato</sub></div>
 
 | Modelo | Hiperparâmetros buscados |
 |---|---|
@@ -1164,42 +1318,41 @@ Os três modelos foram ajustados por **busca em grade** (`GridSearchCV`), rodada
 | Random Forest | `n_estimators`, `max_depth`, `min_samples_leaf`, `max_features` |
 | Gradient Boosting | `n_estimators` (100, 300), `learning_rate` (0,03, 0,05, 0,1), `max_depth` (2, 3), `subsample` (1,0, 0,8) |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 Nenhum dos três usa os hiperparâmetros padrão do scikit-learn: todos passam pela mesma busca automatizada. As subseções abaixo detalham, para cada modelo, como ele evoluiu a partir desse ponto de partida comum, quanto erra e o que a explicabilidade revela sobre suas decisões.
 
 #### <a name="c4_4_1"></a>4.4.1. Decision Tree Regressor
 
-A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente²⁸. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
+A árvore de decisão (*Decision Tree*, `DecisionTreeRegressor`) é o candidato mais simples e o mais fácil de auditar: cada previsão corresponde a um caminho de regras do tipo `variável ≤ limiar`, que pode ser lido diretamente³⁰. Em vez de um comitê ou de uma sequência de correções, há uma única árvore, que agrupa os ensaios parecidos em folhas e prevê, para cada folha, a média das temperaturas do grupo. O ganho é a transparência; o custo é que uma árvore sozinha, sem outras para compensar seus erros, tende a decorar os ensaios de treino.
 
-Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. A base é a mesma da Seção 4.3, com semente 42 e divisão 70/20/10, implementada com o scikit-learn²⁶ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb). Após a unificação das réplicas (ensaios com configuração idêntica têm as leituras substituídas pela média), cada região tem **19 configurações únicas**: 13 linhas para treino, 4 para teste e 2 para verificação. Esse tamanho condiciona a leitura de todos os resultados abaixo.
+Como nos outros dois modelos, existe uma árvore por região do fogão, sete no total, e cada uma estima de uma só vez a temperatura de todos os sensores daquela região (multi-saída) a partir da configuração de montagem informada. O desenvolvimento foi feito com semente 42 e divisão 70/20/10, implementado com o scikit-learn²⁸ em [`notebooks/Decision_tree_regre.ipynb`](../notebooks/Decision_tree_regre.ipynb), sobre uma versão anterior das planilhas por região, com **19 configurações únicas** cada: 13 linhas para treino, 4 para teste e 2 para verificação. Todos os números desta seção descrevem essa versão e não foram refeitos sobre a base atual, de 32 configurações (Seção 4.2.3), porque o Decision Tree não vai para produção. A comparação atual entre os três candidatos, sob o mesmo protocolo e sobre a base atual, está nas Seções 4.3.3.4 e 4.4.4.
 
 As mudanças feitas nesta sprint estão registradas no notebook a partir da **Seção 10** ("Decision Tree vs. baseline 'média do termopar'") até o final (Seção 18). As nove primeiras seções — leitura da planilha, codificação das categorias, separação treino/teste/verificação, treino do modelo, leitura das regras da árvore e avaliação estatística por termopar e por setor — já existiam antes desta sprint.
 
 ##### Como se chegou à versão atual
 
-O modelo não nasceu pronto. Como no Random Forest, cada mudança foi testada isoladamente contra uma referência, mas com o protocolo do notebook (Seção 16): 30 sementes (20 no último experimento) sobre as sete regiões, mesma divisão para todas as variantes e comparação pareada pelo teste de Wilcoxon²⁹, **sem correção para múltiplas comparações**. O critério é o erro em ensaios que a árvore não viu (teste e verificação) e o **gap**, isto é, quanto esse erro excede o erro de treino, a medida direta de memorização.
+O modelo não nasceu pronto. Como no Random Forest, cada mudança foi testada isoladamente contra uma referência, mas com o protocolo do notebook (Seção 16): 30 sementes (20 no último experimento) sobre as sete regiões, mesma divisão para todas as variantes e comparação pareada pelo teste de Wilcoxon³¹, **sem correção para múltiplas comparações**. O critério é o erro em ensaios que a árvore não viu (teste e verificação) e o **gap**, isto é, quanto esse erro excede o erro de treino, a medida direta de memorização.
 
-1. **Conter a complexidade (grade restrita e validação cruzada repetida, via `GridSearchCV`).** A grade inicial deixava a árvore crescer até `max_depth = 8`, com 13 folhas para 13 linhas de treino — cada folha memorizava um ensaio. A grade atual busca `max_depth` em 1, 2 e 3, `min_samples_leaf` em 2, 3 e 4 e `min_samples_split` em 4, 6 e 8 (27 combinações, com o MAE como critério), e a validação cruzada passou a ser repetida cinco vezes, porque com ~13 linhas de treino uma validação simples tem folds de ~4 linhas e a escolha vira sorteio. O gap médio caiu de 3,47 para 2,06 °C, ao custo de um erro fora do treino ligeiramente maior (5,67 para 6,00 °C). Como o espaço é pequeno, a busca exaustiva é viável e dispensa a amostragem aleatória (`RandomizedSearchCV`), vantajosa sobretudo em espaços grandes³⁰. Ficaram de fora da grade `max_features` (sortear 2 ou 3 de 7 variáveis é ruído numa árvore única), `criterion` (efeito marginal com tão poucas linhas) e a poda por custo-complexidade `ccp_alpha`, que na validação cruzada escolhia podar a árvore até uma folha única, equivalente a prever a média e só "eliminar" o superajuste porque o modelo deixa de usar as variáveis. Profundidades fixas (2 ou 3) e o tronco de uma divisão só (`max_depth = 1`) também foram testados e não superaram a grade adotada em erro.
+1. **Conter a complexidade (grade restrita e validação cruzada repetida, via `GridSearchCV`).** A grade inicial deixava a árvore crescer até `max_depth = 8`, com 13 folhas para 13 linhas de treino — cada folha memorizava um ensaio. A grade atual busca `max_depth` em 1, 2 e 3, `min_samples_leaf` em 2, 3 e 4 e `min_samples_split` em 4, 6 e 8 (27 combinações, com o MAE como critério), e a validação cruzada passou a ser repetida cinco vezes, porque com ~13 linhas de treino uma validação simples tem folds de ~4 linhas e a escolha vira sorteio. O gap médio caiu de 3,47 para 2,06 °C, ao custo de um erro fora do treino ligeiramente maior (5,67 para 6,00 °C). Como o espaço é pequeno, a busca exaustiva é viável e dispensa a amostragem aleatória (`RandomizedSearchCV`), vantajosa sobretudo em espaços grandes³². Ficaram de fora da grade `max_features` (sortear 2 ou 3 de 7 variáveis é ruído numa árvore única), `criterion` (efeito marginal com tão poucas linhas) e a poda por custo-complexidade `ccp_alpha`, que na validação cruzada escolhia podar a árvore até uma folha única, equivalente a prever a média e só "eliminar" o superajuste porque o modelo deixa de usar as variáveis. Profundidades fixas (2 ou 3) e o tronco de uma divisão só (`max_depth = 1`) também foram testados e não superaram a grade adotada em erro.
 2. **Mudar como as variáveis de entrada são representadas (codificação one-hot em vez de ordinal).** Mesma motivação do Random Forest: a codificação ordinal numera as opções em ordem alfabética, e a árvore passa a enxergar uma hierarquia inexistente entre, por exemplo, modos de operação. Com a one-hot, cada opção vira uma coluna sim/não. Foi a única mudança com ganho de erro estatisticamente significativo: o erro fora do treino caiu de 5,94 para 5,45 °C (−0,49 °C; p = 0,028) e o gap, de 1,98 para 1,70 °C. Variantes que mexiam em `deflector_hole` (removê-la, agrupar categorias raras ou agrupar por família) não superaram a one-hot completa.
 3. **Regra do 1 erro-padrão.** Em vez de ficar com a combinação de menor erro na validação cruzada — que, com ~13 linhas, muitas vezes premia sorte —, a árvore final é a **mais simples** cujo erro está a até um erro-padrão da melhor (menor profundidade, depois folhas maiores). Reduziu o erro fora do treino de 5,54 para 5,38 °C (p = 0,018) e o gap de 1,82 para 1,41 °C (p < 0,001). Variantes testadas e não adotadas: padronizar os alvos, encolher as previsões para a média, combinar as duas e treinar uma árvore por termopar, que perdeu a leitura numa única árvore por região sem ganho relevante de erro.
 
-As três mudanças compõem a **versão atual**, discutida daqui em diante. As medidas valem para a base atual, de 19 linhas por região; se os dados mudarem, os experimentos precisam ser refeitos. O experimento 1 foi feito ainda com codificação ordinal, e o 3 já parte da one-hot.
+As três mudanças compõem a **versão atual**, discutida daqui em diante. Os três experimentos ficam como registro histórico: foram feitos sobre uma versão anterior das planilhas por região, com 19 configurações cada, e não foram refeitos sobre a base atual, de 32 configurações (Seção 4.2.3). Eles orientaram as escolhas do modelo, mas seus valores (erros, gaps e p-valores) descrevem aquela base, não a atual. O experimento 1 foi feito ainda com codificação ordinal, e o 3 já parte da one-hot.
 
 <div align="center">
-  <sub>Figura 28 — Experimentos de redução de superajuste do Decision Tree</sub><br>
+  <sub>Figura 19 — Experimentos de redução de superajuste do Decision Tree</sub><br>
   <img src="../assets/graficos/dt_experimentos_overfitting.png" alt="Painéis comparando, para cada experimento, o erro fora do treino e o gap treino-fora de cada variante da árvore contra a referência e contra o baseline da média do treino" width="100%"><br>
-  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (Seção 16).</sup>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (Seção 16), sobre a versão anterior da base (19 configurações por região).</sup>
 </div>
 
 ##### Quanto o modelo erra
 
-As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, com os hiperparâmetros padrão do scikit-learn, e a **versão atual**, com as três mudanças, ambas avaliadas no conjunto de teste (4 linhas por região) com a semente 42. Antes delas, o que cada coluna quer dizer:
-
-- **Erro médio absoluto (MAE — Mean Absolute Error)** — de quantos graus a previsão erra, em média. É a métrica principal, por estar na mesma unidade da decisão de engenharia.
-- **Raiz do erro quadrático médio (RMSE — Root Mean Squared Error)** — semelhante ao MAE, mas penaliza erros grandes com peso maior. Quanto mais o RMSE se afasta do MAE, mais concentradas em poucos sensores estão as falhas.
-- **Coeficiente de determinação (R²)**, aqui chamado de poder de distinção — o quanto o modelo diferencia uma configuração de outra dentro da mesma região. O valor 1 é o ideal; 0 significa não fazer melhor do que sempre chutar a média histórica daquela região; abaixo de 0, pior do que isso.
-- **Erro percentual médio absoluto (MAPE — Mean Absolute Percentage Error)** e **dentro de 10%** — o erro em proporção da temperatura medida, e a fatia de previsões que cai dentro da margem acordada com o parceiro.
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, com os hiperparâmetros padrão do scikit-learn, e a **versão atual**, com as três mudanças, ambas avaliadas no conjunto de teste (4 linhas por região) com a semente 42. As colunas são as métricas definidas na Seção 4.3.3.1 — erro médio (MAE), RMSE, poder de distinção (R²), MAPE e dentro de 10% —, calculadas como descrito na Seção 4.3.3.3.
 
 **Versão de referência** — hiperparâmetros padrão do scikit-learn
+
+<div align="center"><sub>Tabela 8 — Decision Tree: métricas da versão de referência, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ |
 |---|---|---|---|---|
@@ -1212,7 +1365,11 @@ As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de ref
 | Coil Temps | 9,28 | 12,45 | −3,311 | 7,06 |
 | **Média das sete regiões** | **4,20** | **5,20** | **−4,449** | **5,54** |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb.</sup>
+
 **Versão atual** — grade restrita, one-hot e regra do 1 erro-padrão
+
+<div align="center"><sub>Tabela 9 — Decision Tree: métricas da versão atual, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
@@ -1228,7 +1385,7 @@ As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de ref
 <sup>Fonte: Elaborado pelos autores (2026), a partir de `notebooks/Decision_tree_regre.ipynb` (Seções 9 e 13). A fração dentro de 10% não foi calculada para a versão de referência. As duas tabelas não são somáveis nem intercambiáveis: descrevem configurações diferentes da mesma árvore.</sup>
 
 <div align="center">
-  <sub>Figura 24 — Erro no teste antes e depois da otimização de hiperparâmetros, por setor</sub><br>
+  <sub>Figura 20 — Erro no teste antes e depois da otimização de hiperparâmetros, por setor</sub><br>
   <img src="../assets/graficos/dt_antes_depois_tuning.png" alt="Painéis de barras comparando MAE, MSE, RMSE, R² e MAPE do Decision Tree antes e depois do GridSearchCV em cada setor, com o valor de cada barra anotado" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (semente 42). O painel de R² usa escala logarítmica simétrica.</sup>
 </div>
@@ -1245,13 +1402,15 @@ O recado, portanto, é mais restrito do que no Random Forest: a árvore serve pa
 
 ##### Robustez à semente
 
-Com 4 linhas de teste por região, cada semente sorteia um teste diferente e o desempenho varia muito: entre 31 sementes, o MAPE médio no teste vai de 4,0% a 13,6% (Figura 25). A semente 42 (5,5%) ocupa a 13ª posição, no meio da distribuição. A semente vencedora no teste (30, com 4,0%) chega a 7,2% na verificação, e a correlação de Spearman entre os dois conjuntos, ao longo das sementes, é −0,17 (p = 0,35). Escolher a "melhor semente" seleciona, portanto, um sorteio favorável, não um modelo melhor. A semente 42 foi mantida porque é a mesma dos demais candidatos, condição para compará-los e combiná-los sobre as mesmas linhas, e o desempenho esperado é reportado pela média entre sementes.
+Com 4 linhas de teste por região, cada semente sorteia um teste diferente e o desempenho varia muito: entre 31 sementes, o MAPE médio no teste vai de 4,0% a 13,6% (Figura 21). A semente 42 (5,5%) ocupa a 13ª posição, no meio da distribuição. A semente vencedora no teste (30, com 4,0%) chega a 7,2% na verificação, e a correlação de Spearman entre os dois conjuntos, ao longo das sementes, é −0,17 (p = 0,35). Escolher a "melhor semente" seleciona, portanto, um sorteio favorável, não um modelo melhor. A semente 42 foi mantida porque é a mesma dos demais candidatos, condição para compará-los e combiná-los sobre as mesmas linhas, e o desempenho esperado é reportado pela média entre sementes.
 
 <div align="center">
-  <sub>Figura 25 — Sensibilidade do desempenho à semente da divisão treino/teste/verificação</sub><br>
+  <sub>Figura 21 — Sensibilidade do desempenho à semente da divisão treino/teste/verificação</sub><br>
   <img src="../assets/graficos/dt_sensibilidade_semente.png" alt="À esquerda, barras do MAPE médio no teste para 31 sementes, com a melhor semente e a semente 42 destacadas; à direita, dispersão do MAPE na verificação contra o MAPE no teste, sem relação entre eles" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (Seção 11).</sup>
 </div>
+
+<div align="center"><sub>Tabela 10 — Decision Tree: desempenho com a semente 42 e com 31 sementes</sub></div>
 
 | Média dos 7 setores | Semente 42 | 31 sementes |
 |---|---|---|
@@ -1259,14 +1418,16 @@ Com 4 linhas de teste por região, cada semente sorteia um teste diferente e o d
 | MAPE no teste (%) | 5,52 | 6,90 ± 2,71 |
 | Previsões dentro de 10% | 80,8% | 82,3% |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb.</sup>
+
 Os valores da semente 42 não devem ser tomados como desempenho esperado; a coluna da direita é a estimativa a ser usada.
 
 ##### Comparação com o baseline
 
-O baseline mostra o que o modelo acrescenta além do patamar do setor. Em 217 casos, a árvore vence o baseline em MAE em 52,5% deles (diferença média de 0,86 °C a favor da árvore; p = 0,19, sem significância) e fica no mesmo patamar no MAPE (6,9% contra 7,6%) e na fração dentro de 10% (82,3% contra 81,8%). O ganho se concentra em `coil_temps` e `mainback`, onde a árvore vence em 97% e 74% das sementes; em `ipc_comp`, o baseline é melhor (a árvore vence em 13%), e nas demais regiões o resultado é próximo de um empate (Figura 26). Na divisão da semente 42, apenas `coil_temps` e `ct_knobs` superam o baseline.
+O baseline mostra o que o modelo acrescenta além do patamar do setor. Em 217 casos, a árvore vence o baseline em MAE em 52,5% deles (diferença média de 0,86 °C a favor da árvore; p = 0,19, sem significância) e fica no mesmo patamar no MAPE (6,9% contra 7,6%) e na fração dentro de 10% (82,3% contra 81,8%). O ganho se concentra em `coil_temps` e `mainback`, onde a árvore vence em 97% e 74% das sementes; em `ipc_comp`, o baseline é melhor (a árvore vence em 13%), e nas demais regiões o resultado é próximo de um empate (Figura 22). Na divisão da semente 42, apenas `coil_temps` e `ct_knobs` superam o baseline.
 
 <div align="center">
-  <sub>Figura 26 — Decision Tree contra o baseline da média do termopar, entre sementes</sub><br>
+  <sub>Figura 22 — Decision Tree contra o baseline da média do termopar, entre sementes</sub><br>
   <img src="../assets/graficos/dt_vs_baseline_sementes.png" alt="À esquerda, MAE médio por setor da árvore e do baseline com desvio entre sementes; à direita, percentual de sementes em que a árvore vence o baseline em cada setor" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (Seção 12).</sup>
 </div>
@@ -1279,16 +1440,16 @@ A causa do que sobra é o tamanho da base, não o algoritmo. São poucas configu
 
 ##### O que o modelo olha para decidir
 
-Diferente das florestas e do boosting, a árvore dispensa técnica adicional de explicabilidade: a própria estrutura é a explicação (Figura 27). Em `mainback`, a árvore escolhida tem profundidade 1 e duas folhas: pergunta apenas se o modo de operação é `run_case = Broil Qualitative`. As oito linhas de treino que respondem "não" e as cinco que respondem "sim" recebem médias diferentes por termopar — por exemplo, 56,7 °C contra 61,9 °C em um sensor, e 103,4 °C contra 97,9 °C em outro. Toda a importância (1,0) fica em `run_case`; as outras seis variáveis têm importância zero. A leitura é coerente com a hipótese H3, que já apontava o modo de operação como fator real de elevação térmica, mas é uma leitura de um único corte, sustentada por 13 linhas.
+Diferente das florestas e do boosting, a árvore dispensa técnica adicional de explicabilidade: a própria estrutura é a explicação (Figura 23). Em `mainback`, a árvore escolhida tem profundidade 1 e duas folhas: pergunta apenas se o modo de operação é `run_case = Broil Qualitative`. As oito linhas de treino que respondem "não" e as cinco que respondem "sim" recebem médias diferentes por termopar — por exemplo, 56,7 °C contra 61,9 °C em um sensor, e 103,4 °C contra 97,9 °C em outro. Toda a importância (1,0) fica em `run_case`; as outras seis variáveis têm importância zero. A leitura é coerente com a hipótese H3, que já apontava o modo de operação como fator real de elevação térmica, mas é uma leitura de um único corte, sustentada por 13 linhas.
 
 <div align="center">
-  <sub>Figura 27 — Explicabilidade do Decision Tree na área Mainback: importância das variáveis e regras de decisão</sub><br>
+  <sub>Figura 23 — Explicabilidade do Decision Tree na área Mainback: importância das variáveis e regras de decisão</sub><br>
   <img src="../assets/graficos/dt_importancia_mainback.png" alt="Gráfico de barras horizontais com a importância de cada variável de configuração na área Mainback, com run_case como única variável com importância diferente de zero" width="55%"><br>
   <img src="../assets/graficos/dt_arvore_mainback.png" alt="Árvore de decisão da área Mainback com profundidade 1 e duas folhas, dividida por run_case igual a Broil Qualitative" width="100%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Decision_tree_regre.ipynb (semente 42).</sup>
 </div>
 
-**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest e o Gradient Boosting, apoiada na hipótese H2: as sete configurações estão confundidas no desenho dos ensaios — `losses` é redundante com `deflector_hole`, e das 36 combinações possíveis entre as quatro variáveis principais apenas 11 foram ensaiadas. A árvore escolhe uma entre variáveis redundantes de forma arbitrária, e a importância zero de uma variável indica que a árvore **não precisou** dela, não que seja termicamente irrelevante. A figura descreve **como o modelo decide**, não **como o fogão aquece**.
+**O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest e o Gradient Boosting, apoiada na hipótese H2: as sete configurações estão confundidas no desenho dos ensaios — `losses` é redundante com `deflector_hole`, e das 24 combinações possíveis entre as quatro variáveis principais apenas 10 foram ensaiadas. A árvore escolhe uma entre variáveis redundantes de forma arbitrária, e a importância zero de uma variável indica que a árvore **não precisou** dela, não que seja termicamente irrelevante. A figura descreve **como o modelo decide**, não **como o fogão aquece**.
 
 ##### Em resumo
 
@@ -1319,9 +1480,11 @@ As três últimas mudanças — estimador híbrido, validação LOGO e codifica�
 
 ##### Quanto o modelo erra
 
-As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. As cinco métricas são as definidas na Seção 4.4.1.
+As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de referência**, avaliada pela separação simples de 20% dos ensaios, e a **versão atual**, com as três últimas mudanças. As cinco métricas são as definidas na Seção 4.3.3.1, com cada uma resumida para a região pela média entre termopares (Seção 4.3.3.3).
 
 **Versão de referência** — separação simples entre treino e teste
+
+<div align="center"><sub>Tabela 11 — Random Forest: métricas da versão de referência, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
@@ -1334,7 +1497,11 @@ As tabelas abaixo mostram o mesmo algoritmo em dois momentos: a **versão de ref
 | Coil Temps | 8,93 | 11,04 | 0,359 | 7,14 | 72,9% |
 | **Média das sete regiões** | **3,76** | **4,88** | **−0,740** | **4,92** | **89,7%** |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Random_for_regre.ipynb.</sup>
+
 **Versão atual** — valores atípicos tratados, configurações sem ordem artificial, avaliação ensaio a ensaio
+
+<div align="center"><sub>Tabela 12 — Random Forest: métricas da versão atual, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
@@ -1367,7 +1534,7 @@ A causa é o tamanho da base, não o algoritmo. São poucos ensaios e poucas com
 
 ##### O que o modelo olha para decidir
 
-Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations)³¹, uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
+Uma previsão isolada não diz por que saiu daquele jeito. Para abrir essa caixa-preta, a versão atual foi analisada com SHAP (SHapley Additive exPlanations)³, uma técnica baseada nos valores de Shapley que reparte cada previsão entre as variáveis de entrada: ela mostra quanto cada uma empurrou a temperatura estimada para cima ou para baixo, de modo que a soma das partes reconstrói exatamente o valor previsto. Para uma floresta aleatória, o SHAP tem um algoritmo exato e rápido, o `TreeExplainer`, que percorre a estrutura das árvores em vez de estimar por amostragem.
 
 A **leitura global** (importância agregada das variáveis, olhando todas as previsões) resume o que mais pesa em cada região:
 
@@ -1387,7 +1554,7 @@ A sequência de melhorias rendeu onde podia render: o ajuste de parâmetros cont
 
 #### <a name="c4_4_3"></a>4.4.3. Gradient Boosting
 
-O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial³², não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
+O Gradient Boosting (`GradientBoostingRegressor`) funciona por correção sequencial³³, não por comitê: cada árvore nova é treinada para corrigir o erro que as anteriores ainda deixam, uma de cada vez, em vez de várias árvores independentes votarem juntas. O ganho é que o modelo persegue diretamente o erro residual; o custo é precisar de um regressor por termopar — `GradientBoostingRegressor` não aceita várias saídas de uma vez, ao contrário do Random Forest —, o que o `MultiOutputRegressor` resolve por fora, treinando um `GradientBoostingRegressor` independente para cada sensor da região.
 
 Como nos outros dois modelos, existe um conjunto de regressores por região do fogão, sete no total, e a arquitetura por termopar tem uma consequência que reaparece na explicabilidade, adiante: diferente do Random Forest, dá para saber qual variável pesa mais **para cada sensor**, não só para a região como um todo.
 
@@ -1397,7 +1564,7 @@ Diferente do Random Forest, o ajuste de hiperparâmetros por `GridSearchCV` já 
 
 1. **Mudar como as variáveis de entrada são representadas (one-hot em vez de ordinal).** Mesma motivação do Random Forest: a codificação ordinal original numerava as categorias em ordem alfabética, criando uma hierarquia artificial entre elas — como se um modo de operação fosse "maior" que outro. Testado sob protocolo rigoroso (LOGO + intervalo de confiança de 95%, `documents/extras/hipotese_onehot.md`), o resultado foi estatisticamente neutro em todas as sete regiões — nem para melhor, nem para pior. A mudança foi adotada mesmo assim, por ser mais correta em princípio e sem custo medido.
 2. **Corrigir uma categoria mal rotulada em `material_coil_support`.** Um ensaio (Run 48) já vinha rotulado "Aluminium Plate" no dado bruto, antes de qualquer correção do grupo; foi normalizado para "Aluminium", batendo com o glossário do parceiro, que documenta só dois níveis para essa variável.
-3. **Manter as sete variáveis originais, apesar da recomendação da H2.** A H2 (Seção 4.2.4) identificou `losses` como redundante com `deflector_hole` no desenho dos ensaios. Removê-las antes de medir o efeito eliminaria a própria evidência necessária para decidir a remoção — com só 32 configurações distintas por região, a base ainda não permite separar "redundante no fenômeno" de "redundante só porque nunca foi ensaiado de outro jeito".
+3. **Manter as sete variáveis originais, como decidido na H2.** A H2 (Seção 4.2.4) identificou `losses` como quase redundante com `deflector_hole` no desenho dos ensaios, e ainda assim decidiu manter as sete variáveis. Removê-las antes de medir o efeito eliminaria a própria evidência necessária para decidir a remoção — com só 32 configurações distintas por região, a base ainda não permite separar "redundante no fenômeno" de "redundante só porque nunca foi ensaiado de outro jeito".
 4. **Adotar a validação Leave-One-Group-Out (LOGO) como avaliação oficial, no lugar do corte fixo de treino/teste.** Mesma motivação do Random Forest: com só seis ensaios no corte de teste (holdout de 20%), a nota de uma região pode depender de sorteio. O LOGO, com grupo = configuração de ensaio, usa todos os 32 ensaios de cada região como teste, um de cada vez — como cada ensaio é uma configuração distinta, equivale a Leave-One-Out. Os hiperparâmetros são fixos e iguais nas sete regiões (`n_estimators = 100`, `learning_rate = 0,03`, `max_depth = 3`, `subsample = 0,8`), definidos nos testes do grupo com o Gradient Boosting, e não são re-tunados a cada rodada.
 5. **Confirmar esses hiperparâmetros por busca em grade avaliada pelo próprio LOGO.** O `GridSearchCV` do holdout escolhe os hiperparâmetros com validação cruzada de 3 folds dentro de ~22 linhas de treino, o que deixa ~7 linhas por fold. Para ligar a configuração oficial à otimização, a mesma grade — ampliada com `learning_rate = 0,03`, somando 24 combinações — foi rodada com o LOGO como validação cruzada do `GridSearchCV`, e as combinações foram ordenadas pelo MAE médio entre as sete regiões (Seção 8.2 do notebook). A configuração oficial fica em **3º de 24**, a 0,05 °C (cerca de 1%) da primeira colocada (`learning_rate = 0,05`, `subsample = 1,0`); as sete primeiras usam `max_depth = 3`, e as quatro primeiras usam `n_estimators = 100` com `learning_rate` entre 0,03 e 0,05. O topo do ranking é, portanto, um empate técnico, e a busca confirma a região escolhida — o `GridSearchCV` do holdout, com a grade ampliada, também escolhe exatamente a configuração oficial em Mainback. A configuração não foi trocada pela primeira colocada: a diferença é menor que a variação entre regiões, e escolher a vencedora pelo mesmo LOGO que depois é reportado deixaria a métrica otimista.
 
@@ -1405,9 +1572,11 @@ As mudanças 1, 2, 4 e 5 compõem a **versão atual**, discutida daqui em diante
 
 ##### Quanto o modelo erra
 
-As tabelas usam as mesmas cinco métricas definidas na Seção 4.4.1, na mesma unidade e com o mesmo agrupamento por região, com uma diferença de agregação: cada métrica é calculada por termopar e resumida para a região pela **média** entre termopares, exceto o poder de distinção (R²), resumido pela **mediana**. O R² de um termopar que varia pouco no conjunto avaliado tem denominador perto de zero e pode chegar a centenas negativas; numa média, esse único sensor dominaria o valor da região sem dizer nada sobre os demais. A mesma agregação é usada nas duas tabelas. O notebook do Random Forest (Seção 4.4.2) resume o R² pela média, de modo que os valores de R² das duas seções não são comparáveis diretamente; o comparativo entre os candidatos sob uma agregação única está em [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 3).
+As tabelas usam as mesmas cinco métricas definidas na Seção 4.3.3.1, na mesma unidade e com o mesmo agrupamento por região. Cada métrica é resumida para a região pela **média** entre termopares, exceto o poder de distinção (R²), resumido pela **mediana**, a mesma agregação nas duas tabelas. O motivo dessa escolha, e por que ela impede comparar diretamente o R² desta seção com o da Seção 4.4.2, está na Seção 4.3.3.3.
 
 **Versão de referência** — separação simples entre treino e teste (holdout 70/20/10), hiperparâmetros escolhidos pelo `GridSearchCV` de cada região
+
+<div align="center"><sub>Tabela 13 — Gradient Boosting: métricas da versão de referência, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
@@ -1420,7 +1589,11 @@ As tabelas usam as mesmas cinco métricas definidas na Seção 4.4.1, na mesma u
 | Coil Temps | 9,79 | 12,82 | 0,564 | 7,38 | 72,9% |
 | **Média das sete regiões** | **3,96** | **5,32** | **−0,891** | **5,10** | **88,3%** |
 
+<sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb (Seção 7).</sup>
+
 **Versão atual** — avaliação ensaio a ensaio (LOGO), hiperparâmetros oficiais fixos
+
+<div align="center"><sub>Tabela 14 — Gradient Boosting: métricas da versão atual, por região</sub></div>
 
 | Região | Erro médio (°C) ↓ | RMSE (°C) ↓ | Poder de distinção ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
 |---|---|---|---|---|---|
@@ -1457,7 +1630,21 @@ A causa é a mesma dos outros dois modelos: tamanho da base, não o algoritmo. N
 
 Uma previsão isolada não diz por que saiu daquele jeito. A versão atual foi analisada com SHAP, do mesmo modo que o Random Forest: o `TreeExplainer` reparte cada previsão entre as sete variáveis de entrada, de forma que a soma das partes reconstrói exatamente o valor previsto. A diferença estrutural em relação ao Random Forest é que o `MultiOutputRegressor` já treina um regressor por termopar — a leitura por sensor nasce da própria arquitetura, sem precisar do eixo extra que o SHAP monta sobre o modelo único da floresta.
 
-A **leitura global por área** (Figura 20, Seção 4.3.4, para Mainback; Figura 23, para as sete áreas) mostra que nenhuma variável decide de forma uniforme entre regiões:
+As Figuras 24 e 25, geradas na Seção 9 de [`Grad_Boosting_Regre.ipynb`](../notebooks/Grad_Boosting_Regre.ipynb), trazem essa leitura: a primeira mostra, em °C, quanto cada variável contribui em média para a temperatura prevista em Mainback; a segunda estende a mesma leitura às sete áreas, como participação percentual de cada variável na importância SHAP da área.
+
+<div align="center">
+  <sub>Figura 24 — Validação da explicabilidade com SHAP: contribuição média das variáveis na área Mainback, em °C (Gradient Boosting)</sub><br>
+  <img src="../assets/graficos/modelo_candidato_shap.png" alt="Gráfico de barras horizontais com a contribuição média de cada variável de configuração, em graus Celsius, segundo valores SHAP para o Gradient Boosting na área Mainback" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
+
+<div align="center">
+  <sub>Figura 25 — Participação de cada variável na importância SHAP, por área (Gradient Boosting)</sub><br>
+  <img src="../assets/graficos/modelo_candidato_shap_por_area.png" alt="Mapa de calor mostrando a participação percentual de cada variável de configuração na importância SHAP total de cada uma das sete áreas do produto" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
+
+A **leitura global por área** (Figura 24 para Mainback; Figura 25 para as sete áreas) mostra que nenhuma variável decide de forma uniforme entre regiões:
 
 - Nas bobinas (Coil Temps), o modo de operação (`run_case`) domina com folga — 53% de toda a importância da região, a maior concentração do mapa inteiro, coerente com a mesma hipótese H3 que explica o domínio de `run_case` no Random Forest. `run_case` também lidera em CT Knobs (42%) e Main Vent Sys (36%), e por margem mínima em IPC Cooling (24%, contra 23% de `deflector_hole`).
 - Em Mainback e Oven HMI, quem lidera é a direção do fluxo de ar do ventilador (`blower_direction`, 31% e 30%) — a mesma variável que domina essas duas regiões no Random Forest. Em Oven HMI, `deflector_hole` vem praticamente empatada (30%).
@@ -1465,7 +1652,13 @@ A **leitura global por área** (Figura 20, Seção 4.3.4, para Mainback; Figura 
 
 Essa alternância de qual variável decide, região por região, é a mesma leitura que a H1 (Seção 4.2.4) já fizera sobre o efeito medido nos dados — aqui reaparece também na estrutura interna do modelo, sem que essa alternância tenha sido informada ao treinamento. `board_position` e `material_coil_support` são as duas variáveis de menor participação em cinco das sete áreas. As exceções são Mainback, onde `deflector_hole` fica abaixo de `board_position`, e Coil Temps, onde `material_coil_support` responde por 7% da importância, à frente de `blower_direction`, `deflector_hole` e `board_position`.
 
-Uma segunda técnica, a importância por impureza nativa do `GradientBoostingRegressor` (Figura 19), foi comparada ao SHAP (Figura 20) só para Mainback, como checagem cruzada: as quatro variáveis líderes coincidem nas duas técnicas, mas a ordem entre as duas primeiras (`run_case` e `blower_direction`) se inverte de uma técnica para outra, e o termopar mais sensível a cada variável muda em quatro das sete — indício de que o ranking agregado de variáveis é mais estável entre técnicas do que o detalhe por sensor.
+Uma segunda técnica, a importância por impureza nativa do `GradientBoostingRegressor` (Figura 26), foi comparada ao SHAP (Figura 24) só para Mainback, como checagem cruzada: as quatro variáveis líderes coincidem nas duas técnicas, mas a ordem entre as duas primeiras (`run_case` e `blower_direction`) se inverte de uma técnica para outra, e o termopar mais sensível a cada variável muda em quatro das sete — indício de que o ranking agregado de variáveis é mais estável entre técnicas do que o detalhe por sensor.
+
+<div align="center">
+  <sub>Figura 26 — Explicabilidade do Gradient Boosting por impureza: importância das variáveis na área Mainback</sub><br>
+  <img src="../assets/graficos/modelo_candidato_explicabilidade.png" alt="Gráfico de barras horizontais com a importância média de cada variável de configuração para o Gradient Boosting na área Mainback, indicando o termopar mais sensível a cada variável" width="100%"><br>
+  <sup>Fonte: Elaborado pelos autores (2026), a partir de notebooks/Grad_Boosting_Regre.ipynb.</sup>
+</div>
 
 **O que essa leitura não autoriza a dizer.** Vale a mesma ressalva registrada para o Random Forest, apoiada na H2: as variáveis de entrada estão confundidas entre si nos ensaios, e diante de informação redundante o modelo distribui o crédito de forma arbitrária — a própria inversão de ordem entre `run_case` e `blower_direction` ao trocar de técnica de explicabilidade é uma demonstração disso. Uma variável com peso baixo (SHAP ou impureza) significa que o modelo **não precisou** dela, não que seja irrelevante para o aquecimento do fogão.
 
@@ -1473,7 +1666,7 @@ Uma segunda técnica, a importância por impureza nativa do `GradientBoostingReg
 
 Sob a avaliação oficial (LOGO), o Gradient Boosting erra entre 2,1 °C e 5,0 °C em seis das sete regiões, chegando a 9,6 °C em Coil Temps, e entrega cerca de 87% das previsões dentro da margem de 10% acordada com o parceiro. Seu ponto fraco, como nos outros dois, é distinguir configurações parecidas dentro de uma mesma região — o poder de distinção mediano é 0,37, e negativo em IPC Comp —, e a base de ensaios disponível é a causa, não o algoritmo.
 
-Os hiperparâmetros oficiais, definidos nos testes do grupo, foram confirmados por busca em grade avaliada pelo próprio LOGO: ficam entre os três melhores de 24 combinações, a 0,05 °C da primeira. O número mais alarmante das tabelas, o R² de −7,10 em Mainback no holdout, é um problema de medição — quatro sensores quase constantes nos seis ensaios de teste — e desaparece sob LOGO. O superajuste, por outro lado, é real, sobretudo em Coil Temps e Mainback, e seria atacado, entre outras formas, pela mesma simplificação de variáveis (item 3 acima) que a H2 já recomendava e que o Random Forest testou e descartou por outro motivo — um teste ainda pendente para o Gradient Boosting especificamente.
+Os hiperparâmetros oficiais, definidos nos testes do grupo, foram confirmados por busca em grade avaliada pelo próprio LOGO: ficam entre os três melhores de 24 combinações, a 0,05 °C da primeira. O número mais alarmante das tabelas, o R² de −7,10 em Mainback no holdout, é um problema de medição — quatro sensores quase constantes nos seis ensaios de teste — e desaparece sob LOGO. O superajuste, por outro lado, é real, sobretudo em Coil Temps e Mainback, e seria atacado, entre outras formas, pela simplificação de variáveis que a H2 considerou e não adotou (item 3 acima), e que o Random Forest testou e descartou por outro motivo — um teste ainda pendente para o Gradient Boosting especificamente.
 
 #### <a name="c4_4_4"></a>4.4.4. Comparação entre os candidatos e escolha do algoritmo por região
 
@@ -1493,6 +1686,8 @@ Por isso o Decision Tree não entra como terceiro candidato à produção; seu v
 
 Os dois candidatos são comparados sob o mesmo protocolo — codificação one-hot e validação LOGO (Leave-One-Group-Out, equivalente a Leave-One-Out nesta base de 32 configurações por região) —, a validação oficial adotada em ambas as seções anteriores por ser a mais estável com poucos ensaios. Uma diferença de configuração permanece entre os dois candidatos: o Random Forest usa o estimador híbrido (mediana nas folhas fora do intervalo interquartil, média nas demais), enquanto o Gradient Boosting usa sempre a previsão padrão, com hiperparâmetros fixos entre regiões e sem retunagem por fold nesta rodada. Em ambos os casos trata-se da melhor versão de cada algoritmo medida até aqui, e não de duas configurações espelhadas ponto a ponto.
 
+<div align="center"><sub>Tabela 15 — Comparação entre Random Forest e Gradient Boosting, por região</sub></div>
+
 | Região | MAE RF (°C) | MAE GB (°C) | R² RF | R² GB | Escolhido |
 |---|---|---|---|---|---|
 | Main Vent Sys | **1,96** | 2,07 | 0,367 | **0,591** | Gradient Boosting |
@@ -1506,7 +1701,7 @@ Os dois candidatos são comparados sob o mesmo protocolo — codificação one-h
 
 <sup>Fonte: Elaborado pelos autores (2026), a partir da validação LOGO de `notebooks/Random_for_regre.ipynb` (Seção 21) e `notebooks/Grad_Boosting_Regre.ipynb` (Seção 8). O negrito marca o melhor valor entre os dois candidatos em cada métrica.</sup>
 
-**Uma ressalva sobre a comparação do R².** Os dois notebooks de origem agregam o R² dos sensores de formas diferentes: o Random Forest reporta a **média** entre termopares, o Gradient Boosting a **mediana**. Como cada região tem de 4 a 22 sensores e alguns são mal medidos, os dois critérios divergem — a mediana é mais alta justamente quando um sensor ruim puxa a média para baixo. As colunas de R² acima, portanto, não são estritamente comparáveis entre si. O notebook consolidado ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 3) mede o tamanho desse efeito e reavalia os três algoritmos sob uma convenção única. As colunas de MAE, que não dependem dessa escolha, não são afetadas.
+**Uma ressalva sobre a comparação do R².** Os dois notebooks de origem agregam o R² dos sensores de formas diferentes (Seção 4.3.3.3): o Random Forest reporta a **média** entre termopares, o Gradient Boosting a **mediana**. Como cada região tem de 4 a 22 sensores e alguns são mal medidos, os dois critérios divergem — a mediana é mais alta justamente quando um sensor ruim puxa a média para baixo. As colunas de R² acima, portanto, não são estritamente comparáveis entre si. O notebook consolidado ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seção 3) mede o tamanho desse efeito e reavalia os três algoritmos sob uma convenção única. As colunas de MAE, que não dependem dessa escolha, não são afetadas.
 
 **Uma segunda ressalva, sobre a codificação de `material_coil_support`.** Os dados brutos trazem essa variável com espaço sobrando em duas das três grafias (`"Aluminium "` e `"Plastic "`, com espaço à direita), e nenhum dos três notebooks de origem removia esse espaço antes do one-hot. O `pd.get_dummies` trata `"Aluminium "` e `"Aluminium"` (a forma corrigida de `"Aluminium Plate"`) como duas colunas diferentes para a mesma categoria — sem erro nenhum, só um sensor com peso diluído em duas colunas quase vazias. O efeito é pequeno em Random Forest e Gradient Boosting (modelos de conjunto absorvem uma coluna espúria entre muitas árvores), mas relevante no Decision Tree, mais sensível por depender de uma única árvore: corrigido, ele passa a superar o baseline nas 7 regiões, contra 4 antes da correção, e seu MAE médio cai 0,41 °C. O notebook consolidado normaliza espaços em todas as variáveis categóricas antes de qualquer correção de grafia, e traz uma checagem que falha a execução se alguma categoria com espaço sobrando sobreviver à padronização. **A tabela e o roteamento por região abaixo continuam vindo dos notebooks de origem, que não foram corrigidos** — a correção foi aplicada e verificada só no notebook consolidado. Como o efeito é pequeno em Random Forest e Gradient Boosting, a decisão de roteamento não muda; a divergência de valores entre a tabela abaixo e o notebook consolidado tem, portanto, duas causas somadas: a padronização de categorias tratada aqui e outras fontes de variação entre execuções já registradas nesta seção.
 
@@ -1515,7 +1710,7 @@ Os dois candidatos são comparados sob o mesmo protocolo — codificação one-h
 Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide quando a diferença entre os dois candidatos é de pelo menos **0,05** — porque é a métrica que informa se o modelo distingue configurações dentro da região, e não só acerta o patamar médio —, e o MAE decide abaixo disso. É o mesmo limiar que [`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 5) aplica em código, junto com um teste de quanto a escolha de cada região depende desse valor.
 
 - **Mainback e IPC Comp** — o Random Forest vence em MAE e em R² nas duas, sem ambiguidade. Em IPC Comp a diferença é qualitativa: R² positivo (0,158) contra negativo (−0,056), a única região em que o R² do Gradient Boosting é negativo, isto é, pior que prever a média dos próprios ensaios.
-- **Coil Temps** — o Gradient Boosting vence nas duas métricas (9,55 contra 10,54 °C; R² 0,785 contra 0,666), com a maior margem de MAE da tabela. É a região mais quente e de maior amplitude térmica, a única em que o boosting tem sinal suficiente para levar vantagem clara.
+- **Coil Temps** — o Gradient Boosting vence nas duas métricas (9,55 contra 10,54 °C; R² 0,785 contra 0,666), com a maior margem de MAE da tabela. É a região mais quente do fogão (mediana de 123,8 °C, Seção 4.2.1), a única em que o boosting tem sinal suficiente para levar vantagem clara.
 - **Main Vent Sys** — o MAE favorece o Random Forest por margem estreita (0,11 °C), mas o R² do Gradient Boosting é 0,224 mais alto, acima do limiar e o maior salto de poder de distinção do comparativo.
 - **IPC Cooling** — as duas métricas discordam: MAE 0,20 °C melhor no Random Forest, R² 0,064 maior no Gradient Boosting. Aplicado a esta tabela, o limiar daria a região ao Gradient Boosting; a escolha registrada é o Random Forest porque essa vantagem de R² vem da diferença de agregação entre os notebooks de origem (ressalva acima). No recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)), é o Random Forest que tem o R² maior, com margem acima do limiar, e as duas métricas passam a concordar.
 - **Oven HMI** — as duas margens são mínimas: 0,03 °C no MAE, a favor do Gradient Boosting, e 0,048 no R², a favor do Random Forest. Como a diferença de R² fica abaixo do limiar, o MAE decide, e a escolha é o Gradient Boosting. É a região em que o comparativo menos separa os candidatos: a escolha se apoia menos em vantagem medida do que na ausência de diferença relevante entre os dois — leitura confirmada pelo teste de sensibilidade do notebook consolidado.
@@ -1527,7 +1722,9 @@ Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide quand
 
 ##### A decisão registrada
 
-O roteamento por região adotado em produção é o seguinte, e vive em um único lugar no repositório — o mapa `AREA_ALGORITHMS` em [`scripts/export_models.py`](../scripts/export_models.py), que o grava no manifesto consumido pelo back-end e pelo front-end. Nem a API nem o dashboard reescrevem esse mapa à mão; ambos leem do manifesto, de modo que a decisão documentada aqui e o modelo que efetivamente responde a uma requisição não podem divergir.
+O roteamento por região adotado em produção é o seguinte, e vive em um único lugar no repositório — o mapa `AREA_ALGORITHMS` em [`src/scripts/export_models.py`](../src/scripts/export_models.py), que o grava no manifesto consumido pelo back-end e pelo front-end. Nem a API nem o dashboard reescrevem esse mapa à mão; ambos leem do manifesto, de modo que a decisão documentada aqui e o modelo que efetivamente responde a uma requisição não podem divergir.
+
+<div align="center"><sub>Quadro 11 — Roteamento por região adotado em produção</sub></div>
 
 | Região | Algoritmo em produção | Artefato |
 |---|---|---|
@@ -1539,158 +1736,256 @@ O roteamento por região adotado em produção é o seguinte, e vive em um únic
 | IPC Comp | Random Forest | `random_forest__ipc_comp.joblib` |
 | IPC Cooling | Random Forest | `random_forest__ipc_cooling.joblib` |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de `models/manifest.json`.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir de `src/backend/models/manifest.json`.</sup>
+
+##### Do notebook ao artefato em produção
+
+Os artefatos acima são gerados por [`src/scripts/export_models.py`](../src/scripts/export_models.py) com o mesmo pipeline da versão atual descrita nas Seções 4.4.2 e 4.4.3: as 32 configurações de cada região, a padronização de categorias do notebook consolidado (espaços normalizados antes das correções de grafia), codificação one-hot, o estimador híbrido no Random Forest e os hiperparâmetros oficiais de cada algoritmo, sem nova busca em grade. As métricas gravadas no manifesto são as da validação LOGO. Depois dessa validação, o artefato final de cada região é treinado com **todas** as 32 configurações, e o erro medido no LOGO é a estimativa do erro desse artefato em configurações novas. É desse erro por termopar que vem a margem exibida no dashboard ao lado de cada previsão (RF04).
+
+Nos quatro modelos de Gradient Boosting, as métricas do manifesto reproduzem exatamente as da tabela da Seção 4.4.3. Nos três de Random Forest, a diferença para a tabela da Seção 4.4.2 é de até 0,03 °C no MAE e de até 0,009 no R² médio entre termopares. Ela vem da padronização de espaços em `material_coil_support` (ressalva acima), que o notebook de origem do Random Forest não aplicava e o artefato aplica. A diferença é pequena demais para alterar qualquer escolha de roteamento.
+
+A primeira versão dos artefatos usava outro pipeline, com codificação ordinal, corte fixo 70/20/10 e busca em grade por região. Ela também descartava ensaios inteiros quando faltava a leitura de algum sensor. O script atual interrompe a exportação diante de uma leitura faltante, em vez de encolher a base sem aviso, e o manifesto registra o hash dos CSVs de entrada e o commit que gerou cada conjunto de artefatos.
 
 
 ##### Em resumo
 
 O placar final é **quatro regiões para Gradient Boosting** (Main Vent Sys, CT Knobs, Oven HMI, Coil Temps) e **três para Random Forest** (Mainback, IPC Comp, IPC Cooling), como registrado no mapa `AREA_ALGORITHMS`. Random Forest e Gradient Boosting são os dois candidatos viáveis para produção; o Decision Tree fica de fora por ficar atrás dos dois em todas as métricas médias.
 
-O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)) concorda com esse roteamento em seis das sete regiões. A exceção é **CT Knobs**, em que o Random Forest passa a liderar as duas métricas por margem mínima (0,06 °C no MAE). A região segue com Gradient Boosting em produção: a diferença está muito abaixo do que a base de 32 configurações distingue de forma confiável, e trocar o algoritmo exigiria reexportar os artefatos sem ganho perceptível — o erro típico da região é de cerca de 2 °C. Fica registrado como ponto a reavaliar quando houver ensaios novos.
+O recomputo sob agregação única ([`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb)) concorda com esse roteamento em seis das sete regiões. A exceção é **CT Knobs**, em que o Random Forest passa a liderar as duas métricas por margem mínima (0,09 °C no MAE). A região segue com Gradient Boosting em produção: a diferença está muito abaixo do que a base de 32 configurações distingue de forma confiável, e trocar o algoritmo exigiria reexportar os artefatos sem ganho perceptível, o erro típico da região é de cerca de 2 °C. Fica registrado como ponto a reavaliar quando houver ensaios novos.
 
 ### <a name="c4_5"></a>4.5. Avaliação
 
-#### <a name="c4_5_1"></a>4.5.1. Solução final
+Esta seção fecha a Seção 4 e responde se o que foi entregue cumpre o que a Seção 2 propôs: os objetivos da Seção 2.1, a proposta de solução da Seção 2.2 e o escopo defendido na Seção 2.3, detalhados em requisitos na Seção 4.1. O "como" já está nas Seções 4.2 a 4.4; aqui ficam só a conclusão e o ponteiro para a seção de origem de cada argumento. A unidade de avaliação é a configuração de montagem: os 56 ensaios da base correspondem a 32 configurações distintas por região, cada uma usada uma vez como teste na validação LOGO. Em cada rodada da validação, a configuração de teste é uma combinação que o modelo não viu no treino, montada com as mesmas variáveis de configuração que os ensaios cobrem. É o cenário de uso que a Seção 2.2 delimita, o de configurações próximas das já ensaiadas, e o erro reportado aqui é o erro esperado nesse cenário. As comparações com o baseline vêm do comparativo consolidado da Seção 4.3.3.4. Os valores por região e a média do sistema em produção vêm da tabela da Seção 4.4.4, que fundamentou o roteamento.
 
-A solução final do Thermal Predictor é um **conjunto de sete modelos de regressão multi-saída, um por região do fogão**, cada um treinado com o algoritmo que teve o melhor desempenho naquela região: **Gradient Boosting** em Main Vent Sys, CT Knobs, Oven HMI e Coil Temps, e **Random Forest** em Mainback, IPC Comp e IPC Cooling. O roteamento e os artefatos estão descritos na Seção 4.4.4 e registrados em `models/manifest.json`. Os sete modelos recebem as mesmas sete variáveis de configuração de montagem e devolvem, de uma vez, a temperatura de todos os termopares da região.
+#### <a name="c4_5_1"></a>4.5.1. Solução final e justificativa
 
-A tabela abaixo reúne o desempenho da solução final sob a validação oficial (LOGO), região a região, com o algoritmo escolhido para cada uma.
+A solução final é um conjunto de **sete modelos de regressão multi-saída, um por região do fogão**, cada um prevendo de uma vez a temperatura de todos os termopares da sua região a partir das sete variáveis de configuração de montagem. O algoritmo foi escolhido região a região: **Gradient Boosting em quatro** (Main Vent Sys, CT Knobs, Oven HMI e Coil Temps) e **Random Forest em três** (Mainback, IPC Comp e IPC Cooling). Esse roteamento é gravado em `src/backend/models/manifest.json`, lido pela API e pelo dashboard (Seção 4.4.4). É a arquitetura que a Seção 2.2 apresentou: dos três algoritmos testados, os dois que ficaram em produção atendem cada um as regiões em que se saiu melhor.
 
-| Região | Algoritmo | MAE (°C) ↓ | R² ↑ | MAPE (%) ↓ | Dentro de 10% ↑ |
+A escolha se sustenta em quatro argumentos, cada um demonstrado em uma seção anterior:
+
+1. **Um modelo por região, porque as regiões são regimes térmicos distintos.** A amplitude de temperatura varia mais de oito vezes entre a região de menor e a de maior amplitude térmica (28,37 °C em Oven HMI contra 238,19 °C em Mainback), e a hipótese H1 mostrou que a mesma alteração de montagem aquece uma região e esfria outra (Seções 4.2.4 e 4.3). Um modelo único estimaria um efeito médio que não descreve nenhuma delas.
+2. **Random Forest e Gradient Boosting, porque aprendem algo além do patamar da região.** Sob validação LOGO, os dois superam nas **7 de 7** regiões o baseline que prevê a média do treino, com MAE médio de 4,10 °C e 4,14 °C contra 6,55 °C do baseline. O Decision Tree fica atrás dos dois em todas as métricas médias e permanece apenas como ferramenta de leitura de regras (Seções 4.3.3.4 e 4.4.1).
+3. **A escolha entre os dois segue um critério explícito.** Onde MAE e R² concordam, a escolha é direta. Onde divergem, o R² decide se a diferença entre os dois for de pelo menos 0,05, e o MAE decide abaixo disso. O limiar está aplicado em código em [`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (Seção 4.4.4).
+4. **Dois algoritmos baseados em árvores de decisão, porque a Seção 2.3 exige interpretabilidade.** Num contexto de certificação térmica, a equipe de Engenharia precisa ver quais variáveis de montagem pesaram em cada previsão. Random Forest e Gradient Boosting permitem essa leitura com SHAP, o que a Seção 4.5.3 verifica.
+
+<div align="center"><sub>Tabela 16 — Métricas e solidez da escolha do algoritmo em produção, por região</sub></div>
+
+| Região | Algoritmo em produção | MAE (°C) ↓ | R² ↑ | Dentro de 10% ↑ | Solidez da escolha |
 |---|---|---|---|---|---|
-| Main Vent Sys | Gradient Boosting | 2,07 | 0,591 | 2,48 | 94,2% |
-| Oven HMI | Gradient Boosting | 2,17 | 0,074 | 3,70 | 96,1% |
-| CT Knobs | Gradient Boosting | 2,20 | 0,397 | 4,35 | 89,1% |
-| Mainback | Random Forest | 3,30 | 0,512 | 5,02 | 86,6% |
-| IPC Cooling | Random Forest | 3,64 | 0,327 | 5,77 | 89,8% |
-| IPC Comp | Random Forest | 4,85 | 0,158 | 6,38 | 82,2% |
-| Coil Temps | Gradient Boosting | 9,55 | 0,785 | 8,56 | 77,0% |
-| **Média das sete regiões** | — | **3,97** | — | **5,18** | **87,9%** |
+| Main Vent Sys | Gradient Boosting | 2,07 | 0,591 | 94,2% | Decidida pelo R² (margem de 0,224) |
+| Oven HMI | Gradient Boosting | 2,17 | 0,074 | 96,1% | Mínima: os dois algoritmos empatam |
+| CT Knobs | Gradient Boosting | 2,20 | 0,397 | 89,1% | Mínima: o recomputo inverte a escolha |
+| Mainback | Random Forest | 3,30 | 0,512 | 86,6% | Clara: vence nas duas métricas |
+| IPC Cooling | Random Forest | 3,64 | 0,327 | 89,8% | Confirmada pelo recomputo sob agregação única |
+| IPC Comp | Random Forest | 4,85 | 0,158 | 82,2% | Clara: único R² positivo entre os dois |
+| Coil Temps | Gradient Boosting | 9,55 | 0,785 | 77,0% | Clara: maior margem de MAE (0,99 °C) |
+| **Média das sete regiões** | — | **3,97** | — | **87,9%** | — |
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir das versões atuais das Seções 4.4.2 (Random Forest, `notebooks/Random_for_regre.ipynb`, Seção 21) e 4.4.3 (Gradient Boosting, `notebooks/Grad_Boosting_Regre.ipynb`, Seção 8). O R² não é promediado porque os dois notebooks o agregam de formas diferentes (média e mediana entre termopares), como explicado na Seção 4.4.4.</sup>
+<sup>Fonte: Elaborado pelos autores (2026), a partir da tabela da Seção 4.4.4 (validação LOGO de `notebooks/Random_for_regre.ipynb`, Seção 21, e `notebooks/Grad_Boosting_Regre.ipynb`, Seção 8), com os valores do algoritmo escolhido em cada região. O R² segue a agregação de cada notebook de origem (média entre termopares no Random Forest, mediana no Gradient Boosting; ver ressalva na Seção 4.4.4). A comparação visual dos candidatos por região está na Figura 18 (Seção 4.3.3.4). A linha de média combina o algoritmo escolhido em cada região, isto é, descreve o sistema em produção. As médias da Seção 4.3.3.4 (87,1% dentro de 10%, por exemplo) aplicam um único algoritmo às sete regiões e são as únicas que incluem o baseline. Por isso as duas medidas diferem levemente.</sup>
 
-**Uma ressalva sobre os artefatos exportados.** A tabela mede a melhor versão de cada algoritmo nos notebooks, com codificação one-hot e, no Random Forest, o estimador híbrido. Os artefatos que a API carrega hoje são gerados por `scripts/export_models.py`, que segue o roteamento acima, mas ainda usa codificação ordinal e hiperparâmetros escolhidos por busca em grade em cada região. Alinhar o script de exportação às versões avaliadas aqui é um ajuste pendente, e só depois dele os números da tabela passam a descrever exatamente o modelo em uso.
+Três escolhas são fracas, e ficam registradas como tal. Em **Oven HMI**, as margens entre os dois algoritmos são de 0,03 °C no MAE e 0,048 no R²: a escolha reflete a ausência de diferença relevante, não uma vantagem medida. Em **CT Knobs**, o recomputo sob agregação única dá a vantagem ao Random Forest por 0,09 °C; a região segue com Gradient Boosting porque essa diferença está abaixo do que 32 configurações permitem distinguir, e fica marcada para reavaliação (Seção 4.5.5). Nessas duas regiões, trocar o algoritmo não mudaria o erro típico, de cerca de 2 °C. Em **Main Vent Sys**, a margem de 0,224 vale para a agregação declarada, mas não sobrevive a outra: o teste de sensibilidade de [`comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb) (célula 28) classifica a região como sensível ao limiar, e sob agregação única a margem de R² cai para 0,106 enquanto o MAE passa a favorecer o Random Forest por 0,34 °C.
 
-**Por que esta solução.** A escolha decorre de três achados das etapas anteriores:
+#### <a name="c4_5_2"></a>4.5.2. Atendimento aos objetivos, aos requisitos e às personas
 
-1. **As regiões são regimes térmicos distintos.** A H1 mostrou que a mesma alteração de montagem aquece uma região e resfria outra, e a amplitude de temperatura varia mais de oito vezes entre a região mais fria e a mais quente. Um modelo único estimaria um efeito médio que não descreveria nenhuma delas.
-2. **Random Forest e Gradient Boosting empatam na média, mas não em cada região.** A diferença média de MAE entre os dois (0,04 °C) é muito menor que a diferença entre qualquer um deles e o baseline (cerca de 2,5 °C). Escolher o melhor por região aproveita as vantagens locais sem custo de manutenção relevante, já que os dois algoritmos são da mesma família (comitês de árvores) e usam o mesmo pré-processamento.
-3. **O Decision Tree fica fora da produção.** É o candidato de leitura mais direta, mas fica atrás dos outros dois em todas as métricas médias (Seção 4.4.4).
+As tabelas abaixo seguem a estrutura da Seção 2. A primeira trata das metas de negócio N1 a N3, e a segunda das metas do projeto P1 a P5, as duas definidas na Seção 2.1. A terceira cobre os demais elementos da proposta de solução da Seção 2.2. Cada linha traz a evidência disponível e a persona da Seção 4.1.6 que depende dela. O status reflete o modelo e o software efetivamente entregues, não a intenção de projeto.
 
-**Aderência ao negócio e às personas (Seção 4.1).** A solução foi desenhada para o uso definido no planejamento (Seção 4.1.3): uma ferramenta de **triagem** que antecipa o resultado térmico de uma configuração antes da simulação CFD completa ou do protótipo físico.
+**Metas de negócio (Seção 2.1).** Como a Seção 2.1 estabelece, estas metas são medidas pela Whirlpool depois da adoção. O que esta avaliação pode verificar é se o mecanismo que as produz foi entregue.
 
-- **João (Engenheiro de Qualidade)** precisa saber, para várias configurações, se um componente ultrapassa o limite térmico, com uma margem de erro clara. Cada previsão vem com a margem de erro do próprio termopar (o MAE medido para aquele sensor), o limite de engenharia e o destaque quando o limite é excedido.
-- **Rafael (Engenheiro de Produtos)** quer comparar alternativas ainda na concepção. A previsão sai em segundos, e o indicador de confiabilidade separa as combinações já ensaiadas das inéditas.
-- **Estela (Engenheira de Materiais)** quer comparar materiais sem novo protótipo. O modelo atende essa necessidade só em parte: a única variável de material na base é `material_coil_support`, com dois níveis documentados, e ela tem baixa participação na importância do modelo em cinco das sete regiões. Comparar espessuras ou novos materiais exige ensaios que a base ainda não contém.
-- **Geraldo (Especialista de Marketing)** ganha acesso antecipado ao comportamento térmico esperado, desde que trate a previsão como estimativa e não como resultado de validação.
-- **Beatriz (Designer UX/UI)** precisava de uma interface que comunicasse previsão, margem e confiabilidade sem ambiguidade. O dashboard agrupa os resultados por Key Area, exibe os três estados de confiabilidade com textos e cores próprios.
+<div align="center"><sub>Quadro 12 — Atendimento às metas de negócio</sub></div>
 
-**Critério de sucesso.** O critério acordado com o parceiro é um erro máximo de 10% (Seção 4.1.3). Sob a validação mais rigorosa disponível, **87,9% das previsões** ficam dentro dessa margem, e o MAPE médio fica abaixo de 10% em todas as sete regiões. O critério, portanto, é **atingido em parte**: Coil Temps (77,0%) e IPC Comp (82,2%) são as regiões mais distantes da meta. Mesmo assim, a solução supera com folga o baseline que ignora a configuração e prevê sempre a média do treino (6,55 °C de erro e 75,9% dentro da margem, Seção 4.3.4). O ganho de eficiência de tempo frente à simulação CFD (meta de 90%) é evidente pela ordem de grandeza (segundos contra horas), mas não foi cronometrado em um ciclo real de projeto, e essa medição fica como validação a ser feita com o parceiro.
+| Meta | Mecanismo entregue e evidência | Status | Quem se beneficia |
+|---|---|---|---|
+| N1 — até 30% menos tempo total de desenvolvimento | A proposta atua sobre a validação térmica, etapa de maior peso no lead time de desenvolvimento, por meio do ganho descrito em N2. | Mecanismo entregue; medição pelo parceiro após a adoção | Engenheiro de Produtos, Especialista de Marketing |
+| N2 — até 90% mais eficiência de tempo no ciclo de validação térmica | Cada consulta devolve em segundos as temperaturas de todos os termopares das regiões selecionadas, contra horas de uma rodada de simulação CFD (oportunidade R01, Seção 4.1.5). Para as configurações próximas das já ensaiadas, a consulta toma o lugar da rodada completa (Seção 2.3). | Mecanismo entregue; medição pelo parceiro após a adoção | Engenheiro de Produtos, Engenheira de Materiais |
+| N3 — 25% menos gastos com protótipos e testes destrutivos | Uma configuração próxima das já ensaiadas é avaliada sem protótipo e sem rodada de CFD. O protótipo fica reservado às duas situações previstas na Seção 2.3: as configurações que o indicador de confiabilidade sinaliza e a aprovação final do projeto. | Mecanismo entregue; medição pelo parceiro após a adoção | Engenheiro de Qualidade, Engenheira de Materiais |
 
-**O que o modelo ainda não faz.** O R² modesto em várias regiões (0,07 em Oven HMI e 0,16 em IPC Comp) mostra que os modelos acertam bem o **patamar térmico** de cada região, mas ainda não distinguem com segurança duas configurações parecidas. A causa é a base: são 32 configurações distintas por região, com as variáveis confundidas entre si (H2). Por isso a solução é indicada para **priorizar** ensaios, e não para substituí-los.
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.1, 2.3 e 4.1.5.</sup>
 
-#### <a name="c4_5_2"></a>4.5.2. Plano de contingência
+**Metas do projeto (Seção 2.1)**
 
-O modelo pode falhar de três formas: errar sem dar sinal, ser consultado fora do que conhece ou ficar indisponível. O plano abaixo trata cada caso e se apoia nos riscos mapeados na Seção 4.1.5.
+<div align="center"><sub>Quadro 13 — Atendimento às metas do projeto</sub></div>
 
-| Situação | Como é detectada | Resposta |
-|---|---|---|
-| Consulta fora das combinações ensaiadas | Classificação automática de confiabilidade (interpolação, extrapolação moderada ou fora de domínio), pela distância entre a configuração consultada e as configurações de treino da região | Em extrapolação moderada, tratar o valor como indicativo e confirmar por CFD os casos próximos do limite. Fora de domínio, não usar a previsão para decisão de projeto e seguir para a simulação CFD completa (R04). O dashboard ainda exibe o valor, com alerta; a supressão exigida pela RN08 está pendente. |
-| Previsão próxima do limite de engenharia | Temperatura prevista somada à margem de erro do termopar atinge ou passa o limite | Tratar como excedente e encaminhar a configuração para simulação completa ou teste físico. Nenhuma configuração é aprovada só porque a previsão ficou logo abaixo do limite. |
-| Região com erro mais alto | Métricas por região (Coil Temps com MAE de 9,55 °C; IPC Comp com 82,2% dentro da margem) | Usar as previsões dessas regiões apenas para triagem e manter a validação por CFD ou ensaio antes de qualquer decisão. |
-| Divergência entre previsão e novo ensaio | Comparação de cada nova simulação ou teste físico com a previsão feita para a mesma configuração | Registrar a divergência. Se ela passar de três desvios-padrão, submeter a configuração à equipe de CFD para verificar se há variável não medida ou erro no ensaio (oportunidade R07). Incorporar os novos ensaios e retreinar (RF16). |
-| Nova versão do modelo pior que a anterior | Métricas recalculadas sobre o mesmo conjunto de referência a cada retreinamento (RN21, RN22) | Manter em produção a versão anterior, identificada pelo `model_set_version` do manifesto, até a nova versão superar a atual. |
-| Dashboard ou API indisponível | Falha de acesso | O processo atual de simulação CFD e teste físico continua válido e é o caminho padrão. O Thermal Predictor acelera a triagem, mas nunca é a única barreira antes da certificação. |
+| Meta | Evidência | Status | Quem se beneficia |
+|---|---|---|---|
+| P1 — 100% das previsões dentro da margem de erro de 10% | No sistema em produção, 87,9% das previsões ficam dentro de 10% (Seção 4.5.1). No comparativo com um único algoritmo, a fração é de 87,1%, tanto no Random Forest quanto no Gradient Boosting, contra 75,9% do baseline. O MAE é de cerca de 4 °C, ou ~5% da temperatura medida (Seção 4.3.3.4). Em Coil Temps, a fração cai para 77,0%. A Seção 2.2 já registrava essa distância e indicava o retreinamento com novos ensaios como o mecanismo para reduzi-la (Seção 4.5.5). | Parcial | Engenheiro de Qualidade, Engenheira de Materiais |
+| P1 — critério de 10% operacionalizado (risco R06) | O MAE em °C por termopar, primeira das três métricas do plano de ação do R06, é a métrica principal de todas as comparações (Seção 4.3). A fração dentro de 10% é reportada em paralelo, como leitura auxiliar, por ser a margem acordada com o parceiro, conforme o próprio R06 prevê. As outras duas métricas, o erro normalizado pela folga até o limite e a taxa de falsos-negativos de segurança, dependem dos limites de engenharia de cada sensor validados pela Whirlpool e passam a ser reportadas a cada nova versão do modelo (RN21). | Parcial | Engenheiro de Qualidade |
+| P2 — superar o baseline da média do treino nas sete regiões | Random Forest e Gradient Boosting superam o baseline em MAE em 7 de 7 regiões sob validação LOGO, com MAE médio de 4,10 °C e 4,14 °C contra 6,55 °C (Seção 4.3.3.4). | Atendido | Engenheiro de Produtos, Engenheiro de Qualidade |
+| P3 — temperatura por sensor e por região (RF02, RF03) | Os sete modelos multi-saída cobrem todos os termopares de cada região, e a API filtra a resposta pelas regiões e sensores selecionados. Em IPC Comp, os IGBT 1 a 16 são previstos como uma média única (Seção 4.2.3). | Atendido | Engenheiro de Produtos, Engenheira de Materiais |
+| P3 — margem de erro junto da previsão (RF04, RN05) | Cada sensor vem acompanhado da margem em °C e em %, igual ao erro médio daquele termopar na validação LOGO do modelo exportado (Seção 4.4.4). | Atendido | Engenheiro de Qualidade, Designer UX/UI |
+| P3 — limite de engenharia (RF07) | Cada previsão é comparada ao limite de engenharia registrado para o sensor, e as que o excedem são destacadas. | Atendido | Engenheiro de Qualidade, Engenheira de Materiais |
+| P3 — indicador de confiabilidade em três estados (RF06, RN08) | Os três estados estão implementados. Cada estado é definido pela quantidade de variáveis em que a configuração consultada difere do ensaio mais próximo daquela região: nenhuma (interpolação), uma (extrapolação moderada), duas ou mais (fora de domínio). No estado fora de domínio, o dashboard ainda exibe o valor, com alerta, em vez de suprimi-lo como pede o RN08. | Parcial | Engenheiro de Produtos, Designer UX/UI |
+| P4 — modelo auditável pela Engenharia (R08) | O dashboard exibe, para cada região, a importância das variáveis de montagem no modelo em produção. A decomposição de previsões individuais por SHAP está documentada nos notebooks (Seções 4.4.2 e 4.4.3). Os limites dessa leitura estão na Seção 4.5.3. | Atendido | Engenheiro de Qualidade, Engenheira de Materiais |
+| P5 — sem custo de licenciamento (RF14) | O núcleo preditivo e a API dependem apenas de bibliotecas de código aberto (scikit-learn, pandas, FastAPI), listadas em `requirements.txt` e `src/backend/requirements.txt`, sem nenhum software licenciado. | Atendido | Toda a Engenharia |
 
-A regra que atravessa todas as linhas é a mesma: o modelo estima a saída da simulação CFD, não a medição física (R05), e **nenhum produto é liberado com base apenas na previsão**.
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.1, 4.3.3.4, 4.4 e 4.5.1 e do código do repositório.</sup>
+
+**Demais elementos da proposta de solução (Seção 2.2)**
+
+<div align="center"><sub>Quadro 14 — Atendimento aos demais elementos da proposta de solução</sub></div>
+
+| Elemento da proposta | Evidência | Status | Quem se beneficia |
+|---|---|---|---|
+| Mesmo modelo para Brasil e México, com limites por país (RN03) | A arquitetura Brasil está disponível. Como a Seção 2.2 registra, os dados de treino ainda não cobrem a arquitetura mexicana: a API a lista como "México (sem dados de treino)" e responde a ela sem previsões, em vez de estender ao México um modelo que não foi validado lá. | Brasil atendido; México aguardando ensaios | Engenheiro de Qualidade, Engenheira de Materiais |
+| Mesmo núcleo acessível fora do dashboard (RF12) | A rota `POST /api/v1/predictions` é a mesma que alimenta o dashboard e, portanto, devolve o mesmo resultado da tela para a mesma configuração. | Atendido | Engenheiro de Produtos |
+| Retreinamento com novos ensaios (RF16) | `src/scripts/export_models.py` retreina os sete modelos a partir das planilhas por região em `data/` e regrava artefatos e manifesto sem alteração de código. Refazer o comparativo e reavaliar o roteamento ainda são passos manuais. | Parcial, como previsto na Seção 2.2 | Equipe de CFD, Engenheiro de Qualidade |
+| Predição em lote (RF17) | Cada requisição à API aceita uma única configuração. Como a Seção 2.2 registra, a predição em lote está prevista nos requisitos, mas ainda não foi implementada. | Pendente, como previsto na Seção 2.2 | Engenheiro de Produtos |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.1, 2.2, 2.3, 4.1.5, 4.3.3.4 e 6.1 e do código em `src/backend/app/predictors/real.py`, `src/backend/app/routers/predictions.py`, `src/scripts/export_models.py` e `src/frontend/src/features/results/ResultsSummary.tsx`.</sup>
+
+O limite mais importante não cabe em nenhuma linha da tabela: o **R² é modesto**, 0,42 no Random Forest e 0,37 no Gradient Boosting (Seção 4.3.3.4). O modelo acerta bem o patamar térmico de cada região, mas ainda não distingue com segurança duas configurações parecidas. O resultado confirma o escopo que a Seção 2.3 já havia fixado: o Thermal Predictor **reduz quantas vezes o ciclo de simulação e protótipo precisa se repetir, sem prometer substituí-lo por inteiro**. Nas iterações de projeto, a consulta toma o lugar da rodada de simulação para as configurações próximas das já ensaiadas. A aprovação final de um projeto, da qual depende a certificação (objetivo geral, Seção 2.1), continua passando pela validação física. O R² mostra até onde vai essa substituição em cada região. Onde ele é alto (Coil Temps, 0,785; Main Vent Sys, 0,591), a previsão já separa configurações próximas. Onde é baixo (IPC Comp, 0,158; Oven HMI, 0,074), a previsão acerta o patamar térmico, mas, entre duas configurações próximas, serve para decidir qual delas segue para simulação, não para escolher entre elas. É o uso que a oportunidade R03 da Matriz de Riscos já antecipava, já que ordenar configurações por criticidade térmica é mais simples do que acertar a temperatura exata de cada uma. A condição que a oportunidade R03 fixou para propor essa funcionalidade à Whirlpool, a de que a ordem prevista coincida com a real em pelo menos 80% dos pares de configurações, ainda não foi medida e é o próximo teste a fazer.
+
+Traduzido para as personas: Rafael (Engenheiro de Produtos) já pode usar o modelo no lugar das rodadas de CFD com que hoje varre arquiteturas candidatas, descartando as termicamente inviáveis sem simulá-las. Estela (Engenheira de Materiais) e João (Engenheiro de Qualidade) podem usá-lo para decidir quais combinações seguem para teste físico. Como a Seção 2.3 antecipava, não podem usá-lo para aprovar ou reprovar uma configuração sem esse teste, ao menos enquanto as métricas de segurança do risco R06 não estiverem sendo reportadas.
 
 #### <a name="c4_5_3"></a>4.5.3. Explicabilidade
 
-Os três candidatos foram analisados quanto ao que pesa em suas decisões (Seções 4.4.1 a 4.4.3). Para os dois algoritmos em produção, a análise usou SHAP³¹ com o `TreeExplainer`, que reparte cada previsão entre as sete variáveis de entrada.
+A Seção 2.3 justificou a escolha de Random Forest e Gradient Boosting pela interpretabilidade. Num contexto de certificação térmica e de segurança, a equipe de Engenharia precisa enxergar quais variáveis de montagem mais pesaram em cada previsão, em vez de confiar num número sem explicação. Esta subseção verifica o que essa interpretabilidade entrega e qual é o seu limite.
 
-- **Coil Temps:** o modo de operação (`run_case`) domina com folga, com 53% da importância da região no Gradient Boosting. Esse padrão aparece também no Random Forest.
-- **Mainback e Oven HMI:** quem lidera é a direção do fluxo de ar do ventilador (`blower_direction`), nos dois algoritmos.
-- **IPC Comp:** nenhuma variável domina; `losses`, `deflector_hole` e `run_case` dividem a importância em partes quase iguais.
-- **Variáveis menos usadas:** `board_position` e `material_coil_support` têm a menor participação em cinco das sete regiões.
+**O que os modelos mostram.** Nenhuma variável decide da mesma forma em todas as regiões. No SHAP por região (Figura 25, [Seção 4.4.3](#c4_4_3)), o modo de operação (`run_case`) domina as bobinas, com 53% da importância de Coil Temps, e lidera também CT Knobs, Main Vent Sys e IPC Cooling; a direção do fluxo de ar (`blower_direction`) lidera Mainback e Oven HMI; e em IPC Comp três variáveis dividem a importância em partes quase iguais. O SHAP do Random Forest concorda com esses líderes nas regiões em que foi calculado (Seção 4.4.2), e o dashboard exibe, para cada região, a importância das variáveis no modelo em produção. O Decision Tree dispensa essa técnica: sua própria estrutura é a explicação, e seu papel na solução é justamente a leitura direta das regras (Seção 4.4.1).
 
-A importância por impureza, nativa dos modelos, confirma o grupo de variáveis líderes, mas troca a ordem entre as duas primeiras em Mainback. Isso indica que o ranking agregado é mais estável que o detalhe por sensor.
+**O que não se pode afirmar.** Como a H2 mostrou, as configurações estão confundidas no desenho dos ensaios, e diante de variáveis redundantes o modelo reparte o crédito de forma arbitrária. A demonstração está nos próprios resultados: em Mainback, a ordem entre `run_case` e `blower_direction` se inverte quando se troca a importância por impureza pelo SHAP (Seção 4.4.3). A importância de uma variável descreve, portanto, **como o modelo decide**, e não **como o fogão aquece**. Por isso nenhum ranking de variáveis é apresentado ao parceiro como evidência de causa, cumprindo o que a Seção 4.2.4 estabeleceu.
 
-**Limite da explicação.** Como as variáveis estão confundidas no desenho dos ensaios (H2), o modelo distribui o crédito entre variáveis redundantes de forma arbitrária. As explicações descrevem **como o modelo decide**, não **como o fogão aquece**, e não devem ser apresentadas como relação de causa entre um componente e a temperatura.
+A explicabilidade importa por causa do risco R08: engenheiros não adotam previsões que não conseguem auditar. É por isso que o dashboard mostra, para cada região, quais variáveis mais pesam no modelo em produção. A leitura por previsão individual que a Seção 2.3 descreve já está calculada nos notebooks com SHAP (Seções 4.4.2 e 4.4.3) e ainda não aparece no dashboard. Levá-la à tela é o passo que completa o que a Seção 2.3 propôs.
 
 #### <a name="c4_5_4"></a>4.5.4. Verificação das hipóteses
 
-As quatro hipóteses da Seção 4.2.4 foram confirmadas na análise exploratória. A tabela abaixo verifica se o comportamento dos modelos também as sustenta.
+As hipóteses H1 a H4 foram testadas nos dados na Seção 4.2.4. Aqui se verifica se o modelo treinado as reproduz.
 
-| Hipótese | Resultado na análise exploratória | O que os modelos mostram | Situação |
+<div align="center"><sub>Quadro 15 — Verificação das hipóteses no modelo treinado</sub></div>
+
+| Hipótese | Resultado nos dados (Seção 4.2.4) | O que o modelo mostra | Veredito |
 |---|---|---|---|
-| **H1** — O efeito de uma configuração muda de sinal conforme a área | Confirmada | A variável que lidera muda de região para região (`run_case` em Coil Temps, `blower_direction` em Mainback e Oven HMI, empate em IPC Comp), sem que essa alternância tenha sido informada ao treinamento | **Aceita** e reforçada; sustenta a decisão de um modelo por região |
-| **H2** — As configurações não são independentes entre si | Confirmada | As técnicas de explicabilidade trocam a ordem das variáveis líderes, sinal de crédito repartido entre variáveis redundantes | **Aceita**; limita a leitura causal das explicações e motiva a recomendação de novos ensaios planejados |
-| **H3** — O modo de operação eleva a temperatura, como fator secundário | Confirmada (efeito real, cerca de 1,6% da variância total) | `run_case` é a variável mais importante em Coil Temps, CT Knobs e Main Vent Sys, mas não em todas as regiões | **Aceita**; o efeito é secundário no produto inteiro e dominante em regiões específicas |
-| **H4** — A carcaça aberta aquece o IGBT 1 | Confirmada (+9,6 °C com a carcaça aberta) | Em IPC Comp, região do IGBT 1, `housing` não está entre as variáveis líderes; o efeito observado nos dados não aparece isolado no modelo | **Aceita** nos dados, **não reforçada** pelo modelo, coerente com a confusão entre variáveis apontada pela H2 |
+| **H1** — o efeito de uma configuração muda de sinal entre áreas | Confirmada: abrir o `deflector_hole` eleva IPC Comp em 7,9 °C e reduz Main Vent Sys em 5,1 °C. | A variável que mais pesa muda de região para região (Figura 25), sem que essa alternância tenha sido informada ao treino, e o modelo por região supera o baseline em 7 de 7 regiões. | Aceita |
+| **H2** — as configurações estão confundidas no desenho dos ensaios | Confirmada: `losses` e `deflector_hole` quase coincidem (V de Cramér de 0,89) e só 10 de 24 combinações foram ensaiadas. | Diante de variáveis redundantes, o modelo reparte o crédito de forma arbitrária: em Mainback, a ordem entre `run_case` e `blower_direction` se inverte entre as duas técnicas de explicabilidade (Seção 4.4.3). | Aceita; por isso nenhum ranking causal é apresentado |
+| **H3** — a temperatura depende do modo de operação (`run_case`) | Confirmada, com efeito secundário: os modos Broil operam 12,1 °C acima dos demais (83,5 °C contra 71,4 °C), mas o modo explica ~1,6% da variância da base inteira. | `run_case` lidera o SHAP em quatro das sete regiões (53% em Coil Temps) e a importância dos modelos em produção em seis. | Aceita com ressalva: secundário na base inteira, onde a região domina, e principal dentro de cada região; segue confundido com `losses` (H2) |
+| **H4** — a carcaça aberta aquece o IGBT 1 | Confirmada no teste de médias: +9,6 °C com a carcaça aberta (Welch, p ≈ 0,03), sem significância no Mann-Whitney (p ≈ 0,08). | Em produção, os IGBT 1 a 16 são previstos como uma média única (fusão descrita na Seção 4.2.3). Para essa média, abrir a carcaça nas 18 configurações de IPC Comp ensaiadas com ela fechada eleva a previsão em +2,34 °C em média, com sinal positivo em 17 delas; `housing` responde por 9% da importância do modelo da região (6% no SHAP do Gradient Boosting, Figura 25). | Aceita nos dados; reproduzida pelo modelo no sentido, não na magnitude do IGBT 1 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 4.2.4, 4.3.3.4 e 4.4. A verificação da H4 foi feita para esta seção sobre o artefato em produção `src/backend/models/random_forest__ipc_comp.joblib`, alternando apenas `housing` em cada configuração de treino registrada no manifesto.</sup>
+
+O modelo reproduz o sentido da H4, mas não permite verificar a magnitude afirmada para o IGBT 1. O efeito de +9,6 °C foi medido no IGBT 1, e o modelo prevê a média dos 16 IGBTs (Seção 4.2.3), que dilui o efeito de um único sensor, sobretudo do mais frio dos dezesseis (Seção 4.2.4). Na mesma média, os dados mostram 6,1 °C a mais com a carcaça aberta, mas essa comparação não isola as demais variáveis. O modelo isola: alterando só a carcaça, a previsão sobe 2,3 °C. O próprio efeito nos dados também não passou no teste mais conservador. Prever o IGBT 1 separadamente é o ajuste necessário para verificar a magnitude da H4 no modelo.
+
+#### <a name="c4_5_5"></a>4.5.5. Plano de contingência
+
+O modelo vai errar, e a Matriz de Riscos (Seção 4.1.5) já antecipou como. Os gatilhos abaixo vêm dos planos de ação dos riscos R02, R04 e R05 e da oportunidade R03, todos da Seção 4.1.5, dos requisitos RF06 e RF16 e da proposta da Seção 2.2. A coluna "Situação" indica o que já está implementado.
+
+<div align="center"><sub>Quadro 16 — Plano de contingência</sub></div>
+
+| Se… | Então… | Origem | Situação |
+|---|---|---|---|
+| A configuração difere de todo ensaio da região em duas ou mais variáveis (fora de domínio) | Suprimir o valor numérico e recomendar simulação CFD completa | Risco R04; RF06; RN08 | Parcial: o estado é detectado e sinalizado, mas o valor ainda aparece |
+| A configuração difere em uma variável (extrapolação moderada) | Exibir o valor com alerta e confirmar por CFD os sensores próximos do limite | Risco R04; RF06 | Implementado |
+| A consulta cai em região de R² baixo (IPC Comp, 0,158; Oven HMI, 0,074) | Reforçar o aviso de incerteza e usar a previsão só para triagem | Oportunidade R03; Seção 4.5.2 | Pendente: o aviso é o mesmo das demais regiões |
+| Mais de 20% das consultas caem fora do envelope de treino | Documentar formalmente o domínio de validade e comunicá-lo aos engenheiros | Risco R04 | Pendente: depende da telemetria de uso |
+| O desvio entre CFD e teste físico passa de 5% em termopar com limite normativo | Aplicar camada de correção de viés calibrada sobre os testes físicos | Risco R05 | Pendente: o desvio ainda não foi quantificado |
+| Novos ensaios ficam disponíveis | Retreinar, refazer o comparativo e reavaliar o roteamento, começando por CT Knobs. É o mecanismo que a Seção 2.2 indica para aproximar a fração dentro de 10% da meta da Seção 2.1 | Risco R02; RF16; Seção 2.2 | Parcial: `src/scripts/export_models.py` regenera artefatos e manifesto; a reavaliação do roteamento é manual |
+| A consulta é feita para a arquitetura México | Não devolver previsão até que os ensaios mexicanos sejam incorporados e validados sob o mesmo protocolo LOGO | Seção 2.2; RN03 | Implementado: a API responde sem previsões; a incorporação dos ensaios mexicanos está pendente |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 2.2, 4.1.5 e 6.1 e do código em `src/backend/app/predictors/real.py`.</sup>
+
+A regra que une as sete linhas é a mesma: na dúvida, o Thermal Predictor devolve a decisão ao CFD, e não a um número acompanhado de ressalva textual, que, como o risco R04 já observava, não impede seu uso. Das sete ações, a primeira é a mais urgente, porque é a única em que o comportamento atual do dashboard contraria um requisito de prioridade alta.
 
 ## <a name="c5"></a>5. Conclusões e Recomendações
 
 ### <a name="c5_1"></a>5.1. Principais resultados
 
-O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem do fogão com erro típico entre 1,76 °C e 10,64 °C, conforme a região, por meio de sete modelos independentes um por `key_area`, como estabelecido na Seção 4.3, repartidos entre **Gradient Boosting**, em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, e **Random Forest**, em Mainback, IPC Comp e IPC Cooling.
+O Thermal Predictor estima a temperatura de cada termopar a partir da configuração de montagem por meio de sete modelos independentes, um por `key_area` (Seção 4.3): **Gradient Boosting** em Coil Temps, CT Knobs, Main Vent Sys e Oven HMI, **Random Forest** em Mainback, IPC Comp e IPC Cooling, conforme o mapa `AREA_ALGORITHMS` de [`src/scripts/export_models.py`](../src/scripts/export_models.py). As métricas por região estão na tabela da Seção 4.5.1: o erro típico vai de 2,07 °C em Main Vent Sys a 9,55 °C em Coil Temps, média de 3,97 °C e 87,9% das previsões dentro da margem de 10%, sob validação LOGO, em que cada uma das 32 configurações da região serve de teste uma vez. O erro maior em Coil Temps acompanha, em boa parte, o patamar térmico da região, a mais quente do fogão pela mediana (123,8 °C). Em termos relativos, a distância diminui, mas não desaparece: Coil Temps tem o maior erro percentual das sete regiões (MAPE de 8,56%) e a menor fração dentro de 10% (77,0%). Ao mesmo tempo, é ali que o modelo melhor distingue uma configuração de outra (R² de 0,785).
 
-| `key_area` | Algoritmo em produção | MAE (°C) | RMSE (°C) | R² (adimensional) | n (configurações de teste) |
-|---|---|---|---|---|---|
-| Main Vent Sys | Gradient Boosting | 1,76 | 3,13 | 0,591 | 32 |
-| CT Knobs | Gradient Boosting | 2,08 | 2,94 | 0,397 | 32 |
-| Oven HMI | Gradient Boosting | 2,19 | 2,80 | 0,074 | 32 |
-| Mainback | Random Forest | 3,43 | 5,37 | 0,512 | 32 |
-| IPC Cooling | Random Forest | 3,82 | 5,53 | 0,483 | 32 |
-| IPC Comp | Random Forest | 4,76 | 6,58 | 0,161 | 32 |
-| Coil Temps | Gradient Boosting | 10,64 | 13,67 | 0,785 | 32 |
+Esta documentação reporta duas medições do mesmo conjunto de modelos: a dos notebooks de origem, que mede o que está em produção e sustenta os valores por região, e a do comparativo consolidado, única que inclui o baseline da média do treino e, portanto, a única de onde saem as reduções abaixo. Contra esse baseline, os sete modelos reduzem o MAE nas sete regiões: de 10,2% em Oven HMI (2,19 contra 2,44 °C) e 10,9% em IPC Comp (4,76 contra 5,34 °C) a 43,6% em Mainback (3,43 contra 6,08 °C) e 48,6% em Coil Temps (10,64 contra 20,70 °C); na média, o MAE cai de 6,55 °C para 4,10 °C, redução de 37,4%. O R² é desigual: 0,785 em Coil Temps e 0,591 em Main Vent Sys, mas 0,158 em IPC Comp e 0,074 em Oven HMI, regiões em que o modelo acerta o patamar térmico sem distinguir com segurança duas configurações próximas.
 
-<sup>Fonte: Elaborado pelos autores (2026), a partir de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1 (Random Forest) e 4.2 (Gradient Boosting), sob validação LOGO, codificação one-hot e agregação pela mediana entre os termopares da região. O algoritmo de cada linha é o registrado no mapa `AREA_ALGORITHMS` de [`scripts/export_models.py`](../scripts/export_models.py). Sob LOGO cada uma das 32 configurações da região serve de teste exatamente uma vez, de modo que n corresponde ao total de configurações previstas fora da amostra de treino.</sup>
+A razão RMSE/MAE indica onde os erros grandes se concentram. Ela é mais alta em **Mainback** (1,66), **Main Vent Sys** (1,59) e **IPC Cooling** (1,57), regiões em que algumas configurações concentram desvios bem acima do erro típico. Em Main Vent Sys, isso ocorre justamente na região de menor MAE das sete. Nas outras quatro, a razão fica entre 1,29 e 1,43, compatível com erros mais homogêneos entre as configurações.
 
-O modelo erra menos em Main Vent Sys (1,76 °C) e mais em Coil Temps (10,64 °C), a região de maior patamar térmico da base a mesma ordem de grandeza separa as duas regiões nas temperaturas medidas, de modo que o erro maior acompanha o nível de temperatura, e não uma falha específica de ajuste. Contra o baseline que prevê a média do treino, os sete modelos reduzem o MAE em todas as sete regiões: a redução vai de 10,2% em Oven HMI (2,19 °C contra 2,44 °C) e 10,9% em IPC Comp (4,76 °C contra 5,34 °C) a 43,6% em Mainback (3,43 °C contra 6,08 °C) e 48,6% em Coil Temps (10,64 °C contra 20,70 °C). Na média das sete regiões, o MAE cai de 6,55 °C para 4,10 °C, uma redução de 37,5%. O R² acompanha essa leitura de forma desigual: chega a 0,785 em Coil Temps e a 0,591 em Main Vent Sys, mas fica em 0,161 em IPC Comp e 0,074 em Oven HMI, regiões em que o modelo acerta o patamar térmico sem distinguir com segurança duas configurações próximas.
+Três achados da Seção 4.2 independem do algoritmo. Dois deles sustentam a modelagem por região. O primeiro é que `key_area` é a variável que mais separa os patamares térmicos, com a mediana de `temp` variando de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. O segundo é que `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, coerente com o papel dessa região como destino do calor redistribuído (hipótese H1). O terceiro dimensiona o problema que o modelo ajuda a antecipar: das 3.707 leituras com limite de engenharia válido registrado, 309, ou 8,3%, excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. As quatro hipóteses da Seção 4.2.4 foram aceitas, e o modelo as reproduz (Seção 4.5.4), com uma ressalva na H4: o efeito da carcaça aberta aparece no sentido, mas não na magnitude medida no IGBT 1.
 
-A razão RMSE/MAE indica onde os erros grandes se concentram. Ela é mais alta em **Main Vent Sys** (1,78), justamente a região de menor MAE: o erro típico é pequeno, mas algumas configurações concentram desvios bem acima dele. **Mainback** vem em seguida (1,57). Nas demais regiões a razão fica entre 1,28 e 1,45, compatível com erros distribuídos de forma mais homogênea entre as configurações.
+**Frente aos objetivos da Seção 2.1**, o balanço é este (detalhe na Seção 4.5.2):
 
-Três achados da Seção 4.2 independem do algoritmo escolhido e sustentam a modelagem por região. Primeiro, `key_area` é a variável que mais separa os patamares térmicos: a mediana de `temp` varia de 47,1 °C em CT Knobs a 123,8 °C em Coil Temps. Segundo, das 3.707 leituras com limite de engenharia válido registrado, 309  ou 8,3% excedem o `active_limit` do próprio sensor, com a maior concentração nos sensores de limite 150 °C. Terceiro, `Mainback` concentra a maior parte dos valores extremos acima de 200 °C, comportamento coerente com o papel dessa região como destino do calor redistribuído, discutido na hipótese H1. 
+- **Margem de erro de 10%:** atendida em parte. A fração dentro da margem é de 87,9% no sistema em produção, contra os 100% perseguidos e os 75,9% do baseline.
+- **Aprender o efeito da montagem:** atendido. Os modelos superam o baseline em MAE nas sete regiões.
+- **Software:** atendido em parte. Os requisitos do dashboard e do núcleo open source foram entregues; seguem pendentes a supressão do valor fora de domínio (RN08), a predição em lote (RF17) e os dados da arquitetura mexicana.
+- **Metas de tempo e custo do Charter (30%, 90% e 25%):** o mecanismo que as produz está entregue, a predição em segundos no lugar da rodada de CFD. A medição cabe à Whirlpool, depois da adoção.
 
-<sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`.</sup>
+<sup>Fonte: Elaborado pelos autores (2026). Percentuais de redução e a comparação com o baseline calculados a partir das tabelas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb), Seções 4.1, 4.2 e 4.4 (baseline). Métricas por região, faixa de erro típico, MAPE, R² e razões RMSE/MAE da validação LOGO de `notebooks/Random_for_regre.ipynb` (Seção 21) e `notebooks/Grad_Boosting_Regre.ipynb` (Seção 8), com o algoritmo escolhido em cada região, conforme a tabela da Seção 4.5.1. Achados independentes do modelo conforme a Seção 4.2.1 desta documentação, a partir de `data/dataset_pre_processado.csv`. Balanço dos objetivos conforme a Seção 4.5.2.</sup>
 
-### <a name="c5_2"></a>5.2. Recomendações ao parceiro
+### <a name="c5_2"></a>5.2. Verificação das hipóteses
 
-**Uso principal: priorizar ensaios físicos, não substituí-los.** O Thermal Predictor é instrumento de priorização, não substituto do ensaio. Na concepção, o engenheiro de CFD e o de Qualidade usam o dashboard para varrer as configurações candidatas, ordená-las por temperatura estimada e confiança associada e reservar protótipo às mais críticas de cada região (oportunidade R03, Seção 4.1.5). O ensaio permanece obrigatório onde a liberação dependa de margem normativa: erro típico de 1,76 °C a 10,64 °C (Seção 5.1) não autoriza declarar conformidade sem medição. A ordenação por criticidade ainda não foi verificada contra a real, a coincidência em pelo menos 80% dos pares avaliados, prevista em R03, é condição para propor a ferramenta como apoio formal ao planejamento dos ensaios.
+As quatro hipóteses levantadas na Seção 4.2.4 foram testadas nos dados e, em seguida, reverificadas sobre o modelo treinado (Seção 4.5.4, onde está a evidência de cada uma). **Nenhuma foi refutada: as quatro são aceitas, duas delas com ressalva que condiciona o uso da solução.** O que segue registra o veredito e o que ele implica para as conclusões desta seção.
 
-**Domínio de validade (R04).** Nenhuma previsão deve ser lida sem o estado de domínio que a acompanha. O detector de extrapolação classifica cada consulta em um de três estados, definidos no plano de ação de R04 (Seção 4.1.5), cada um com uma conduta:
+| Hipótese (Seção 4.2.4) | Veredito | Consequência para a solução entregue |
+|---|---|---|
+| **H1** — o efeito de uma configuração muda de sinal entre áreas | **Aceita** | Sustenta a arquitetura entregue: sete modelos independentes, um por `key_area`. Um modelo único para o fogão inteiro teria de aprender efeitos de sinal oposto sobre a mesma variável, e a alternância reaparece na estrutura interna dos modelos sem ter sido informada ao treino. |
+| **H2** — as configurações estão confundidas no desenho dos ensaios | **Aceita** | É a limitação que mais restringe o uso. A base identifica configurações de risco, mas não atribui efeito individual a cada variável. Por isso nenhum ranking de importância é apresentado ao parceiro como evidência de causa, e quebrar essas dependências é o critério de planejamento dos próximos ensaios. |
+| **H3** — a temperatura depende do modo de operação (`run_case`) | **Aceita com ressalva** | Secundário na base inteira, onde a região domina (~1,6% da variância), e principal dentro de cada região, onde lidera a importância dos modelos em produção em seis das sete. Reforça o roteamento por região, mas segue confundido com `losses` por força da H2. |
+| **H4** — a carcaça aberta aquece o IGBT 1 | **Aceita nos dados; reproduzida pelo modelo apenas no sentido** | O modelo confirma a direção do efeito (+2,34 °C ao abrir a carcaça), não a magnitude de +9,6 °C medida no IGBT 1, porque os IGBT 1 a 16 são previstos como uma média única. Prever o IGBT 1 separadamente é o ajuste necessário para fechar a verificação. |
 
-- **Interpolação** — dentro do envelope de treinamento: a previsão vale como estimativa de projeto, sempre com a faixa de incerteza da região.
-- **Extrapolação moderada** — próxima do envelope, mas fora dele: vale apenas para triagem entre alternativas; congelar decisão exige confirmação por CFD.
-- **Fora de domínio** — fora do envelope: o valor numérico é suprimido e o engenheiro volta à simulação CFD. A supressão é deliberada, porque exibir um número com ressalva textual não impede seu uso.
+<sup>Fonte: Elaborado pelos autores (2026). Vereditos e evidências conforme a Seção 4.5.4 desta documentação, que os apura a partir das Seções 4.2.4 (teste nos dados), 4.3.3.4 e 4.4 (comportamento do modelo).</sup>
 
-Duas categorias pouco representadas — `board_position` *Right* (5,5% das leituras) e `material_coil_support` *Aluminium Plate* (1,8%, Seção 4.3) devem ser tratadas como extrapolação moderada mesmo que a verificação de envelope marginal as aceite. Se mais de 20% das consultas caírem fora do envelope, cabe à equipe documentar formalmente o domínio de validade e comunicá-lo aos engenheiros usuários.
+Duas leituras atravessam os quatro vereditos. A primeira é que **as hipóteses não foram informadas ao treinamento e mesmo assim reaparecem no modelo**: a alternância da variável dominante entre regiões (H1) e a liderança do modo de operação dentro de cada uma (H3) emergem da estrutura interna dos modelos, o que é evidência independente de que a modelagem por região descreve o fenômeno, e não apenas o ajuste. A segunda é que **a H2 limita o alcance de todas as outras**: enquanto `losses`, `deflector_hole` e `run_case` variarem juntas no desenho dos ensaios, qualquer atribuição de efeito a uma variável isolada permanece indistinguível de um artefato do modelo. É por isso que a solução é entregue como instrumento de triagem e priorização, e não como substituto da simulação CFD ou do ensaio físico.
 
-**Validação contra medição física (R05).** O alvo de todas as métricas da Seção 4.4 é a temperatura calculada pelo solver CFD da Whirlpool, não a medida no fogão: o erro reportado mede a distância entre modelo e solver. O desvio entre solver e medição é desconhecido o solver é calibrado internamente e seu resíduo não foi disponibilizado e estabelece o teto real de acurácia: uma previsão pode caber na tolerância acordada contra o CFD e ainda assim afastar-se da realidade física sem que métrica interna alguma acuse. Recomenda-se que a Whirlpool conduza campanha de validação física, reservando ensaios jamais usados em treino como conjunto de calibração independente, e reporte o desvio simulação-ensaio como erro irredutível de referência. Até lá, o dashboard deve declarar que a previsão estima a saída do CFD, e nenhuma decisão de liberação deve apoiar-se apenas nela. Se o desvio apurado ultrapassar 5% em qualquer termopar com limite normativo, aplica-se a camada de correção de viés prevista em R05.
+### <a name="c5_3"></a>5.3. Recomendações ao parceiro
 
-**Revisão das margens de segurança (R06).** Cada previsão é entregue com a faixa de incerteza da região (Seção 4.4) e com a distribuição das folgas históricas em relação ao `active_limit` de cada termopar. Folga média superior ao dobro da incerteza estimada, critério da oportunidade R06 (Seção 4.1.5), indica superdimensionamento e espaço para revisar o critério de projeto. A equipe encaminha a relação desses termopares como subsídio quantitativo; revisar folga, isolamento ou material é decisão da engenharia da Whirlpool, que responde por critérios normativos e de segurança que o modelo não representa. A comparação deve ser feita em graus Celsius por termopar e pelo erro normalizado pela folga térmica, nunca em percentual da temperatura prevista: a escala Celsius é intervalar e o percentual sobre ela muda de valor conforme a unidade, conforme registrado no risco R06 da matriz de ameaças.
+**Uso principal: substituir rodadas de CFD na exploração e priorizar os ensaios físicos, sem dispensá-los na liberação.** Durante o desenvolvimento, Rafael (Engenheiro de Produtos) usa o dashboard no lugar das rodadas de CFD para varrer arquiteturas candidatas e descartar as termicamente inviáveis. João (Engenheiro de Qualidade) e Estela (Engenheira de Materiais) ordenam as configurações restantes por temperatura estimada e confiança associada e reservam o protótipo às mais críticas de cada região (oportunidade R03, Seção 4.1.5). O ensaio permanece obrigatório onde a liberação dependa de margem normativa, porque um erro típico de 2,07 °C a 9,55 °C (Seção 5.1) não autoriza declarar conformidade sem medição. A ordenação por criticidade ainda não foi verificada contra a real. A coincidência em pelo menos 80% dos pares avaliados, prevista na oportunidade R03, é a condição para propor a ferramenta como apoio formal ao planejamento dos ensaios.
 
-**Limitações que condicionam o uso.** Três limitações decorrem do desenho da base, não do algoritmo. A primeira é o volume: 56 execuções registradas (Seção 4.2.1) resultam em 32 configurações distintas por região (Seção 4.4), amostra que não distingue de forma confiável diferenças de desempenho da ordem de décimos de grau. A segunda é a cobertura parcial do espaço de configurações: apenas 11 das 36 combinações possíveis entre as variáveis principais foram ensaiadas, e metade das execuções concentra-se em duas delas (Seção 4.2.4, H2). A terceira é o aliasing: `losses` e `deflector_hole` têm V de Cramér de 0,89, com doze das quatorze categorias de `losses` ligadas a um único valor de `deflector_hole`, padrão que se repete em `run_case`–`losses`, `housing`–`losses` e `blower_direction`–`deflector_hole` (Seção 4.2.4, H2). A consequência é direta: a base permite identificar configurações de risco, mas não atribuir efeito individual a cada variável, porque variar uma peça quase sempre implicou variar outra. Rankings de importância descrevem como o modelo decide, não como o fogão aquece, e não servem como evidência de causa. Recomenda-se planejar os próximos ensaios de modo a quebrar essas dependências; até lá, o roteamento de algoritmos por região e a exclusão de qualquer variável de configuração permanecem decisões a reavaliar.
+**Domínio de validade (risco R04).** Nenhuma previsão deve ser lida sem o estado de domínio que a acompanha. O detector conta em quantas variáveis a configuração consultada difere do ensaio mais próximo da região e a classifica em um de três estados (plano de ação do R04, Seção 4.1.5). Cada estado tem uma conduta:
 
-<sup>Fonte: Elaborado pelos autores (2026). Recomendações derivadas dos planos de ação da matriz de riscos da Seção 4.1.5, oportunidade R03 (priorização de ensaios), ameaça R04 (domínio de validade), ameaça R05 (herança do erro do solver), oportunidade R06 (revisão de margens) e ameaça R06 (operacionalização do critério de aceite). Limitações apuradas nas Seções 4.2.1 e 4.2.4 (hipótese H2), a partir de `data/dataset_pre_processado.csv`, e nas métricas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb).</sup>
+- **Interpolação** (nenhuma variável diferente): a configuração coincide com um ensaio da região. O resultado já registrado desse ensaio deve ser a referência, e a previsão serve apenas como conferência. A margem exibida, medida em configurações não vistas no treino, tende a ser conservadora nesse caso.
+- **Extrapolação moderada** (uma variável diferente): é a situação que a validação LOGO reproduz, a de prever uma configuração ausente do treino a partir das demais, e a margem exibida vale como estimativa do erro. A previsão serve para a exploração e a triagem; sensores próximos do limite exigem confirmação por CFD antes de congelar a decisão (Seção 4.5.5).
+- **Fora de domínio** (duas ou mais variáveis diferentes): o estado é detectado e sinalizado, mas o valor numérico **ainda aparece**, com alerta, e o engenheiro deve voltar à simulação CFD. A supressão do número continua pendente e é o que pedem o RF06 e o RN08 (Seção 6), ambos de prioridade Alta, porque exibir um valor com ressalva textual não impede seu uso.
 
-### <a name="c5_3"></a>5.3. Pessoas afetadas e uso ético
+Duas categorias pedem cautela adicional, mesmo quando o detector as aceita. A primeira é `board_position` *Right*, presente em 5,5% das leituras e apoiada em poucos ensaios (Seção 4.3). A segunda é `material_coil_support` *Aluminium Plate*, que aparece em um único ensaio e é tratada pelo modelo como *Aluminium*, conforme o glossário do parceiro (Seção 4.4.3). Uma consulta com *Aluminium Plate* recebe, portanto, a previsão de *Aluminium*. Nas duas, a conduta recomendada é a da extrapolação moderada. O detector é hoje uma regra única, e a segunda camada prevista no R04, a detecção de novidade multivariada sobre a combinação inteira, permanece pendente. Se mais de 20% das consultas caírem fora do envelope, cabe à equipe documentar formalmente o domínio de validade e comunicá-lo aos engenheiros usuários.
+
+**Validação contra medição física (risco R05).** As métricas da Seção 4.4 medem a distância entre o modelo e as temperaturas registradas na base, tratadas nesta documentação como saída do solver CFD da Whirlpool (risco R05). O desvio entre solver e medição não é conhecido: o solver é calibrado internamente e seu resíduo não foi disponibilizado. É esse desvio que estabelece o teto real de acurácia, porque uma previsão pode caber na tolerância contra o CFD e ainda assim afastar-se da realidade física sem que métrica interna alguma acuse. Recomenda-se uma campanha de validação física, reservando ensaios jamais usados em treino como conjunto de calibração independente, e o reporte do desvio simulação-ensaio como erro irredutível de referência. Até lá, o dashboard deve declarar que a previsão estima a saída do CFD (RF11), e nenhuma decisão de liberação deve apoiar-se apenas nela. Se o desvio ultrapassar 5% em qualquer termopar com limite normativo, aplica-se a camada de correção de viés prevista no R05.
+
+**Revisão das margens de segurança (oportunidade R06).** Cada previsão já é entregue com a margem de erro do próprio termopar (Seção 4.4.4) e comparada ao `active_limit` do sensor. Recomenda-se calcular, para cada termopar, a folga média histórica até esse limite e compará-la à margem de erro do modelo. Folga média superior ao dobro da margem, critério da oportunidade R06 (Seção 4.1.5), indica superdimensionamento e espaço para revisar o critério de projeto. A relação desses termopares deve ser encaminhada como subsídio quantitativo; revisar folga, isolamento ou material é decisão da engenharia da Whirlpool, que responde por critérios normativos e de segurança que o modelo não representa. A comparação deve ser feita em graus Celsius por termopar e pelo erro normalizado pela folga térmica, nunca em percentual da temperatura prevista: a escala Celsius é intervalar, e o percentual sobre ela muda de valor conforme a unidade (risco R06).
+
+**Limitações que condicionam o uso.** Três decorrem do desenho da base, não do algoritmo:
+
+- **Volume:** 56 execuções (Seção 4.2.1) resultam em 32 configurações distintas por região (Seção 4.4), amostra que não distingue de forma confiável diferenças da ordem de décimos de grau.
+- **Cobertura parcial:** das 24 combinações possíveis entre `blower_direction`, `housing`, `deflector_hole` e `material_coil_support`, apenas 10 foram ensaiadas, e 27 das 56 execuções se concentram em duas delas.
+- **Aliasing:** doze das quatorze categorias de `losses` correspondem a um único valor de `deflector_hole` (V de Cramér de 0,89). O mesmo padrão se repete em `run_case`–`losses`, `housing`–`losses` e `blower_direction`–`deflector_hole` (Seção 4.2.4, H2).
+
+A base permite, portanto, identificar configurações de risco, não atribuir efeito individual a cada variável. Variar uma peça quase sempre implicou variar outra, e rankings de importância descrevem como o modelo decide, não como o fogão aquece.
+
+**Próximos passos.** As melhorias abaixo consolidam o que as Seções 4.5 e 5 deixaram pendente, por frente de trabalho:
+
+<div align="center"><sub>Quadro 17 — Próximos passos recomendados</sub></div>
+
+| Frente | Ação recomendada | Origem |
+|---|---|---|
+| Novos dados | Planejar os próximos ensaios por desenho de experimentos, para quebrar as dependências entre variáveis e cobrir as 14 combinações ainda não ensaiadas | H2; risco R02 |
+| Novos dados | Incorporar e validar os ensaios da arquitetura mexicana sob o mesmo protocolo LOGO | Seção 2.2; RN03 |
+| Novos dados | Reservar ensaios físicos para medir o desvio entre solver e medição | Risco R05 |
+| Tratamento dos dados | Prever o IGBT 1 separadamente, em vez da média dos 16 IGBTs, para verificar a magnitude da H4 | Seção 4.5.4 |
+| Modelo | Medir o teste de ordenação da oportunidade R03 e as métricas de segurança do risco R06 a cada nova versão | Seção 4.5.2; RN21 |
+| Modelo | Retreinar com os novos ensaios, refazer o comparativo e reavaliar o roteamento, começando por CT Knobs | Seção 4.4.4; RF16 |
+| Software | Suprimir o valor numérico no estado fora de domínio | RF06; RN08 |
+| Software | Exibir o aviso de que a previsão estima a saída do CFD | RF11; RN23 |
+| Software | Acrescentar a detecção de novidade multivariada ao detector de domínio | Risco R04 |
+| Software | Levar ao dashboard a decomposição de cada previsão por SHAP e oferecer a predição em lote | Seção 4.5.3; RF17 |
+
+<sup>Fonte: Elaborado pelos autores (2026), a partir das Seções 4.5 e 5.</sup>
+
+**Material complementar.** Os Anexos reúnem o estudo estatístico de `temp`: normalidade pelos três procedimentos aplicados (Shapiro-Wilk, D'Agostino-Pearson e Anderson-Darling), histogramas, comparação entre média e mediana, diagnóstico segmentado por `key_area`, por configuração de ensaio e por período da campanha, com as ressalvas de poder estatístico e de multiplicidade, e escalonamento Min-Max por região, com equações, parâmetros e verificação do intervalo. Recomendam-se quatro entregáveis, ainda não elaborados:
+
+- **Manual do usuário** do dashboard, como suporte ao treinamento descrito na Seção 5.3, com os três estados de domínio, a conduta de cada um e a leitura da margem de erro.
+- **Dicionário de dados** da base tratada, previsto na oportunidade R02 (Seção 4.1.5), com nome, tipo, unidade, domínio e tratamento de cada variável, inclusive os placeholders de `active_limit`.
+- **Extensão das estatísticas descritivas** por `key_area` às variáveis de configuração e à distribuição dos erros por região, hoje resumida apenas por MAE e RMSE.
+- **Protocolo de retreino**, com o gatilho, os critérios de entrada de novas execuções, a reexecução obrigatória da validação LOGO, a reexportação dos artefatos e o responsável pela manutenção, cuja designação permanece pendente (risco R07).
+
+<sup>Fonte: Elaborado pelos autores (2026). Recomendações derivadas dos planos de ação da matriz de riscos da Seção 4.1.5: oportunidades R02 (dicionário de dados e acervo), R03 (priorização de ensaios) e R06 (revisão de margens); riscos R02 (volume amostral), R04 (domínio de validade), R05 (herança do erro do solver), R06 (operacionalização do critério de aceite) e R07 (sustentação do software). Limitações apuradas nas Seções 4.2.1 e 4.2.4 (hipótese H2), a partir de `data/dataset_pre_processado.csv`, e nas métricas por região de [`notebooks/comparacao_modelos.ipynb`](../notebooks/comparacao_modelos.ipynb). Regra do detector de domínio conforme `src/backend/app/predictors/real.py`.</sup>
+
+### <a name="c5_4"></a>5.4. Pessoas afetadas e uso ético
 
 **Partes afetadas pelas decisões do modelo.** São três, com exposição desigual: dois grupos decidem e podem contestar a previsão, e o terceiro não participa e responde pelo resultado.
 
-**Engenheiro de ensaios térmicos — usuário direto.** Define, a partir da previsão, o que vai ao laboratório, em que ordem e o que deixa de ser ensaiado um erro de leitura retira do plano exatamente a configuração que precisaria ser medida. Recomenda-se condicionar o acesso ao dashboard a treinamento formal, com registro dos capacitados, sobre dois pontos: o domínio de validade, em que é o estado de extrapolação, e não o valor numérico, que determina a conduta; e a faixa de incerteza, que expressa erro típico e não limite superior. O segundo exige demonstração quantitativa: as razões RMSE/MAE de 1,78 em Main Vent Sys e 1,57 em Mainback (Seção 5.1) revelam configurações individuais bem acima do erro típico da região, de modo que tratar o MAE como pior caso subestima o desvio onde ele é maior.
+**Engenharia de Produtos, Qualidade e Materiais: usuários diretos.** Rafael, João e Estela (Seção 4.1.6) definem, a partir da previsão, quais configurações seguem para simulação ou para o laboratório, e em que ordem. Um erro de leitura retira do plano exatamente a configuração que precisaria ser medida. Recomenda-se condicionar o acesso ao dashboard a treinamento formal, com registro dos capacitados, sobre dois pontos. O primeiro é que o estado de domínio, e não o valor numérico, determina a conduta. O segundo é que a margem de erro expressa o erro típico, e não um limite superior. Esse segundo ponto exige demonstração quantitativa: as razões RMSE/MAE de 1,66 em Mainback e 1,59 em Main Vent Sys (Seção 5.1) revelam configurações individuais acima do erro típico da região, de modo que tratar o MAE como pior caso subestima o desvio onde ele é maior.
 
-**Equipe de CFD — trabalho parcialmente replicado.** O modelo entrega em segundos a saída que hoje consome horas de simulação, absorvendo a parcela repetitiva da carga: varreduras de configurações próximas de arquiteturas já simuladas. Recomenda-se posicioná-lo como camada de triagem que devolve capacidade à equipe, e não como redução de escopo, extrapolação moderada e fora de domínio retornam à simulação completa por desenho, de modo que o volume encaminhado ao CFD concentra os casos difíceis: arquiteturas novas, materiais pouco representados na base e configurações nas bordas do envelope. Recomenda-se ainda que a equipe integre formalmente a validação, respondendo pela conferência entre previsão e saída do solver em cada região e pelo aceite antes de cada atualização dos artefatos em produção resposta à ameaça R08 (Seção 4.1.5), pois a adoção depende de previsões auditáveis por quem domina o solver, e atribuir à equipe o papel de validadora evita que a ferramenta pareça imposta sobre o seu trabalho.
+**Equipe de CFD: trabalho parcialmente replicado.** O modelo entrega em segundos a saída que hoje consome horas, absorvendo a parcela repetitiva da carga: varreduras de configurações próximas de arquiteturas já simuladas. Recomenda-se posicioná-lo como camada de triagem que devolve capacidade à equipe, e não como redução de escopo. As configurações fora de domínio voltam à simulação completa, e as de extrapolação moderada voltam a ela sempre que um sensor fica próximo do limite (Seção 4.5.5). Assim, o volume encaminhado ao CFD concentra os casos difíceis: arquiteturas novas, materiais pouco representados e configurações nas bordas do envelope. Recomenda-se ainda que a equipe responda pela conferência entre previsão e saída do solver em cada região e pelo aceite antes de cada atualização dos artefatos (risco R08, Seção 4.1.5). A adoção depende de previsões auditáveis por quem domina o solver, e atribuir à equipe o papel de validadora evita que a ferramenta pareça imposta sobre o seu trabalho.
 
-**Consumidor final do fogão — afetado sem participação.** Não opera o dashboard, não é consultado em etapa alguma e não tem meio de saber se a configuração do produto que adquiriu foi liberada por ensaio ou por previsão, mas carrega a consequência de um projeto térmico aprovado sobre estimativa: uma sobretemperatura em componente crítico se materializa no uso doméstico, fora do alcance de qualquer correção posterior do modelo. Sem representação no circuito de decisão, sua proteção não pode depender do julgamento caso a caso do usuário: precisa estar inscrita como regra do processo de liberação.
+**Consumidor final do fogão: afetado sem participação.** Não opera o dashboard, não é consultado em etapa alguma e não tem meio de saber se a configuração do produto que adquiriu foi liberada por ensaio ou por previsão. Ainda assim, carrega a consequência de um projeto térmico aprovado sobre estimativa: uma sobretemperatura em componente crítico se materializa no uso doméstico, fora do alcance de qualquer correção posterior do modelo. Sem representação no circuito de decisão, sua proteção não pode depender do julgamento caso a caso do usuário: precisa estar inscrita como regra do processo de liberação.
 
-**Regra de segurança: nenhuma dispensa de ensaio em ponto crítico se apoia apenas na previsão.** Recomenda-se formalmente à Whirlpool registrar em procedimento que nenhuma dispensa de ensaio físico em ponto crítico de segurança termopar com limite normativo definido, componente acessível ao contato do usuário ou região sujeita a requisito de certificação se fundamente apenas na previsão. A justificativa está na ameaça R05 (Seção 4.1.5): o alvo do treinamento é a temperatura do solver CFD, e o desvio entre solver e medição é desconhecido, porque o resíduo da calibração interna não foi disponibilizado o modelo reproduz o solver, não o fenômeno físico, e uma previsão pode estar dentro da tolerância contra o solver e errada contra o mundo sem que nenhuma métrica deste projeto distinga os dois casos. A regra vale também em interpolação e nas regiões de menor erro, pois a quantidade em jogo não é o erro do modelo contra o solver, e sim o do solver contra a medição, ausente das métricas da Seção 4.4; sua revisão fica condicionada à campanha de validação física prevista em R05 e, até que o desvio simulação-ensaio seja quantificado e limitado por termopar, não admite exceção. A obrigação é de processo, não de interface: o aviso do requisito RF11 (Seção 6.1) informa o usuário, mas não impede a dispensa, atribuição do procedimento de liberação.
-
-**Anexos.** Os Anexos desta documentação reúnem apenas o estudo estatístico de `temp`: teste de normalidade pelos três procedimentos aplicados (Shapiro-Wilk, D'Agostino-Pearson e Anderson-Darling), histogramas, comparação entre média e mediana, diagnóstico segmentado por `key_area`, por configuração de ensaio e por período da campanha, com as ressalvas de poder estatístico e de multiplicidade, e escalonamento Min-Max por região, com equações, parâmetros por `key_area` e verificação do intervalo. Nenhum outro material complementar foi produzido. Ficam recomendados quatro entregáveis, nenhum deles elaborado até aqui: manual do usuário do dashboard, suporte ao treinamento acima, com os três estados de domínio, a conduta de cada um e a leitura da faixa de incerteza; dicionário de dados da base tratada, já previsto como entregável formal na oportunidade R02 (Seção 4.1.5), com nome, tipo, unidade, domínio de valores e tratamento de cada variável, inclusive os placeholders de `active_limit`; extensão das estatísticas descritivas por `key_area`, hoje restritas à variável-alvo, às variáveis de configuração, com a frequência de suas categorias em cada região, e à distribuição dos erros por região, hoje resumida apenas por MAE e RMSE; e protocolo de retreino, com o gatilho, os critérios de entrada de novas execuções, a reexecução obrigatória da validação LOGO, a reexportação dos artefatos e o responsável pela manutenção, cuja designação permanece pendente conforme a ameaça R07 (Seção 4.1.5).
+**Regra de segurança: nenhuma dispensa de ensaio em ponto crítico se apoia apenas na previsão.** Recomenda-se registrar em procedimento que nenhuma dispensa de ensaio físico em ponto crítico de segurança se fundamente apenas na previsão. São pontos críticos os termopares com limite normativo definido, os componentes acessíveis ao contato do usuário e as regiões sujeitas a requisito de certificação. A justificativa é a do risco R05 (Seção 5.2): o modelo reproduz o solver, não o fenômeno físico, e uma previsão pode estar dentro da tolerância contra o solver e errada contra o mundo sem que nenhuma métrica deste projeto distinga os dois casos. A regra vale também em interpolação e nas regiões de menor erro, pois a quantidade em jogo é o erro do solver contra a medição, ausente das métricas da Seção 4.4. Sua revisão fica condicionada à campanha de validação física do R05 e não admite exceção até que o desvio simulação-ensaio seja quantificado e limitado por termopar. A obrigação é de processo, não de interface. O aviso previsto no RF11 (Seção 6.1), ainda não exibido no dashboard, informará o usuário, mas não impedirá a dispensa: impedi-la cabe ao procedimento de liberação da Whirlpool.
 
 **Sob essa condição**, o Thermal Predictor entra em operação como instrumento datado: cada ensaio físico que a Whirlpool incorporar à base recoloca em teste as métricas, os limites e as regras aqui registradas, e é por esse acúmulo, não por uma próxima versão do algoritmo, que a ferramenta se aproxima do patamar de confiança que hoje não alcança.
 
-<sup>Fonte: Elaborado pelos autores (2026). Partes afetadas e recomendações derivadas da matriz de riscos da Seção 4.1.5, oportunidade R02 (dicionário de dados) e ameaças R05 (erro do solver CFD), R07 (mantenedor designado) e R08 (não adoção pela engenharia), do requisito RF11 (Seção 6.1) e das razões RMSE/MAE da Seção 5.1. Conteúdo entregue conforme a seção Anexos desta documentação.</sup>
+<sup>Fonte: Elaborado pelos autores (2026). Partes afetadas e recomendações derivadas da matriz de riscos da Seção 4.1.5, riscos R05 (erro do solver CFD) e R08 (não adoção pela engenharia), das personas da Seção 4.1.6, do plano de contingência da Seção 4.5.5, do requisito RF11 (Seção 6.1) e das razões RMSE/MAE da Seção 5.1.</sup>
 
 As instruções para instalar e executar a solução, incluindo a API, o dashboard e os notebooks, estão no [README do repositório](../README.md#-execução-dos-projetos).
 
@@ -1700,11 +1995,13 @@ O Thermal Predictor é entregue em duas partes que operam em conjunto: um **dash
 
 Essa divisão define duas formas distintas de acesso ao modelo. Pelo dashboard, o usuário consulta a temperatura estimada de uma configuração de fogão sem escrever uma linha de código: informa os parâmetros de montagem que deseja avaliar e recebe as previsões dos sensores de interesse. É o caminho dos times de Produtos, Design, Qualidade e Marketing. Pelo software, o usuário chama o modelo diretamente, integrando-o a rotinas próprias, executando predições em lote e retreinando o modelo à medida que novos dados de simulação e de teste físico ficam disponíveis. É o caminho da equipe de Engenharia (CFD).
 
-Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. A arquitetura de implementação está descrita em [`documents/nova_arquitetura.md`](nova_arquitetura.md), e as instruções de execução, no [README do repositório](../README.md#-execução-dos-projetos).
+Esta primeira parte da documentação enuncia os requisitos funcionais das duas partes, isto é, o que a solução deve permitir que o usuário faça. Cada requisito descreve uma única capacidade e recebe um nível de prioridade — alta para o que sustenta o fluxo essencial de predição, média para o que amplia o uso analítico da solução e baixa para o que agrega conveniência. As tabelas estão ordenadas por prioridade. As instruções de execução estão no [README do repositório](../README.md#-execução-dos-projetos).
 
 ### <a name="c6_1"></a>6.1. Requisitos funcionais
 
 #### <a name="c6_1_1"></a>6.1.1. Requisitos funcionais do dashboard
+
+<div align="center"><sub>Quadro 18 — Requisitos funcionais do dashboard</sub></div>
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -1720,7 +2017,11 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF10 | Permitir a exportação dos resultados da consulta em formato tabular. | Baixa |
 | RF11 | Exibir, junto de cada predição, um aviso de que o valor representa uma estimativa da saída da simulação numérica (CFD) — conforme mitigação do risco R05, Seção 4.1.5 — e não uma medição física direta. | Média |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 #### <a name="c6_1_2"></a>6.1.2. Requisitos funcionais do software preditivo
+
+<div align="center"><sub>Quadro 19 — Requisitos funcionais do software preditivo</sub></div>
 
 | ID | Requisito funcional | Prioridade |
 | --- | --- | --- |
@@ -1732,11 +2033,15 @@ Esta primeira parte da documentação enuncia os requisitos funcionais das duas 
 | RF17| Permitir a predição em lote, a partir de um conjunto de configurações fornecido pelo usuário. | Média |
 | RF18| Calcular e registrar as métricas de avaliação do modelo sobre um conjunto de dados de referência, para acompanhar sua evolução entre versões. | Média |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 ### <a name="c6_2"></a>6.2. Regras de negócio
 
 Enquanto os requisitos funcionais descrevem o que a solução deve permitir que o usuário faça, as regras de negócio descrevem as condições, restrições e critérios que governam como essas ações são executadas e validadas. Cada regra está associada ao(s) requisito(s) funcional(is) que ela restringe ou complementa.
 
 #### <a name="c6_2_1"></a>6.2.1. Regras de negócio do dashboard
+
+<div align="center"><sub>Quadro 20 — Regras de negócio do dashboard</sub></div>
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
@@ -1755,7 +2060,11 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 | RN13 | Toda tentativa de acesso ao dashboard, bem-sucedida ou não, deve ser registrada no histórico com identificação do usuário, data e horário, de modo a permitir auditoria de uso. | RF05, RF09 |
 | RN14 | A exportação de resultados deve incluir, além da temperatura estimada, a configuração consultada, a margem de erro e a indicação de confiabilidade, nunca apenas o valor bruto da predição. | RF04, RF06, RF10 |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 #### <a name="c6_2_2"></a>6.2.2. Regras de negócio do software preditivo
+
+<div align="center"><sub>Quadro 21 — Regras de negócio do software preditivo</sub></div>
 
 | ID | Regra de negócio | RF relacionado(s) |
 | --- | --- | --- |
@@ -1769,43 +2078,45 @@ Enquanto os requisitos funcionais descrevem o que a solução deve permitir que 
 | RN22 | As métricas de avaliação de uma nova versão do modelo devem ser calculadas sobre o mesmo conjunto de dados de referência utilizado em versões anteriores. | RF18 |
 | RN23 | Toda predição exibida deve comunicar explicitamente que o valor representa uma estimativa da saída da simulação CFD e não uma medição física direta, para que o usuário não a interprete como dado de campo. | RF11 |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 ## <a name="c7"></a>7. Referências
 
-As referências abaixo estão numeradas na ordem em que aparecem citadas ao longo do texto.
+As referências abaixo estão numeradas na ordem em que aparecem citadas pela primeira vez ao longo do texto.
 
-1. GURUFOCUS. *Whirlpool Corp (WHR) Q2 2026 Earnings Call Highlights: Strategic Pricing and Cost Actions Drive Sequential Margin Improvement Amid Market Headwinds.* ago. 2026. Disponível em: https://www.gurufocus.com/news/9002695/whirlpool-corp-whr-q2-2026-earnings-call-highlights-strategic-pricing-and-cost-actions-drive-sequential-margin-improvement-amid-market-headwinds. Acesso em: 13 ago. 2026.
-2. BLOOMBERG LÍNEA. *Whirlpool vê retomada da demanda e aposta em produtos para apartamentos menores.* nov. 2023. Disponível em: https://www.bloomberglinea.com.br/negocios/whirpool-ve-retomada-da-demanda-e-aposta-em-produtos-para-apartamentos-menores/. Acesso em: 13 ago. 2026.
-3. ELETROS — Associação Nacional de Fabricantes de Produtos Eletroeletrônicos. *Dados setoriais de linha branca.* 2025.
-4. WHIRLPOOL CORPORATION BRASIL. *Whirlpool apresenta metas de qualidade e sustentabilidade para fornecedores.* [201-?]. Página original removida do site da empresa; cópia arquivada pelo Internet Archive em 17 jan. 2021. Disponível em: https://web.archive.org/web/20210117000445/https://www.whirlpool.com.br/0000/00/whirlpool-apresenta-metas-de-qualidade-e-sustentabilidade-para-fornecedores/. Acesso em: 3 out. 2026.
-5. BLOOMBERG LÍNEA. *Da geladeira ao frigobar, canetas emagrecedoras já impactam o mercado de linha branca.* jan. 2026. Disponível em: https://www.bloomberglinea.com.br/negocios/da-geladeira-ao-frigobar-canetas-emagrecedoras-ja-impactam-o-mercado-de-linha-branca/. Acesso em: 13 ago. 2026.
-6. JORNAL DO COMMERCIO. *Whirlpool acelera a era das casas inteligentes com nova linha de produção de indução em Manaus.* 2026. Disponível em: https://jcam.com.br/colunas/whirlpool-acelera-a-era-das-casas-inteligentes-com-nova-linha-de-producao-de-inducao-em-manaus/. Acesso em: 13 ago. 2026.
-7. CENTRAL DO VAREJO. *Airfryer chega a 64% dos lares brasileiros e lidera nova onda de eletrodomésticos de conveniência.* 2025. Disponível em: https://centraldovarejo.com.br/airfryer-chega-a-64-dos-lares-brasileiros-e-lidera-nova-onda-de-eletrodomesticos-de-conveniencia/. Acesso em: 14 ago. 2026.
-8. O TEMPO. *Delivery cresce e acende debate nas redes: o ato de cozinhar em casa vai acabar?* 2023. Disponível em: https://www.otempo.com.br/economia/delivery-cresce-e-acende-debate-nas-redes-o-ato-de-cozinhar-em-casa-vai-acabar-1.3336447. Acesso em: 14 ago. 2026.
-9. ELECTROLUX GROUP. *Conheça os lançamentos da Electrolux que vão deixar sua casa mais completa e sustentável.* São Paulo, 10 out. 2023. Disponível em: https://www.electroluxgroup.com/en/news/conheca-os-lancamentos-da-electrolux-que-vao-deixar-sua-casa-mais-completa-e-sustentavel/. Acesso em: 3 out. 2026.
-10. ELECTROLUX GROUP. *Com investimentos de R$ 700 milhões, Electrolux Group inaugura planta 100% sustentável que marca sua maior expansão na América Latina.* ago. 2025. Disponível em: https://www.electroluxgroup.com/en/news/com-investimentos-de-r-700-milhoes-electrolux-group-inaugura-planta-100-sustentavel-que-marca-sua-maior-expansao-na-america-latina/. Acesso em: 14 ago. 2026.
-11. TIMES BRASIL. *Diretora da Midea: somos o 3º player no Brasil, e iremos aumentar.* 2025. Disponível em: https://timesbrasil.com.br/empresas-e-negocios/midea-carrier-brasil-player/. Acesso em: 14 ago. 2026.
-12. CORREIO DE MINAS. *Chinesa Midea investe R$ 630 milhões e inaugura nova fábrica em Pouso Alegre.* dez. 2024. Disponível em: https://correiodeminas.com.br/2024/12/14/chinesa-midea-investe-r-630-milhoes-e-inaugura-nova-fabrica-em-pouso-alegre-a-primeira-unidade-100-propria-no-brasil-promete-revolucionar-o-mercado-de-eletrodomesticos-no-pais/. Acesso em: 14 ago. 2026.
-13. GEO-MEXICO. *Mexico's multinationals: Mabe, domestic appliance manufacturer.* Disponível em: https://geo-mexico.com/?p=11419. Acesso em: 14 ago. 2026.
-14. BLOOMBERG LÍNEA. *Whirlpool inaugura hub de inovação em Rio Claro e vê novo impulso para vendas.* Disponível em: https://www.bloomberglinea.com.br/negocios/whirlpool-inaugura-hub-de-inovacao-em-rio-claro-e-ve-novo-impulso-para-vendas/. Acesso em: 14 ago. 2026.
-15. MEXICOINDUSTRY. *Whirlpool Ramos Arizpe.* Disponível em: https://mexicoindustry.com/hecho-en-mexico/whirlpool-ramos-arizpe-producen-los-refrigeradores-que-llegan-hasta-los-hogares-de-estados-unidos-. Acesso em: 14 ago. 2026.
-16. XATAKA MÉXICO. *Whirlpool cerrará una planta en México.* Disponível em: https://www.xataka.com.mx/empresas-y-economia/whirlpool-quiere-fabricar-refrigeradores-forma-barata-eso-cerrara-planta-mexico. Acesso em: 14 ago. 2026.
-17. INMETRO. *Programa Brasileiro de Etiquetagem (PBE) / ENCE.* Base legal: Lei nº 10.295/2001 e Decreto nº 9.864/2019. 2026.
-18. SELECTO GLOBAL. *The race to market: achieving speed and quality in product launch.* Disponível em: https://selectoglobal.com/blog-post/the-race-to-market-achieving-speed-and-quality-in-product-launch. Acesso em: 13 ago. 2026.
-19. MCKINSEY & COMPANY. *Digital twins: the key to smart product development.* Disponível em: https://www.mckinsey.com.br/industries/industrials/our-insights/digital-twins-the-key-to-smart-product-development. Acesso em: 13 ago. 2026.
-20. CHEN, Jiyao; REILLY, Richard R.; LYNN, Gary S. *The impacts of speed-to-market on new product success: the moderating effects of uncertainty.* IEEE Transactions on Engineering Management, v. 52, n. 2, p. 199-212, 2005.
-21. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. Brazil Economy, [s.l.], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
-22. BRASIL. **Lei nº 13.709, de 14 de agosto de 2018.** Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018. Disponível em: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm. Acesso em: 1 set. 2026.
-23. MÉXICO. **Ley Federal de Protección de Datos Personales en Posesión de los Particulares.** Diario Oficial de la Federación, Ciudad de México, 5 jul. 2010. Disponível em: https://web.archive.org/web/20240601000000/https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf. Acesso em: 3 out. 2026.
-24. HOTZ, Nick. What is CRISP DM?. Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
-25. SHARMA, Rajat. CRISP-DM Explained: A Proven Data Mining Methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
-26. PEDREGOSA, F. et al. Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research, v. 12, p. 2825-2830, 2011. Disponível em: https://jmlr.org/papers/v12/pedregosa11a.html. Acesso em: 11 set. 2026.
-27. CHAI, T.; DRAXLER, R. R. Root mean square error (RMSE) or mean absolute error (MAE)? – Arguments against avoiding RMSE in the literature. Geoscientific Model Development, v. 7, p. 1247-1250, 2014. Disponível em: https://gmd.copernicus.org/articles/7/1247/2014/. Acesso em: 11 set. 2026.
-28. BREIMAN, Leo; FRIEDMAN, Jerome H.; OLSHEN, Richard A.; STONE, Charles J. *Classification and regression trees.* Belmont: Wadsworth International Group, 1984.
-29. WILCOXON, Frank. *Individual comparisons by ranking methods.* Biometrics Bulletin, v. 1, n. 6, p. 80-83, 1945.
-30. BERGSTRA, James; BENGIO, Yoshua. *Random search for hyper-parameter optimization.* Journal of Machine Learning Research, v. 13, p. 281-305, 2012. Disponível em: https://jmlr.org/papers/v13/bergstra12a.html. Acesso em: 25 set. 2026.
-31. LUNDBERG, Scott M.; LEE, Su-In. *A unified approach to interpreting model predictions.* In: CONFERENCE ON NEURAL INFORMATION PROCESSING SYSTEMS (NIPS), 31., 2017, Long Beach. Advances in Neural Information Processing Systems 30. Red Hook: Curran Associates, 2017. p. 4765-4774. Disponível em: https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions. Acesso em: 25 set. 2026.
-32. FRIEDMAN, Jerome H. *Greedy function approximation: a gradient boosting machine.* The Annals of Statistics, v. 29, n. 5, p. 1189-1232, 2001.
-33. WHIRLPOOL; INTELI. *Project Charter: Thermal Predictor.* Whirlpool - Divisão Fogões (Brasil & México), fev. 2026. Documento interno de projeto.
+1. COMO a Whirlpool, dona de Brastemp e Consul, cresce 12% com dólar e juros altos. *Brazil Economy*, [*S. l.*], 10 abr. 2025. Disponível em: https://brazileconomy.com.br/empresas/2025/04/o-segredo-da-whirlpool-dona-de-brastemp-e-consul-para-crescer-com-juro-alto-e-dolar-caro/. Acesso em: 6 ago. 2026.
+2. WHIRLPOOL; INTELI. *Project Charter*: Thermal Predictor. [*S. l.*]: Whirlpool, Divisão Fogões (Brasil e México), fev. 2026. Documento interno de projeto.
+3. LUNDBERG, S. M.; LEE, S.-I. A unified approach to interpreting model predictions. *In*: CONFERENCE ON NEURAL INFORMATION PROCESSING SYSTEMS, 31., 2017, Long Beach. *Advances in Neural Information Processing Systems 30*. Red Hook: Curran Associates, 2017. p. 4765-4774. Disponível em: https://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions. Acesso em: 25 set. 2026.
+4. MCKINSEY & COMPANY. *Digital twins*: the key to smart product development. [*S. l.*], [20--]. Disponível em: https://www.mckinsey.com.br/industries/industrials/our-insights/digital-twins-the-key-to-smart-product-development. Acesso em: 13 ago. 2026.
+5. CHEN, J.; REILLY, R. R.; LYNN, G. S. The impacts of speed-to-market on new product success: the moderating effects of uncertainty. *IEEE Transactions on Engineering Management*, v. 52, n. 2, p. 199-213, 2005.
+6. SHARMA, R. *CRISP-DM explained*: a proven data mining methodology. Udacity Blog, 13 mar. 2025. Disponível em: https://www.udacity.com/blog/crisp-dm-explained-a-proven-data-mining-methodology/. Acesso em: 8 set. 2026.
+7. HOTZ, N. *What is CRISP DM?* Data Science PM, 9 dez. 2024. Disponível em: https://www.datascience-pm.com/crisp-dm-2/. Acesso em: 8 set. 2026.
+8. ELECTROLUX GROUP. *Conheça os lançamentos da Electrolux que vão deixar sua casa mais completa e sustentável*. São Paulo, 10 out. 2023. Disponível em: https://www.electroluxgroup.com/en/news/conheca-os-lancamentos-da-electrolux-que-vao-deixar-sua-casa-mais-completa-e-sustentavel/. Acesso em: 3 out. 2026.
+9. ELECTROLUX GROUP. *Com investimentos de R$ 700 milhões, Electrolux Group inaugura planta 100% sustentável que marca sua maior expansão na América Latina*. [*S. l.*], ago. 2025. Disponível em: https://www.electroluxgroup.com/en/news/com-investimentos-de-r-700-milhoes-electrolux-group-inaugura-planta-100-sustentavel-que-marca-sua-maior-expansao-na-america-latina/. Acesso em: 14 ago. 2026.
+10. TIMES BRASIL. *Diretora da Midea*: somos o 3º player no Brasil, e iremos aumentar. [*S. l.*], 2025. Disponível em: https://timesbrasil.com.br/empresas-e-negocios/midea-carrier-brasil-player/. Acesso em: 14 ago. 2026.
+11. CORREIO DE MINAS. *Chinesa Midea investe R$ 630 milhões e inaugura nova fábrica em Pouso Alegre*. [*S. l.*], dez. 2024. Disponível em: https://correiodeminas.com.br/2024/12/14/chinesa-midea-investe-r-630-milhoes-e-inaugura-nova-fabrica-em-pouso-alegre-a-primeira-unidade-100-propria-no-brasil-promete-revolucionar-o-mercado-de-eletrodomesticos-no-pais/. Acesso em: 14 ago. 2026.
+12. GEO-MEXICO. *Mexico's multinationals*: Mabe, domestic appliance manufacturer. [*S. l.*], [20--]. Disponível em: https://geo-mexico.com/?p=11419. Acesso em: 14 ago. 2026.
+13. GURUFOCUS. *Whirlpool Corp (WHR) Q2 2026 earnings call highlights*: strategic pricing and cost actions drive sequential margin improvement amid market headwinds. [*S. l.*], ago. 2026. Disponível em: https://www.gurufocus.com/news/9002695/whirlpool-corp-whr-q2-2026-earnings-call-highlights-strategic-pricing-and-cost-actions-drive-sequential-margin-improvement-amid-market-headwinds. Acesso em: 13 ago. 2026.
+14. BLOOMBERG LÍNEA. *Whirlpool vê retomada da demanda e aposta em produtos para apartamentos menores*. [*S. l.*], nov. 2023. Disponível em: https://www.bloomberglinea.com.br/negocios/whirpool-ve-retomada-da-demanda-e-aposta-em-produtos-para-apartamentos-menores/. Acesso em: 13 ago. 2026.
+15. ASSOCIAÇÃO NACIONAL DE FABRICANTES DE PRODUTOS ELETROELETRÔNICOS (ELETROS). *Dados setoriais de linha branca*. [*S. l.*]: Eletros, 2025.
+16. WHIRLPOOL CORPORATION BRASIL. *Whirlpool apresenta metas de qualidade e sustentabilidade para fornecedores*. [*S. l.*], [201-?]. Página original removida do site da empresa; cópia arquivada pelo Internet Archive em 17 jan. 2021. Disponível em: https://web.archive.org/web/20210117000445/https://www.whirlpool.com.br/0000/00/whirlpool-apresenta-metas-de-qualidade-e-sustentabilidade-para-fornecedores/. Acesso em: 3 out. 2026.
+17. JORNAL DO COMMERCIO. *Whirlpool acelera a era das casas inteligentes com nova linha de produção de indução em Manaus*. Manaus, 2026. Disponível em: https://jcam.com.br/colunas/whirlpool-acelera-a-era-das-casas-inteligentes-com-nova-linha-de-producao-de-inducao-em-manaus/. Acesso em: 13 ago. 2026.
+18. CENTRAL DO VAREJO. *Airfryer chega a 64% dos lares brasileiros e lidera nova onda de eletrodomésticos de conveniência*. [*S. l.*], 2025. Disponível em: https://centraldovarejo.com.br/airfryer-chega-a-64-dos-lares-brasileiros-e-lidera-nova-onda-de-eletrodomesticos-de-conveniencia/. Acesso em: 14 ago. 2026.
+19. O TEMPO. *Delivery cresce e acende debate nas redes*: o ato de cozinhar em casa vai acabar? Belo Horizonte, 2023. Disponível em: https://www.otempo.com.br/economia/delivery-cresce-e-acende-debate-nas-redes-o-ato-de-cozinhar-em-casa-vai-acabar-1.3336447. Acesso em: 14 ago. 2026.
+20. BLOOMBERG LÍNEA. *Da geladeira ao frigobar, canetas emagrecedoras já impactam o mercado de linha branca*. [*S. l.*], jan. 2026. Disponível em: https://www.bloomberglinea.com.br/negocios/da-geladeira-ao-frigobar-canetas-emagrecedoras-ja-impactam-o-mercado-de-linha-branca/. Acesso em: 13 ago. 2026.
+21. BLOOMBERG LÍNEA. *Whirlpool inaugura hub de inovação em Rio Claro e vê novo impulso para vendas*. [*S. l.*], [20--]. Disponível em: https://www.bloomberglinea.com.br/negocios/whirlpool-inaugura-hub-de-inovacao-em-rio-claro-e-ve-novo-impulso-para-vendas/. Acesso em: 14 ago. 2026.
+22. MEXICOINDUSTRY. *Whirlpool Ramos Arizpe*. [*S. l.*], [20--]. Disponível em: https://mexicoindustry.com/hecho-en-mexico/whirlpool-ramos-arizpe-producen-los-refrigeradores-que-llegan-hasta-los-hogares-de-estados-unidos-. Acesso em: 14 ago. 2026.
+23. XATAKA MÉXICO. *Whirlpool cerrará una planta en México*. [*S. l.*], [20--]. Disponível em: https://www.xataka.com.mx/empresas-y-economia/whirlpool-quiere-fabricar-refrigeradores-forma-barata-eso-cerrara-planta-mexico. Acesso em: 14 ago. 2026.
+24. INSTITUTO NACIONAL DE METROLOGIA, QUALIDADE E TECNOLOGIA (INMETRO). *Programa Brasileiro de Etiquetagem (PBE)*: Etiqueta Nacional de Conservação de Energia (ENCE). [*S. l.*]: Inmetro, 2026. Base legal: Lei nº 10.295/2001 e Decreto nº 9.864/2019.
+25. SELECTO GLOBAL. *The race to market*: achieving speed and quality in product launch. [*S. l.*], [20--]. Disponível em: https://selectoglobal.com/blog-post/the-race-to-market-achieving-speed-and-quality-in-product-launch. Acesso em: 13 ago. 2026.
+26. BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018. Disponível em: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm. Acesso em: 1 set. 2026.
+27. MÉXICO. Ley Federal de Protección de Datos Personales en Posesión de los Particulares. *Diario Oficial de la Federación*, Ciudad de México, 5 jul. 2010. Disponível em: https://web.archive.org/web/20240601000000/https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf. Acesso em: 3 out. 2026.
+28. PEDREGOSA, F. *et al*. Scikit-learn: machine learning in Python. *Journal of Machine Learning Research*, v. 12, p. 2825-2830, 2011. Disponível em: https://jmlr.org/papers/v12/pedregosa11a.html. Acesso em: 11 set. 2026.
+29. CHAI, T.; DRAXLER, R. R. Root mean square error (RMSE) or mean absolute error (MAE)? Arguments against avoiding RMSE in the literature. *Geoscientific Model Development*, v. 7, p. 1247-1250, 2014. Disponível em: https://gmd.copernicus.org/articles/7/1247/2014/. Acesso em: 11 set. 2026.
+30. BREIMAN, L.; FRIEDMAN, J. H.; OLSHEN, R. A.; STONE, C. J. *Classification and regression trees*. Belmont: Wadsworth International Group, 1984.
+31. WILCOXON, F. Individual comparisons by ranking methods. *Biometrics Bulletin*, v. 1, n. 6, p. 80-83, 1945.
+32. BERGSTRA, J.; BENGIO, Y. Random search for hyper-parameter optimization. *Journal of Machine Learning Research*, v. 13, p. 281-305, 2012. Disponível em: https://jmlr.org/papers/v13/bergstra12a.html. Acesso em: 25 set. 2026.
+33. FRIEDMAN, J. H. Greedy function approximation: a gradient boosting machine. *The Annals of Statistics*, v. 29, n. 5, p. 1189-1232, 2001.
 
 ## <a name="attachments"></a>Anexos
 
@@ -1813,12 +2124,12 @@ As referências abaixo estão numeradas na ordem em que aparecem citadas ao long
 
 Esta subseção descreve os procedimentos de análise estatística aplicados ao conjunto de dados do grupo, organizados em duas etapas principais: o teste de normalidade e o escalonamento das variáveis quantitativas. Primeiro, verifica-se se as variáveis seguem uma distribuição normal, combinando métodos estatísticos formais e representações gráficas. Em seguida, aplica-se o escalonamento (normalização) dos dados, de modo a colocar as variáveis em escalas comparáveis e adequadas para a construção de modelos preditivos e para as análises subsequentes.
 
-**Nota sobre o número de variáveis analisadas.** O roteiro deste anexo pede a análise de três variáveis quantitativas. O dataset fornecido pela Whirlpool Latin America, porém, possui apenas **uma** variável quantitativa contínua de fato: `temp`. As outras duas colunas numéricas do `dtype` bruto foram descartadas dessa categoria já na classificação da Seção 4.2.1, por motivos estruturais do dado, não por escolha do grupo:
+**Nota sobre o número de variáveis analisadas.** Esta análise foi planejada para três variáveis quantitativas, mas a base fornecida pela Whirlpool Latin America tem apenas **uma** variável quantitativa contínua: `temp`. As outras duas colunas com tipo numérico na planilha original não pertencem a essa categoria, como já registrado na classificação da Seção 4.2.1. O motivo está na natureza de cada coluna, e não em uma escolha de análise:
 
 - `tc_number` é um identificador de sensor (rótulo), não uma quantidade — média, desvio-padrão e normalização não têm significado sobre ele.
 - `active_limit` é um parâmetro de especificação de engenharia atribuído a cada termopar (constante para o mesmo sensor em todas as execuções), não uma grandeza medida no experimento; além disso, carrega placeholders sem significado físico (`"Monitor (150 C)"` e `active_limit = 1000` para "sem limite definido"), o que tornaria qualquer teste de normalidade ou escalonamento sobre essa coluna pouco interpretável.
 
-Diante disso, o grupo optou por aprofundar a análise em `temp` — a única variável quantitativa contínua e também a variável-alvo do modelo — em vez de forçar testes estatísticos sobre colunas que não representam grandezas contínuas. O grupo tomou essa decisão ciente de que ela diverge do número de variáveis pedido no roteiro, e a registra aqui para validação explícita com o professor.
+Por isso, a análise se concentra em `temp`, que é a única variável quantitativa contínua e também a variável-alvo do modelo. Aplicar testes de normalidade e escalonamento a colunas que não representam grandezas contínuas produziria resultados sem interpretação física.
 
 **a) Hipóteses**
 
@@ -1857,13 +2168,17 @@ Variáveis analisadas (conforme o dataset):
 
 - `temp` (temperatura dos sensores/termopares)
 
-A classificação da Seção 1.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
+A classificação da Seção 4.2.1 identifica duas colunas numéricas, `temp` e `active_limit`. Apenas `temp` é submetida a teste de normalidade e escalonamento: `active_limit` não é uma medição repetida com distribuição própria, e sim um limite de engenharia por sensor, usado como referência de excedência (`temp > active_limit`). Além disso, após o tratamento do valor `"Monitor (150 °C)"` na Seção 2 (Pré-processamento), o placeholder de "sem limite definido" deixou de ser distinguível do limite real de 150 °C em 361 linhas, o que tornaria qualquer teste de normalidade sobre essa coluna pouco interpretável.
 
-Resultados do teste (valores fornecidos):
+Resultados do teste:
+
+<div align="center"><sub>Tabela 17 — Teste de normalidade de temp</sub></div>
 
 | Variável | p-valor (científico) | Conclusão (α = 0,05) |
 |:---|:---|:---|
 | `temp` | 2,72 × 10⁻⁵⁰ | Rejeita $H_0$ — não normal |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 Interpretação: o p-valor encontrado é astronomicamente pequeno (um número com dezenas de zeros após a vírgula antes de chegar ao primeiro dígito). Ele é muito, mas muito menor que o nosso nível de significância de 0,05. Portanto, com base no teste de Shapiro-Wilk, temos evidências estatísticas avassaladoras para rejeitar a hipótese de normalidade da variável `temp`.
 
@@ -1899,7 +2214,7 @@ print(f"Conclusão (α = {alpha}): {conclusao}")
 O item c) registrou uma única variável quantitativa analisada, `temp`. O histograma abaixo usa os dados originais dessa variável, sem escalonamento, e serve para confrontar o formato visual da distribuição com o resultado dos testes formais. Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 4.
 
 <div align="center">
-  <sub>Figura 21 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
+  <sub>Figura 27 — Distribuição de temp em dados originais, sem escalonamento (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp.png" alt="Histograma da temperatura em dados originais, com corpo entre 40 e 132 °C, pico próximo de 75 °C e cauda longa à direita até 273 °C" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
@@ -1923,9 +2238,13 @@ Em uma distribuição normal, por ser simétrica, a média e a mediana coincidem
 
 O código usado para essa métrica, está no notebook em baixo da sessão da hipotese 4.
 
+<div align="center"><sub>Tabela 18 — Comparação entre média e mediana de temp</sub></div>
+
 | Variável | Média | Mediana | Diferença (Média − Mediana) |
 |:---|:---|:---|:---|
 | `temp` | 81,77 °C | 76,50 °C | +5,27 °C |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 A média fica 5,27 °C acima da mediana. Esse sinal, média maior que a mediana, é a assinatura de uma distribuição **assimétrica à direita**: os valores extremos elevados (a cauda que se estende até 273,60 °C, evidenciada no histograma do item d) puxam a média para cima, enquanto a mediana, por depender apenas da posição central dos dados, permanece resistente a esses extremos. Se a temperatura seguisse uma distribuição normal, as duas medidas seriam praticamente iguais.
 
@@ -1945,6 +2264,8 @@ A motivação não é apenas cumprir o roteiro. O item d) mostrou que a `temp` g
 Segmentar responde a essa pergunta. Ao todo foram testados **75 recortes** de `temp`: 7 por região, 16 por configuração, 3 por período, 21 no cruzamento região × período e 28 no cruzamento região × modo de operação.
 
 **f.1) Segmentação por região do produto (`key_area`)**
+
+<div align="center"><sub>Tabela 19 — Testes de normalidade de temp por região</sub></div>
 
 | `key_area` | n | W (Shapiro-Wilk) | p (SW) | K² (D'Agostino) | p (DP) | A² (Anderson-Darling) | Crítico 5% | Decisão |
 |---|---:|---:|---:|---:|---:|---:|---:|:---|
@@ -1966,6 +2287,8 @@ As sete regiões rejeitam $H_0$, o que **descarta a hipótese (ii) pura**: a nã
 **f.2) Segmentação por configuração de ensaio**
 
 Cada run tem uma combinação de parâmetros de configuração. A tabela abaixo aplica o Shapiro-Wilk e o Anderson-Darling a cada categoria das seis configurações com mais de uma categoria efetiva.
+
+<div align="center"><sub>Tabela 20 — Testes de normalidade de temp por configuração de ensaio</sub></div>
 
 | Configuração | Categoria | n | W | p (SW) | A² | Crítico 5% | Decisão |
 |---|---|---:|---:|---:|---:|---:|:---|
@@ -1996,6 +2319,8 @@ Vale registrar o caso extremo: `run_case = Pyro` tem o pior W da tabela (0,7519)
 
 A base não tem coluna de data; o que existe é a ordem de execução codificada em `run_id` (Run 1 a Run 75, com lacunas, totalizando 56 runs). "Período", aqui, significa **posição na campanha**, não tempo de calendário. Os runs foram ordenados e divididos em três terços.
 
+<div align="center"><sub>Tabela 21 — Testes de normalidade de temp por período da campanha</sub></div>
+
 | Período | Runs | n | W | p (SW) | A² | Crítico 5% | Assimetria | Média (°C) | Decisão |
 |---|---|---:|---:|---:|---:|---:|---:|---:|:---|
 | P1 | Run 1 – Run 19 (17 runs) | 1.351 | 0,9195 | 3,11 × 10⁻²⁶ | 17,52 | 0,752 | +1,27 | 83,79 | Rejeita $H_0$ |
@@ -2011,6 +2336,8 @@ Os três períodos rejeitam $H_0$, mas há uma **tendência monotônica** que ne
 Os três cortes anteriores são unidimensionais e cada um deixa a mistura parcialmente intacta. Cruzar região com condição de ensaio isola ao mesmo tempo o regime térmico e o regime de operação — é o recorte mais próximo de "uma distribuição, um mecanismo".
 
 *Região × período (21 segmentos)*
+
+<div align="center"><sub>Tabela 22 — Testes de normalidade de temp por região e período</sub></div>
 
 | Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% | Decisão |
 |---|---:|---:|---:|---:|---:|---:|:---|
@@ -2028,6 +2355,8 @@ O contraste dentro de `Oven HMI` é o resultado mais informativo do item: a mesm
 *Região × modo de operação (`run_case`, 28 segmentos)*
 
 Oito dos 28 segmentos não rejeitam $H_0$ em **nenhum** dos três testes:
+
+<div align="center"><sub>Tabela 23 — Segmentos região × modo de operação que não rejeitam a normalidade</sub></div>
 
 | Segmento | n | W | p (SW) | p (DP) | A² | Crítico 5% |
 |---|---:|---:|---:|---:|---:|---:|
@@ -2047,6 +2376,8 @@ Oito dos 28 segmentos não rejeitam $H_0$ em **nenhum** dos três testes:
 **Ressalva de multiplicidade.** Foram 75 testes ao nível de 5%; se $H_0$ fosse verdadeira em todos, esperar-se-iam cerca de 3,75 rejeições apenas por acaso. Com correção de Bonferroni ($\alpha_{ajustado} = 0{,}05 / 75 = 6{,}67 \times 10^{-4}$), 17 dos 75 segmentos deixariam de rejeitar pelo Shapiro-Wilk, contra 10 no critério não corrigido — entrariam no grupo casos como `Coil Temps × P1` (p = 0,0020) e `Main Vent Sys × P1` (p = 0,0183). A correção, portanto, **reforça** a leitura desta subseção em vez de enfraquecê-la: quanto mais rigoroso o critério, mais segmentos sobrevivem como compatíveis com a normal. A conclusão global do item c) não se altera, porque lá os p-valores são da ordem de 10⁻⁵⁰, muitas ordens de grandeza abaixo de qualquer limiar corrigido.
 
 **Síntese do diagnóstico comparativo**
+
+<div align="center"><sub>Tabela 24 — Síntese do diagnóstico de normalidade por nível de recorte</sub></div>
 
 | Nível de recorte | Segmentos | Rejeitam $H_0$ nos 3 testes | Faixa de W | Leitura |
 |---|---:|---:|---|---|
@@ -2170,7 +2501,9 @@ consistência entre a etapa de preparação dos dados e a etapa de modelagem.
 Os dados foram analisados via DataFrame em Pandas, a partir do dataset fornecido pelo parceiro. A análise estatística global (sem segmentação por `key_area`) registrou as observações a seguir.
 
 **Conjunto de dados completo (`temp`, n = 4.065)**
- 
+
+<div align="center"><sub>Tabela 25 — Estatísticas globais de temp</sub></div>
+
 | Estatística | Valor |
 |---|---|
 | Valor mínimo | 27,69 °C |
@@ -2180,9 +2513,13 @@ Os dados foram analisados via DataFrame em Pandas, a partir do dataset fornecido
 | Amplitude | 245,91 °C |
 | Assimetria (skewness) | +1,763 |
 
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
+
 Para a análise da variável-alvo `temp`, a decisão de segmentar o estudo dos dados por áreas, seguindo a própria arquitetura da tabela (`key_area`), faz com que os dados estatísticos sejam calculados separadamente para cada região. Dessa forma, foram coletados os dados de temperatura via DataFrame em funções nativas da biblioteca Pandas na ordem: Mínimo (°C), Máximo (°C), Média (°C), Desvio populacional (°C), Amplitude (°C), Coeficiente de Variação (CV).
 
 **Parâmetros por `key_area` — base efetiva do escalonamento**
+
+<div align="center"><sub>Tabela 26 — Parâmetros de temp por key_area</sub></div>
 
 | key_area | n | Mínimo (°C) | Máximo (°C) | Média (°C) | Desvio pop. (°C) | Amplitude (°C) | CV |
 |---|---|---|---|---|---|---|---|
@@ -2193,6 +2530,8 @@ Para a análise da variável-alvo `temp`, a decisão de segmentar o estudo dos d
 | IPC Comp | 1.979 | 45,58 | 129,63 | 83,4398 | 17,0215 | 84,05 | 0,204 |
 | CT Knobs | 330 | 34,34 | 73,42 | 49,3033 | 7,6785 | 39,08 | 0,156 |
 | Oven HMI | 220 | 43,64 | 72,01 | 58,0965 | 3,9472 | 28,37 | 0,068 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 A implementação do código necessário para obtenção desses dados está em: 'notebooks\expl_preprocessamenro_hipote.ipynb'
 
@@ -2258,6 +2597,8 @@ $$
 
 A tabela consolida os termos de cada equação para as sete regiões, incluindo a soma dos valores ($\sum x_i$) e a soma dos quadrados dos desvios ($\sum (x_i - \bar{x})^2$), que são os agregados intermediários efetivamente calculados.
 
+<div align="center"><sub>Tabela 27 — Termos das equações de média e desvio padrão por key_area</sub></div>
+
 | `key_area` | $n_k$ | $\sum x_i$ | $\bar{x}_k$ (°C) | $\sum (x_i - \bar{x}_k)^2$ | $\sigma_k$ (°C) | $CV_k$ |
 |---|---|---|---|---|---|---|
 | Mainback | 610 | 49.226,79 | 80,6997 | 1.383.990,55 | 47,6323 | 0,5902 |
@@ -2267,6 +2608,8 @@ A tabela consolida os termos de cada equação para as sete regiões, incluindo 
 | IPC Comp | 1.979 | 165.127,41 | 83,4398 | 573.381,78 | 17,0215 | 0,2040 |
 | CT Knobs | 330 | 16.270,10 | 49,3033 | 19.456,37 | 7,6785 | 0,1557 |
 | Oven HMI | 220 | 12.781,23 | 58,0965 | 3.427,62 | 3,9472 | 0,0679 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 
 **Verificação numérica — dois casos de contraste**
@@ -2312,21 +2655,27 @@ $$
 temp\_scaled_{i} = \frac{temp_{i} - \min(temp_{k})}{\max(temp_{k}) - \min(temp_{k})}
 $$
 
-A tabela abaixo demonstra a transformação com uma observação real de cada `key_area`, selecionada próxima à mediana da respectiva distribuição.
+A tabela abaixo demonstra a transformação com uma observação real de cada `key_area`, selecionada próxima à mediana da respectiva distribuição. Run e sensor de cada observação são omitidos por confidencialidade da base do parceiro.
 
-| `key_area` | Observação de referência | $temp_i$ (°C) | $\min_k$ | $\max_k$ | Cálculo | $temp\_scaled_i$ |
-|---|---|---|---|---|---|---|
-| CT Knobs | Run 26 · TC 73 — *Ambient Between Left Encoders* | 47,14 | 34,34 | 73,42 | $(47{,}14 - 34{,}34)/39{,}08$ | 0,3275 |
-| Coil Temps | Run 19 · TC 16 — *Aluminium Plate FL* | 123,79 | 40,80 | 234,60 | $(123{,}79 - 40{,}80)/193{,}80$ | 0,4282 |
-| IPC Comp | Run 27 · TC 38 — *IGBT 3* | 81,53 | 45,58 | 129,63 | $(81{,}53 - 45{,}58)/84{,}05$ | 0,4277 |
-| IPC Cooling | Run 75 · TC 30 — *IPC Housing Outlet* | 58,01 | 27,69 | 114,94 | $(58{,}01 - 27{,}69)/87{,}25$ | 0,3475 |
-| Main Vent Sys | Run 1 · TC 22 — *AC Blower HES Connector* | 85,63 | 41,56 | 135,00 | $(85{,}63 - 41{,}56)/93{,}44$ | 0,4716 |
-| Mainback | Run 5 · TC 9 — *Ambient Below Terminal Block* | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
-| Oven HMI | Run 4 · TC 69 — *A33/Bellatrix Thermistor* | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
+<div align="center"><sub>Tabela 28 — Exemplo de escalonamento Min-Max por key_area</sub></div>
+
+| `key_area` | $temp_i$ (°C) | $\min_k$ | $\max_k$ | Cálculo | $temp\_scaled_i$ |
+|---|---|---|---|---|---|
+| CT Knobs | 47,14 | 34,34 | 73,42 | $(47{,}14 - 34{,}34)/39{,}08$ | 0,3275 |
+| Coil Temps | 123,79 | 40,80 | 234,60 | $(123{,}79 - 40{,}80)/193{,}80$ | 0,4282 |
+| IPC Comp | 81,53 | 45,58 | 129,63 | $(81{,}53 - 45{,}58)/84{,}05$ | 0,4277 |
+| IPC Cooling | 58,01 | 27,69 | 114,94 | $(58{,}01 - 27{,}69)/87{,}25$ | 0,3475 |
+| Main Vent Sys | 85,63 | 41,56 | 135,00 | $(85{,}63 - 41{,}56)/93{,}44$ | 0,4716 |
+| Mainback | 71,08 | 35,41 | 273,60 | $(71{,}08 - 35{,}41)/238{,}19$ | 0,1498 |
+| Oven HMI | 58,39 | 43,64 | 72,01 | $(58{,}39 - 43{,}64)/28{,}37$ | 0,5199 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — praticamente a média da região — resulta em 0,5199, ocupando o centro do intervalo normalizado, como esperado. Em `Mainback`, uma temperatura de 71,08 °C, também próxima da média regional (80,70 °C), resulta em apenas 0,1498, deslocada para o extremo inferior. A discrepância é consequência direta da assimetria positiva daquela região (*skewness* = +1,83, valor pontual — ver nota abaixo) e do máximo de 273,60 °C, que estende o denominador. É essa característica que motiva a ressalva registrada sobre a sensibilidade do Min-Max a valores extremos em `Mainback`, e a recomendação de validar tal máximo junto à Whirlpool antes da consolidação definitiva dos parâmetros.
 
 *Nota sobre rastreabilidade:* o valor de +1,83 citado acima é pontual e não aparece nas tabelas de parâmetros por `key_area` (que trazem apenas mínimo, máximo, média, desvio padrão, amplitude e CV). O cálculo de assimetria e curtose para as sete regiões está implementado e executado no notebook (célula logo após a Seção 6 "Preparação dos dados estatísticos para escalonamento", que estende a tabela `estat_area` com as colunas `skewness` e `curtose_excesso`):
+
+<div align="center"><sub>Tabela 29 — Assimetria e curtose de temp por key_area</sub></div>
 
 | `key_area` | Assimetria (skewness) | Curtose (excesso) |
 |---|---:|---:|
@@ -2337,6 +2686,8 @@ Duas leituras se destacam. Em `Oven HMI`, uma temperatura de 58,39 °C — prati
 | IPC Comp | +0,4105 | −0,2982 |
 | CT Knobs | +0,8095 | +0,0824 |
 | Oven HMI | −0,4242 | +2,3256 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 ---
 
@@ -2351,22 +2702,24 @@ $$
 Verificação com o caso de `IPC Comp`:
 
 $$
-0{,}4277 \times 84{,}05 + 45{,}58 = 35{,}95 + 45{,}58 = 81{,}53 \ ^\circ\text{C} \quad 
+0{,}4277 \times 84{,}05 + 45{,}58 = 35{,}95 + 45{,}58 = 81{,}53 \ ^\circ\text{C} \quad
 $$
 
 Os pares $(\min_k, \max_k)$ devem, portanto, ser persistidos junto ao modelo — sem eles, as predições não são interpretáveis em unidade física.
 
 **e) Histograma da variável após o escalonamento**
 
-O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 21.
+O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_area` definida no item c). Gerado em [`notebooks/expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb), Seção 5, a partir das mesmas 4.065 observações usadas na Figura 27.
 
 <div align="center">
-  <sub>Figura 22 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
+  <sub>Figura 28 — Distribuição de temp após o escalonamento Min-Max por key_area (n = 4.065)</sub><br>
   <img src="../assets/graficos/hist_temp_scaled.png" alt="Histograma da temperatura normalizada por key_area, distribuída ao longo de todo o intervalo de 0 a 1, sem cauda longa" width="80%"><br>
   <sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
 </div>
 
-**Comparação com o histograma antes do escalonamento (Figura 21)**
+**Comparação com o histograma antes do escalonamento (Figura 27)**
+
+<div align="center"><sub>Tabela 30 — Estatísticas de temp antes e depois do escalonamento</sub></div>
 
 | Medida | Antes (°C) | Depois (adimensional) |
 |:---|---:|---:|
@@ -2378,17 +2731,19 @@ O histograma abaixo apresenta `temp` depois da normalização Min-Max por `key_a
 | Curtose (excesso) | +4,8996 | −0,4546 |
 | n | 4.065 | 4.065 |
 
-Antes do escalonamento, o histograma de `temp` (Figura 21, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
-Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 22 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 21: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+Antes do escalonamento, o histograma de `temp` (Figura 27, descrito em detalhe no item d) da subseção anterior) é assimétrico à direita, com cauda longa até 273,60 °C, corte físico abrupto em 27,69 °C e um modo secundário entre 206,0 °C e 212,1 °C — traços consistentes com a mistura de sete regimes térmicos regionais (`key_area`) numa única variável.
 
-**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 21) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
+Depois do escalonamento, a variável ocupa o intervalo [0, 1], com mínimo e máximo exatos de 0,0 e 1,0 em cada uma das sete `key_area`. A Figura 28 mostra uma distribuição mais espalhada ao longo do intervalo, sem a cauda longa da Figura 27: média (0,4002) e mediana (0,3830) se deslocam para perto do centro, a assimetria cai de +1,763 para +0,283 (mantendo média > mediana) e a curtose em excesso passa de +4,90 para −0,45, caudas mais curtas que as de uma normal. O modo secundário de ~209 °C deixa de ser discernível como pico isolado. Origem do efeito: a assimetria de `Mainback` (skewness = +1,83, item c) empurra a maior parte de suas leituras para perto de 0 no intervalo normalizado — esse encolhimento, região por região, dilui o modo secundário e encurta a cauda direita.
+
+**O que muda.** Além da escala do eixo X (°C → [0, 1]), a forma da distribuição também muda, e esse é o ponto central da comparação: assimetria de +1,76 para +0,28, curtose em excesso de +4,90 para −0,45, cauda longa e modo secundário (Figura 27) desaparecem. A correlação de Pearson entre a série original e a escalonada é de apenas 0,688 — baixa para duas versões da mesma variável, o que confirma que a transformação reestrutura os valores entre regiões, não só muda a régua.
 
 **Por que muda.** O escalonamento é **sete** transformações lineares independentes, uma por `key_area`, cada uma com seu próprio mínimo e máximo (item b). Cada região é esticada para o intervalo [0, 1] separadamente, o que elimina por construção a diferença de patamar térmico entre regiões — a causa da cauda longa original. As leituras mais quentes de `Mainback` (até 273,60 °C) e as mais frias de `Oven HMI` (a partir de 43,64 °C) passam a ocupar a mesma posição relativa, 1,0 e 0,0.
 
-Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 22 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
+Em contraste, um Min-Max **global** preservaria a forma exatamente (assimetria e curtose permaneceriam em +1,7630 e +4,8996, correlação de 1,000000), alterando só a escala do eixo. A mudança de forma na Figura 28 é, portanto, consequência esperada de segmentar por região (item a), não um erro de execução.
 
-**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 21 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
+**Relação com os testes de normalidade.** Os três testes aplicados aos dados originais — Shapiro-Wilk (W = 0,8669; p = 2,72 × 10⁻⁵⁰), D'Agostino-Pearson (K² = 1.484,31; p ≈ 0) e Anderson-Darling (A² = 93,89, acima do crítico de 0,752 a 5%) — rejeitam H₀, o que converge com a Figura 27 (sem formato de sino, assimétrica, cauda longa, corte à esquerda). Nenhum teste foi recalculado sobre `temp_scaled`; a comparação pós-escalonamento usa só os indicadores descritivos acima. A queda de assimetria e curtose sugere uma distribuição menos distante de uma normal, mas +0,283 ainda é diferente de zero e a curtose negativa já é incompatível com a de uma normal — não há base para afirmar que o escalonamento "tornou `temp` normal", só que ficou menos assimétrica e com caudas mais curtas. Confirmar normalidade exigiria repetir o teste sobre `temp_scaled`.
 
 **O que permanece.** A ordenação **dentro de cada** `key_area` é preservada — a transformação é monotônica crescente por região. Não há perda de observações (4.065 antes e depois) nem valores fora do intervalo previsto. A distribuição continua não normal, só por outros motivos.
 
@@ -2399,6 +2754,8 @@ O Min-Max por `key_area` (item a) tem uma propriedade que os itens anteriores n�
 O risco é concreto neste dataset porque, como o item f.3 da subseção de normalidade mostrou, a distribuição de `temp` **não é estável ao longo da campanha de ensaios**: o terço final introduz condições mais severas, e é justamente lá que aparece o máximo global de 273,60 °C. Um split temporal — treinar com os runs iniciais e validar com os finais, prática comum quando os dados têm ordem de coleta — é o cenário em que o efeito do congelamento fica mais visível.
 
 **Simulação do efeito.** Os 56 runs foram ordenados por `run_id` e divididos em treino (Run 1 a Run 35, 33 runs, 2.578 observações) e teste (Run 38 a Run 75, 16 runs, 1.487 observações), reproduzindo os mesmos terços do item f.3. Os parâmetros $(\min_k, \max_k)$ foram calculados **apenas sobre o treino** e depois comparados aos parâmetros que o item b) já reporta, calculados sobre a base completa:
+
+<div align="center"><sub>Tabela 31 — Parâmetros de escalonamento calculados no treino e na base inteira</sub></div>
 
 | `key_area` | Mín. treino (°C) | Mín. total (°C) | Máx. treino (°C) | Máx. total (°C) | Amplitude treino (°C) | Amplitude total (°C) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -2415,6 +2772,8 @@ O risco é concreto neste dataset porque, como o item f.3 da subseção de norma
 Em cinco das sete regiões o **máximo** do treino já coincide com o da base inteira — os valores mais extremos aparecem cedo na campanha —, mas o **mínimo** do treino é sistematicamente mais alto que o real (a diferença chega a 6,13 °C em `Oven HMI`). `Mainback` é o caso mais grave: o máximo do treino (251,09 °C) fica 22,51 °C abaixo do máximo verdadeiro (273,60 °C), porque a leitura de 273,60 °C só ocorre em runs do terço final.
 
 Aplicando esses parâmetros do treino à fórmula do item c) sobre as observações de teste:
+
+<div align="center"><sub>Tabela 32 — Observações de teste fora do intervalo [0, 1] com parâmetros do treino</sub></div>
 
 | `key_area` | n (teste) | Abaixo de 0 | Acima de 1 | % fora de [0, 1] | scaled mín. | scaled máx. |
 |---|---:|---:|---:|---:|---:|---:|
@@ -2480,7 +2839,7 @@ print(f"\nTotal fora de [0,1]: {teste['fora_do_intervalo'].sum()} de {len(teste)
 
 **g) Tabelas Comparativas dos Dados**
 
-O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e exibir os 10 primeiros registros tanto dos dados originais quanto dos dados após escalonamento Min-Max.
+O objetivo desta questão foi apresentar as variáveis quantitativas analisadas do conjunto de dados e comparar os 10 primeiros registros dos dados originais com os mesmos registros após o escalonamento Min-Max. Por confidencialidade da base, os registros individuais não são reproduzidos aqui (ver nota nas Tabelas 1 e 2).
 
 Conforme a classificação das colunas apresentada na Seção 4.2.1, o conjunto `data/dataset_pre_processado.csv` possui uma única variável quantitativa efetiva: `temp`, a temperatura registrada pelo termopar ao final do ensaio, em °C. As demais colunas numéricas na origem não viraram variáveis quantitativas pelos seguintes motivos:
 
@@ -2541,49 +2900,17 @@ print("\nmin:", scaler.data_min_, "| max:", scaler.data_max_)
 
 ---
 
-### Tabela 1: Dados Originais — 10 primeiros registros
+### Dados originais e escalonados — 10 primeiros registros
 
-As colunas `run_id`, `tc_name` e `key_area` são exibidas apenas como contexto de identificação do registro; a variável submetida ao escalonamento é `temp`.
-
-| # | run_id | tc_name | key_area | temp (°C) |
-|---|--------|---------|----------|-----------|
-| 0 | Run 1 | Door Lock Motor Ambient 1/2" Below | Mainback | 99.35 |
-| 1 | Run 1 | Door Lock Microswitch Body | Mainback | 114.72 |
-| 2 | Run 1 | Convect Motor Winding | Mainback | 89.93 |
-| 3 | Run 1 | Storage Drawer (Metal Above) | Mainback | 167.87 |
-| 4 | Run 1 | L2, Wire, Power Cord | Mainback | 53.65 |
-| 5 | Run 1 | Ambient Below Terminal Block | Mainback | 48.94 |
-| 6 | Run 1 | ACU Ambient (Hill Only) Top | Mainback | 60.00 |
-| 7 | Run 1 | ACU K8 Housing / Double Line Break | Mainback | 55.44 |
-| 8 | Run 1 | Coil FR | Coil Temps | 55.69 |
-| 9 | Run 1 | Coil FL | Coil Temps | 49.33 |
-
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
-
----
-
-### Tabela 2: Dados Escalonados (Min-Max) — 10 primeiros registros
-
-| # | temp (original, °C) | temp (escalonada) |
-|---|---------------------|-------------------|
-| 0 | 99.35 | 0.291407 |
-| 1 | 114.72 | 0.353910 |
-| 2 | 89.93 | 0.253101 |
-| 3 | 167.87 | 0.570046 |
-| 4 | 53.65 | 0.105567 |
-| 5 | 48.94 | 0.086414 |
-| 6 | 60.00 | 0.131390 |
-| 7 | 55.44 | 0.112846 |
-| 8 | 55.69 | 0.113863 |
-| 9 | 49.33 | 0.088000 |
-
-<sup>Fonte: Elaborado pelos autores (2026), a partir de data/dataset_pre_processado.csv.</sup>
+As duas tabelas geradas pelo código acima (os 10 primeiros registros de `temp` antes e depois do Min-Max, com `run_id`, `tc_name` e `key_area` como contexto) não são reproduzidas nesta versão pública da documentação. Elas exibem leituras individuais da base do parceiro, que é confidencial, e a política de publicação do repositório não permite expor registros dos dados trabalhados. Para reproduzi-las, rode a Seção 5 de [`expl_preprocessamenro_hipote.ipynb`](../notebooks/expl_preprocessamenro_hipote.ipynb) com a base obtida conforme a seção "Os notebooks" do [README](../README.md#-execução-dos-projetos).
 
 ---
 
 #### Interpretação dos resultados
 
 Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observações de `temp`:
+
+<div align="center"><sub>Tabela 33 — Parâmetros usados pelo MinMaxScaler</sub></div>
 
 | Estatística | Valor (°C) |
 |-------------|------------|
@@ -2594,15 +2921,19 @@ Os parâmetros usados pelo `MinMaxScaler`, calculados sobre as 4.065 observaçõ
 | Mediana | 76.50 |
 | Desvio-padrão | 33.28 |
 
-**Verificação do cálculo:** aplicando a fórmula ao primeiro registro, `(99.35 - 27.69) / 245.91 = 0.291407`, valor idêntico ao da Tabela 2. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: `Storage Drawer` (167.87 °C) segue o mais quente da amostra nas duas tabelas (0.570), e `Ambient Below Terminal Block` (48.94 °C) o mais frio nas duas (0.086).
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
-**Concentração na faixa inferior do intervalo:** os dez valores normalizados ficam entre 0.086 e 0.570, sem se aproximar do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
+**Verificação do cálculo:** com os parâmetros acima, cada valor escalonado é `(temp - 27.69) / 245.91`; aplicada ao primeiro registro da amostra, essa conta reproduz exatamente o valor devolvido pelo `MinMaxScaler`, o que confirma que a implementação segue a fórmula. Por ser uma transformação monotônica, o Min-Max preserva a ordem relativa dos registros: o sensor mais quente e o mais frio da amostra continuam nas mesmas posições depois do escalonamento.
+
+**Concentração na faixa inferior do intervalo:** a mediana escalonada fica em torno de `(76.50 - 27.69) / 245.91 ≈ 0.20`, longe do topo da escala, refletindo a assimetria à direita de `temp` (mediana de 76.50 °C abaixo da média de 81.77 °C, com máximo de 273.60 °C isolado em `Coil Temps`/`Mainback`). Como o Min-Max se baseia apenas nos dois extremos, esse máximo comprime a maior parte das observações na metade inferior do intervalo `[0,1]`.
 
 Implicação para a modelagem: ainda que exista apenas uma variável quantitativa, o escalonamento continua sendo necessário porque as variáveis categóricas passarão por codificação ordinal (Seção 4.3.1), gerando colunas de inteiros pequenos (0, 1, 2...). Sem normalizar `temp`, ela entraria no modelo em uma escala até duas ordens de grandeza maior que essas colunas codificadas, dominando o cálculo de distância em algoritmos sensíveis à magnitude (KNN, K-Means, SVM) e a inicialização dos pesos em redes neurais. O Min-Max coloca `temp` na mesma faixa das variáveis codificadas. Como ressalva, por depender exclusivamente dos extremos, o Min-Max é sensível a outliers — caso a etapa de modelagem indique perda de desempenho por esse motivo, `StandardScaler` (média e desvio-padrão) ou `RobustScaler` (mediana e IQR) são alternativas mais estáveis para essa distribuição assimétrica.
 
 A comparação estatística de `temp` antes × depois do escalonamento já foi apresentada e discutida no item e) acima. Este item complementa esse resultado com a verificação, região a região, de que o Min-Max segmentado mapeou cada `key_area` para o intervalo [0, 1] esperado.
 
 **Verificação do intervalo de `temp_scaled` por `key_area`**
+
+<div align="center"><sub>Tabela 34 — Intervalo de temp_scaled por key_area</sub></div>
 
 | `key_area` | n | mín(`temp_scaled`) | máx(`temp_scaled`) |
 |---|---:|---:|---:|
@@ -2613,5 +2944,7 @@ A comparação estatística de `temp` antes × depois do escalonamento já foi a
 | IPC Comp | 1.979 | 0,0000 | 1,0000 |
 | CT Knobs | 330 | 0,0000 | 1,0000 |
 | Oven HMI | 220 | 0,0000 | 1,0000 |
+
+<sup>Fonte: Elaborado pelos autores (2026).</sup>
 
 Por construção da equação de normalização (item c), o mínimo e o máximo de cada `key_area` são necessariamente mapeados para 0 e 1 — a tabela acima, portanto, não é uma medição sujeita a variação amostral, mas uma verificação de que a implementação (Seção 5 do notebook) respeitou a fórmula em todas as sete regiões, sem observações fora do intervalo [0, 1] previsto.
