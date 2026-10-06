@@ -128,7 +128,7 @@ window.PITCH_CONFIG = {
         fases: ['Definição / Escopo', 'Desenvolvimento (CAD)', 'Testes & Protótipos', 'Produção (SOP)'],
         curvas: { custo: 'Custo de alteração no projeto', liberdade: 'Liberdade de design' },
         hoje: 'Hoje, a evidência térmica chega aqui',
-        depois: 'E se viéssemos para cá',
+        depois: 'Mundo Ideal',
       },
     },
     {
@@ -163,9 +163,9 @@ window.PITCH_CONFIG = {
       notas:
         'E há o tempo. [aponte para a partida] Hoje, resultados térmicos definitivos levam de semanas a meses, e um assessment térmico leva cerca de três semanas. [avance: a rota se desenha] A meta da Divisão de Fogões é chegar a menos de um dia. Nosso desafio era usar os dados históricos da Whirlpool para encurtar esse caminho. [transição] Foi a partir desse problema da Divisão de Fogões que desenvolvemos o Thermal Predictor.',
       conteudo: {
-        titulo: 'De onde partimos, *aonde queremos chegar.*',
+        titulo: 'De onde partimos,',
         partida: { rotulo: 'Ponto de partida', local: 'Hoje · CFD e protótipo', imagem: 'assets/fogao-destruido.webp', reserva: 'assets/balanco/30.webp' },
-        destino: { rotulo: 'Destino', local: 'Assessment em menos de 1 dia', imagem: 'assets/tela-resultados.webp' },
+        destino: { rotulo: 'Destino', chamada: '*Aonde queremos chegar.*', local: 'Assessment em menos de 1 dia', imagem: 'assets/tela-resultados.webp' },
         dados: [
           { rotulo: 'Resultados térmicos definitivos', valor: 'Semanas a meses' },
           { rotulo: 'Assessment térmico hoje', valor: '3 semanas' },
