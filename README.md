@@ -73,6 +73,19 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
   - <b>src/contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
   - <b>src/scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
 
+## 🔒 Dados e confidencialidade
+
+O projeto usa uma base confidencial da Whirlpool. Para cumprir o compromisso de proteção de dados entre o Inteli e o parceiro, o repositório **não publica**:
+
+- a base do parceiro (`data/dataset_bruto.csv`) nem as planilhas derivadas dela, em `data/`. O `.gitignore` bloqueia arquivos `.csv`, `.xls`, `.xlsx`, `.tsv`, `.db` e `.sql`;
+- os modelos treinados (`src/backend/models/`), que carregam informação do treino;
+- os pares de temperatura real × prevista da validação, que ficam só no manifesto local gerado junto com os modelos;
+- os outputs dos notebooks, publicados com as células de código vazias.
+
+Na [documentação](documents/documentacao.md), as tabelas que exibiam registros da base foram retiradas, e a tabela de exemplo do escalonamento não identifica run nem sensor. Permanecem as estatísticas agregadas, os gráficos exploratórios e o catálogo de sensores, necessários para a análise e para a aplicação.
+
+Quem tem acesso à base reproduz tudo: os notebooks seguem a ordem de [Os notebooks](#os-notebooks-pesquisa-e-treino), e os modelos são gerados com `npm run modelos:gerar` (ver [Execução dos projetos](#-execução-dos-projetos)). Sem a base, a aplicação roda com dados mockados.
+
 ## 💻 Execução dos projetos
 
 O projeto roda **inteiramente na máquina local** — não há deploy, containers
