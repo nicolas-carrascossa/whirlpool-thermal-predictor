@@ -45,8 +45,9 @@ A documentação completa do projeto está em [`documents/documentacao.md`](docu
 Vídeo de demonstração do Thermal Predictor funcionando, narrado e legendado: [FOG - Thermal Predictor do G03/Módulo 3 Inteli 2026](https://youtu.be/KYrNsAxtvYk) (YouTube).
 
 <p align="center">
-<a href="https://youtu.be/KYrNsAxtvYk"><img src="https://i.ytimg.com/vi/KYrNsAxtvYk/hqdefault.jpg" alt="Vídeo de demonstração do Thermal Predictor" width="480"></a>
+<a href="https://youtu.be/CuiItpEp7pY"><img src="https://youtu.be/CuiItpEp7pY" alt="Vídeo de demonstração do Thermal Predictor" width="480"></a>
 </p>
+
 
 ## 📁 Estrutura de pastas
 
