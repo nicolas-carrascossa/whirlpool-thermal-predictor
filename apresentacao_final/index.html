@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pitch Thermal Predictor</title>
+<meta name="description" content="Pitch final do Thermal Predictor, da equipe FOG, para a Divisão de Fogões da Whirlpool.">
+<style>
+/* Fontes locais: a apresentação funciona sem internet. */
+@font-face { font-family: 'Cormorant Garamond'; src: url('assets/fonts/cormorant-garamond-latin-normal.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Cormorant Garamond'; src: url('assets/fonts/cormorant-garamond-latin-italic.woff2') format('woff2'); font-weight: 300 700; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter Tight'; src: url('assets/fonts/inter-tight-latin-normal.woff2') format('woff2'); font-weight: 300 700; font-style: normal; font-display: swap; }
+
+/* Cor de acento da página, na escala do mapa de calor; registrada para transicionar. */
+@property --heat { syntax: '<color>'; inherits: true; initial-value: #00a0dd; }
+@property --heat-ink { syntax: '<color>'; inherits: true; initial-value: #0b6f97; }
+
+/* Layout: um deck de páginas em tela cheia. Neve (branco), noite (tinta) e gelo
+   se alternam; trocar de seção abre uma cortina de calor com o capítulo, como as
+   passagens do White Desert. Visual único e deliberado: não segue o tema do sistema. */
+:root {
+  --paper: #ffffff;
+  --sky: #e6ebf1;
+  --frost: #eef1f5;
+  --mist: #f4f5f6;
+  --line: #e2e5e9;
+  --line-strong: #c9ced5;
+  --slate: #94a3b8;
+  --faint: #66717f;
+  --mute: #4c5158;
+  --ink: #111214;
+  --night: #0b0b0c;
+  --night-2: #17181b;
+  --on-night: #f4f5f6;
+  --on-night-mute: #b4bcc7;
+  --heat-0: #00a0dd;
+  --heat-1: #eeb111;
+  --heat-2: #e08650;
+  --heat-3: #b3261e;
+  --ok: #5aa469;
+  --warn: #f4a63c;
+  --danger: #cf5f57;
+  --danger-ink: #b8453e;
+  --heat: #00a0dd;
+  --heat-ink: #0b6f97;
+
+  --font-display: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Inter Tight', 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  --t-brand: clamp(3.2rem, min(11.5vw, 19vh), 14rem);
+  --t-xl: clamp(2.5rem, min(5.3vw, 10vh), 6.8rem);
+  --t-h1: clamp(2.3rem, min(4.9vw, 9vh), 6rem);
+  --t-h3: clamp(1.35rem, min(2.2vw, 4vh), 2.5rem);
+  /* projeção: nenhum texto menor que ~2% da altura da tela (23 px em 1080p) */
+  --t-sub: clamp(1.4rem, min(2vw, 3.6vh), 2.4rem);
+  --t-lead: clamp(1.2rem, min(1.7vw, 3vh), 2.1rem);
+  --t-body: clamp(1.1rem, min(1.45vw, 2.6vh), 1.8rem);
+  --t-label: clamp(0.95rem, min(1.28vw, 2.25vh), 1.5rem);
+
+  --expo: cubic-bezier(.16, 1, .3, 1);
+  --wd: cubic-bezier(.76, 0, .24, 1);
+  --gutter: clamp(16px, 5vw, 104px);
+  --pad-top: clamp(2.4rem, 7vh, 5rem);
+  --pad-bottom: clamp(4.4rem, 11vh, 7rem);
+  color-scheme: light;
+  transition: --heat 1.3s var(--wd), --heat-ink 1.3s var(--wd);
+}
+.titles-inter { --font-display: var(--font-sans); }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+html { font-size: clamp(14px, 0.42vw + 9px, 20px); }
+body {
+  margin: 0; overflow: hidden;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-sans); font-size: var(--t-body); line-height: 1.5;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+img { max-width: 100%; display: block; }
+h1, h2, h3, p, figure, ol, ul, dl, dd { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--heat-0); outline-offset: 3px; border-radius: 3px; }
+
+/* ---------------------------------------------------------------- deck */
+.deck { position: fixed; inset: 0; overflow: hidden; background: var(--paper); }
+.slide {
+  position: absolute; inset: 0; visibility: hidden; overflow: hidden; isolation: isolate;
+  background: var(--paper); color: var(--ink);
+  padding: var(--pad-top) var(--gutter) var(--pad-bottom);
+}
+.slide.is-dark { background: var(--night); color: var(--on-night); }
+.slide.is-current, .slide.is-entering, .slide.is-leaving { visibility: visible; }
+.slide.is-current, .slide.is-leaving { z-index: 2; }
+.slide.is-entering { z-index: 3; }
+.slide.is-on-top { z-index: 4; }
+/* bruma de calor no canto: muda de cor com a página */
+.slide::before {
+  content: ''; position: absolute; top: -25vh; right: -15vw; width: 75vw; height: 85vh; z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--heat) 15%, transparent), transparent);
+}
+.slide.is-dark::before { background: radial-gradient(closest-side, color-mix(in srgb, var(--heat) 26%, transparent), transparent); }
+.slide__inner { position: relative; z-index: 3; width: 100%; height: 100%; max-width: 100rem; margin-inline: auto; display: grid; min-height: 0; }
+.slide--bleed { padding: 0; }
+.slide--bleed .slide__inner { max-width: none; }
+
+.layout-stack { align-content: center; gap: clamp(2rem, 6.5vh, 5rem); }
+.layout-split { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: center; gap: clamp(2rem, 5vw, 6rem); }
+.layout-center { place-items: center; text-align: center; }
+.head { display: grid; gap: clamp(1rem, 2.8vh, 1.9rem); justify-items: start; align-content: start; }
+
+/* ---------------------------------------------------------------- hierarquia: título → visual → rótulos legíveis */
+.label { font-family: var(--font-sans); font-weight: 700; font-size: var(--t-label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+.is-dark .label { color: var(--on-night-mute); }
+.h1 { font-family: var(--font-display); font-weight: 500; font-size: var(--t-h1); line-height: 1.02; letter-spacing: -0.012em; text-wrap: balance; max-width: 17ch; }
+.h1--xl { font-size: var(--t-xl); max-width: 19ch; }
+.h1 em, .brand-title em { font-style: italic; color: var(--heat-ink); }
+.is-dark .h1 em { color: var(--heat); }
+.titles-inter .h1, .titles-inter .brand-title, .titles-inter .flip, .titles-inter .chapter__name { font-weight: 600; letter-spacing: -0.035em; }
+.titles-inter .h1 em, .titles-inter .flip__new { font-style: normal; }
+
+/* entradas: palavras sobem de dentro de uma máscara; blocos sobem e aparecem (expo, como no White Desert) */
+.w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.w > span { display: inline-block; transform: translateY(112%); }
+.is-in .w > span { animation: wordUp 1.15s var(--expo) both; animation-delay: calc(var(--base, 0.2s) + var(--wi) * 42ms); }
+@keyframes wordUp { from { transform: translateY(112%); } to { transform: none; } }
+.r { opacity: 0; transform: translateY(2.6rem); }
+.is-in .r { animation: rIn 1.25s var(--expo) both; animation-delay: calc(var(--d, 0) * 1s + 0.12s); }
+@keyframes rIn { from { opacity: 0; transform: translateY(2.6rem); } to { opacity: 1; transform: none; } }
+.no-motion .w > span, .no-motion .r { transform: none !important; opacity: 1 !important; animation: none !important; }
+
+/* ---------------------------------------------------------------- névoa */
+.fog { position: absolute; left: 0; right: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.fog__layer {
+  position: absolute; top: -3px; bottom: 0; left: 0; width: calc(100% + var(--tile, 1800px));
+  background-repeat: repeat-x; background-size: var(--tile, 1800px) 100%;
+  animation: drift var(--dur, 140s) linear infinite; will-change: transform;
+}
+.fog__layer--b { --tile: 1300px; --dur: 95s; animation-direction: reverse; opacity: 0.85; }
+@keyframes drift { from { transform: translateX(calc(-1 * var(--tile, 1800px))); } to { transform: translateX(0); } }
+.no-motion .fog__layer { animation: none; }
+.fog--floor { bottom: 0; height: 42%; }
+.fog--floor::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 35%, var(--paper) 96%); }
+
+/* ---------------------------------------------------------------- transições */
+/* névoa: cobre a tela e se desfaz sobre a página nova */
+.mist { position: fixed; left: 0; right: 0; top: 0; height: 260vh; z-index: 40; pointer-events: none; visibility: hidden; display: grid; grid-template-rows: 50vh 1fr 50vh; }
+.mist__edge { position: relative; overflow: hidden; }
+.mist__edge .fog__layer { animation: none; }
+.mist__edge--bottom { transform: scaleY(-1); }
+.mist__core { background: var(--paper); }
+/* capítulo: cortina de calor com borda de chama, na cor da seção */
+.chapter { position: fixed; inset: 0; z-index: 45; pointer-events: none; visibility: hidden; }
+.chapter canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.chapter__title { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 1.6vh; color: #fff; text-align: center; opacity: 0; }
+.chapter__n { font-family: var(--font-display); font-weight: 500; font-size: clamp(6rem, 26vh, 19rem); line-height: 0.78; letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
+.chapter__name { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(2rem, 7vh, 5rem); line-height: 1; }
+.chapter__rule { width: 4.5rem; height: 2px; background: rgba(255,255,255,.7); }
+/* varredura: feixe na cor da página que acompanha a cortina lateral */
+.scan { position: fixed; top: 0; bottom: 0; left: 0; width: 3px; z-index: 41; pointer-events: none; visibility: hidden;
+  background: var(--heat); box-shadow: 0 0 16px 3px color-mix(in srgb, var(--heat) 65%, transparent), 0 0 60px 10px color-mix(in srgb, var(--heat) 30%, transparent); }
+
+/* ---------------------------------------------------------------- moldura do deck */
+.chrome { position: fixed; left: 0; right: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 var(--gutter); pointer-events: none; color: var(--ink); transition: color .6s var(--wd); }
+.chrome > * { pointer-events: auto; }
+.chrome--bottom { bottom: 0; height: clamp(3.4rem, 8.5vh, 5rem); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.on-dark .chrome { color: var(--on-night); }
+.sections { display: flex; gap: 4px; width: min(22rem, 34vw); align-items: center; }
+.sections li { height: 3px; border-radius: 3px; background: currentColor; opacity: 0.16; flex: var(--w, 1) 1 0; transition: opacity .4s, background-color .4s; }
+.sections li.is-past { opacity: 0.55; }
+.sections li.is-now { opacity: 1; background: var(--heat); }
+.pager { display: flex; align-items: center; gap: 0.9rem; font-size: 1.05rem; font-weight: 600; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+.chrome--bottom { transition: opacity .6s ease; }
+body.is-idle .chrome--bottom { opacity: 0; }
+body.is-idle .chrome--bottom > * { pointer-events: none; }
+body.is-idle, body.is-idle * { cursor: none !important; }
+.pager button { width: 2.3rem; height: 2.3rem; border-radius: 50%; border: 1px solid currentColor; background: transparent; cursor: pointer; opacity: 0.4; transition: opacity .2s; display: grid; place-items: center; padding: 0; }
+.pager button:hover { opacity: 1; }
+.pager button svg { width: 0.9rem; height: 0.9rem; }
+.timebar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 35; pointer-events: none; }
+.timebar__fill { height: 100%; width: 0; background: var(--heat); transition: background-color .3s; }
+.timebar__fill[data-pace="atrasado"] { background: var(--warn); }
+.timebar__fill[data-pace="estourou"] { background: var(--danger); }
+
+/* ---------------------------------------------------------------- fogão em quadros */
+.stove { position: relative; min-height: 0; }
+.stove__bob { position: absolute; inset: 0; animation: bob 7s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.4%); } }
+.no-motion .stove__bob { animation: none; }
+.stove canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.stove canvas[data-turntable] { cursor: grab; }
+.stove canvas[data-turntable]:active { cursor: grabbing; }
+
+/* ---------------------------------------------------------------- 1 · abertura: o cooktop visto por câmera térmica */
+.slide--calor, .slide--marca, .slide--final { background: linear-gradient(180deg, var(--sky) 0%, var(--frost) 40%, var(--paper) 80%); }
+.q { grid-template-columns: minmax(0, 6.2fr) minmax(0, 5.8fr); align-items: center; gap: clamp(1.5rem, 4vw, 5rem); }
+.q__copy { display: grid; gap: clamp(1.4rem, 4vh, 2.6rem); justify-items: start; position: relative; z-index: 4; }
+.slide--calor .h1 em { color: #0b6f97; }
+.slide--calor.is-in .h1 em { animation: warm 5.5s ease-in-out .9s forwards; }
+@keyframes warm { 0% { color: #0b6f97; } 40% { color: #9a7410; } 70% { color: #b0592f; } 100% { color: #9a2a22; } }
+.no-motion .slide--calor .h1 em { color: #9a2a22; animation: none; }
+.thermo { display: grid; align-content: center; justify-items: center; min-height: 0; }
+.thermo__view { position: relative; width: 100%; height: min(68vh, 50rem); }
+.thermo__view canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* ---------------------------------------------------------------- 1 · marca */
+.brand { justify-items: center; align-content: end; text-align: center; }
+.brand__stove { position: absolute; left: 50%; top: -6%; transform: translateX(-50%); height: 88%; aspect-ratio: 0.77; z-index: 1; }
+.brand .fog { z-index: 2; bottom: -8%; height: 64%; left: -50vw; right: -50vw; }
+.brand .fog::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.62) 42%, var(--paper) 80%); }
+.brand__copy { position: relative; z-index: 3; display: grid; justify-items: center; gap: clamp(0.8rem, 2vh, 1.4rem); }
+.brand-title { font-family: var(--font-display); font-weight: 500; font-size: var(--t-brand); line-height: 0.86; letter-spacing: -0.025em; white-space: nowrap; }
+.brand__line { font-size: var(--t-sub); font-weight: 500; letter-spacing: 0.01em; color: var(--mute); }
+
+/* ---------------------------------------------------------------- 2 · tensão: custo de mudança × tempo */
+.tension { grid-template-rows: auto minmax(0, 1fr) auto; gap: clamp(1rem, 3vh, 2rem); }
+.tension .h1 { max-width: 26ch; }
+.curve { min-height: 0; display: grid; }
+.curve svg { width: 100%; height: 100%; overflow: visible; }
+.curve text { font-family: var(--font-sans); fill: var(--mute); font-size: 24px; }
+.curve .c-phase { font-size: 26px; font-weight: 650; fill: var(--ink); }
+.curve .c-axis { stroke: var(--line-strong); stroke-width: 1.5; fill: none; }
+.curve .c-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 6; fill: none; }
+.curve .c-cost, .curve .c-free { fill: none; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.curve .c-cost { stroke: var(--heat-3); }
+.curve .c-free { stroke: var(--ink); }
+.curve .c-area { fill: url(#costFill); opacity: 0; }
+.is-in .curve .c-free { animation: draw 1.6s var(--wd) forwards .5s; }
+.is-in .curve .c-cost { animation: draw 1.6s var(--wd) forwards .8s; }
+.is-in .curve .c-area { animation: fadeIn 1s ease forwards 1.8s; }
+.curve .c-now, .curve .c-tp, .curve .c-shift { opacity: 0; transition: opacity .6s ease; }
+.is-in .curve .c-now { animation: fadeIn .7s ease forwards 2.2s; }
+.curve .c-now line, .curve .c-tp line { stroke-width: 2; stroke-dasharray: 6 7; }
+.curve .c-now line { stroke: var(--heat-3); }
+.curve .c-tp line { stroke: var(--heat-0); }
+.curve .c-now circle { fill: var(--heat-3); }
+.curve .c-tp circle { fill: var(--heat-0); }
+.curve .c-now text { fill: #9a2a22; font-weight: 650; font-size: 26px; }
+.curve .c-tp text { fill: #0b6f97; font-weight: 650; font-size: 26px; }
+.curve .c-shift path { fill: none; stroke: var(--heat-0); stroke-width: 4; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.1s var(--wd); }
+.curve .c-shift text { fill: #0b6f97; font-weight: 700; font-size: 26px; letter-spacing: .18em; text-transform: uppercase; }
+.slide[data-step="1"] .curve .c-shift, .slide[data-step="1"] .curve .c-tp { opacity: 1; }
+.slide[data-step="1"] .curve .c-shift path { stroke-dashoffset: 0; }
+.slide[data-step="1"] .curve .c-tp { transition-delay: .7s; }
+.slide[data-step="1"] .curve .c-now { opacity: .35 !important; animation: none; }
+.no-motion .curve .c-free, .no-motion .curve .c-cost { stroke-dashoffset: 0; animation: none; }
+.no-motion .curve .c-area, .no-motion .curve .c-now { opacity: 1; animation: none; }
+.curve__foot { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: .8rem 2rem; align-items: center; }
+.legend { display: flex; flex-wrap: wrap; gap: .6rem 2rem; font-size: var(--t-body); font-weight: 500; }
+.legend span { display: inline-flex; align-items: center; gap: .6rem; }
+.legend i { width: 1.6rem; height: 4px; border-radius: 4px; background: var(--c); }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* ---------------------------------------------------------------- 2 · fluxo */
+.pipeline { position: relative; display: grid; gap: clamp(1.4rem, 3.5vh, 2.4rem); }
+.pipeline__steps { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+.pipeline__steps::before { content: ''; position: absolute; top: 0.7rem; left: calc(50% / var(--n)); right: calc(50% / var(--n)); height: 2px; margin-top: -1px; background: var(--line-strong); }
+.pipeline__steps > li:not(.pipeline__pulse) { position: relative; display: grid; justify-items: center; align-content: start; gap: 1rem; text-align: center; }
+.pipeline__dot { position: relative; z-index: 1; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); }
+.is-in .pipeline__dot { animation: dotHeat 3.2s ease-in-out infinite; animation-delay: calc(1.4s + var(--i) * 0.64s); }
+@keyframes dotHeat { 0%, 30%, 100% { background: var(--paper); border-color: var(--ink); transform: scale(1); } 6% { background: var(--heat); border-color: var(--heat); transform: scale(1.35); } }
+.pipeline__label { font-family: var(--font-display); font-weight: 500; font-size: var(--t-h3); line-height: 1.05; max-width: 9ch; text-wrap: balance; }
+.pipeline__pulse { position: absolute; top: 0.2rem; left: calc(50% / var(--n)); width: 1rem; height: 1rem; margin-left: -0.5rem; border-radius: 50%; background: var(--heat); box-shadow: 0 0 0 6px color-mix(in srgb, var(--heat) 25%, transparent), 0 0 24px var(--heat); opacity: 0; z-index: 2; }
+.is-in .pipeline__pulse { animation: pulseRun 3.2s ease-in-out infinite 1.4s; }
+@keyframes pulseRun { 0% { left: calc(50% / var(--n)); opacity: 0; } 6% { opacity: 1; } 80% { left: calc(100% - 50% / var(--n)); opacity: 1; } 90%, 100% { left: calc(100% - 50% / var(--n)); opacity: 0; } }
+.pipeline__loop { position: relative; height: clamp(2.2rem, 6vh, 3.6rem); margin-inline: calc(50% / var(--n)); border: 2px dashed color-mix(in srgb, var(--heat-ink) 70%, transparent); border-top: 0; border-radius: 0 0 14px 14px; }
+.pipeline__loop::before { content: ''; position: absolute; left: -0.62rem; top: -0.55rem; border: 0.5rem solid transparent; border-bottom: 0.75rem solid var(--heat-ink); border-top: 0; }
+.pipeline__return { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 55%); background: var(--paper); padding: 0 1rem; white-space: nowrap; font-size: var(--t-lead); color: var(--heat-ink); font-weight: 500; }
+
+/* ---------------------------------------------------------------- 2 · custo da simulação */
+.prices { display: grid; gap: clamp(1.4rem, 4.4vh, 2.8rem); }
+.price { display: grid; grid-template-columns: minmax(12rem, 26rem) minmax(0, 1fr); align-items: center; gap: .5rem clamp(1.2rem, 3vw, 3rem); }
+.price__num { font-family: var(--font-display); font-weight: 500; font-size: calc(clamp(2rem, min(3.4vw, 6vh), 4.2rem) * (0.72 + 0.42 * var(--w))); line-height: 1; white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; color: var(--ink); }
+.price__num small { font-size: max(.45em, var(--t-label)); font-family: var(--font-sans); font-weight: 600; letter-spacing: .08em; color: var(--mute); margin-right: .35em; }
+.price__track { display: grid; gap: .55rem; min-width: 0; }
+.price__bar { height: clamp(12px, 1.9vh, 20px); border-radius: 0 10px 10px 0; background: var(--c); width: calc(var(--w) * 100%); transform-origin: left; transform: scaleX(0); }
+.is-in .price__bar { animation: growX 1.4s var(--expo) forwards; animation-delay: calc(var(--d) * 1s + .2s); }
+@keyframes growX { to { transform: scaleX(1); } }
+.no-motion .price__bar { transform: none; animation: none; }
+.price__label { font-size: var(--t-body); color: var(--mute); }
+.price__label b { color: var(--ink); font-weight: 600; }
+.price__note { font-size: var(--t-body); color: var(--mute); max-width: none; }
+
+/* ---------------------------------------------------------------- 2 · lead time: o mapa da rota */
+.slide--mapa { background: radial-gradient(120% 90% at 50% 45%, #15171a 0%, var(--night) 60%); }
+.map { position: absolute; inset: 0; }
+.map::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 12vh; z-index: 3; pointer-events: none; background: linear-gradient(180deg, rgba(11,11,12,0), rgba(11,11,12,.82)); }
+.map__world { position: absolute; inset: 0; transition: transform 2.6s var(--wd); }
+.slide--mapa[data-step="1"] .map__world { transform: translateY(-3.5vh); }
+.map__land { position: absolute; pointer-events: none; user-select: none; }
+.map__land--start { top: 0; left: 56%; width: min(40vw, 74vh); transform: translateX(-50%); }
+.map__land--end { bottom: 0; left: 58%; width: min(78vw, 150vh); transform: translateX(-50%); }
+.map__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.map__route-base { fill: none; stroke: rgba(255,255,255,.32); stroke-width: 1.5; stroke-dasharray: 2 7; }
+.map__route-flown { fill: none; stroke: url(#routeGrad); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(0,160,221,.55)); }
+.map__end-ring { fill: none; stroke: var(--heat-0); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.slide--mapa[data-arrived="1"] .map__end-ring { animation: ring 2.2s ease-out infinite; }
+.slide--mapa[data-arrived="1"] .map__end-ring:nth-of-type(2) { animation-delay: .7s; }
+@keyframes ring { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(2.6); } }
+.map__dot { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 3; }
+.map__dot b { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--dot, var(--heat-3)); box-shadow: 0 0 0 4px rgba(255,255,255,.12), 0 0 24px var(--dot, var(--heat-3)); }
+.map__dot i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--dot, var(--heat-3)); animation: pulse 2.4s ease-out infinite; animation-delay: calc(var(--k) * .8s); }
+@keyframes pulse { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(3.6); } }
+.no-motion .map__dot i { animation: none; opacity: .4; }
+.map__place { position: absolute; z-index: 2; display: grid; gap: .3rem; color: var(--on-night); white-space: nowrap; }
+.map__place i { font-family: var(--font-display); font-style: italic; font-size: var(--t-lead); color: var(--on-night-mute); }
+.map__place b { font-weight: 700; font-size: var(--t-body); letter-spacing: .04em; text-transform: uppercase; }
+.map__place--end { opacity: .35; transition: opacity .8s ease; color: var(--ink); text-align: center; transform: translateX(-50%); }
+.map__place--end i { color: #4a5059; }
+.slide--mapa[data-arrived="1"] .map__place--end { opacity: 1; }
+.map__panel { position: absolute; z-index: 4; left: var(--gutter); top: calc(var(--pad-top) - 1rem); width: min(31vw, 34rem); display: grid; gap: clamp(1rem, 3vh, 1.8rem); }
+.map__panel .h1 { font-size: clamp(2rem, min(3.6vw, 7vh), 4.2rem); max-width: 14ch; }
+.map__stats { display: grid; padding: clamp(1rem, 2.6vh, 1.8rem) clamp(1.1rem, 1.8vw, 1.9rem); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(23,24,27,.72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.map__stats > div { display: grid; gap: .25rem; padding-block: clamp(.6rem, 1.8vh, 1.1rem); border-top: 1px dashed rgba(255,255,255,.22); transition: opacity .8s ease, filter .8s ease; }
+.map__stats > div:first-child { border-top: 0; padding-top: 0; }
+.map__stats > div:last-child { padding-bottom: 0; }
+.map__stats dt { font-family: var(--font-display); font-style: italic; font-size: var(--t-body); color: var(--on-night-mute); }
+.map__stats dd { font-weight: 600; font-size: clamp(1.7rem, min(3.4vw, 6.4vh), 3.6rem); line-height: 1.02; letter-spacing: -0.01em; text-transform: uppercase; }
+.map__stats .is-dest { opacity: .28; filter: blur(2px); }
+.slide--mapa[data-arrived="1"] .map__stats .is-dest { opacity: 1; filter: none; }
+.slide--mapa[data-arrived="1"] .map__stats .is-dest dd { color: var(--heat-0); text-shadow: 0 0 24px rgba(0,160,221,.45); }
+
+/* ---------------------------------------------------------------- 3 · decisões */
+.branches { display: grid; }
+.branches__tree { width: 100%; height: clamp(3rem, 9vh, 6rem); display: block; overflow: visible; }
+.branches__tree path { fill: none; stroke: var(--heat); stroke-width: 2px; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.is-in .branches__tree path { animation: draw 1.4s var(--wd) forwards .55s; }
+.no-motion .branches__tree path { stroke-dashoffset: 0; animation: none; }
+.branches__cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.2rem, 3vw, 3rem); text-align: center; padding-top: 1.2rem; }
+.branches__cols li { display: grid; gap: 0.8rem; justify-items: center; align-content: start; }
+.branches__cols .label { font-size: var(--t-lead); color: var(--heat-ink); }
+.branches__q { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: var(--t-h3); line-height: 1.12; max-width: 16ch; text-wrap: balance; }
+
+/* ---------------------------------------------------------------- 4 · solução */
+.sol__copy { display: grid; gap: clamp(1.6rem, 5vh, 3rem); align-content: center; justify-items: start; }
+.steps-v { display: grid; width: 100%; }
+.steps-v li { display: grid; grid-template-columns: 3.6rem minmax(0, 1fr); align-items: center; gap: 1.1rem; padding-block: clamp(0.6rem, 1.8vh, 1.1rem); border-top: 1px solid var(--line); color: var(--faint); font-size: var(--t-lead); font-weight: 500; transition: color .5s var(--wd); }
+.steps-v li:last-child { border-bottom: 1px solid var(--line); }
+.steps-v__n { width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.4rem; font-weight: 700; border: 1.5px solid currentColor; transition: background-color .5s var(--wd), color .5s, border-color .5s, box-shadow .5s; }
+.steps-v li.is-done, .steps-v li.is-active { color: var(--ink); }
+.steps-v li.is-active .steps-v__n { background: var(--heat); border-color: var(--heat); color: var(--paper); box-shadow: 0 0 0 6px color-mix(in srgb, var(--heat) 22%, transparent); }
+.no-motion .steps-v li { color: var(--ink); }
+.sol__stove { height: min(76vh, 58rem); }
+
+/* ---------------------------------------------------------------- 4 · dashboard */
+.slide--dashboard { background: var(--mist); }
+.dash .h1 { max-width: none; }
+.dash { grid-template-rows: auto minmax(0, 1fr) auto; gap: clamp(1rem, 3vh, 2rem); }
+.frame { position: relative; justify-self: center; height: 100%; max-height: 70vh; aspect-ratio: 16 / 10; max-width: 100%; border-radius: 12px; overflow: hidden; background: var(--paper); box-shadow: 0 2px 4px rgba(17,18,20,.06), 0 30px 70px rgba(17,18,20,.16); display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.is-in .frame { animation: frameOpen 1.5s var(--expo) both 0.25s; }
+@keyframes frameOpen { from { clip-path: inset(8% 16% 0 16% round 28px); transform: translateY(5vh); } to { clip-path: inset(0 0 0 0 round 12px); transform: none; } }
+.no-motion .frame { animation: none; }
+.frame__bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.9rem; background: var(--frost); border-bottom: 1px solid var(--line); font-size: 0.72rem; font-weight: 600; color: var(--mute); }
+.frame__bar i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--line-strong); }
+.frame__screens { position: relative; overflow: hidden; }
+.frame__screens img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left top; visibility: hidden; }
+.frame__screens img.is-on { visibility: visible; }
+.tabs { display: flex; justify-content: center; gap: clamp(1rem, 4vw, 4rem); }
+.tabs li { display: grid; gap: 0.5rem; justify-items: center; font-weight: 600; font-size: var(--t-lead); color: var(--faint); transition: color .4s; }
+.tabs li i { width: 100%; min-width: 6rem; height: 2px; background: var(--line-strong); position: relative; overflow: hidden; }
+.tabs li i::after { content: ''; position: absolute; inset: 0; background: var(--heat); transform: scaleX(0); transform-origin: left; }
+.tabs li.is-on { color: var(--ink); }
+.tabs li.is-on i::after { animation: tabFill var(--cycle, 3.4s) linear forwards; }
+@keyframes tabFill { to { transform: scaleX(1); } }
+
+/* ---------------------------------------------------------------- 4 · domínio */
+.scale { display: grid; gap: clamp(1.4rem, 3.5vh, 2.4rem); }
+.scale__track { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.scale__track span { height: 10px; border-radius: 10px; }
+.scale__track span:nth-child(1) { background: var(--ok); }
+.scale__track span:nth-child(2) { background: var(--warn); }
+.scale__track span:nth-child(3) { background: var(--danger); }
+.scale__marker { position: absolute; top: 50%; left: 16.6%; width: 1.7rem; height: 1.7rem; margin: -0.85rem 0 0 -0.85rem; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 6px 16px rgba(17,18,20,.2); }
+.is-in .scale__marker { animation: markerRun 2.6s var(--wd) both 1s; }
+@keyframes markerRun { 0% { left: 16.6%; } 35%, 55% { left: 50%; } 100% { left: 83.3%; border-color: var(--danger-ink); } }
+.no-motion .scale__marker { left: 83.3%; border-color: var(--danger-ink); }
+.scale__cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 3vw, 3rem); }
+.scale__cols li { display: grid; gap: 0.6rem; align-content: start; }
+.scale__cols .label { font-size: var(--t-lead); }
+.scale__dest { font-family: var(--font-display); font-weight: 500; font-size: var(--t-h3); line-height: 1.08; max-width: 14ch; text-wrap: balance; }
+.scale__cols .lvl-critico .scale__dest, .scale__cols .lvl-critico .label { color: var(--danger-ink); }
+
+/* ---------------------------------------------------------------- 5 · confiabilidade: cartões sobre o gelo */
+.ice { position: absolute; inset: 0; overflow: hidden; --i: 0; --cw: min(60vw, 84vh * 1.36, 1250px); --gap: 6vw; }
+.ice__bg { position: absolute; inset: -6%; background: url('assets/gelo.webp') center / cover no-repeat; transform: translateX(calc(var(--i) * 2.6vw)) scale(1.06); transition: transform 1.5s var(--expo); }
+.ice__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,40,58,.45) 0%, rgba(5,40,58,0) 30%, rgba(5,40,58,0) 75%, rgba(5,40,58,.35) 100%); }
+.ice__head { position: absolute; z-index: 6; left: var(--gutter); top: calc(var(--pad-top) - 1.2rem); display: grid; gap: .9rem; color: #fff; transform-origin: left top; }
+.ice__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(2.2rem, min(4vw, 7.4vh), 4.6rem); line-height: 1; letter-spacing: -0.01em; text-shadow: 0 2px 24px rgba(0,40,60,.35); }
+.ice__title em { font-style: italic; }
+.ice__viewport { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--pad-top) + clamp(3.4rem, 9vh, 6.4rem)); bottom: calc(var(--pad-bottom) - 1.4rem); }
+.ice__track { position: absolute; top: 0; bottom: 0; left: var(--gutter); display: flex; gap: var(--gap); transform: translateX(calc(var(--i) * -1 * (var(--cw) + var(--gap)))); transition: transform 1.3s var(--expo); }
+.ice:not(.is-dealt) .ice__track { transform: translateX(105vw); transition: none; }
+.ice.is-dealt.is-dealing .ice__track { transition: transform 1.5s var(--expo); }
+.camp { flex: 0 0 var(--cw); height: 100%; transition: transform 1.2s var(--expo), opacity 1.2s ease; transform: scale(.93); opacity: .72; }
+.camp.is-active { transform: none; opacity: 1; }
+.camp__frame { height: 100%; padding: clamp(.9rem, 2.2vh, 1.6rem); background: rgba(235,248,252,.22); -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), 0 30px 60px rgba(0,30,45,.25); }
+.camp__paper { height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; justify-items: center; gap: clamp(.4rem, 1.2vh, .8rem); padding: clamp(.8rem, 2.4vh, 1.6rem) clamp(1rem, 2vw, 2rem) clamp(.7rem, 1.6vh, 1.2rem); background: #fbfcfd; text-align: center; }
+.camp__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.7rem, min(2.7vw, 5vh), 3.1rem); line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.camp__text { font-size: var(--t-body); color: var(--mute); max-width: 52ch; text-wrap: balance; }
+.camp__shot { position: relative; min-height: 0; width: 100%; }
+.camp__shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.camp__data { font-weight: 700; font-size: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.camp__data::before { content: '[ '; color: var(--mute); }
+.camp__data::after { content: ' ]'; color: var(--mute); }
+.ice__veil { position: absolute; inset: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); pointer-events: none; }
+.ice__veil i { background: var(--night); transform-origin: var(--o, left); }
+.ice.is-opened .ice__veil i { transform: scaleX(0); transition: transform 1s var(--wd); transition-delay: calc(var(--k) * .12s); }
+.ice.is-opened .ice__veil { visibility: visible; }
+.ice.is-done .ice__veil { visibility: hidden; }
+
+/* ---------------------------------------------------------------- 5 · kpis */
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.6rem, 4vw, 5rem); align-items: start; }
+.kpi { display: grid; gap: .6rem; align-content: start; border-top: 1px solid rgba(255,255,255,.2); padding-top: clamp(1.2rem, 3.5vh, 2.4rem); }
+.kpi__row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(1rem, 1.6vw, 1.8rem); align-items: center; }
+.ring { width: clamp(5.5rem, min(9vw, 16vh), 9.5rem); height: auto; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-linecap: round; }
+.ring__bg { stroke: rgba(255,255,255,.1); stroke-width: 9; }
+.ring__base { stroke: rgba(255,255,255,.38); stroke-width: 3; stroke-dasharray: 0 100; }
+.ring__val { stroke: var(--heat); stroke-width: 9; stroke-dasharray: 0 100; }
+.is-in .ring__base { animation: ringTo 1.6s var(--expo) both 0.6s; }
+.is-in .ring__val { animation: ringTo 1.8s var(--expo) both 0.8s; }
+@keyframes ringTo { to { stroke-dasharray: var(--dash); } }
+.no-motion .ring__base, .no-motion .ring__val { stroke-dasharray: var(--dash); }
+.kpi__num { font-family: var(--font-display); font-weight: 500; font-size: clamp(3rem, min(5.6vw, 11vh), 7rem); line-height: 0.9; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.kpi__num small { font-size: 0.42em; color: var(--on-night-mute); }
+.kpi__label { font-size: var(--t-lead); max-width: 24ch; }
+.kpi__cmp { font-size: var(--t-body); color: var(--on-night-mute); }
+.mini { display: grid; gap: 1.1rem; margin-top: .8rem; max-width: 32rem; }
+.mini__row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'n v' 'b b'; align-items: baseline; gap: .4rem 1rem; font-size: var(--t-body); color: var(--on-night-mute); }
+.mini__row span { grid-area: n; }
+.mini__row i { grid-area: b; display: block; height: 10px; border-radius: 0 6px 6px 0; background: rgba(255,255,255,.28); width: calc(var(--w) * 100%); transform-origin: left; transform: scaleX(0); }
+.mini__row.is-tp { color: var(--on-night); }
+.mini__row.is-tp i { background: var(--heat); }
+.is-in .mini__row i { animation: growX 1.4s var(--expo) forwards; animation-delay: calc(.7s + var(--k) * .5s); }
+.no-motion .mini__row i { transform: none; animation: none; }
+.mini__row b { grid-area: v; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--on-night); }
+.speed { display: grid; gap: 0.5rem; margin-top: .6rem; max-width: 24rem; }
+.speed__bar { position: relative; height: 10px; border-radius: 10px; background: rgba(255,255,255,.1); overflow: hidden; }
+.speed__bar span { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--heat); border-radius: 10px; }
+.is-in .speed__bar span { animation: speedFill var(--ms, 479ms) linear forwards 1.4s; }
+@keyframes speedFill { to { width: var(--pct, 47.9%); } }
+.no-motion .speed__bar span { width: var(--pct, 47.9%); }
+.speed__scale { display: flex; justify-content: space-between; font-size: var(--t-label); color: var(--on-night-mute); }
+
+/* ---------------------------------------------------------------- 6 · diferencial */
+.lanes { display: grid; gap: clamp(1.6rem, 5vh, 3.2rem); }
+.lane { display: grid; grid-template-columns: clamp(12rem, 20vw, 24rem) minmax(0, 1fr); grid-template-areas: 'name dots' '. flow'; gap: 0.9rem 2rem; align-items: center; }
+.lane__name { grid-area: name; font-size: var(--t-body); letter-spacing: .06em; }
+.lane__dots { grid-area: dots; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: clamp(0.3rem, 0.8vw, 0.8rem); align-items: center; }
+.lane__dots li { aspect-ratio: 1; width: 100%; max-width: 3.2rem; border-radius: 50%; border: 2px solid var(--line-strong); }
+.lane__flow { grid-area: flow; font-family: var(--font-display); font-size: var(--t-h3); font-weight: 500; line-height: 1.1; }
+.lane--tradicional .lane__flow { color: var(--mute); }
+.is-in .lane--tradicional li { animation: tested 0.5s ease both; animation-delay: calc(0.9s + var(--i) * 0.22s); }
+.is-in .lane--tradicional li.is-crit { animation: tested 0.5s ease both, critical 0.6s ease forwards; animation-delay: calc(0.9s + var(--i) * 0.22s), calc(0.9s + var(--n) * 0.22s + 0.3s); }
+@keyframes tested { to { background: var(--ink); border-color: var(--ink); } }
+@keyframes critical { to { background: var(--danger); border-color: var(--danger); } }
+.is-in .lane--predictor li { animation: predicted 0.4s ease both, settle 0.6s ease forwards; animation-delay: calc(1.8s + var(--i) * 0.03s), 2.7s; }
+.is-in .lane--predictor li.is-crit { animation: predicted 0.4s ease both, focus 0.7s var(--expo) forwards; animation-delay: calc(1.8s + var(--i) * 0.03s), 2.7s; }
+@keyframes predicted { to { background: var(--h); border-color: var(--h); } }
+@keyframes settle { to { background: var(--h); border-color: var(--h); opacity: 0.22; } }
+@keyframes focus { to { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 0 5px var(--paper), 0 0 0 7px var(--danger); transform: scale(1.12); } }
+.no-motion .lane--tradicional li { background: var(--ink); border-color: var(--ink); }
+.no-motion .lane--predictor li { background: var(--h); border-color: var(--h); opacity: 0.22; }
+.no-motion .lane li.is-crit { background: var(--danger); border-color: var(--danger); opacity: 1; }
+
+/* ---------------------------------------------------------------- 7 · virada */
+.flip { font-family: var(--font-display); font-weight: 500; font-size: clamp(2.6rem, min(6.2vw, 11.5vh), 7.4rem); line-height: 1.04; letter-spacing: -0.015em; max-width: 16ch; text-wrap: balance; }
+.flip__old, .flip__new { display: inline-block; white-space: nowrap; vertical-align: bottom; overflow: hidden; transition: max-width 1.1s var(--wd), opacity .7s var(--wd); }
+.flip__old { position: relative; max-width: 10ch; }
+.flip__old::after { content: ''; position: absolute; left: 0; top: 56%; height: 0.06em; width: 0; background: var(--heat); transition: width .5s var(--wd); }
+.flip__new { max-width: 0; opacity: 0; color: var(--heat); font-style: italic; }
+.slide[data-step="1"] .flip__old::after { width: 100%; }
+.slide[data-step="1"] .flip__old { max-width: 0; opacity: 0; transition-delay: .45s; }
+.slide[data-step="1"] .flip__new { max-width: 18ch; opacity: 1; transition-delay: .55s; }
+
+/* ---------------------------------------------------------------- 7 · final: equipe */
+.final { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); grid-template-rows: minmax(0, 1fr) auto; align-items: center; gap: .5rem clamp(1.5rem, 4vw, 5rem); }
+.final__copy { display: grid; gap: clamp(.8rem, 2.4vh, 1.6rem); position: relative; z-index: 4; justify-items: start; align-self: center; }
+.final .brand-title { font-size: clamp(2.8rem, min(7.2vw, 12.5vh), 9.5rem); white-space: normal; line-height: 0.88; }
+.final__frase { font-size: var(--t-lead); max-width: 34ch; text-wrap: balance; }
+.final__thanks { font-family: var(--font-display); font-size: var(--t-h3); color: var(--heat-ink); }
+.final__thanks em { font-style: italic; }
+.final__thanks b { font-weight: 600; color: var(--ink); letter-spacing: .06em; }
+.final__stove { height: min(44vh, 32rem); align-self: center; }
+.team { grid-column: 1 / -1; position: relative; display: flex; justify-content: center; align-items: flex-end; padding-top: .5rem; }
+.team__m { position: relative; display: grid; justify-items: center; margin-inline: -0.7vw; z-index: calc(10 - var(--z)); opacity: 0; transform: translateY(3rem); }
+.is-in .team__m { animation: rIn 1.2s var(--expo) forwards; animation-delay: calc(1.5s + var(--k) * .11s); }
+.team__m img { height: min(25vh, 12.2vw); width: auto; filter: grayscale(1) contrast(1.05) brightness(1.04); transition: filter 1.1s ease; transition-delay: calc(2.1s + var(--k) * .14s); -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent 100%); mask-image: linear-gradient(180deg, #000 80%, transparent 100%); }
+.is-in .team__m img { filter: none; }
+.team__m span { display: grid; justify-items: center; margin-top: .1rem; line-height: 1.12; white-space: nowrap; }
+.team__m b { font-size: var(--t-body); font-weight: 700; color: var(--ink); }
+.team__m small { font-size: var(--t-label); font-weight: 500; color: var(--mute); }
+.no-motion .team__m { opacity: 1; transform: none; animation: none; }
+.no-motion .team__m img { filter: none; transition: none; }
+
+/* ---------------------------------------------------------------- apresentador */
+.presenter {
+  position: fixed; left: max(1rem, env(safe-area-inset-left)); bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)); z-index: 70;
+  width: min(30rem, calc(100vw - 2rem)); max-height: min(64vh, 38rem);
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 0.9rem;
+  padding: 1.1rem 1.2rem; border-radius: 12px; background: var(--night-2); color: var(--on-night);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35); font-size: 0.95rem;
+}
+.presenter__top { display: flex; justify-content: space-between; gap: 1rem; color: var(--on-night-mute); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+.presenter__clock { display: flex; align-items: baseline; gap: 0.8rem; font-variant-numeric: tabular-nums; }
+.presenter__clock b { font-size: 2rem; font-weight: 600; }
+.presenter__clock span { font-size: 0.82rem; color: var(--on-night-mute); }
+[data-pace="atrasado"] { color: var(--warn) !important; }
+[data-pace="estourou"] { color: var(--danger) !important; }
+.presenter__notes { overflow: auto; line-height: 1.55; padding-right: 0.4rem; }
+.presenter__notes i, .console__notes i { color: var(--heat-1); font-style: normal; font-size: 0.85em; font-weight: 600; }
+.presenter__bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid rgba(255,255,255,.1); padding-top: 0.8rem; }
+.presenter__next { color: var(--on-night-mute); font-size: 0.82rem; min-width: 0; }
+.controls { display: flex; gap: 0.4rem; }
+.controls button { min-width: 2.3rem; height: 2.3rem; padding: 0 0.6rem; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); font-size: 0.8rem; }
+.controls button:hover { background: rgba(255,255,255,.16); }
+.help { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(11,11,12,.9); color: var(--on-night); padding: var(--gutter); }
+.help__box { max-width: 40rem; width: 100%; display: grid; gap: 1.4rem; }
+.help h2 { font-family: var(--font-display); font-weight: 500; font-size: var(--t-h3); }
+.help dl { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem 1.4rem; align-items: baseline; margin: 0; }
+.help dt { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.help dd { margin: 0; color: var(--on-night-mute); }
+.help kbd { font-family: var(--font-sans); font-size: 0.78rem; font-weight: 600; padding: 0.15rem 0.5rem; border: 1px solid rgba(255,255,255,.3); border-bottom-width: 2px; border-radius: 4px; }
+.help p { color: var(--on-night-mute); font-size: 0.9rem; }
+
+.console-mode { overflow: auto; background: var(--night); color: var(--on-night); }
+.console { min-height: 100vh; padding: clamp(1rem, 3vw, 2.5rem); display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 1.2rem; }
+.console__head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--on-night-mute); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+.console__head img { height: 2.2rem; width: auto; }
+.console__clock { display: flex; align-items: baseline; gap: 1.4rem; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.console__clock b { font-weight: 600; font-size: clamp(3rem, 9vw, 6.5rem); line-height: 1; }
+.console__clock span { font-size: 1.1rem; color: var(--on-night-mute); }
+.console__title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.05; }
+.console__notes { font-size: clamp(1.15rem, 2vw, 1.6rem); line-height: 1.5; max-width: 62ch; overflow: auto; }
+.console__foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,.12); padding-top: 1rem; color: var(--on-night-mute); }
+.console .controls button { min-width: 3rem; height: 3rem; font-size: 1rem; }
+
+/* ---------------------------------------------------------------- telas estreitas */
+@media (max-width: 860px) {
+  .slide { padding-top: 4.4rem; padding-bottom: 4.2rem; }
+  .slide__inner { overflow-y: auto; overflow-x: hidden; }
+  .layout-split, .q, .final { grid-template-columns: minmax(0, 1fr); }
+  .thermo__view { height: 34vh; }
+  .sol__stove, .final__stove { height: 32vh; }
+  .kpis, .branches__cols, .scale__cols { grid-template-columns: minmax(0, 1fr); }
+  .branches__tree { display: none; }
+  .price { grid-template-columns: minmax(0, 1fr); }
+  .pipeline__steps { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .pipeline__steps::before, .pipeline__pulse, .pipeline__loop { display: none; }
+  .pipeline__steps > li:not(.pipeline__pulse) { grid-template-columns: auto 1fr; justify-items: start; text-align: left; align-items: center; }
+  .pipeline__label { max-width: none; }
+  .lane { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'name' 'dots' 'flow'; }
+  .sections { display: none; }
+  .brand-title { white-space: normal; }
+  .slide__inner.brand { overflow: visible; }
+  .brand .fog { left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter)); bottom: 0; }
+  .brand__stove { height: auto; width: min(86vw, 30rem); aspect-ratio: 0.77; top: 4%; }
+  .map__panel { width: auto; right: var(--gutter); }
+  .map__place--end { display: none; }
+  .map__place { white-space: normal; max-width: 44vw; }
+  .map__place b { font-size: .8rem; }
+  .final { grid-template-rows: auto; align-content: start; }
+  .map__land--start { width: 70vw; }
+  .ice { --cw: 84vw; --gap: 5vw; }
+  .ice__viewport { top: 9.5rem; }
+  .team { flex-wrap: wrap; gap: .4rem; }
+  .team__m { margin-inline: 0; }
+  .team__m img { height: 6.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fog__layer, .stove__bob, .pipeline__pulse, .pipeline__dot { animation: none !important; }
+}
+</style>
+</head>
+<body>
+<noscript><p style="padding:2rem;font-family:sans-serif">Esta apresentação precisa de JavaScript para montar as páginas a partir de <code>pitch.config.js</code>.</p></noscript>
+<main class="deck" id="deck" aria-roledescription="apresentação"></main>
+
+<div class="chapter" id="chapter" aria-hidden="true">
+  <canvas id="chapterCanvas"></canvas>
+  <div class="chapter__title" id="chapterTitle"><span class="chapter__n" id="chapterN"></span><span class="chapter__rule"></span><span class="chapter__name" id="chapterName"></span></div>
+</div>
+<div class="scan" id="scan" aria-hidden="true"></div>
+<div class="mist" id="mist" aria-hidden="true">
+  <div class="mist__edge" data-fog><div class="fog__layer"></div><div class="fog__layer fog__layer--b"></div></div>
+  <div class="mist__core"></div>
+  <div class="mist__edge mist__edge--bottom" data-fog><div class="fog__layer"></div><div class="fog__layer fog__layer--b"></div></div>
+</div>
+
+<div class="timebar" id="timebar" hidden><div class="timebar__fill" id="timebarFill"></div></div>
+<footer class="chrome chrome--bottom">
+  <ol class="sections" id="sections" aria-label="Seções do roteiro"></ol>
+  <nav class="pager" aria-label="Páginas">
+    <button type="button" id="prevBtn" aria-label="Página anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg></button>
+    <span id="pagerNum"></span>
+    <button type="button" id="nextBtn" aria-label="Próxima página"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 3 5 5-5 5"/></svg></button>
+  </nav>
+</footer>
+
+<aside class="presenter" id="presenter" aria-label="Painel do apresentador" hidden>
+  <div class="presenter__top"><span id="pTitle"></span><span id="pIndex"></span></div>
+  <div class="presenter__clock"><b id="pElapsed">0:00</b><span id="pTotal"></span><span id="pRemain"></span></div>
+  <div class="presenter__notes" id="pNotes"></div>
+  <div class="presenter__bottom">
+    <span class="presenter__next" id="pNext"></span>
+    <span class="controls">
+      <button type="button" data-cmd="prev" aria-label="Voltar">◀</button>
+      <button type="button" data-cmd="toggle" aria-label="Iniciar ou pausar o cronômetro" id="pToggle">▶</button>
+      <button type="button" data-cmd="reset" aria-label="Zerar o cronômetro">↺</button>
+      <button type="button" data-cmd="next" aria-label="Avançar">▶▶</button>
+    </span>
+  </div>
+</aside>
+
+<div class="help" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+  <div class="help__box">
+    <h2 id="helpTitle">Atalhos da apresentação</h2>
+    <dl>
+      <dt><kbd>→</kbd><kbd>↓</kbd><kbd>Espaço</kbd></dt><dd>Próxima página (ou próximo passo da página)</dd>
+      <dt><kbd>←</kbd><kbd>↑</kbd></dt><dd>Página anterior</dd>
+      <dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Início da seção do roteiro</dd>
+      <dt><kbd>T</kbd> <kbd>R</kbd></dt><dd>Inicia ou pausa · zera o cronômetro</dd>
+      <dt><kbd>P</kbd></dt><dd>Notas do apresentador nesta tela</dd>
+      <dt><kbd>J</kbd></dt><dd>Console do apresentador em outra janela, para o segundo monitor</dd>
+      <dt><kbd>F</kbd></dt><dd>Tela cheia</dd>
+      <dt><kbd>?</kbd></dt><dd>Mostra ou esconde estes atalhos</dd>
+    </dl>
+    <p>A roda do mouse e o gesto de deslizar também passam as páginas. Arraste o fogão para girá-lo. Textos, tempos e notas ficam em <code>pitch.config.js</code>. <kbd>Esc</kbd> fecha.</p>
+  </div>
+</div>
+
+<script src="pitch.config.js"></script>
+<script>
+(() => {
+  'use strict'
+  const C = window.PITCH_CONFIG
+  const deck = document.getElementById('deck')
+  if (!C) { deck.innerHTML = '<p style="padding:2rem">Não encontrei <code>pitch.config.js</code> ao lado deste arquivo.</p>'; return }
+
+  const OPT = Object.assign({ duracaoSegundos: 300, titulos: 'serifa', barraDeTempo: true, cronometroAutomatico: true, toleranciaDeRitmoSegundos: 8, rodaDoMouse: true, animacoes: true, movimentoDoFogao: 'balanco', balancoGraus: 55, periodoSegundos: 14, painelDoApresentadorAberto: false }, C.apresentacao)
+  const reduced = !OPT.animacoes || matchMedia('(prefers-reduced-motion: reduce)').matches
+  const root = document.documentElement
+  if (reduced) root.classList.add('no-motion')
+  if (OPT.titulos === 'inter') root.classList.add('titles-inter')
+
+  const pages = C.paginas.filter((p) => p.ativa !== false)
+  const isConsole = location.hash === '#apresentador'
+
+  // ------------------------------------------------------------------ utilitários
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+  const rich = (s) => esc(s).replace(/\*(.+?)\*/g, '<em>$1</em>')
+  const notesHtml = (s) => esc(s).replace(/\[(.+?)\]/g, '<i>[$1]</i>')
+  const plain = (s) => String(s ?? '').replace(/\*/g, '')
+  const pad2 = (n) => String(n).padStart(2, '0')
+  const clamp01 = (v) => Math.max(0, Math.min(1, v))
+  const clock = (sec) => { const s = Math.max(0, Math.round(Math.abs(sec))); return `${Math.floor(s / 60)}:${pad2(s % 60)}` }
+  const fmtNum = (v, dec = 0) => v.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec })
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+  const easeOutExpo = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t))
+  const smoothstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t) }
+  const titleOf = (p) => plain(p.conteudo?.titulo || [p.conteudo?.inicio, p.conteudo?.antes, p.conteudo?.fim].filter(Boolean).join(' ') || p.secaoNome)
+
+  /** Título com cada palavra numa máscara; *trechos* viram destaque na cor de calor. */
+  function words(text) {
+    let i = 0
+    return String(text).split(/(\*[^*]+\*)/).filter(Boolean).map((seg) => {
+      const em = seg.length > 1 && seg.startsWith('*') && seg.endsWith('*')
+      const raw = em ? seg.slice(1, -1) : seg
+      const html = raw.split(/(\s+)/).map((tok) => (/^\s+$/.test(tok) ? ' ' : tok ? `<span class="w"><span style="--wi:${i++}">${esc(tok)}</span></span>` : '')).join('')
+      return em ? `<em>${html}</em>` : html
+    }).join('')
+  }
+
+  // escala de calor da dashboard: #00a0dd → #eeb111 → #e08650 → #b3261e
+  const STOPS = [[0, [0, 160, 221]], [0.35, [238, 177, 17]], [0.68, [224, 134, 80]], [1, [179, 38, 30]]]
+  function heatRGB(t) {
+    t = clamp01(t)
+    for (let i = 0; i < STOPS.length - 1; i++) {
+      const [ta, a] = STOPS[i], [tb, b] = STOPS[i + 1]
+      if (t <= tb) { const k = (t - ta) / (tb - ta); return a.map((v, j) => Math.round(v + (b[j] - v) * k)) }
+    }
+    return STOPS[STOPS.length - 1][1]
+  }
+  const hex = (rgb) => '#' + rgb.map((v) => pad2(Math.round(v).toString(16))).join('')
+  const mixInk = (rgb, k) => rgb.map((v, j) => Math.round(v * (1 - k) + [17, 18, 20][j] * k))
+  const inkOf = (rgb) => mixInk(rgb, 0.32) // versão legível sobre branco
+  const HEAT_LUT = Array.from({ length: 256 }, (_, i) => heatRGB(i / 255))
+
+  // ------------------------------------------------------------------ cronômetro e plano
+  const plan = []
+  let acc = 0
+  pages.forEach((p) => { plan.push({ start: acc, end: acc + (p.segundos || 0) }); acc += p.segundos || 0 })
+  const TOTAL = OPT.duracaoSegundos || acc
+  if (acc !== TOTAL) console.warn(`[pitch] A soma dos tempos das páginas ativas é ${acc}s, mas duracaoSegundos é ${TOTAL}s.`)
+  const timer = { running: false, startedAt: 0, acc: 0 }
+  const elapsed = () => (timer.acc + (timer.running ? performance.now() - timer.startedAt : 0)) / 1000
+  const startTimer = () => { if (!timer.running) { timer.running = true; timer.startedAt = performance.now() } }
+  const pauseTimer = () => { if (timer.running) { timer.acc += performance.now() - timer.startedAt; timer.running = false } }
+  const toggleTimer = () => (timer.running ? pauseTimer() : startTimer())
+  const resetTimer = () => { timer.running = false; timer.acc = 0 }
+  const pace = (i, el) => (el > TOTAL ? 'estourou' : plan[i] && el > plan[i].end + (OPT.toleranciaDeRitmoSegundos || 0) ? 'atrasado' : 'no-ritmo')
+
+  // ------------------------------------------------------------------ console em outra janela (J)
+  if (isConsole) {
+    document.body.classList.add('console-mode')
+    document.querySelectorAll('.chrome, .timebar, .chapter, .scan, .mist').forEach((el) => el.remove())
+    deck.className = 'console'
+    deck.innerHTML = `
+      <div class="console__head"><span id="cIndex"></span>${C.marca?.logoProduto ? `<img src="${esc(C.marca.logoProduto)}" alt="">` : ''}</div>
+      <div class="console__clock"><b id="cElapsed">0:00</b><span id="cTotal"></span><span id="cRemain"></span></div>
+      <p class="console__title" id="cTitle"></p>
+      <div class="console__notes" id="cNotes"></div>
+      <div class="console__foot"><span id="cNext"></span>
+        <span class="controls">
+          <button type="button" data-cmd="prev" aria-label="Voltar">◀</button>
+          <button type="button" data-cmd="toggle" id="cToggle" aria-label="Iniciar ou pausar o cronômetro">▶</button>
+          <button type="button" data-cmd="reset" aria-label="Zerar o cronômetro">↺</button>
+          <button type="button" data-cmd="next" aria-label="Avançar">▶▶</button>
+        </span></div>`
+    const $ = (id) => document.getElementById(id)
+    const send = (cmd, extra) => { if (window.opener) window.opener.postMessage(Object.assign({ pitch: 'cmd', cmd }, extra || {}), '*') }
+    deck.querySelectorAll('[data-cmd]').forEach((b) => b.addEventListener('click', () => send(b.dataset.cmd)))
+    addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); send('next') }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); send('prev') }
+      else if (e.key.toLowerCase() === 't') send('toggle')
+      else if (e.key.toLowerCase() === 'r') send('reset')
+      else if (/^[1-9]$/.test(e.key)) send('section', { n: Number(e.key) })
+    })
+    addEventListener('message', (e) => {
+      if (!e.data || e.data.pitch !== 'state') return
+      const st = e.data, p = pages[st.page] || pages[0], pl = plan[st.page] || { end: TOTAL }, pc = pace(st.page, st.elapsed)
+      $('cIndex').textContent = `${pad2(st.page + 1)}/${pad2(pages.length)} · ${p.secao}. ${p.secaoNome}`
+      $('cElapsed').textContent = clock(st.elapsed); $('cElapsed').dataset.pace = pc
+      $('cTotal').textContent = `de ${clock(TOTAL)}`
+      const left = pl.end - st.elapsed
+      $('cRemain').textContent = left >= 0 ? `encerrar página até ${clock(pl.end)}` : `${clock(left)} além do plano`; $('cRemain').dataset.pace = pc
+      $('cTitle').textContent = titleOf(p)
+      if ($('cNotes').dataset.for !== p.id) { $('cNotes').innerHTML = notesHtml(p.notas); $('cNotes').dataset.for = p.id }
+      const nx = pages[st.page + 1]
+      $('cNext').textContent = nx ? `Próxima: ${titleOf(nx)}` : 'Última página'
+      $('cToggle').textContent = st.running ? '❚❚' : '▶'
+    })
+    if (!window.opener) $('cNotes').textContent = 'Abra este console pela apresentação (tecla J) para que ele acompanhe as páginas.'
+    else send('hello')
+    return
+  }
+
+  // ------------------------------------------------------------------ páginas
+  const h = (text, cls = '', base = 0.22) => `<h2 class="h1 ${cls}" style="--base:${base}s">${words(text)}</h2>`
+  const fog = (cls) => `<div class="fog ${cls}" data-fog><div class="fog__layer"></div><div class="fog__layer fog__layer--b"></div></div>`
+  const turntable = (cls, d) => `<div class="stove ${cls} r" style="--d:${d}"><div class="stove__bob"><canvas data-turntable role="img" aria-label="Fogão do mapa térmico 3D; arraste para girar"></canvas></div></div>`
+
+  // ponto y de uma cúbica para um x (bissecção), usado nas marcas do gráfico
+  function bezierY(p0, p1, p2, p3, x) {
+    const bx = (t) => (1 - t) ** 3 * p0[0] + 3 * (1 - t) ** 2 * t * p1[0] + 3 * (1 - t) * t * t * p2[0] + t ** 3 * p3[0]
+    const by = (t) => (1 - t) ** 3 * p0[1] + 3 * (1 - t) ** 2 * t * p1[1] + 3 * (1 - t) * t * t * p2[1] + t ** 3 * p3[1]
+    let lo = 0, hi = 1
+    for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m }
+    return by((lo + hi) / 2)
+  }
+
+  const T = {
+    calor: (c) => `
+      <div class="slide__inner q">
+        <div class="q__copy">
+          <h1 class="h1 h1--xl" style="--base:.3s">${words(c.titulo)}</h1>
+        </div>
+        <figure class="thermo r" style="--d:.2">
+          <div class="thermo__view"><canvas data-heatfield role="img" aria-label="Cooktop visto por câmera térmica: os queimadores aquecem um a um"></canvas></div>
+        </figure>
+      </div>
+      ${fog('fog--floor')}`,
+
+    marca: (c) => `
+      <div class="slide__inner brand">
+        <div class="stove brand__stove"><div class="stove__bob"><canvas data-turntable role="img" aria-label="Fogão do mapa térmico 3D; arraste para girar"></canvas></div></div>
+        ${fog('')}
+        <div class="brand__copy">
+          <h1 class="brand-title" style="--base:.25s">${words(c.titulo)}</h1>
+          <p class="brand__line r" style="--d:.9">${esc(c.linha)}</p>
+        </div>
+      </div>`,
+
+    tensao: (c) => {
+      const X0 = 130, X1 = 1540, YT = 70, YB = 468
+      const cost = [[X0, YB], [771, 465], [1219, 395], [X1, YT]]
+      const free = [[X0, YT], [530, 72.5], [899, 207.5], [X1, YB]]
+      const d = (b) => `M${b[0]} C${b[1]} ${b[2]} ${b[3]}`
+      const xs = [0, 1, 2, 3].map((i) => X0 + ((X1 - X0) * i) / 3)
+      const xNow = xs[2], xTp = 242
+      const yNow = bezierY(...cost, xNow), yTp = bezierY(...cost, xTp)
+      const anchor = (i) => (i === 0 ? 'start' : i === xs.length - 1 ? 'end' : 'middle')
+      return `
+      <div class="slide__inner tension">
+        <header class="head">${h(c.titulo)}</header>
+        <figure class="curve r" style="--d:.35">
+          <svg viewBox="0 0 1600 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(c.curvas.custo)} sobe e ${esc(c.curvas.liberdade)} cai ao longo das fases do projeto">
+            <defs><linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3261e" stop-opacity=".26"/><stop offset="1" stop-color="#b3261e" stop-opacity="0"/></linearGradient></defs>
+            <path class="c-grid" d="M${X0} ${YT} H${X1} M${X0} ${(YT + YB) / 2} H${X1}"/>
+            <path class="c-axis" d="M${X0} ${YT - 20} V${YB} H${X1}"/>
+            <text x="${X0 - 16}" y="${YT + 8}" text-anchor="end">Alto</text>
+            <text x="${X0 - 16}" y="${YB + 8}" text-anchor="end">Baixo</text>
+            ${c.fases.map((f, i) => `<text class="c-phase" x="${xs[i]}" y="${YB + 54}" text-anchor="${anchor(i)}">${esc(f)}</text>`).join('')}
+            <path class="c-area" d="${d(cost)} L${X1} ${YB} L${X0} ${YB} Z"/>
+            <path class="c-free" pathLength="1" d="${d(free)}"/>
+            <path class="c-cost" pathLength="1" d="${d(cost)}"/>
+            <g class="c-now">
+              <line x1="${xNow}" y1="${YT - 36}" x2="${xNow}" y2="${YB}"/>
+              <circle cx="${xNow}" cy="${yNow.toFixed(1)}" r="10"/>
+              <text x="${xNow}" y="${YT - 44}" text-anchor="middle">${esc(c.hoje)}</text>
+            </g>
+            <g class="c-shift">
+              <path pathLength="1" d="M${xNow - 24} 330 H${xTp + 34} M${xTp + 54} 314 L${xTp + 34} 330 L${xTp + 54} 346"/>
+              <text x="${(xNow + xTp) / 2}" y="306" text-anchor="middle">shift-left</text>
+            </g>
+            <g class="c-tp">
+              <line x1="${xTp}" y1="${YT - 36}" x2="${xTp}" y2="${YB}"/>
+              <circle cx="${xTp}" cy="${yTp.toFixed(1)}" r="10"/>
+              <text x="${xTp - 8}" y="${YT - 44}" text-anchor="start">${esc(c.depois)}</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="curve__foot r" style="--d:.6">
+          <p class="legend"><span style="--c:var(--heat-3)"><i></i>${esc(c.curvas.custo)}</span><span style="--c:var(--ink)"><i></i>${esc(c.curvas.liberdade)}</span></p>
+        </div>
+      </div>`
+    },
+
+    fluxo: (c, p) => `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="pipeline r" style="--d:.55; --n:${c.etapas.length}">
+          <ol class="pipeline__steps">
+            ${c.etapas.map((e, i) => `<li style="--i:${i}"><span class="pipeline__dot"></span><span class="pipeline__label">${esc(e)}</span></li>`).join('')}
+            <li class="pipeline__pulse" aria-hidden="true"></li>
+          </ol>
+          <div class="pipeline__loop"><span class="pipeline__return">${esc(c.retorno)}</span></div>
+        </div>
+      </div>`,
+
+    custo: (c, p) => {
+      const max = Math.max(...c.itens.map((i) => i.valor))
+      const tones = [0.35, 0.68, 1]
+      return `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <ol class="prices">
+          ${c.itens.map((it, i) => `
+            <li class="price r" style="--d:${0.45 + i * 0.22}; --w:${(it.valor / max).toFixed(4)}; --c:${hex(heatRGB(tones[i % 3]))}">
+              <p class="price__num"><small>US$</small><span data-count="${it.valor}">${fmtNum(it.valor)}</span></p>
+              <div class="price__track">
+                <span class="price__bar"></span>
+                <p class="price__label"><b>${esc(it.ferramenta)}</b> · ${esc(it.unidade)}</p>
+              </div>
+            </li>`).join('')}
+        </ol>
+        <p class="price__note r" style="--d:1.2">${esc(c.nota)}</p>
+      </div>`
+    },
+
+    mapa: (c, p) => `
+      <div class="map" data-map>
+        <div class="map__world">
+          <img class="map__land map__land--start" src="assets/terra-partida.webp" alt="">
+          <img class="map__land map__land--end" src="assets/terra-destino.webp" alt="">
+          <svg class="map__svg" aria-hidden="true">
+            <defs><linearGradient id="routeGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1000">
+              <stop offset="0" stop-color="#b3261e"/><stop offset=".35" stop-color="#e08650"/><stop offset=".62" stop-color="#eeb111"/><stop offset="1" stop-color="#00a0dd"/>
+            </linearGradient></defs>
+            <path class="map__route-base"/>
+            <path class="map__route-flown"/>
+            <circle class="map__end-ring" r="10"/><circle class="map__end-ring" r="10"/>
+          </svg>
+          <div class="map__dot"><b></b><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div>
+          <p class="map__place map__place--start"><i>${esc(c.partida.rotulo)}</i><b>${esc(c.partida.local)}</b></p>
+          <p class="map__place map__place--end"><i>${esc(c.destino.rotulo)}</i><b>${esc(c.destino.local)}</b></p>
+        </div>
+        <div class="map__panel">
+          <header class="head">${h(c.titulo)}</header>
+          <dl class="map__stats r" style="--d:.5">
+            ${c.dados.map((d) => `<div class="${d.destino ? 'is-dest' : ''}"><dt>${esc(d.rotulo)}</dt><dd>${esc(d.valor)}</dd></div>`).join('')}
+          </dl>
+        </div>
+      </div>`,
+
+    decisoes: (c, p) => `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="branches">
+          <svg class="branches__tree" aria-hidden="true"></svg>
+          <ol class="branches__cols">
+            ${c.decisoes.map((d, i) => `<li class="r" style="--d:${1.1 + i * 0.18}"><p class="label">${esc(d.area)}</p><p class="branches__q">${esc(d.pergunta)}</p></li>`).join('')}
+          </ol>
+        </div>
+      </div>`,
+
+    solucao: (c, p) => `
+      <div class="slide__inner layout-split">
+        <div class="sol__copy">
+          ${h(c.titulo)}
+          <ol class="steps-v r" style="--d:.5" data-steps>
+            ${c.etapas.map((e, i) => `<li data-i="${i}"><span class="steps-v__n">${i + 1}</span><span>${esc(e)}</span></li>`).join('')}
+          </ol>
+        </div>
+        <div class="stove sol__stove r" style="--d:.2"><canvas data-sequence role="img" aria-label="O fogão se abre em vista explodida e passa para o raio-X com a temperatura prevista"></canvas></div>
+      </div>`,
+
+    dashboard: (c, p) => `
+      <div class="slide__inner dash">
+        <header class="head">${h(c.titulo)}</header>
+        <figure class="frame">
+          <div class="frame__bar"><i></i><i></i><i></i></div>
+          <div class="frame__screens" data-carousel>
+            ${c.telas.map((t, i) => `<img src="${esc(t.imagem)}" alt="Tela do ${esc(C.meta.produto)}: ${esc(t.rotulo)}" class="${i === 0 ? 'is-on' : ''}">`).join('')}
+          </div>
+        </figure>
+        <ol class="tabs r" style="--d:.9">${c.telas.map((t, i) => `<li class="${i === 0 ? 'is-on' : ''}"><span>${esc(t.rotulo)}</span><i></i></li>`).join('')}</ol>
+      </div>`,
+
+    dominio: (c, p) => `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="scale r" style="--d:.5">
+          <div class="scale__track"><span></span><span></span><span></span><i class="scale__marker"></i></div>
+          <ol class="scale__cols">${c.estados.map((e) => `<li class="lvl-${esc(e.nivel)}"><p class="label">${esc(e.nome)}</p><p class="scale__dest">${esc(e.destino)}</p></li>`).join('')}</ol>
+        </div>
+      </div>`,
+
+    confianca: (c, p) => `
+      <div class="ice" data-ice>
+        <div class="ice__bg"></div>
+        <div class="ice__shade"></div>
+        <header class="ice__head"><h2 class="ice__title">${rich(c.titulo)}</h2></header>
+        <div class="ice__viewport">
+          <ol class="ice__track">
+            ${c.cartoes.map((k, i) => `
+              <li class="camp${i === 0 ? ' is-active' : ''}">
+                <div class="camp__frame"><div class="camp__paper">
+                  <h3 class="camp__title">${esc(k.titulo)}</h3>
+                  <p class="camp__text">${esc(k.texto)}</p>
+                  <figure class="camp__shot"><img src="${esc(k.imagem)}" alt="Aba Métricas Estatísticas do ${esc(C.meta.produto)}: ${esc(k.titulo)}"></figure>
+                  <p class="camp__data">${esc(k.dado)}</p>
+                </div></div>
+              </li>`).join('')}
+          </ol>
+        </div>
+        <div class="ice__veil" aria-hidden="true"><i style="--k:0;--o:left"></i><i style="--k:1;--o:right"></i><i style="--k:2;--o:left"></i></div>
+      </div>`,
+
+    kpis: (c, p) => `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="kpis">
+          ${c.erro ? `
+            <section class="kpi r" style="--d:.35">
+              <p class="kpi__num"><span data-count="${num(c.erro.reducao)}" data-dec="1">${esc(c.erro.reducao.replace('%', ''))}</span>%</p>
+              <p class="kpi__label">${esc(c.erro.rotulo)}</p>
+              <div class="mini" aria-label="Erro médio: baseline ${fmtNum(c.erro.de, 2)} ${esc(c.erro.unidade)}, Thermal Predictor ${fmtNum(c.erro.para, 2)} ${esc(c.erro.unidade)}">
+                <div class="mini__row" style="--k:0"><span>Baseline</span><i style="--w:1"></i><b>${fmtNum(c.erro.de, 2)} ${esc(c.erro.unidade)}</b></div>
+                <div class="mini__row is-tp" style="--k:1"><span>${esc(C.meta.produto)}</span><i style="--w:${(c.erro.para / c.erro.de).toFixed(3)}"></i><b>${fmtNum(c.erro.para, 2)} ${esc(c.erro.unidade)}</b></div>
+              </div>
+            </section>` : ''}
+          ${c.kpis.map((k, i) => k.anel != null ? `
+            <section class="kpi r" style="--d:${0.55 + i * 0.2}">
+              <div class="kpi__row">
+                <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="ring__bg" cx="60" cy="60" r="50" pathLength="100"/>
+                  <circle class="ring__base" cx="60" cy="60" r="38" pathLength="100" style="--dash:${Math.round(k.anelComparacao * 1000) / 10} 100"/>
+                  <circle class="ring__val" cx="60" cy="60" r="50" pathLength="100" style="--dash:${Math.round(k.anel * 1000) / 10} 100"/>
+                </svg>
+                <p class="kpi__num"><small>${esc(k.prefixo || '')}</small><span data-count="${k.valor}">${fmtNum(k.valor)}</span>${esc(k.sufixo || '')}</p>
+              </div>
+              <p class="kpi__label">${esc(k.rotulo)}</p>${k.comparacao ? `<p class="kpi__cmp">${esc(k.comparacao)}</p>` : ''}
+            </section>` : `
+            <section class="kpi r" style="--d:${0.55 + i * 0.2}">
+              <p class="kpi__num"><small>${esc(k.prefixo || '')}</small><span data-count="${k.valor}">${fmtNum(k.valor)}</span><small>${esc(k.sufixo || '')}</small></p>
+              <p class="kpi__label">${esc(k.rotulo)}</p>
+              <div class="speed" style="--ms:${k.valor}ms; --pct:${Math.min(100, k.valor / 10)}%" aria-hidden="true"><div class="speed__bar"><span></span></div><p class="speed__scale"><span>0</span><span>1 s</span></p></div>
+            </section>`).join('')}
+        </div>
+      </div>`,
+
+    diferencial: (c, p) => {
+      const n = c.configuracoes || 14
+      const crit = new Set(c.criticas || [])
+      const tons = [0, 0.35, 0.5, 0, 0.62, 0.35]
+      const dot = (i) => `<li class="${crit.has(i) ? 'is-crit' : ''}" style="--i:${i}; --h:${hex(heatRGB(crit.has(i) ? 0.95 : tons[i % tons.length]))}"></li>`
+      return `
+      <div class="slide__inner layout-stack">
+        <header class="head">${h(c.titulo)}</header>
+        <div class="lanes" style="--n:${n}">
+          ${c.linhas.map((l, li) => `
+            <section class="lane lane--${esc(l.modo)} r" style="--d:${0.45 + li * 0.25}">
+              <p class="label lane__name">${esc(l.rotulo)}</p>
+              <ol class="lane__dots" aria-hidden="true">${Array.from({ length: n }, (_, i) => dot(i)).join('')}</ol>
+              <p class="lane__flow">${l.etapas.map(esc).join(' → ')}</p>
+            </section>`).join('')}
+        </div>
+      </div>`
+    },
+
+    virada: (c) => `
+      <div class="slide__inner layout-center">
+        <p class="flip r" style="--d:.2">${esc(c.inicio)} <span class="flip__old">${esc(c.antes)}</span><span class="flip__new">${esc(c.depois)}</span> ${esc(c.fim)}</p>
+      </div>`,
+
+    final: (c) => `
+      <div class="slide__inner final">
+        <div class="final__copy">
+          <h1 class="brand-title" style="--base:.25s">${words(c.titulo)}</h1>
+          <p class="final__frase r" style="--d:.8">${rich(c.frase)}</p>
+          <p class="final__thanks r" style="--d:1.05"><em>${esc(c.agradecimento)}</em> <b>Equipe ${esc(C.meta.equipe)}</b></p>
+        </div>
+        ${turntable('final__stove', 0.3)}
+        <ul class="team" aria-label="Equipe ${esc(C.meta.equipe)}">
+          ${c.equipe.map((m, i) => { const [first, ...rest] = String(m.nome).split(' '); return `<li class="team__m" style="--k:${i}; --z:${Math.abs(i - (c.equipe.length - 1) / 2)}"><img src="${esc(m.foto)}" alt="${esc(m.nome)}"><span><b>${esc(first)}</b>${rest.length ? `<small>${esc(rest.join(' '))}</small>` : ''}</span></li>` }).join('')}
+        </ul>
+      </div>`,
+  }
+  function num(s) { return parseFloat(String(s).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.')) }
+
+  deck.innerHTML = pages.map((p, i) => {
+    const tpl = T[p.tipo]
+    const body = tpl ? tpl(p.conteudo || {}, p) : `<div class="slide__inner layout-center"><p>Tipo de página desconhecido: ${esc(p.tipo)}</p></div>`
+    const bleed = p.tipo === 'mapa' || p.tipo === 'confianca'
+    return `<section class="slide slide--${esc(p.tipo)}${p.fundo === 'escuro' ? ' is-dark' : ''}${bleed ? ' slide--bleed' : ''}" id="${esc(p.id)}" data-i="${i}" aria-roledescription="página" aria-label="${pad2(i + 1)} de ${pad2(pages.length)}: ${esc(titleOf(p))}">${body}</section>`
+  }).join('')
+  const slides = [...deck.querySelectorAll('.slide')]
+  const stepsOf = (i) => (pages[i].tipo === 'confianca' ? (pages[i].conteudo.cartoes || []).length || 1 : ({ tensao: 2, mapa: 2, virada: 2 })[pages[i].tipo] || 1)
+
+  // ------------------------------------------------------------------ névoa (textura gerada aqui)
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
+  function fogTexture(seed, { w = 560, h = 190, period = 7, threshold = 0.36, softness = 0.4, from = 0.12, to = 0.92 } = {}) {
+    const rand = mulberry32(seed), vals = new Float32Array(256), perm = new Uint8Array(512)
+    for (let i = 0; i < 256; i++) { vals[i] = rand(); perm[i] = i }
+    for (let i = 255; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = perm[i]; perm[i] = perm[j]; perm[j] = t }
+    for (let i = 0; i < 256; i++) perm[i + 256] = perm[i]
+    const lat = (ix, iy) => vals[perm[(ix & 255) + perm[iy & 255]]], sm = (t) => t * t * (3 - 2 * t)
+    const noise = (x, y, p) => { const x0 = Math.floor(x), y0 = Math.floor(y), fx = sm(x - x0), fy = sm(y - y0), xa = ((x0 % p) + p) % p, xb = (xa + 1) % p; const a = lat(xa, y0), b = lat(xb, y0), c = lat(xa, y0 + 1), d = lat(xb, y0 + 1); return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy }
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), aspect = h / w
+    for (let y = 0; y < h; y++) {
+      let r = clamp01((y / (h - 1) - from) / (to - from)); r = r * r * (3 - 2 * r)
+      for (let x = 0; x < w; x++) {
+        let amp = 1, freq = 1, sum = 0, norm = 0
+        for (let o = 0; o < 5; o++) { const p = period * freq; sum += amp * noise((x / w) * p, (y / h) * p * aspect * 2.2 + o * 13.7, p); norm += amp; amp *= 0.52; freq *= 2 }
+        let a = clamp01((sum / norm - threshold) / softness) * r; a = Math.min(1, a * 1.15 + r * r * r * 0.5)
+        const k = (y * w + x) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = 255; img.data[k + 3] = Math.round(a * 255)
+      }
+    }
+    ctx.putImageData(img, 0, 0)
+    return cv.toDataURL('image/png')
+  }
+  {
+    const a = fogTexture(7), b = fogTexture(19, { period: 5, threshold: 0.42, softness: 0.36, from: 0.25 })
+    document.querySelectorAll('[data-fog]').forEach((f) => { const [l1, l2] = f.querySelectorAll('.fog__layer'); if (l1) l1.style.backgroundImage = `url(${a})`; if (l2) l2.style.backgroundImage = `url(${b})` })
+  }
+
+  // ------------------------------------------------------------------ quadros do fogão (renderizados pelo mapa 3D do produto)
+  const SEQ = C.sequencias || {}
+  const loadFrames = (s, extra) => {
+    if (!s) return []
+    const list = Array.from({ length: s.quadros }, (_, i) => `${s.pasta}/${pad2(i)}.webp`)
+    if (extra) list.push(extra)
+    return list.map((src) => { const im = new Image(); im.decoding = 'async'; im.src = src; return im })
+  }
+  const volta = OPT.movimentoDoFogao === 'volta' || !SEQ.balanco
+  const giro = loadFrames(volta ? SEQ.giro : SEQ.balanco)
+  const desmontagem = loadFrames(SEQ.desmontagem, SEQ.desmontagem?.raioX)
+  const ok = (im) => im && im.complete && im.naturalWidth > 0
+
+  function fitCanvas(cv, maxDpr = 2) {
+    const dpr = Math.min(devicePixelRatio || 1, maxDpr)
+    const w = Math.round(cv.clientWidth * dpr), hh = Math.round(cv.clientHeight * dpr)
+    if (cv.width !== w || cv.height !== hh) { cv.width = w; cv.height = hh }
+    return cv.getContext('2d')
+  }
+  function drawImg(ctx, im, alpha) {
+    if (!ok(im) || alpha <= 0) return
+    const cw = ctx.canvas.width, ch = ctx.canvas.height
+    const s = Math.min(cw / im.naturalWidth, ch / im.naturalHeight)
+    const w = im.naturalWidth * s, hh = im.naturalHeight * s
+    ctx.globalAlpha = Math.min(1, alpha)
+    ctx.drawImage(im, (cw - w) / 2, ch - hh, w, hh)
+    ctx.globalAlpha = 1
+  }
+
+  // movimento: balanço em torno da vista frontal (quadros a cada 2°) ou volta completa; o fogão pode ser arrastado
+  const degPerFrame = volta ? 360 / Math.max(1, giro.length) : (SEQ.balanco?.grausPorQuadro || 2)
+  const midFrame = (giro.length - 1) / 2
+  let dragDeg = 0
+  function giroAt(now) {
+    if (!giro.length) return 0
+    const t = now / 1000, P = OPT.periodoSegundos || 14, drag = dragDeg / degPerFrame
+    if (volta) return (reduced ? 0 : (t / P) * giro.length) + drag
+    const amp = Math.min(OPT.balancoGraus || 55, midFrame * degPerFrame) / degPerFrame
+    return Math.max(0, Math.min(giro.length - 1, midFrame + (reduced ? 0 : amp * Math.sin((2 * Math.PI * t) / P)) + drag))
+  }
+  function drawTurntable(cv, f) {
+    const ctx = fitCanvas(cv), n = giro.length
+    if (!n) return
+    const fl = Math.floor(f), t = f - fl
+    const i0 = volta ? ((fl % n) + n) % n : Math.max(0, Math.min(n - 1, fl))
+    const i1 = volta ? (i0 + 1) % n : Math.min(n - 1, i0 + 1)
+    ctx.clearRect(0, 0, cv.width, cv.height)
+    drawImg(ctx, ok(giro[i0]) ? giro[i0] : giro.find(ok), 1)
+    drawImg(ctx, giro[i1], t)
+  }
+  document.querySelectorAll('canvas[data-turntable]').forEach((cv) => {
+    let x0 = null
+    cv.addEventListener('pointerdown', (e) => { x0 = e.clientX; cv.setPointerCapture(e.pointerId) })
+    cv.addEventListener('pointermove', (e) => {
+      if (x0 == null) return
+      dragDeg -= ((e.clientX - x0) / Math.max(240, cv.clientWidth)) * 160
+      if (!volta) dragDeg = Math.max(-midFrame * degPerFrame, Math.min(midFrame * degPerFrame, dragDeg))
+      x0 = e.clientX
+    })
+    const end = () => { x0 = null }
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end)
+  })
+
+  // desmontagem: progresso (p) e raio-X (x), controlados pela linha do tempo da página da solução
+  const seq = { p: 0, x: 0 }
+  function drawSequence(cv) {
+    const ctx = fitCanvas(cv), n = desmontagem.length - 1
+    if (n < 1) return
+    const f = seq.p * (n - 1), i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1)
+    ctx.clearRect(0, 0, cv.width, cv.height)
+    drawImg(ctx, desmontagem[i0], 1)
+    drawImg(ctx, desmontagem[i1], f - i0)
+    drawImg(ctx, desmontagem[n], seq.x)
+  }
+
+  // ------------------------------------------------------------------ abertura: cooktop por câmera térmica
+  const heat = { t0: null }
+  const HF = (() => {
+    const GW = 150, GH = 120
+    const off = document.createElement('canvas'); off.width = GW; off.height = GH
+    const octx = off.getContext('2d')
+    const img = octx.createImageData(GW, GH)
+    const field = new Float32Array(GW * GH)
+    const burners = [
+      { u: 0.29, v: 0.31, r: 0.150, alvo: 1.0, ordem: 0 },
+      { u: 0.71, v: 0.29, r: 0.112, alvo: 0.74, ordem: 2 },
+      { u: 0.28, v: 0.72, r: 0.112, alvo: 0.62, ordem: 3 },
+      { u: 0.71, v: 0.70, r: 0.150, alvo: 0.92, ordem: 1 },
+    ]
+    const N = 32, rnd = mulberry32(11), lat = Float32Array.from({ length: N * N }, () => rnd())
+    const vnoise = (x, y) => {
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0
+      const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy)
+      const i0 = ((x0 % N) + N) % N, j0 = ((y0 % N) + N) % N, i1 = (i0 + 1) % N, j1 = (j0 + 1) % N
+      const a = lat[j0 * N + i0], b = lat[j0 * N + i1], c = lat[j1 * N + i0], d = lat[j1 * N + i1]
+      return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy
+    }
+    const aspect = GH / GW
+    function compute(t) {
+      const amps = burners.map((b) => {
+        const ti = 0.45 + b.ordem * 0.55
+        if (t < ti) return 0
+        return b.alvo * (1 - Math.exp(-(t - ti) / 1.1)) * (1 + 0.045 * Math.sin(1.3 * t + b.ordem * 1.7))
+      })
+      for (let j = 0; j < GH; j++) {
+        const v = (j + 0.5) / GH
+        for (let i = 0; i < GW; i++) {
+          const u = (i + 0.5) / GW
+          let T = 0
+          for (let k = 0; k < 4; k++) {
+            const A = amps[k]
+            if (A <= 0) continue
+            const b = burners[k], dx = u - b.u, dy = (v - b.v) * aspect, d = Math.sqrt(dx * dx + dy * dy), r = b.r
+            const ring = (d - 0.58 * r) / (0.2 * r)
+            T += A * (0.6 * Math.exp(-ring * ring) + 0.42 * Math.exp(-(d * d) / (0.64 * r * r)) + 0.16 * Math.exp(-(d * d) / (3.4 * r * r)))
+          }
+          const n = vnoise(u * 9, v * 7 + t * 0.55) * 0.6 + vnoise(u * 19, v * 15 + t * 1.1) * 0.4
+          field[j * GW + i] = T * (0.88 + 0.24 * n)
+        }
+      }
+      const d = img.data
+      for (let p = 0, q = 0; p < field.length; p++, q += 4) {
+        const T = field[p], c = HEAT_LUT[Math.min(255, Math.max(0, Math.round((T / 1.02) * 255)))]
+        d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; d[q + 3] = Math.round(smoothstep(0.04, 0.3, T) * 238)
+      }
+      octx.putImageData(img, 0, 0)
+    }
+    // isotermas por marching squares
+    function contour(ctx, level, rx, ry, sx, sy) {
+      ctx.beginPath()
+      const P = (i, j) => [rx + (i + 0.5) * sx, ry + (j + 0.5) * sy]
+      for (let j = 0; j < GH - 1; j++) {
+        for (let i = 0; i < GW - 1; i++) {
+          const a = field[j * GW + i], b = field[j * GW + i + 1], c = field[(j + 1) * GW + i + 1], d = field[(j + 1) * GW + i]
+          const idx = (a > level ? 8 : 0) | (b > level ? 4 : 0) | (c > level ? 2 : 0) | (d > level ? 1 : 0)
+          if (idx === 0 || idx === 15) continue
+          const top = () => P(i + (level - a) / (b - a), j), right = () => P(i + 1, j + (level - b) / (c - b))
+          const bottom = () => P(i + (level - d) / (c - d), j + 1), left = () => P(i, j + (level - a) / (d - a))
+          const seg = (p, q) => { const A = p(), B = q(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]) }
+          switch (idx) {
+            case 1: case 14: seg(left, bottom); break
+            case 2: case 13: seg(bottom, right); break
+            case 3: case 12: seg(left, right); break
+            case 4: case 11: seg(top, right); break
+            case 5: seg(left, top); seg(bottom, right); break
+            case 6: case 9: seg(top, bottom); break
+            case 7: case 8: seg(left, top); break
+            case 10: seg(top, right); seg(left, bottom); break
+          }
+        }
+      }
+      ctx.stroke()
+    }
+    function draw(cv, t) {
+      compute(t)
+      const ctx = fitCanvas(cv), W = cv.width, H = cv.height, dpr = Math.min(devicePixelRatio || 1, 2)
+      ctx.clearRect(0, 0, W, H)
+      const asp = GW / GH
+      let rw = W * 0.94, rh = rw / asp
+      if (rh > H * 0.94) { rh = H * 0.94; rw = rh * asp }
+      const rx = (W - rw) / 2, ry = (H - rh) / 2
+      // vidro do cooktop
+      ctx.save()
+      ctx.beginPath(); ctx.roundRect(rx, ry, rw, rh, 18 * dpr)
+      ctx.fillStyle = 'rgba(17,18,20,0.045)'; ctx.fill()
+      ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = 'rgba(17,18,20,0.28)'; ctx.stroke()
+      ctx.clip()
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(off, rx, ry, rw, rh)
+      // contornos das resistências (frias ou quentes)
+      ctx.lineWidth = 1 * dpr; ctx.strokeStyle = 'rgba(17,18,20,0.16)'
+      for (const b of burners) { ctx.beginPath(); ctx.arc(rx + b.u * rw, ry + b.v * rh, b.r * 0.58 * rw, 0, Math.PI * 2); ctx.stroke() }
+      // isotermas, como num resultado de CFD
+      ctx.lineWidth = 1 * dpr
+      ;[[0.32, 0.22], [0.55, 0.26], [0.78, 0.3]].forEach(([lvl, a]) => { ctx.strokeStyle = `rgba(17,18,20,${a})`; contour(ctx, lvl, rx, ry, rw / GW, rh / GH) })
+      ctx.restore()
+    }
+    return { draw }
+  })()
+
+  // ------------------------------------------------------------------ laço de desenho: só as páginas visíveis
+  const visible = (sl) => sl.classList.contains('is-current') || sl.classList.contains('is-entering') || sl.classList.contains('is-leaving')
+  function frame(now) {
+    for (const sl of slides) {
+      if (!visible(sl)) continue
+      sl.querySelectorAll('canvas[data-turntable]').forEach((cv) => drawTurntable(cv, giroAt(now)))
+      const sq = sl.querySelector('canvas[data-sequence]')
+      if (sq) drawSequence(sq)
+      const hf = sl.querySelector('canvas[data-heatfield]')
+      if (hf) {
+        if (heat.t0 == null) heat.t0 = now
+        HF.draw(hf, reduced ? 6 : (now - heat.t0) / 1000)
+      }
+    }
+    requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
+
+  // ------------------------------------------------------------------ linha do tempo de cada página
+  const timers = new Map()
+  const later = (sl, ms, fn) => { const id = setTimeout(fn, reduced ? 0 : ms); if (!timers.has(sl)) timers.set(sl, []); timers.get(sl).push(id) }
+  const tween = (sl, ms, dur, fn, ease = easeInOut) => later(sl, ms, () => {
+    const t0 = performance.now()
+    const run = (now) => { if (!sl.classList.contains('is-in')) return; const k = reduced ? 1 : clamp01((now - t0) / dur); fn(ease(k)); if (k < 1) requestAnimationFrame(run) }
+    requestAnimationFrame(run)
+  })
+  const clearTimers = (sl) => { (timers.get(sl) || []).forEach(clearTimeout); timers.set(sl, []); clearInterval(sl._carousel) }
+
+  /** Ramos da página de decisões: do centro até o meio de cada coluna, medidos na tela. */
+  function layoutTree(sl) {
+    const svg = sl.querySelector('.branches__tree')
+    if (!svg) return
+    const box = svg.getBoundingClientRect()
+    if (!box.width) return
+    const w = box.width, hh = box.height, mid = w / 2, y = hh * 0.42, r = Math.min(24, hh * 0.3)
+    const xs = [...sl.querySelectorAll('.branches__cols > li')].map((li) => { const b = li.getBoundingClientRect(); return b.left + b.width / 2 - box.left })
+    svg.setAttribute('viewBox', `0 0 ${w} ${hh}`)
+    svg.innerHTML = xs.map((x) => {
+      if (Math.abs(x - mid) < 1) return `<path pathLength="1" d="M${mid} 0 V${hh}"/>`
+      const dir = x < mid ? -1 : 1
+      return `<path pathLength="1" d="M${mid} 0 V${y} H${x - dir * r} Q${x} ${y} ${x} ${y + r} V${hh}"/>`
+    }).join('')
+  }
+
+  // ---- mapa do lead time: rota calculada sobre as duas terras, ponto que viaja da partida ao destino
+  const MAP = new WeakMap()
+  function layoutMap(sl) {
+    const map = sl.querySelector('[data-map]')
+    if (!map) return null
+    const world = map.querySelector('.map__world')
+    const prev = world.style.transform
+    world.style.transition = 'none'; world.style.transform = 'none'
+    const box = map.getBoundingClientRect()
+    const a = map.querySelector('.map__land--start').getBoundingClientRect()
+    const b = map.querySelector('.map__land--end').getBoundingClientRect()
+    world.style.transform = prev; void world.offsetWidth; world.style.transition = ''
+    if (!box.width || !a.height || !b.height) return null
+    const W = box.width, H = box.height
+    const S = [a.left - box.left + a.width * 0.5, a.top - box.top + a.height * 0.76]
+    const E = [b.left - box.left + b.width * 0.47, b.top - box.top + b.height * 0.56]
+    const c1 = [S[0] - W * 0.2, S[1] + (E[1] - S[1]) * 0.3]
+    const c2 = [E[0] - W * 0.24, E[1] - (E[1] - S[1]) * 0.28]
+    const d = `M${S[0]} ${S[1]} C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${E[0]} ${E[1]}`
+    const svg = map.querySelector('.map__svg')
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+    const grad = svg.querySelector('#routeGrad')
+    grad.setAttribute('y1', S[1]); grad.setAttribute('y2', E[1])
+    const base = svg.querySelector('.map__route-base'), flown = svg.querySelector('.map__route-flown')
+    base.setAttribute('d', d); flown.setAttribute('d', d)
+    const L = flown.getTotalLength()
+    flown.style.strokeDasharray = `${L} ${L}`
+    svg.querySelectorAll('.map__end-ring').forEach((r) => { r.setAttribute('cx', E[0]); r.setAttribute('cy', E[1]) })
+    const st = map.querySelector('.map__place--start'), en = map.querySelector('.map__place--end')
+    st.style.left = `${S[0] + 34}px`; st.style.top = `${S[1] + 84}px`
+    en.style.left = `${E[0]}px`; en.style.top = `${E[1] + 30}px`
+    const state = { flown, L, p: MAP.get(sl)?.p ?? 0, dot: map.querySelector('.map__dot') }
+    MAP.set(sl, state)
+    setRoute(sl, state.p)
+    return state
+  }
+  function setRoute(sl, p) {
+    const st = MAP.get(sl)
+    if (!st) return
+    st.p = p
+    st.flown.style.strokeDashoffset = String(st.L * (1 - p))
+    const pt = st.flown.getPointAtLength(st.L * p)
+    st.dot.style.transform = `translate(${pt.x}px, ${pt.y}px)`
+    st.dot.style.setProperty('--dot', hex(heatRGB(1 - p)))
+  }
+  function flyRoute(sl, to, instant) {
+    const st = MAP.get(sl) || layoutMap(sl)
+    if (!st) return
+    cancelAnimationFrame(st.raf)
+    sl.dataset.arrived = to >= 1 && instant ? '1' : '0'
+    if (instant || reduced) { setRoute(sl, to); sl.dataset.arrived = to >= 1 ? '1' : '0'; return }
+    const from = st.p, t0 = performance.now(), dur = 2300
+    const run = (now) => {
+      const k = clamp01((now - t0) / dur)
+      setRoute(sl, from + (to - from) * easeInOut(k))
+      if (k < 1) st.raf = requestAnimationFrame(run)
+      else sl.dataset.arrived = to >= 1 ? '1' : '0'
+    }
+    st.raf = requestAnimationFrame(run)
+  }
+
+  // ---- confiabilidade: cartões sobre o gelo
+  function setIce(sl, i) {
+    const ice = sl.querySelector('[data-ice]')
+    if (!ice) return
+    ice.style.setProperty('--i', i)
+    ice.querySelectorAll('.camp').forEach((c, k) => c.classList.toggle('is-active', k === i))
+  }
+  function enterIce(sl, instant) {
+    const ice = sl.querySelector('[data-ice]')
+    const head = ice.querySelector('.ice__head')
+    ice.classList.remove('is-opened', 'is-done', 'is-dealt', 'is-dealing')
+    head.getAnimations().forEach((a) => a.cancel())
+    setIce(sl, Number(sl.dataset.step || 0))
+    if (instant || reduced) { ice.classList.add('is-opened', 'is-done', 'is-dealt'); return }
+    // o título nasce grande no centro e encolhe para o canto (como "Our Camps")
+    const box = ice.getBoundingClientRect(), r = head.getBoundingClientRect()
+    const dx = box.left + box.width / 2 - (r.left + r.width / 2), dy = box.top + box.height / 2 - (r.top + r.height / 2)
+    const anim = head.animate([{ transform: `translate(${dx}px, ${dy}px) scale(1.75)` }, { transform: `translate(${dx}px, ${dy}px) scale(1.75)`, offset: 0.42 }, { transform: 'none' }], { duration: 2300, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' })
+    sl._anims = [anim]
+    later(sl, 380, () => ice.classList.add('is-opened'))
+    later(sl, 1700, () => ice.classList.add('is-done'))
+    later(sl, 1150, () => { ice.classList.add('is-dealing', 'is-dealt') })
+    later(sl, 2800, () => ice.classList.remove('is-dealing'))
+  }
+
+  function enter(sl, page) {
+    if (page.tipo === 'decisoes') layoutTree(sl)
+    sl.classList.add('is-in')
+    const step = Number(sl.dataset.step || 0)
+    sl.querySelectorAll('[data-count]').forEach((el) => {
+      const to = Number(el.dataset.count), dec = Number(el.dataset.dec || (Number.isInteger(to) ? 0 : 1))
+      if (!reduced) el.textContent = fmtNum(0, dec)
+      tween(sl, 600, 1500, (k) => { el.textContent = fmtNum(to * k, dec) }, easeOutExpo)
+    })
+    if (page.tipo === 'calor') heat.t0 = null
+    if (page.tipo === 'solucao') {
+      const items = [...sl.querySelectorAll('[data-steps] li')]
+      const mark = (n) => items.forEach((li, i) => { li.classList.toggle('is-active', i === n); li.classList.toggle('is-done', i < n) })
+      seq.p = 0; seq.x = 0; mark(0)
+      later(sl, 1400, () => mark(1))
+      tween(sl, 1400, 1900, (k) => { seq.p = k })
+      later(sl, 3500, () => mark(2))
+      tween(sl, 3500, 1100, (k) => { seq.x = k })
+      later(sl, 5000, () => mark(3))
+    }
+    if (page.tipo === 'mapa') {
+      layoutMap(sl)
+      flyRoute(sl, step >= 1 ? 1 : 0, true)
+    }
+    if (page.tipo === 'confianca') enterIce(sl, step > 0)
+    if (page.tipo === 'dashboard') {
+      const imgs = [...sl.querySelectorAll('[data-carousel] img')], tabs = [...sl.querySelectorAll('.tabs li')]
+      const cycle = 3400
+      let cur = 0
+      sl.style.setProperty('--cycle', cycle + 'ms')
+      imgs.forEach((im, i) => { im.classList.toggle('is-on', i === 0); im.style.zIndex = '' })
+      tabs.forEach((t, i) => t.classList.toggle('is-on', i === 0))
+      const show = (n) => {
+        const prevImg = imgs[cur], nextImg = imgs[n]
+        cur = n
+        tabs.forEach((t, i) => { t.classList.remove('is-on'); if (i === n) { void t.offsetWidth; t.classList.add('is-on') } })
+        nextImg.classList.add('is-on'); nextImg.style.zIndex = 2; prevImg.style.zIndex = 1
+        if (!reduced) {
+          nextImg.animate([{ clipPath: 'polygon(100% 0%,100% 0%,100% 100%,100% 100%)', transform: 'translateX(8%)' }, { clipPath: 'polygon(0% 0%,100% 0%,100% 100%,0% 100%)', transform: 'none' }], { duration: 1000, easing: 'cubic-bezier(.16,1,.3,1)' })
+          prevImg.animate([{ transform: 'none' }, { transform: 'translateX(-8%)' }], { duration: 1000, easing: 'cubic-bezier(.16,1,.3,1)' })
+        }
+        setTimeout(() => prevImg.classList.remove('is-on'), reduced ? 0 : 1000)
+      }
+      later(sl, 0, () => { sl._carousel = setInterval(() => show((cur + 1) % imgs.length), cycle) })
+    }
+  }
+  function leave(sl) {
+    clearTimers(sl)
+    sl.classList.remove('is-in')
+    ;(sl._anims || []).forEach((a) => a.cancel()); sl._anims = []
+    const st = MAP.get(sl); if (st) cancelAnimationFrame(st.raf)
+  }
+
+  /** Passo dentro da página (seta para a frente/trás sem trocar de página). */
+  function onStep(sl, page, step) {
+    sl.dataset.step = String(step)
+    if (page.tipo === 'mapa') flyRoute(sl, step >= 1 ? 1 : 0, false)
+    if (page.tipo === 'confianca') setIce(sl, step)
+  }
+
+  // ------------------------------------------------------------------ navegação
+  const sectionsEl = document.getElementById('sections')
+  const secs = [...new Set(pages.map((p) => p.secao))]
+  sectionsEl.innerHTML = secs.map((s) => {
+    const dur = pages.filter((p) => p.secao === s).reduce((a, p) => a + (p.segundos || 0), 0)
+    return `<li style="--w:${dur}" title="${esc(pages.find((p) => p.secao === s).secaoNome)}"></li>`
+  }).join('')
+
+  let index = 0, busy = false, queued = null
+  const stepOf = (i) => Number(slides[i].dataset.step || 0)
+
+  function applyChrome(i) {
+    const p = pages[i]
+    const rgb = heatRGB(p.calor ?? 0.2)
+    root.style.setProperty('--heat', hex(rgb))
+    root.style.setProperty('--heat-ink', hex(inkOf(rgb)))
+    document.body.classList.toggle('on-dark', p.fundo === 'escuro')
+    document.getElementById('pagerNum').textContent = `${pad2(i + 1)} / ${pad2(pages.length)}`
+    ;[...sectionsEl.children].forEach((li, k) => { li.classList.toggle('is-now', secs[k] === p.secao); li.classList.toggle('is-past', secs[k] < p.secao) })
+    try { history.replaceState(null, '', '#' + p.id) } catch (_) { /* file:// em alguns navegadores */ }
+  }
+
+  function kindFor(from, to, forward) {
+    if (reduced) return 'fade'
+    const a = pages[from], b = pages[to]
+    if (forward && b.transicao) return b.transicao
+    if (!forward && a.transicao) return a.transicao === 'subida' ? 'descida' : a.transicao
+    return a.secao !== b.secao ? 'capitulo' : 'cortina'
+  }
+
+  // ---- cortina de capítulo: frente de calor com borda de chama, na cor da seção
+  const chapter = document.getElementById('chapter'), chCanvas = document.getElementById('chapterCanvas')
+  const chTitle = document.getElementById('chapterTitle'), chN = document.getElementById('chapterN'), chName = document.getElementById('chapterName')
+  function sectionColor(p) { return mixInk(heatRGB(pages.find((q) => q.secao === p.secao)?.calor ?? p.calor ?? 0.5), 0.42) }
+  function drawCurtain(ctx, W, H, yA, yB, t, core, forward, dpr) {
+    ctx.clearRect(0, 0, W, H)
+    const E = H * 0.05, step = Math.max(6, Math.round(W / 140))
+    const wave = (x, s) => E * (0.5 * Math.sin(x * 0.0041 / dpr + s + t * 1.9) + 0.3 * Math.sin(x * 0.0113 / dpr + s * 2.3 - t * 2.6) + 0.2 * Math.sin(x * 0.026 / dpr + s * 5.1 + t * 3.4))
+    const tongue = (x, s) => E * 1.15 * Math.pow(Math.max(0, Math.sin(x * 0.0072 / dpr + s * 1.7 + t * 1.4)), 7)
+    // borda de ataque (quente) mostra línguas na direção do movimento; a de fuga (fria) só ondula
+    const lead = (x) => (forward ? yA + wave(x, 1.3) - tongue(x, 0.4) : yB + wave(x, 4.1) + tongue(x, 2.2))
+    const trail = (x) => (forward ? yB + wave(x, 7.7) : yA + wave(x, 9.2))
+    const topEdge = forward ? lead : trail, botEdge = forward ? trail : lead
+    const xs = []
+    for (let x = -step; x <= W + step; x += step) xs.push(x)
+    // corpo da cortina
+    ctx.beginPath()
+    xs.forEach((x, i) => (i ? ctx.lineTo(x, topEdge(x)) : ctx.moveTo(x, topEdge(x))))
+    for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], botEdge(xs[i]))
+    ctx.closePath()
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7)
+    g.addColorStop(0, `rgb(${core.map((v) => Math.min(255, v + 26)).join(',')})`)
+    g.addColorStop(1, `rgb(${core.join(',')})`)
+    ctx.fillStyle = g
+    ctx.fill()
+    // brilho das bordas: frente quente (âmbar → vermelho) e fuga fria (azul)
+    const glowEdge = (edge, colors, band, inward) => {
+      const base = edge(W / 2)
+      const lg = ctx.createLinearGradient(0, base, 0, base + inward * band)
+      colors.forEach(([o, c]) => lg.addColorStop(o, c))
+      ctx.beginPath()
+      xs.forEach((x, i) => (i ? ctx.lineTo(x, edge(x)) : ctx.moveTo(x, edge(x))))
+      for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], edge(xs[i]) + inward * band)
+      ctx.closePath()
+      ctx.fillStyle = lg
+      ctx.fill()
+      ctx.save()
+      ctx.shadowColor = colors[0][1]; ctx.shadowBlur = 28 * dpr
+      ctx.lineWidth = 3 * dpr; ctx.strokeStyle = colors[0][1]
+      ctx.beginPath(); xs.forEach((x, i) => (i ? ctx.lineTo(x, edge(x)) : ctx.moveTo(x, edge(x)))); ctx.stroke()
+      ctx.restore()
+    }
+    const hot = [[0, 'rgba(255,214,120,1)'], [0.18, 'rgba(238,177,17,.95)'], [0.5, 'rgba(224,134,80,.75)'], [0.8, 'rgba(179,38,30,.45)'], [1, 'rgba(179,38,30,0)']]
+    const cold = [[0, 'rgba(150,226,255,.95)'], [0.35, 'rgba(0,160,221,.6)'], [1, 'rgba(0,160,221,0)']]
+    const band = H * 0.2
+    glowEdge(lead, hot, band, forward ? 1 : -1)
+    glowEdge(trail, cold, band * 0.7, forward ? -1 : 1)
+  }
+  function chapterTransition(out, inn, forward, innPage) {
+    return new Promise((resolve) => {
+      const dpr = Math.min(devicePixelRatio || 1, 1.5)
+      const W = Math.round(innerWidth * dpr), H = Math.round(innerHeight * dpr)
+      chCanvas.width = W; chCanvas.height = H
+      const ctx = chCanvas.getContext('2d')
+      const core = sectionColor(innPage)
+      chN.textContent = pad2(innPage.secao); chName.textContent = innPage.secaoNome
+      chapter.style.visibility = 'visible'
+      const A = 560, B = 480, Cc = 700, E2 = H * 0.16
+      const t0 = performance.now()
+      let swapped = false, entered = false
+      out.animate([{ transform: 'none', filter: 'brightness(1)' }, { transform: `translateY(${forward ? -6 : 6}vh) scale(1.04)`, filter: 'brightness(.5)' }], { duration: A + 40, easing: 'cubic-bezier(.55,0,.75,.2)', fill: 'forwards' })
+      const run = (now) => {
+        const ms = now - t0, t = ms / 1000
+        // a troca e a entrada dependem de LIMIAR, não de janela: um quadro lento não pode pulá-las (tela em branco)
+        if (!swapped && ms >= A) {
+          swapped = true
+          out.getAnimations().forEach((a) => a.cancel())
+          out.classList.remove('is-leaving'); inn.classList.add('is-current')
+        }
+        if (!entered && ms >= A + B - 140) { entered = true; enter(inn, innPage) }
+        let yA, yB
+        if (ms < A) {
+          const k = easeInOut(clamp01(ms / A))
+          if (forward) { yA = H + E2 - (H + 2 * E2) * k; yB = H + E2 * 2 } else { yA = -E2 * 2; yB = -E2 + (H + 2 * E2) * k }
+        } else if (ms < A + B) {
+          yA = -E2 * 2; yB = H + E2 * 2
+        } else {
+          const k = easeInOut(clamp01((ms - A - B) / Cc))
+          if (forward) { yA = -E2 * 2; yB = H + E2 - (H + 2 * E2) * k } else { yA = -E2 + (H + 2 * E2) * k; yB = H + E2 * 2 }
+        }
+        // título do capítulo: aparece durante a cobertura
+        const ti = clamp01((ms - A + 120) / 320), to = clamp01((ms - A - B + 60) / 260)
+        chTitle.style.opacity = String(ti * (1 - to))
+        chTitle.style.transform = `translateY(${(1 - ti) * 26 * (forward ? 1 : -1) - to * 30 * (forward ? 1 : -1)}px)`
+        drawCurtain(ctx, W, H, yA, yB, t, core, forward, dpr)
+        if (ms < A + B + Cc) requestAnimationFrame(run)
+        else {
+          ctx.clearRect(0, 0, W, H)
+          chapter.style.visibility = 'hidden'; chTitle.style.opacity = '0'
+          resolve()
+        }
+      }
+      requestAnimationFrame(run)
+    })
+  }
+
+  const mist = document.getElementById('mist'), scan = document.getElementById('scan')
+  const E_WD = 'cubic-bezier(.76,0,.24,1)', E_EXPO = 'cubic-bezier(.16,1,.3,1)'
+  const FULL = 'polygon(0% 0%,100% 0%,100% 100%,0% 100%)'
+  function transition(kind, out, inn, forward) {
+    const done = []
+    const innPage = pages[Number(inn.dataset.i)]
+    out.classList.add('is-leaving'); out.classList.remove('is-current')
+    if (kind === 'capitulo') {
+      return chapterTransition(out, inn, forward, innPage).then(() => { leave(out); out.classList.remove('is-leaving') })
+    }
+    if (kind === 'cortina') {
+      // dentro da seção: cortina lateral (como os sliders do White Desert) com um feixe de varredura na cor da página
+      const D = 1100
+      inn.classList.add('is-entering')
+      done.push(inn.animate([{ clipPath: forward ? 'polygon(100% 0%,100% 0%,100% 100%,100% 100%)' : 'polygon(0% 0%,0% 0%,0% 100%,0% 100%)' }, { clipPath: FULL }], { duration: D, easing: E_EXPO }).finished)
+      const ii = inn.querySelector('.slide__inner, .map, .ice'), oi = out.querySelector('.slide__inner, .map, .ice')
+      if (ii) ii.animate([{ transform: `translateX(${forward ? 12 : -12}%)` }, { transform: 'none' }], { duration: D, easing: E_EXPO })
+      if (oi) oi.animate([{ transform: 'none' }, { transform: `translateX(${forward ? -10 : 10}%)` }], { duration: D, easing: E_EXPO })
+      done.push(out.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(.55)' }], { duration: D, easing: E_EXPO }).finished)
+      scan.style.visibility = 'visible'
+      const x0 = forward ? innerWidth : -6, x1 = forward ? -6 : innerWidth
+      done.push(scan.animate([{ transform: `translateX(${x0}px)`, opacity: 1 }, { transform: `translateX(${(x0 + x1) / 2}px)`, opacity: 1, offset: 0.7 }, { transform: `translateX(${x1}px)`, opacity: 0 }], { duration: D, easing: E_EXPO }).finished.then(() => { scan.style.visibility = 'hidden' }))
+      setTimeout(() => enter(inn, innPage), 220)
+    } else if (kind === 'subida') {
+      // o mapa sobe por cima da página anterior, com o mundo em paralaxe (como a seção do voo)
+      const D = 1350
+      inn.classList.add('is-entering')
+      done.push(inn.animate([{ transform: 'translateY(100%)' }, { transform: 'none' }], { duration: D, easing: E_WD }).finished)
+      done.push(out.animate([{ transform: 'none', filter: 'brightness(1)' }, { transform: 'translateY(-24%)', filter: 'brightness(.3)' }], { duration: D, easing: E_WD }).finished)
+      const world = inn.querySelector('.map__world')
+      if (world) world.animate([{ transform: 'translateY(-16vh)' }, { transform: 'none' }], { duration: D + 500, easing: E_EXPO })
+      setTimeout(() => enter(inn, innPage), 420)
+    } else if (kind === 'descida') {
+      const D = 1200
+      inn.classList.add('is-entering')
+      out.classList.add('is-on-top')
+      done.push(out.animate([{ transform: 'none' }, { transform: 'translateY(100%)' }], { duration: D, easing: E_WD }).finished.then(() => out.classList.remove('is-on-top')))
+      done.push(inn.animate([{ transform: 'translateY(-24%)', filter: 'brightness(.3)' }, { transform: 'none', filter: 'brightness(1)' }], { duration: D, easing: E_WD }).finished)
+      setTimeout(() => enter(inn, innPage), 300)
+    } else if (kind === 'nevoa') {
+      // a névoa sobe, cobre tudo e se desfaz já sobre a página nova
+      const D = 2000, H = innerHeight
+      mist.style.visibility = 'visible'
+      done.push(mist.animate([{ transform: `translateY(${H}px)` }, { transform: `translateY(${-2.6 * H}px)` }], { duration: D, easing: 'cubic-bezier(.45,0,.55,1)' }).finished.then(() => { mist.style.visibility = 'hidden' }))
+      done.push(new Promise((res) => setTimeout(() => { inn.classList.add('is-entering'); out.classList.remove('is-leaving'); enter(inn, innPage); res() }, D / 2)))
+    } else {
+      inn.classList.add('is-entering')
+      done.push(inn.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 }).finished)
+      enter(inn, innPage)
+    }
+    return Promise.all(done.map((d) => Promise.resolve(d).catch(() => {}))).then(() => {
+      leave(out)
+      out.classList.remove('is-leaving')
+      inn.classList.remove('is-entering'); inn.classList.add('is-current')
+    })
+  }
+
+  /** Estado único e consistente depois de uma troca: só a página atual está visível e já "entrou". */
+  function settle() {
+    slides.forEach((sl, k) => {
+      sl.classList.toggle('is-current', k === index)
+      sl.classList.remove('is-entering', 'is-leaving', 'is-on-top')
+      if (k !== index && sl.classList.contains('is-in')) leave(sl)
+    })
+    const cur = slides[index]
+    if (!cur.classList.contains('is-in')) enter(cur, pages[index])
+  }
+
+  function go(to, { arriveLast = false } = {}) {
+    if (to < 0 || to >= pages.length || to === index) return
+    if (busy) { queued = to; return }
+    const from = index, forward = to > from
+    busy = true; index = to
+    slides[to].dataset.step = arriveLast ? String(stepsOf(to) - 1) : '0'
+    delete slides[to].dataset.arrived
+    applyChrome(to)
+    if (OPT.cronometroAutomatico && from === 0 && to > 0 && !timer.running && timer.acc === 0) startTimer()
+    transition(kindFor(from, to, forward), slides[from], slides[to], forward).catch(() => {}).then(() => {
+      busy = false
+      settle()
+      if (queued != null) { const q = queued; queued = null; go(q) }
+      tick()
+    })
+    tick()
+  }
+  function next() {
+    if (busy) { queued = Math.min(pages.length - 1, (queued ?? index) + 1); return }
+    const s = stepOf(index)
+    if (s < stepsOf(index) - 1) { onStep(slides[index], pages[index], s + 1); tick(); return }
+    go(index + 1)
+  }
+  function prev() {
+    if (busy) { queued = Math.max(0, (queued ?? index) - 1); return }
+    const s = stepOf(index)
+    if (s > 0) { onStep(slides[index], pages[index], s - 1); tick(); return }
+    go(index - 1, { arriveLast: true })
+  }
+  const goSection = (n) => { const i = pages.findIndex((p) => p.secao === n); if (i >= 0) go(i) }
+
+  document.getElementById('nextBtn').addEventListener('click', next)
+  document.getElementById('prevBtn').addEventListener('click', prev)
+
+  // teclado, roda e toque
+  const presenter = document.getElementById('presenter'), help = document.getElementById('help')
+  presenter.hidden = !OPT.painelDoApresentadorAberto
+  let consoleWin = null
+  function command(cmd, extra) {
+    if (cmd === 'next') next()
+    else if (cmd === 'prev') prev()
+    else if (cmd === 'toggle') toggleTimer()
+    else if (cmd === 'reset') resetTimer()
+    else if (cmd === 'section') goSection(extra?.n)
+    tick()
+  }
+  presenter.addEventListener('click', (e) => { const b = e.target.closest('[data-cmd]'); if (b) command(b.dataset.cmd) })
+  addEventListener('message', (e) => { if (e.data && e.data.pitch === 'cmd' && (!consoleWin || e.source === consoleWin)) command(e.data.cmd, e.data) })
+  help.addEventListener('click', (e) => { if (e.target === help) help.hidden = true })
+  addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select, [contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return
+    const k = e.key
+    if (!help.hidden && (k === 'Escape' || k === '?')) { e.preventDefault(); help.hidden = true; return }
+    if (['ArrowRight', 'ArrowDown', 'PageDown', 'Enter'].includes(k) || (k === ' ' && !e.shiftKey)) { e.preventDefault(); next() }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(k) || (k === ' ' && e.shiftKey)) { e.preventDefault(); prev() }
+    else if (k === 'Home') go(0)
+    else if (k === 'End') go(pages.length - 1)
+    else if (/^[1-9]$/.test(k)) goSection(Number(k))
+    else if (k.toLowerCase() === 't') toggleTimer()
+    else if (k.toLowerCase() === 'r') resetTimer()
+    else if (k.toLowerCase() === 'p') presenter.hidden = !presenter.hidden
+    else if (k.toLowerCase() === 'f') { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); else root.requestFullscreen?.().catch(() => {}) }
+    else if (k.toLowerCase() === 'j') consoleWin = window.open(location.href.split('#')[0] + '#apresentador', 'pitch-console', 'width=960,height=720')
+    else if (k === '?') help.hidden = !help.hidden
+    else return
+    tick()
+  })
+  let wheelLock = 0, wheelAcc = 0
+  if (OPT.rodaDoMouse) addEventListener('wheel', (e) => {
+    if (e.target.closest('.presenter, .help')) return
+    e.preventDefault()
+    const now = performance.now()
+    if (now < wheelLock) return
+    wheelAcc += e.deltaY
+    if (Math.abs(wheelAcc) > 40) { if (wheelAcc > 0) next(); else prev(); wheelAcc = 0; wheelLock = now + 900 }
+  }, { passive: false })
+  let touchY = null, touchX = null
+  addEventListener('touchstart', (e) => { if (e.target.closest('canvas, .presenter')) { touchY = null; return } touchY = e.touches[0].clientY; touchX = e.touches[0].clientX }, { passive: true })
+  addEventListener('touchend', (e) => {
+    if (touchY == null) return
+    const dy = touchY - e.changedTouches[0].clientY, dx = touchX - e.changedTouches[0].clientX
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 50) { if ((Math.abs(dy) > Math.abs(dx) ? dy : dx) > 0) next(); else prev() }
+    touchY = null
+  }, { passive: true })
+
+  // ------------------------------------------------------------------ cronômetro na tela
+  const timebar = document.getElementById('timebar'), fill = document.getElementById('timebarFill')
+  if (OPT.barraDeTempo) timebar.hidden = false
+  function tick() {
+    const i = index, p = pages[i], el = elapsed(), pc = pace(i, el), pl = plan[i]
+    if (OPT.barraDeTempo) { fill.style.width = `${Math.min(100, (el / TOTAL) * 100)}%`; fill.dataset.pace = pc }
+    if (!presenter.hidden) {
+      document.getElementById('pTitle').textContent = `${p.secao}. ${p.secaoNome}`
+      document.getElementById('pIndex').textContent = `${pad2(i + 1)}/${pad2(pages.length)}${stepsOf(i) > 1 ? ` · passo ${stepOf(i) + 1}/${stepsOf(i)}` : ''}`
+      const pe = document.getElementById('pElapsed'); pe.textContent = clock(el); pe.dataset.pace = pc
+      document.getElementById('pTotal').textContent = `de ${clock(TOTAL)}`
+      const left = pl.end - el, pr = document.getElementById('pRemain')
+      pr.textContent = left >= 0 ? `encerrar até ${clock(pl.end)}` : `${clock(left)} além do plano`; pr.dataset.pace = pc
+      const notes = document.getElementById('pNotes')
+      if (notes.dataset.for !== p.id) { notes.innerHTML = notesHtml(p.notas); notes.dataset.for = p.id }
+      const nx = pages[i + 1]
+      document.getElementById('pNext').textContent = nx ? `Próxima: ${titleOf(nx)}` : 'Última página'
+      document.getElementById('pToggle').textContent = timer.running ? '❚❚' : '▶'
+    }
+    if (consoleWin && !consoleWin.closed) consoleWin.postMessage({ pitch: 'state', page: i, step: stepOf(i), elapsed: el, running: timer.running }, '*')
+  }
+  setInterval(tick, 250)
+
+  // navegação: some quando o mouse fica parado (o teclado não a chama de volta)
+  let idleT = 0
+  const wake = () => { document.body.classList.remove('is-idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('is-idle'), 2600) }
+  ;['mousemove', 'pointerdown', 'touchstart'].forEach((ev) => addEventListener(ev, wake, { passive: true }))
+  wake()
+
+  // ------------------------------------------------------------------ início (ou direto numa página: #custo, #lead-time…)
+  const startAt = Math.max(0, pages.findIndex((p) => p.id === location.hash.slice(1)))
+  index = startAt
+  slides[startAt].classList.add('is-current')
+  applyChrome(startAt)
+  requestAnimationFrame(() => enter(slides[startAt], pages[startAt]))
+  let resizeT = 0
+  addEventListener('resize', () => {
+    clearTimeout(resizeT)
+    resizeT = setTimeout(() => {
+      const sl = slides[index]
+      layoutTree(sl)
+      if (pages[index].tipo === 'mapa') layoutMap(sl)
+    }, 120)
+  })
+  tick()
+})()
+</script>
+</body>
+</html>
