@@ -341,8 +341,9 @@ body.is-idle, body.is-idle * { cursor: none !important; }
 .map__place { position: absolute; z-index: 2; display: grid; gap: .3rem; color: var(--on-night); white-space: nowrap; }
 .map__place i { font-family: var(--font-display); font-style: italic; font-size: var(--t-lead); color: var(--on-night-mute); }
 .map__place b { font-weight: 700; font-size: var(--t-body); letter-spacing: .04em; text-transform: uppercase; }
-.map__place--end { opacity: .35; transition: opacity .8s ease; color: var(--on-night); text-align: left; }
+.map__place--end { opacity: .35; transition: opacity .8s ease; color: var(--on-night); text-align: left; transform: translateY(-100%); }
 .map__place--end i { color: var(--on-night-mute); }
+.map__place .map__goal { font-size: clamp(2rem, min(3.6vw, 7vh), 4.2rem); max-width: 14ch; white-space: normal; }
 .slide--mapa[data-arrived="1"] .map__place--end { opacity: 1; }
 .map__panel { position: absolute; z-index: 4; left: var(--gutter); top: calc(var(--pad-top) - 1rem); width: min(31vw, 34rem); display: grid; gap: clamp(1rem, 3vh, 1.8rem); }
 .map__panel .h1 { font-size: clamp(2rem, min(3.6vw, 7vh), 4.2rem); max-width: 14ch; }
@@ -947,7 +948,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
           </svg>
           <div class="map__dot"><b></b><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div>
           <p class="map__place map__place--start"><i>${esc(c.partida.rotulo)}</i><b>${esc(c.partida.local)}</b></p>
-          <p class="map__place map__place--end"><i>${esc(c.destino.rotulo)}</i><b>${esc(c.destino.local)}</b></p>
+          <div class="map__place map__place--end">${c.destino.chamada ? h(c.destino.chamada, 'map__goal', 0.6) : `<i>${esc(c.destino.rotulo)}</i>`}<b>${esc(c.destino.local)}</b></div>
         </div>
         <div class="map__panel">
           <header class="head">${h(c.titulo)}</header>
@@ -976,7 +977,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
             ${c.etapas.map((e, i) => `<li data-i="${i}"><span class="steps-v__n">${i + 1}</span><span>${esc(e)}</span></li>`).join('')}
           </ol>
         </div>
-        <div class="stove sol__stove r" style="--d:.2"><canvas data-sequence role="img" aria-label="O fogão se abre em vista explodida e passa para o raio-X com a temperatura prevista"></canvas></div>
+        <div class="stove sol__stove r" style="--d:.2"><div class="stove__bob"><canvas data-sequence role="img" aria-label="O fogão se abre em vista explodida e passa para o raio-X com a temperatura prevista"></canvas></div></div>
       </div>`,
 
     dashboard: (c, p) => `
@@ -1208,15 +1209,43 @@ body.is-idle, body.is-idle * { cursor: none !important; }
   })
 
   // desmontagem: progresso (p) e raio-X (x), controlados pela linha do tempo da página da solução
-  const seq = { p: 0, x: 0 }
-  function drawSequence(cv) {
+  // w: 0 = o fogão continua balançando como na página anterior; 1 = já está nos quadros da desmontagem
+  const seq = { p: 0, x: 0, w: 0 }
+  // posição do mesmo ponto (base do fogão, no centro) no quadro central do balanço e no primeiro da desmontagem, em px dos arquivos
+  const MATCH = { from: [410, 990], to: [336.5, 1022], scale: 0.831 }
+  function drawSwayed(ctx, im, w, alpha) {
+    if (!ok(im) || alpha <= 0) return
+    const cw = ctx.canvas.width, ch = ctx.canvas.height, ref = desmontagem[0]
+    const sg = Math.min(cw / im.naturalWidth, ch / im.naturalHeight)
+    const sd = ok(ref) ? Math.min(cw / ref.naturalWidth, ch / ref.naturalHeight) : sg
+    const gx = (cw - im.naturalWidth * sg) / 2 + MATCH.from[0] * sg, gy = ch - im.naturalHeight * sg + MATCH.from[1] * sg
+    const dx = ok(ref) ? (cw - ref.naturalWidth * sd) / 2 + MATCH.to[0] * sd : gx, dy = ok(ref) ? ch - ref.naturalHeight * sd + MATCH.to[1] * sd : gy
+    const k = 1 + (MATCH.scale * sd / sg - 1) * w
+    const ax = gx + (dx - gx) * w, ay = gy + (dy - gy) * w
+    ctx.globalAlpha = Math.min(1, alpha)
+    ctx.drawImage(im, ax - MATCH.from[0] * sg * k, ay - MATCH.from[1] * sg * k, im.naturalWidth * sg * k, im.naturalHeight * sg * k)
+    ctx.globalAlpha = 1
+  }
+  function drawSequence(cv, now) {
     const ctx = fitCanvas(cv), n = desmontagem.length - 1
     if (n < 1) return
-    const f = seq.p * (n - 1), i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1)
     ctx.clearRect(0, 0, cv.width, cv.height)
-    drawImg(ctx, desmontagem[i0], 1)
-    drawImg(ctx, desmontagem[i1], f - i0)
-    drawImg(ctx, desmontagem[n], seq.x)
+    const w = volta || !giro.length ? 1 : seq.w
+    if (w < 1) {
+      // o balanço segue de onde a página anterior parou (mesmo relógio), amortecendo até a vista frontal
+      const f = midFrame + (giroAt(now) - midFrame) * (1 - w)
+      const fl = Math.floor(f), t = f - fl
+      const a = ok(giro[fl]) ? giro[fl] : giro.find(ok)
+      const fade = 1 - smoothstep(0.35, 1, w)
+      drawSwayed(ctx, a, w, fade)
+      drawSwayed(ctx, giro[Math.min(giro.length - 1, fl + 1)], w, fade * t)
+    }
+    if (w > 0) {
+      const f = seq.p * (n - 1), i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1), wa = smoothstep(0, 0.65, w)
+      drawImg(ctx, desmontagem[i0], wa)
+      drawImg(ctx, desmontagem[i1], wa * (f - i0))
+      drawImg(ctx, desmontagem[n], seq.x * wa)
+    }
   }
 
   // ------------------------------------------------------------------ abertura: cooktop por câmera térmica
@@ -1401,7 +1430,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       if (!visible(sl)) continue
       sl.querySelectorAll('canvas[data-turntable]').forEach((cv) => drawTurntable(cv, giroAt(now)))
       const sq = sl.querySelector('canvas[data-sequence]')
-      if (sq) drawSequence(sq)
+      if (sq) drawSequence(sq, now)
       const sm = sl.querySelector('canvas[data-smoke]')
       if (sm) SMOKE.draw(sm, reduced ? 3 : now / 1000)
       const fl = sl.querySelector('canvas[data-flame]')
@@ -1473,7 +1502,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     svg.querySelectorAll('.map__end-ring').forEach((r) => { r.setAttribute('cx', E[0]); r.setAttribute('cy', E[1]) })
     const st = map.querySelector('.map__place--start'), en = map.querySelector('.map__place--end')
     st.style.left = `${S[0] + 34}px`; st.style.top = `${S[1] + 40}px`
-    en.style.left = `${E[0] + 40}px`; en.style.top = `${E[1] - 66}px`
+    en.style.left = `${E[0] + 40}px`; en.style.top = `${E[1] - 10}px`
     const state = { flown, L, p: MAP.get(sl)?.p ?? 0, dot: map.querySelector('.map__dot') }
     MAP.set(sl, state)
     setRoute(sl, state.p)
@@ -1576,15 +1605,21 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     }
   }
   /** Página da solução: cada seta acende o número seguinte e leva o fogão ao estado daquela etapa. */
-  const SOL = [{ p: 0, x: 0 }, { p: 1, x: 0 }, { p: 1, x: 1 }, { p: 1, x: 1 }]
+  const SOL = [{ p: 0, x: 0, w: 0 }, { p: 1, x: 0, w: 1 }, { p: 1, x: 1, w: 1 }, { p: 1, x: 1, w: 1 }]
   function solStep(sl, n, instant) {
     const items = [...sl.querySelectorAll('[data-steps] li')]
     items.forEach((li, i) => { li.classList.toggle('is-active', i === n); li.classList.toggle('is-done', i < n) })
     const to = SOL[Math.min(n, SOL.length - 1)]
     cancelAnimationFrame(sl._solRaf)
-    if (instant || reduced) { seq.p = to.p; seq.x = to.x; return }
-    const p0 = seq.p, x0 = seq.x, t0 = performance.now(), D = 1700
-    const run = (now) => { const k = easeInOut(clamp01((now - t0) / D)); seq.p = p0 + (to.p - p0) * k; seq.x = x0 + (to.x - x0) * k; if (k < 1) sl._solRaf = requestAnimationFrame(run) }
+    if (instant || reduced) { seq.p = to.p; seq.x = to.x; seq.w = to.w; return }
+    // o fogão para de balançar (w sobe) antes de abrir, e só volta a balançar depois de fechar
+    const p0 = seq.p, x0 = seq.x, w0 = seq.w, t0 = performance.now(), D = 1700, DW = 900
+    const dp = to.w > w0 ? DW * 0.8 : 0, dw = to.w < w0 ? D * 0.9 : 0
+    const run = (now) => {
+      const k = easeInOut(clamp01((now - t0 - dp) / D)), kw = easeInOut(clamp01((now - t0 - dw) / DW))
+      seq.p = p0 + (to.p - p0) * k; seq.x = x0 + (to.x - x0) * k; seq.w = w0 + (to.w - w0) * kw
+      if (now - t0 < Math.max(dp + D, dw + DW)) sl._solRaf = requestAnimationFrame(run)
+    }
     sl._solRaf = requestAnimationFrame(run)
   }
   function leave(sl) {
