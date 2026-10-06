@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 
+from app import model_setup
 from app.db import User, get_session
 from app.predictors import Predictor, get_predictor
 from app.security import decode_access_token
@@ -43,4 +44,13 @@ def current_user(
 
 
 def predictor() -> Predictor:
-    return get_predictor()
+    try:
+        return get_predictor()
+    except RuntimeError as exc:
+        # Sem modelos treinados (ou gerando-os): 503 com o motivo em pt-BR, em
+        # vez de um 500 genérico. A interface oferece o mock a partir de
+        # `GET /api/v1/system/models`.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=model_setup.unavailable_message(str(exc)),
+        ) from exc

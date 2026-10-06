@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from app.config import get_settings
+from app.model_setup import effective_mode
 from app.predictors.base import ContractError, Predictor
 from app.predictors.mock import MockPredictor
 from app.predictors.real import RealPredictor
@@ -20,7 +20,9 @@ __all__ = [
 
 @lru_cache
 def get_predictor() -> Predictor:
-    mode = get_settings().model_mode.lower()
+    # `MODEL_MODE` do `.env`, salvo quando a interface escolheu o mock por falta
+    # de dataset (`app.model_setup`).
+    mode = effective_mode()
     if mode == "mock":
         return MockPredictor()
     if mode == "real":

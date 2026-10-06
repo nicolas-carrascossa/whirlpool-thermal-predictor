@@ -9,10 +9,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app import model_setup
 from app.config import get_settings
 from app.db import init_db
 from app.middleware import AccessLogMiddleware
-from app.routers import auth, predictions
+from app.routers import auth, predictions, system
 from app.schemas import CONTRACT_VERSION
 
 API_TITLE = "Thermal Predictor API"
@@ -21,6 +22,9 @@ API_TITLE = "Thermal Predictor API"
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
+    # Sem modelos e com as planilhas em data/, comeca a gera-los ja na subida,
+    # em segundo plano: quando a interface perguntar, o trabalho ja andou.
+    model_setup.status()
     yield
 
 
@@ -50,6 +54,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth.router)
     app.include_router(predictions.router)
+    app.include_router(system.router)
 
     @app.get("/health", tags=["infra"])
     def health() -> dict[str, str]:
@@ -57,7 +62,7 @@ def create_app() -> FastAPI:
         return {
             "status": "ok",
             "contract_version": CONTRACT_VERSION,
-            "model_mode": settings.model_mode,
+            "model_mode": model_setup.effective_mode(),
         }
 
     @app.exception_handler(RequestValidationError)
