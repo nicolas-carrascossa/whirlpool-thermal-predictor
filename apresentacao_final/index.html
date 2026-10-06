@@ -117,8 +117,27 @@ button { font: inherit; color: inherit; }
 .h1--xl { font-size: var(--t-xl); max-width: 19ch; }
 .h1 em, .brand-title em { font-style: italic; color: var(--heat-ink); }
 .is-dark .h1 em { color: var(--heat); }
-.titles-inter .h1, .titles-inter .brand-title, .titles-inter .flip, .titles-inter .chapter__name { font-weight: 600; letter-spacing: -0.035em; }
+.titles-inter .h1, .titles-inter .brand-title, .titles-inter .flip, .titles-inter .chapter__name { font-weight: 700; letter-spacing: -0.012em; }
 .titles-inter .h1 em, .titles-inter .flip__new { font-style: normal; }
+/* Inter em caixa alta é ~25% mais larga que a serifa: reduz o corpo e alarga a medida para manter as quebras de linha */
+.titles-inter .h1, .titles-inter .flip { text-transform: uppercase; line-height: 1.04; }
+.titles-inter .h1 { font-size: calc(var(--t-h1) * 0.8); max-width: 22ch; }
+.titles-inter .h1--xl { font-size: calc(var(--t-xl) * 0.8); max-width: 24ch; }
+.titles-inter .flip { font-size: calc(clamp(2.6rem, min(6.2vw, 11.5vh), 7.4rem) * 0.82); max-width: 20ch; }
+.titles-inter .brand-title { font-size: calc(var(--t-brand) * 0.82); line-height: 0.92; }
+.titles-inter .chapter__n { font-weight: 700; }
+.titles-inter .chapter__name { text-transform: uppercase; font-size: calc(clamp(2rem, 7vh, 5rem) * 0.7); }
+/* só o corte normal da Inter Tight é carregado: sem itálico sintético */
+.titles-inter .chapter__name, .titles-inter .map__place i, .titles-inter .map__stats dt, .titles-inter .branches__q, .titles-inter .pub__q { font-style: normal; }
+.titles-inter .kpi__num, .titles-inter .price__num, .titles-inter .pipeline__label, .titles-inter .scale__dest, .titles-inter .ice__title, .titles-inter .lane__flow { font-weight: 700; letter-spacing: -0.01em; }
+.titles-inter .branches__q, .titles-inter .pub__q { font-weight: 600; letter-spacing: -0.02em; }
+/* exceção: títulos das páginas 1 (abertura), 5 (lead-time) e 12 (pergunta) mantêm a serifa original */
+.titles-inter :is(#abertura, #lead-time, #pergunta) :is(.h1, .h1--xl, .flip, .brand-title) { --serif: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif; font-family: var(--serif); font-weight: 500; text-transform: none; }
+.titles-inter :is(#abertura, #lead-time, #pergunta) .h1 { font-size: var(--t-h1); max-width: 17ch; letter-spacing: -0.012em; line-height: 1.02; }
+.titles-inter :is(#abertura, #lead-time, #pergunta) .h1--xl { font-size: var(--t-xl); max-width: 19ch; }
+.titles-inter :is(#abertura, #lead-time, #pergunta) .flip { font-size: clamp(2.6rem, min(6.2vw, 11.5vh), 7.4rem); max-width: 16ch; letter-spacing: -0.015em; line-height: 1.04; }
+.titles-inter :is(#abertura, #lead-time, #pergunta) .brand-title { font-size: var(--t-brand); letter-spacing: -0.025em; line-height: 0.86; }
+.titles-inter :is(#abertura, #lead-time, #pergunta) .h1 em, .titles-inter :is(#abertura, #lead-time, #pergunta) .flip__new { font-style: italic; }
 
 /* entradas: palavras sobem de dentro de uma máscara; blocos sobem e aparecem (expo, como no White Desert) */
 .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; margin-bottom: -0.14em; }

@@ -39,7 +39,7 @@ window.PITCH_CONFIG = {
 
   apresentacao: {
     duracaoSegundos: 300,
-    titulos: 'serifa', // 'serifa' (Cormorant, como o White Desert) ou 'inter' (tudo em Inter Tight)
+    titulos: 'inter', // 'serifa' (Cormorant, como o White Desert) ou 'inter' (tudo em Inter Tight)
     barraDeTempo: true,
     cronometroAutomatico: true,
     toleranciaDeRitmoSegundos: 8,
