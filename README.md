@@ -71,7 +71,7 @@ Dentre os arquivos presentes na raiz do projeto, definem-se:
   - <b>src/backend/models</b>: os modelos treinados (um <code>.joblib</code> por área-chave) e o <code>manifest.json</code> que descreve qual algoritmo atende cada área. <b>Não são versionados</b>, porque são gerados a partir da base confidencial do parceiro: cada pessoa os gera na própria máquina com <code>npm run modelos:gerar</code> (ver <a href="#-execução-dos-projetos">Execução dos projetos</a>).
   - <b>src/frontend</b>: a interface em React que consome a API. Os arquivos estáticos da própria aplicação (logo, favicon) ficam em <code>src/frontend/public</code>, de onde o Vite os serve na raiz do site; não são mídia da documentação.
   - <b>src/contracts</b>: contrato da API (<code>api_v1.schema.json</code>) compartilhado entre back-end e front-end, com fixtures de exemplo.
-  - <b>src/scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>), auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>) e um utilitário de gestão das issues no GitLab (<code>datas_sprint4.py</code>).
+  - <b>src/scripts</b>: geração do catálogo de sensores/variáveis lido pela API (<code>build_registry.py</code>), treino/exportação dos modelos (<code>export_models.py</code>) e auditoria da cobertura de configurações no treino (<code>audit_training_coverage.py</code>).
 
 ## 🔒 Dados e confidencialidade
 
@@ -202,7 +202,7 @@ conjunto de modelos no rodapé dos resultados.
 |---|---|---|---|---|
 | 1 | `expl_preprocessamenro_hipote.ipynb` | `data/dataset_bruto.csv` | `data/dataset_pre_processado.csv`, `data/classificacao_colunas.csv` | < 1 min |
 | 2 | `tratamento_final_dos_dados.ipynb` | `data/dataset_pre_processado.csv` | `data/<area>_data.csv` (uma planilha por área) | < 1 min |
-| 3 | `Decision_tree_regre.ipynb` | `data/<area>_data.csv` | resultados e previsões do Decision Tree | ~3 min |
+| 3 | `Decision_tree_regre.ipynb` | `data/<area>_data.csv` | `data/resultados_decision_tree_por_area.csv`, `data/previsoes_validacao_decision_tree.csv` | ~3 min |
 | 3 | `Grad_Boosting_Regre.ipynb` | `data/<area>_data.csv` | resultados do Gradient Boosting | ~20 min |
 | 3 | `Random_for_regre.ipynb` | `data/<area>_data.csv`, `src/backend/data/sensor_registry.json` | resultados do Random Forest | ~30 min |
 | 4 | `comparacao_modelos.ipynb` | `data/<area>_data.csv`, `src/scripts/export_models.py` | comparação entre os três modelos | ~3 min |
@@ -210,7 +210,7 @@ conjunto de modelos no rodapé dos resultados.
 | 5 | `avaliacao_dados_sinteticos.ipynb` | `data/dataset_pre_processado.csv`, `data/<area>_data.csv` | avaliação das runs sintéticas | ~5 min |
 | 5 | `diagnostico_dados_e_validacao.ipynb` | `data/dataset_pre_processado.csv` | diagnóstico de vazamento de dados | ~1 min |
 
-Notebooks com a mesma ordem não dependem uns dos outros. Use o kernel Python do ambiente em que instalou o `requirements.txt`. A célula 16 do `Decision_tree_regre.ipynb` lê `resultados_experimentos_overfitting.csv`, que não é versionado: sem ele a célula é pulada e o gráfico já salvo fica em `assets/graficos/dt_experimentos_overfitting.png`.
+Notebooks com a mesma ordem não dependem uns dos outros. Use o kernel Python do ambiente em que instalou o `requirements.txt`. A célula 16 do `Decision_tree_regre.ipynb` lê `data/resultados_experimentos_overfitting.csv`, que não é versionado: sem ele a célula é pulada e o gráfico já salvo fica em `assets/graficos/dt_experimentos_overfitting.png`.
 
 **No Google Colab:**
 
