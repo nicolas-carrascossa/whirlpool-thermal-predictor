@@ -25,3 +25,8 @@ src/backend/.env
 CLAUDE.md
 AGENTS.md
 .mcp.json
+
+# modelos treinados: gerados localmente a partir da base confidencial do parceiro
+# com `npm run modelos:gerar` (ver "Execução dos projetos" no README)
+src/backend/models/*.joblib
+src/backend/models/manifest.json

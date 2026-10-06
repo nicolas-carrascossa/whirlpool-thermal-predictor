@@ -11,6 +11,7 @@
     "test": "npm --prefix src/frontend run test",
     "lint": "npm --prefix src/frontend run lint",
     "contract:schema": "npm --prefix src/frontend run contract:schema",
+    "modelos:gerar": "python src/scripts/export_models.py",
     "install:frontend": "npm --prefix src/frontend install"
   }
 }

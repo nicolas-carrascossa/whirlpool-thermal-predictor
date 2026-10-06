@@ -139,9 +139,10 @@ class RealPredictor:
         path = self.model_dir / MANIFEST_NAME
         if not path.exists():
             raise RuntimeError(
-                f"Manifesto de modelos não encontrado em {path}. "
-                "Rode `python src/scripts/export_models.py` ou aponte MODEL_DIR para o "
-                "diretório dos artefatos."
+                f"Manifesto de modelos não encontrado em {path}. Os modelos não vêm "
+                "com o repositório: gere-os com `npm run modelos:gerar` (na raiz, com a "
+                "base do parceiro em data/), aponte MODEL_DIR para o diretório dos "
+                "artefatos ou use MODEL_MODE=mock."
             )
         with path.open("r", encoding="utf-8") as handle:
             return json.load(handle)
