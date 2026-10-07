@@ -16,7 +16,8 @@
  *   acento da página e, na primeira página de cada seção, a cor da cortina.
  *   Paradas: 0 azul · 0,35 âmbar · 0,68 laranja · 1 vermelho.
  * - `fundo`: 'claro' ou 'escuro'.
- * - `transicao` (opcional): 'nevoa' ou 'subida' força uma entrada especial.
+ * - `transicao` (opcional): 'nevoa' ou 'subida' força uma entrada especial; 'cortina'
+ *   usa a cortina lateral mesmo ao trocar de seção (sem a cortina de capítulo).
  * - Algumas páginas têm passos: a seta avança dentro da página antes de trocar
  *   de página (tensão, mapa, confiabilidade, virada).
  * - `ativa: false` tira a página do deck.
@@ -74,7 +75,7 @@ window.PITCH_CONFIG = {
       notas:
         '[Os queimadores acendem um a um.] No desenvolvimento de um novo fogão, uma mudança de arquitetura pode exigir uma nova simulação CFD e, em etapas críticas, novos protótipos e testes físicos. Isso significa tempo, custo e uso de recursos especializados antes mesmo de saber se aquela configuração é termicamente viável. [transição] Para entender o valor da nossa solução, primeiro precisamos entender onde está esse gargalo.',
       conteudo: {
-        titulo: 'E se fosse possível prever o comportamento térmico de um fogão *antes de construir um novo protótipo?*',
+        titulo: 'Imagine queimar um protótipo inteiro para descobrir um erro, *agora imagine nunca mais fazer isso.*',
       },
     },
     {
@@ -202,7 +203,7 @@ window.PITCH_CONFIG = {
         'O Thermal Predictor é um sistema baseado em Machine Learning que aprende com o histórico de simulações térmicas da Whirlpool. [número 1] O engenheiro informa características da configuração do fogão, como direção do fluxo de ar, housing, posição de componentes e materiais utilizados. [avance: o fogão se abre, número 2] A partir dessas informações, o sistema estima as temperaturas nas sete regiões térmicas monitoradas. Como cada região tem um comportamento térmico próprio, são sete modelos: Gradient Boosting em quatro regiões e Random Forest em três. [avance: número 3] Cada região vem com a temperatura, a margem de erro e a confiabilidade da previsão. [avance: número 4] E o engenheiro decide com essa evidência.',
       conteudo: {
         titulo: 'Da configuração à previsão *em segundos.*',
-        etapas: ['Configuração do fogão', 'Thermal Predictor', 'Temperatura + margem de erro + confiabilidade', 'Decisão'],
+        etapas: ['Configuração do fogão', 'Modelo', 'Temperatura + margem de erro + confiabilidade', 'Decisão'],
       },
     },
     {
@@ -312,6 +313,7 @@ window.PITCH_CONFIG = {
       tipo: 'virada',
       fundo: 'escuro',
       calor: 1,
+      transicao: 'cortina',
       segundos: 24,
       notas:
         'Os próximos passos passam por ampliar a cobertura de dados, comparar cada vez mais as previsões com medições físicas e retreinar os modelos conforme novos dados forem produzidos. O Thermal Predictor transforma informações históricas em uma ferramenta para apoiar decisões futuras. [pausa] No final, queremos ajudar a engenharia a mudar uma pergunta. Em vez de perguntar: “Qual configuração devemos testar?” [avance: a pergunta muda] poder perguntar: “Qual configuração realmente precisamos testar?”',
