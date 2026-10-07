@@ -814,7 +814,7 @@ body.is-idle, body.is-idle * { cursor: none !important; }
           <h1 class="h1 h1--xl" style="--base:.3s">${words(c.titulo)}</h1>
         </div>
         <figure class="thermo r" style="--d:.2">
-          <div class="thermo__view"><canvas data-heatfield role="img" aria-label="Mapa térmico de um cooktop de fogão por indução, visto por câmera térmica: as zonas de indução aquecem uma a uma"></canvas></div>
+          <div class="thermo__view"><canvas data-heatfield role="img" aria-label="Mapa térmico de um cooktop de fogão por indução, visto por câmera térmica: as zonas de indução ligam e desligam em ciclo, aquecendo e esfriando"></canvas></div>
         </figure>
       </div>
       ${fog('fog--floor')}`,
@@ -1261,6 +1261,11 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       { u: 0.28, v: 0.72, r: 0.112, alvo: 0.62, ordem: 3 },
       { u: 0.71, v: 0.70, r: 0.150, alvo: 0.92, ordem: 1 },
     ]
+    // ciclo periódico: as zonas ligam em ordem, ficam acesas, desligam em ordem, esfriam, e tudo recomeça
+    const CICLO = 11.5, LIGA = 0.4, LIGA_PASSO = 0.5, DESLIGA = 6.7, DESLIGA_PASSO = 0.45
+    burners.forEach((b) => { b.on = false; b.h = 0; b.pulse = -9 })
+    let lastT = -1
+    const resetState = () => { burners.forEach((b) => { b.on = false; b.h = 0; b.pulse = -9 }) }
     const N = 32, rnd = mulberry32(11), lat = Float32Array.from({ length: N * N }, () => rnd())
     const vnoise = (x, y) => {
       const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0
@@ -1271,10 +1276,16 @@ body.is-idle, body.is-idle * { cursor: none !important; }
     }
     const aspect = GH / GW
     function compute(t) {
+      if (t < lastT - 0.5) resetState() // a página entrou de novo
+      const dt = lastT < 0 ? 0 : Math.min(0.1, Math.max(0, t - lastT))
+      lastT = t
+      const fase = t % CICLO
       const amps = burners.map((b) => {
-        const ti = 0.45 + b.ordem * 0.55
-        if (t < ti) return 0
-        return b.alvo * (1 - Math.exp(-(t - ti) / 1.1)) * (1 + 0.045 * Math.sin(1.3 * t + b.ordem * 1.7))
+        const on = fase >= LIGA + b.ordem * LIGA_PASSO && fase < DESLIGA + b.ordem * DESLIGA_PASSO
+        if (on !== b.on) { b.on = on; b.pulse = t }
+        const tgt = b.on ? b.alvo : 0
+        b.h = reduced ? tgt : b.h + (tgt - b.h) * (1 - Math.exp(-dt / (b.on ? 1.1 : 2.2)))
+        return b.h < 0.002 ? 0 : b.h * (1 + 0.045 * Math.sin(1.3 * t + b.ordem * 1.7))
       })
       for (let j = 0; j < GH; j++) {
         const v = (j + 0.5) / GH
@@ -1352,23 +1363,41 @@ body.is-idle, body.is-idle * { cursor: none !important; }
       ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'
       ctx.drawImage(off, rx, ry, rw, rh)
       // zonas de indução: bobina em anéis concentricos (frias ou quentes) e o ponto central
-      for (const b of burners) {
+      burners.forEach((b, k) => {
         const cx = rx + b.u * rw, cy = ry + b.v * rh, R = b.r * 0.58 * rw
         ctx.lineWidth = 1.6 * dpr; ctx.strokeStyle = 'rgba(255,255,255,0.5)'
         ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke()
         ctx.lineWidth = 1 * dpr; ctx.strokeStyle = 'rgba(255,255,255,0.3)'
         for (const f of [0.74, 0.48, 0.22]) { ctx.beginPath(); ctx.arc(cx, cy, R * f, 0, Math.PI * 2); ctx.stroke() }
-      }
+        // onda que sai da zona quando ela liga ou desliga
+        const age = t - b.pulse
+        if (age >= 0 && age < 0.8) {
+          ctx.lineWidth = 2 * dpr; ctx.strokeStyle = b.on ? `rgba(255,190,90,${0.7 * (1 - age / 0.8)})` : `rgba(150,200,255,${0.6 * (1 - age / 0.8)})`
+          ctx.beginPath(); ctx.arc(cx, cy, R * (1 + 0.55 * (age / 0.8)), 0, Math.PI * 2); ctx.stroke()
+        }
+      })
       // isotermas, como num resultado de CFD
       ctx.lineWidth = 1 * dpr
       ;[[0.32, 0.22], [0.55, 0.26], [0.78, 0.3]].forEach(([lvl, a]) => { ctx.strokeStyle = `rgba(255,255,255,${a})`; contour(ctx, lvl, rx, ry, rw / GW, rh / GH) })
       // controle touch do cooktop: liga/desliga, deslizador de potência e indicadores
-      const sy = ry + rh * 0.935, sh = rh * 0.045
-      ctx.lineWidth = 1.2 * dpr; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.fillStyle = 'rgba(255,255,255,0.4)'
-      ctx.beginPath(); ctx.arc(rx + rw * 0.36, sy, sh * 0.62, 0, Math.PI * 2); ctx.stroke()
-      ctx.beginPath(); ctx.arc(rx + rw * 0.36, sy, sh * 0.62, -Math.PI * 0.35, -Math.PI * 0.65, true); ctx.moveTo(rx + rw * 0.36, sy - sh * 0.5); ctx.lineTo(rx + rw * 0.36, sy - sh * 0.08); ctx.stroke()
-      ctx.beginPath(); ctx.roundRect(rx + rw * 0.42, sy - sh * 0.3, rw * 0.22, sh * 0.6, sh * 0.3); ctx.stroke()
-      for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(rx + rw * (0.69 + k * 0.03), sy, sh * 0.16, 0, Math.PI * 2); ctx.fill() }
+      const sy = ry + rh * 0.935, sh = rh * 0.045, px = rx + rw * 0.36, sx0 = rx + rw * 0.42, sw = rw * 0.22
+      const any = burners.some((b) => b.on)
+      // potência média das zonas, de 0 a 1, para o deslizador acompanhar o ciclo
+      const pw = burners.reduce((a, b) => a + b.h / b.alvo, 0) / burners.length
+      // liga/desliga: acende em laranja enquanto há zona ligada
+      ctx.lineWidth = 1.4 * dpr; ctx.strokeStyle = any ? 'rgba(255,170,70,0.95)' : 'rgba(255,255,255,0.5)'
+      ctx.beginPath(); ctx.arc(px, sy, sh * 0.62, 0, Math.PI * 2); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(px, sy - sh * 0.5); ctx.lineTo(px, sy - sh * 0.08); ctx.stroke()
+      // deslizador de potência
+      ctx.lineWidth = 1.2 * dpr; ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+      ctx.beginPath(); ctx.roundRect(sx0, sy - sh * 0.3, sw, sh * 0.6, sh * 0.3); ctx.stroke()
+      ctx.fillStyle = any ? 'rgba(255,170,70,0.75)' : 'rgba(255,255,255,0.25)'
+      ctx.beginPath(); ctx.roundRect(sx0, sy - sh * 0.3, Math.max(sh * 0.6, sw * pw), sh * 0.6, sh * 0.3); ctx.fill()
+      // indicadores: um por zona
+      burners.forEach((b, k) => {
+        ctx.fillStyle = b.on ? '#ffb347' : 'rgba(255,255,255,0.4)'
+        ctx.beginPath(); ctx.arc(rx + rw * (0.69 + k * 0.03), sy, sh * 0.16, 0, Math.PI * 2); ctx.fill()
+      })
       ctx.restore()
     }
     return { draw }
